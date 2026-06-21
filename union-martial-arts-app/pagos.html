@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Pagos</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+  <div class="nav-header">
+    <a href="home.html" class="back-btn">← Volver</a>
+    <h1>Pagos</h1>
+  </div>
+
+  <div class="screen-body">
+
+    <div id="pago-pendiente" style="display:none;">
+      <div class="card" style="border:1.5px solid var(--uma-blue);">
+        <div style="font-size:12px; color:var(--text-secondary);" id="pago-mes">Mensualidad</div>
+        <div style="font-size:32px; font-weight:600; color:var(--text-primary); margin:6px 0;" id="pago-monto">$800 MXN</div>
+        <div style="font-size:13px; color:var(--red-alert); margin-bottom:4px;">⚠️ Pago pendiente</div>
+        <button class="btn-primary" onclick="alert('En la versión con pagos en línea aquí se abre Conekta o Stripe.\n\nPor ahora contacta a tu instructor para registrar el pago.')">
+          💳 Contactar para pagar
+        </button>
+      </div>
+    </div>
+
+    <div id="pago-ok" style="display:none;">
+      <div class="card" style="background:var(--green-bg); border-color:#b7e4c7; text-align:center;">
+        <div style="font-size:28px; margin-bottom:6px;">✅</div>
+        <div style="font-size:15px; font-weight:500; color:var(--green-text);">Pago al día</div>
+        <div style="font-size:13px; color:var(--green-text); margin-top:4px;" id="pago-ok-mes"></div>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--uma-blue-light); border-color:var(--uma-blue-border);">
+      <div style="font-size:13px; font-weight:500; color:var(--uma-blue); margin-bottom:8px;">Métodos de pago aceptados</div>
+      <div style="font-size:13px; color:var(--text-secondary); line-height:1.8;">
+        💵 Efectivo en academia<br>
+        📱 Transferencia bancaria<br>
+        💳 Tarjeta (próximamente)
+      </div>
+    </div>
+
+    <div class="section-title">Historial de pagos</div>
+    <div id="historial-pagos">
+      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Cargando...</div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
+    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
+    <a href="pagos.html" class="bnav-item active"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="evaluacion.html" class="bnav-item"><span class="bnav-icon">📊</span>Perfil</a>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  async function cargarDatos() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = 'index.html'; return }
+
+    const { data: padre } = await supabase
+      .from('padres')
+      .select('alumno_id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!padre) return
+
+    const { data: pagos } = await supabase
+      .from('pagos')
+      .select('*')
+      .eq('alumno_id', padre.alumno_id)
+      .order('creado_en', { ascending: false })
+
+    if (!pagos || pagos.length === 0) {
+      document.getElementById('historial-pagos').innerHTML =
+        '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Sin pagos registrados aún.</div>'
+      return
+    }
+
+    const ultimo = pagos[0]
+    if (ultimo.estado === 'pendiente') {
+      document.getElementById('pago-pendiente').style.display = 'block'
+      document.getElementById('pago-mes').textContent = 'Mensualidad ' + (ultimo.mes || '')
+      document.getElementById('pago-monto').textContent = '$' + ultimo.monto + ' MXN'
+    } else {
+      document.getElementById('pago-ok').style.display = 'block'
+      document.getElementById('pago-ok-mes').textContent = ultimo.mes + ' — $' + ultimo.monto + ' MXN'
+    }
+
+    const iconos = { pagado: '✅', pendiente: '⏳', tardio: '⚠️' }
+    const colores = { pagado: 'green', pendiente: 'red', tardio: 'gray' }
+    const textos = { pagado: 'Pagado', pendiente: 'Pendiente', tardio: 'Tardío' }
+
+    document.getElementById('historial-pagos').innerHTML = pagos.map(p => `
+      <div class="alert-row">
+        <div class="alert-icon ${p.estado === 'pagado' ? 'green' : 'red'}">${iconos[p.estado] || '📋'}</div>
+        <div style="flex:1;">
+          <div class="alert-title">${p.mes || 'Sin mes'}</div>
+          <div class="alert-sub">$${p.monto} MXN${p.fecha_pago ? ' · Pagado ' + p.fecha_pago : ''}</div>
+        </div>
+        <span class="badge ${colores[p.estado] || 'gray'}">${textos[p.estado] || p.estado}</span>
+      </div>`).join('')
+  }
+
+  cargarDatos()
+</script>
+
+</body>
+</html>

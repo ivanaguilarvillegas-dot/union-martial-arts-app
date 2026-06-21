@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+  <div class="nav-header dark">
+    <div style="flex:1;">
+      <div class="sub">Panel de administrador 🔐</div>
+      <h1>Union Martial Arts</h1>
+    </div>
+    <span style="font-size:20px; cursor:pointer;" onclick="cerrarSesion()">🚪</span>
+  </div>
+
+  <div class="screen-body">
+
+    <div class="section-title">Resumen general</div>
+    <div class="grid2" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="stat-num" id="total-alumnos">—</div>
+        <div class="stat-lbl">Alumnos activos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="total-cobrado">—</div>
+        <div class="stat-lbl">Cobrado este mes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="total-pendientes" style="color:#D64545;">—</div>
+        <div class="stat-lbl">Pagos pendientes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="total-checkins">—</div>
+        <div class="stat-lbl">Asistencias hoy</div>
+      </div>
+    </div>
+
+    <div class="section-title">Acciones</div>
+
+    <a href="admin-alumnos.html" class="admin-action">
+      <div class="action-icon">👥</div>
+      <div style="flex:1;">
+        <div class="action-title">Ver todos los alumnos</div>
+        <div class="action-sub" id="sub-alumnos">Cargando...</div>
+      </div>
+      <span class="chevron">›</span>
+    </a>
+    <a href="admin-evaluacion.html" class="admin-action">
+      <div class="action-icon">📊</div>
+      <div style="flex:1;">
+        <div class="action-title">Registrar evaluación</div>
+        <div class="action-sub">Calificar alumno del mes</div>
+      </div>
+      <span class="chevron">›</span>
+    </a>
+    <a href="admin-evento.html" class="admin-action">
+      <div class="action-icon">📅</div>
+      <div style="flex:1;">
+        <div class="action-title">Crear evento</div>
+        <div class="action-sub">Torneo, clase especial, aviso</div>
+      </div>
+      <span class="chevron">›</span>
+    </a>
+    <a href="admin-pagos.html" class="admin-action">
+      <div class="action-icon">💳</div>
+      <div style="flex:1;">
+        <div class="action-title">Gestionar pagos</div>
+        <div class="action-sub" id="sub-pagos">Cargando...</div>
+      </div>
+      <span class="chevron">›</span>
+    </a>
+    <a href="admin-frase.html" class="admin-action">
+      <div class="action-icon">💬</div>
+      <div style="flex:1;">
+        <div class="action-title">Enviar frase / mensaje</div>
+        <div class="action-sub">Notificación a todos los padres</div>
+      </div>
+      <span class="chevron">›</span>
+    </a>
+    <a href="admin-nuevo-alumno.html" class="admin-action">
+      <div class="action-icon">➕</div>
+      <div style="flex:1;">
+        <div class="action-title">Agregar nuevo alumno</div>
+        <div class="action-sub">Registrar familia en la academia</div>
+      </div>
+      <span class="chevron">›</span>
+    </a>
+
+  </div>
+
+  <div class="bottom-nav">
+    <a href="admin.html" class="bnav-item active"><span class="bnav-icon">📊</span>Panel</a>
+    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
+    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  async function cargarResumen() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = 'index.html'; return }
+
+    const { data: padre } = await supabase
+      .from('padres')
+      .select('es_admin')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!padre?.es_admin) { window.location.href = 'home.html'; return }
+
+    const { count: totalAlumnos } = await supabase
+      .from('alumnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('activo', true)
+
+    document.getElementById('total-alumnos').textContent = totalAlumnos || 0
+    document.getElementById('sub-alumnos').textContent = (totalAlumnos || 0) + ' registrados'
+
+    const mesActual = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' })
+
+    const { data: pagados } = await supabase
+      .from('pagos')
+      .select('monto')
+      .eq('estado', 'pagado')
+      .ilike('mes', '%' + new Date().getFullYear() + '%')
+
+    const totalCobrado = pagados?.reduce((s, p) => s + Number(p.monto), 0) || 0
+    document.getElementById('total-cobrado').textContent = '$' + totalCobrado.toLocaleString()
+
+    const { count: pendientes } = await supabase
+      .from('pagos')
+      .select('*', { count: 'exact', head: true })
+      .eq('estado', 'pendiente')
+
+    document.getElementById('total-pendientes').textContent = pendientes || 0
+    document.getElementById('sub-pagos').textContent = (pendientes || 0) + ' pendientes de cobro'
+
+    const hoy = new Date().toISOString().split('T')[0]
+    const { count: checkins } = await supabase
+      .from('checkins')
+      .select('*', { count: 'exact', head: true })
+      .eq('fecha', hoy)
+
+    document.getElementById('total-checkins').textContent = checkins || 0
+  }
+
+  window.cerrarSesion = async function() {
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  }
+
+  cargarResumen()
+</script>
+
+</body>
+</html>

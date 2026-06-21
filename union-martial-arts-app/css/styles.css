@@ -1,0 +1,407 @@
+/* =====================================================
+   UNION MARTIAL ARTS — Estilos compartidos
+   ===================================================== */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --uma-blue: #1B4FD8;
+  --uma-blue-dark: #0F3099;
+  --uma-blue-mid: #3B6EF8;
+  --uma-blue-light: #EEF2FF;
+  --uma-blue-border: #C7D3FF;
+  --bg-page: #F5F7FF;
+  --bg-white: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #6b7280;
+  --green-bg: #F0FFF4;
+  --green-text: #276749;
+  --red-bg: #FFF5F5;
+  --red-text: #9B2C2C;
+  --red-alert: #D64545;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #e8edf5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px 10px 40px;
+}
+
+/* ——— Marco del teléfono ——— */
+.phone-frame {
+  width: 360px;
+  background: var(--bg-white);
+  border-radius: 40px;
+  border: 3px solid #c0c8e0;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(27,79,216,0.12);
+  min-height: 680px;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-bar {
+  background: var(--uma-blue-dark);
+  color: #fff;
+  font-size: 11px;
+  padding: 10px 22px 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ——— Header de navegacion ——— */
+.nav-header {
+  background: var(--uma-blue);
+  color: #fff;
+  padding: 14px 18px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-header.dark { background: var(--uma-blue-dark); }
+.nav-header h1 { font-size: 16px; font-weight: 500; color: #fff; }
+.nav-header .sub { font-size: 11px; opacity: 0.65; }
+
+.back-btn {
+  background: rgba(255,255,255,0.18);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ——— Cuerpo de pantalla ——— */
+.screen-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--bg-page);
+}
+
+/* ——— Seccion titulo ——— */
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--uma-blue);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ——— Cards genericas ——— */
+.card {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+/* ——— Grid 2 columnas ——— */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* ——— Tarjeta hero (azul) ——— */
+.hero-card {
+  background: var(--uma-blue);
+  border-radius: 18px;
+  padding: 20px;
+  color: #fff;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  right: -24px; top: -24px;
+  width: 110px; height: 110px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50%;
+}
+.hero-badge {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.hero-name { font-size: 20px; font-weight: 500; margin-bottom: 3px; }
+.hero-sub { font-size: 13px; opacity: 0.75; }
+.hero-stats { display: flex; gap: 20px; margin-top: 16px; }
+.hero-stat .num { font-size: 20px; font-weight: 500; }
+.hero-stat .lbl { font-size: 11px; opacity: 0.7; }
+
+/* ——— Tarjetas de menu ——— */
+.menu-card {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 14px;
+  padding: 16px 12px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: transform 0.12s;
+}
+.menu-card:hover { transform: scale(0.98); }
+.menu-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+.menu-label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.menu-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ——— Alerta / fila con icono ——— */
+.alert-row {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.alert-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  background: var(--uma-blue-light);
+}
+.alert-icon.amber { background: #FFFBEB; }
+.alert-icon.green { background: var(--green-bg); }
+.alert-icon.red   { background: var(--red-bg); }
+.alert-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.alert-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ——— Botones ——— */
+.btn-primary {
+  background: var(--uma-blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 10px;
+  text-align: center;
+  display: block;
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--uma-blue-dark); }
+
+/* ——— Barras de evaluacion ——— */
+.eval-bar-wrap { margin-bottom: 12px; }
+.eval-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-primary); }
+.eval-label span:last-child { color: var(--uma-blue); font-weight: 500; }
+.eval-bar-bg { height: 8px; background: var(--uma-blue-light); border-radius: 4px; overflow: hidden; }
+.eval-bar-fill { height: 100%; border-radius: 4px; background: var(--uma-blue); }
+
+/* ——— Chips de nutricion ——— */
+.chip { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; margin: 3px; font-weight: 500; }
+.chip.good { background: var(--green-bg); color: var(--green-text); }
+.chip.bad  { background: var(--red-bg);  color: var(--red-text); }
+
+/* ——— Tarjeta frase (azul oscuro) ——— */
+.frase-card {
+  background: var(--uma-blue-dark);
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.frase-label { font-size: 11px; opacity: 0.5; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.frase-quote { font-size: 15px; line-height: 1.65; margin-bottom: 12px; font-style: italic; }
+.frase-autor { font-size: 12px; opacity: 0.55; }
+
+/* ——— Rutinas en casa ——— */
+.workout-row {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.workout-icon { font-size: 28px; width: 40px; text-align: center; }
+.workout-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.workout-sub   { font-size: 12px; color: var(--text-secondary); }
+.play-btn { margin-left: auto; font-size: 22px; color: var(--uma-blue); background: var(--uma-blue-light); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* ——— Filtro de tabs ——— */
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab { padding: 7px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid var(--uma-blue-border); color: var(--text-secondary); background: var(--bg-white); text-decoration: none; }
+.tab.active { background: var(--uma-blue); color: #fff; border-color: var(--uma-blue); }
+
+/* ——— Historial check-in ——— */
+.checkin-row {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.badge { font-size: 11px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+.badge.green { background: var(--green-bg); color: var(--green-text); }
+.badge.gray  { background: #f3f4f6; color: var(--text-secondary); }
+.badge.red   { background: var(--red-bg); color: var(--red-text); }
+
+/* ——— Navegacion inferior ——— */
+.bottom-nav {
+  background: var(--bg-white);
+  border-top: 0.5px solid var(--uma-blue-border);
+  display: flex;
+  padding: 8px 0 12px;
+}
+.bnav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 4px 0;
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.bnav-item.active { color: var(--uma-blue); }
+.bnav-icon { font-size: 22px; }
+
+/* ——— Admin: fila de alumno ——— */
+.student-row {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--uma-blue-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  color: var(--uma-blue);
+  flex-shrink: 0;
+}
+.student-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.student-sub  { font-size: 12px; color: var(--text-secondary); }
+
+/* ——— Admin: accion ——— */
+.admin-action {
+  background: var(--bg-white);
+  border: 0.5px solid var(--uma-blue-border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.action-icon {
+  width: 40px; height: 40px;
+  background: var(--uma-blue-light);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.action-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.action-sub   { font-size: 12px; color: var(--text-secondary); }
+.chevron { margin-left: auto; color: var(--uma-blue); font-size: 18px; }
+
+/* ——— Admin: stat card ——— */
+.stat-card { background: var(--bg-white); border: 0.5px solid var(--uma-blue-border); border-radius: 12px; padding: 14px; text-align: center; }
+.stat-num { font-size: 26px; font-weight: 600; color: var(--uma-blue); }
+.stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+/* ——— Select / Input ——— */
+select, input[type="text"], input[type="email"], input[type="password"] {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 0.5px solid var(--uma-blue-border);
+  font-size: 14px;
+  background: var(--bg-white);
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  outline: none;
+}
+select:focus, input:focus { border-color: var(--uma-blue); }
+label { font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 5px; }
+
+/* ——— Login ——— */
+.login-wrap {
+  background: var(--uma-blue);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+.login-input {
+  width: 100%;
+  background: rgba(255,255,255,0.14);
+  border: 0.5px solid rgba(255,255,255,0.28);
+  border-radius: 12px;
+  padding: 13px 14px;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 10px;
+  outline: none;
+}
+.login-input::placeholder { color: rgba(255,255,255,0.45); }
+.login-btn {
+  width: 100%;
+  background: #fff;
+  color: var(--uma-blue);
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+}
+.login-btn.secondary {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 0.5px solid rgba(255,255,255,0.3);
+  margin-top: 10px;
+  font-weight: 400;
+}
+.login-hint { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.35); text-align: center; }

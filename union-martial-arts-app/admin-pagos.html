@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Gestionar Pagos</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+  <div class="nav-header dark">
+    <a href="admin.html" class="back-btn">← Volver</a>
+    <h1>Gestionar Pagos</h1>
+  </div>
+  <div class="screen-body">
+    <div class="grid2" style="margin-bottom:16px;">
+      <div class="stat-card"><div class="stat-num" id="total-cobrado">—</div><div class="stat-lbl">Cobrado</div></div>
+      <div class="stat-card"><div class="stat-num" id="total-pendiente" style="color:#D64545;">—</div><div class="stat-lbl">Por cobrar</div></div>
+      <div class="stat-card"><div class="stat-num" id="num-pagados">—</div><div class="stat-lbl">Pagos recibidos</div></div>
+      <div class="stat-card"><div class="stat-num" id="num-pendientes" style="color:#D64545;">—</div><div class="stat-lbl">Pendientes</div></div>
+    </div>
+
+    <div class="section-title">Registrar pago manualmente</div>
+    <div class="card">
+      <label>Alumno</label>
+      <select id="sel-alumno"><option value="">Seleccionar alumno...</option></select>
+      <label>Mes</label>
+      <input type="text" id="mes-pago" placeholder="Ej: Julio 2026" />
+      <label>Monto (MXN)</label>
+      <input type="number" id="monto-pago" value="800" />
+      <label>Estado</label>
+      <select id="estado-pago">
+        <option value="pagado">Pagado</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+      <div id="msg-pago" style="font-size:13px; text-align:center; padding:10px; border-radius:8px; display:none; margin-top:8px;"></div>
+      <button class="btn-primary" onclick="registrarPago()">Registrar pago</button>
+    </div>
+
+    <div class="tabs">
+      <a href="#" class="tab active" onclick="filtro('todos',this)">Todos</a>
+      <a href="#" class="tab" onclick="filtro('pendiente',this)">Pendientes</a>
+      <a href="#" class="tab" onclick="filtro('pagado',this)">Pagados</a>
+    </div>
+    <div id="lista-pagos">
+      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Cargando...</div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
+    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
+    <a href="admin-pagos.html" class="bnav-item active"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
+  </div>
+</div>
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  let todosPagos = []
+  let nombresAlumnos = {}
+
+  async function cargarDatos() {
+    const { data: alumnos } = await supabase.from('alumnos').select('id,nombre').eq('activo',true).order('nombre')
+    alumnos?.forEach(a => nombresAlumnos[a.id] = a.nombre)
+
+    const sel = document.getElementById('sel-alumno')
+    sel.innerHTML = '<option value="">Seleccionar alumno...</option>'
+    alumnos?.forEach(a => sel.innerHTML += `<option value="${a.id}">${a.nombre}</option>`)
+
+    const { data: pagos } = await supabase.from('pagos').select('*').order('creado_en', { ascending: false })
+    todosPagos = pagos || []
+
+    const cobrado = todosPagos.filter(p => p.estado === 'pagado').reduce((s,p) => s + Number(p.monto), 0)
+    const pendienteMonto = todosPagos.filter(p => p.estado === 'pendiente').reduce((s,p) => s + Number(p.monto), 0)
+    document.getElementById('total-cobrado').textContent = '$' + cobrado.toLocaleString()
+    document.getElementById('total-pendiente').textContent = '$' + pendienteMonto.toLocaleString()
+    document.getElementById('num-pagados').textContent = todosPagos.filter(p => p.estado === 'pagado').length
+    document.getElementById('num-pendientes').textContent = todosPagos.filter(p => p.estado === 'pendiente').length
+
+    renderizar(todosPagos)
+  }
+
+  function renderizar(lista) {
+    const cont = document.getElementById('lista-pagos')
+    if (!lista.length) {
+      cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Sin registros.</div>'
+      return
+    }
+    cont.innerHTML = lista.map(p => `
+      <div class="student-row">
+        <div class="avatar" style="${p.estado==='pendiente' ? 'background:#FFF5F5;color:#D64545;' : ''}">${(nombresAlumnos[p.alumno_id] || '?').substring(0,2).toUpperCase()}</div>
+        <div style="flex:1;">
+          <div class="student-name">${nombresAlumnos[p.alumno_id] || 'Alumno'}</div>
+          <div class="student-sub">${p.mes || ''} · $${p.monto} MXN</div>
+        </div>
+        <span class="badge ${p.estado === 'pagado' ? 'green' : 'red'}">${p.estado === 'pagado' ? 'Pagado' : 'Pendiente'}</span>
+      </div>`).join('')
+  }
+
+  window.filtro = function(estado, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    el.classList.add('active')
+    renderizar(estado === 'todos' ? todosPagos : todosPagos.filter(p => p.estado === estado))
+  }
+
+  window.registrarPago = async function() {
+    const alumno_id = document.getElementById('sel-alumno').value
+    const mes = document.getElementById('mes-pago').value.trim()
+    const monto = document.getElementById('monto-pago').value
+    const estado = document.getElementById('estado-pago').value
+    const msg = document.getElementById('msg-pago')
+
+    if (!alumno_id || !mes) {
+      msg.textContent = 'Selecciona alumno y mes.'
+      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
+      msg.style.display = 'block'; return
+    }
+
+    const fecha_pago = estado === 'pagado' ? new Date().toISOString().split('T')[0] : null
+    const { error } = await supabase.from('pagos').insert({ alumno_id, mes, monto, estado, fecha_pago })
+
+    if (error) {
+      msg.textContent = 'Error al registrar. Intenta de nuevo.'
+      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
+    } else {
+      msg.textContent = '✅ Pago registrado correctamente.'
+      msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
+      cargarDatos()
+    }
+    msg.style.display = 'block'
+  }
+
+  cargarDatos()
+</script>
+</body>
+</html>

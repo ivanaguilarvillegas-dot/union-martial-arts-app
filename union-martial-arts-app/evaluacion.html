@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Evaluación</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+  <div class="nav-header">
+    <a href="home.html" class="back-btn">← Volver</a>
+    <h1 id="titulo-eval">Evaluación</h1>
+  </div>
+
+  <div class="screen-body">
+
+    <div id="sin-evaluacion" style="text-align:center; padding:40px 20px; display:none;">
+      <div style="font-size:40px; margin-bottom:12px;">📋</div>
+      <div style="font-size:15px; font-weight:500; color:var(--text-primary);">Sin evaluación aún</div>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:6px;">Tu instructor registrará la evaluación mensual próximamente.</div>
+    </div>
+
+    <div id="contenido-eval" style="display:none;">
+      <div class="card">
+        <div style="font-size:14px; font-weight:500; margin-bottom:16px;">🥋 <span id="cinturon-eval"></span> · Union Martial Arts</div>
+
+        <div class="eval-bar-wrap">
+          <div class="eval-label"><span>Técnica de golpe</span><span id="val-golpe">—</span></div>
+          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-golpe" style="width:0%"></div></div>
+        </div>
+        <div class="eval-bar-wrap">
+          <div class="eval-label"><span>Patadas</span><span id="val-patadas">—</span></div>
+          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-patadas" style="width:0%"></div></div>
+        </div>
+        <div class="eval-bar-wrap">
+          <div class="eval-label"><span>Defensa</span><span id="val-defensa">—</span></div>
+          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-defensa" style="width:0%"></div></div>
+        </div>
+        <div class="eval-bar-wrap">
+          <div class="eval-label"><span>Condición física</span><span id="val-fisica">—</span></div>
+          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-fisica" style="width:0%"></div></div>
+        </div>
+        <div class="eval-bar-wrap">
+          <div class="eval-label"><span>Disciplina</span><span id="val-disciplina">—</span></div>
+          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-disciplina" style="width:0%"></div></div>
+        </div>
+        <div class="eval-bar-wrap">
+          <div class="eval-label"><span>Trabajo en equipo</span><span id="val-equipo">—</span></div>
+          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-equipo" style="width:0%"></div></div>
+        </div>
+
+        <div id="comentario-box" style="margin-top:16px; padding-top:14px; border-top:0.5px solid var(--uma-blue-border); display:none;">
+          <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Comentario del instructor:</div>
+          <div id="comentario-texto" style="font-size:14px; line-height:1.6; color:var(--text-primary);"></div>
+        </div>
+      </div>
+
+      <div style="background:var(--uma-blue-light); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px;">
+        <div style="font-size:30px; font-weight:600; color:var(--uma-blue);" id="promedio-final">—</div>
+        <div style="font-size:13px; color:var(--uma-blue); margin-top:4px;">Promedio general del mes</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
+    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
+    <a href="pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="evaluacion.html" class="bnav-item active"><span class="bnav-icon">📊</span>Perfil</a>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  function setBar(id, barId, valor) {
+    document.getElementById(id).textContent = valor + ' / 10'
+    document.getElementById(barId).style.width = (valor * 10) + '%'
+  }
+
+  async function cargarDatos() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = 'index.html'; return }
+
+    const { data: padre } = await supabase
+      .from('padres')
+      .select('alumno_id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!padre) return
+
+    const { data: alumno } = await supabase
+      .from('alumnos')
+      .select('cinturon')
+      .eq('id', padre.alumno_id)
+      .single()
+
+    const { data: evals } = await supabase
+      .from('evaluaciones')
+      .select('*')
+      .eq('alumno_id', padre.alumno_id)
+      .order('creado_en', { ascending: false })
+      .limit(1)
+
+    if (!evals || evals.length === 0) {
+      document.getElementById('sin-evaluacion').style.display = 'block'
+      return
+    }
+
+    const ev = evals[0]
+    document.getElementById('contenido-eval').style.display = 'block'
+    document.getElementById('titulo-eval').textContent = 'Evaluación — ' + (ev.mes || '')
+    document.getElementById('cinturon-eval').textContent = 'Cinturón ' + (alumno?.cinturon || '')
+
+    setBar('val-golpe', 'bar-golpe', ev.tecnica_golpe)
+    setBar('val-patadas', 'bar-patadas', ev.patadas)
+    setBar('val-defensa', 'bar-defensa', ev.defensa)
+    setBar('val-fisica', 'bar-fisica', ev.condicion_fisica)
+    setBar('val-disciplina', 'bar-disciplina', ev.disciplina)
+    setBar('val-equipo', 'bar-equipo', ev.trabajo_equipo)
+
+    document.getElementById('promedio-final').textContent = (ev.promedio || '—') + ' / 10'
+
+    if (ev.comentario) {
+      document.getElementById('comentario-box').style.display = 'block'
+      document.getElementById('comentario-texto').textContent = '"' + ev.comentario + '"'
+    }
+  }
+
+  cargarDatos()
+</script>
+
+</body>
+</html>

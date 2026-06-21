@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Entrena en Casa</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+  <div class="nav-header">
+    <a href="home.html" class="back-btn">← Volver</a>
+    <h1>Entrena en Casa</h1>
+  </div>
+
+  <div class="screen-body">
+
+    <div class="tabs">
+      <a href="#" class="tab active" onclick="filtrar('principiante', this)">Principiante</a>
+      <a href="#" class="tab" onclick="filtrar('intermedio', this)">Intermedio</a>
+      <a href="#" class="tab" onclick="filtrar('avanzado', this)">Avanzado</a>
+    </div>
+
+    <!-- PRINCIPIANTE -->
+    <div class="nivel principiante">
+      <div class="section-title">Rutina para principiantes</div>
+
+      <div class="workout-row">
+        <div class="workout-icon">🤸</div>
+        <div style="flex:1;">
+          <div class="workout-title">Calentamiento básico</div>
+          <div class="workout-sub">10 min · Sin equipo · Estiramientos</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Calentamiento básico\n\n(En la versión real se abre el video)')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">💪</div>
+        <div style="flex:1;">
+          <div class="workout-title">Sentadillas + Planchas</div>
+          <div class="workout-sub">15 min · 3 series de 10</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Sentadillas + Planchas')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🥊</div>
+        <div style="flex:1;">
+          <div class="workout-title">Combinación de golpes</div>
+          <div class="workout-sub">10 min · Frente al espejo</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Combinación de golpes')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🏃</div>
+        <div style="flex:1;">
+          <div class="workout-title">Cardio — saltar la cuerda</div>
+          <div class="workout-sub">5 min · Ritmo moderado</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Saltar la cuerda')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🧘</div>
+        <div style="flex:1;">
+          <div class="workout-title">Enfriamiento y estiramiento</div>
+          <div class="workout-sub">5 min · Siempre al final</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Enfriamiento')">▶</div>
+      </div>
+    </div>
+
+    <!-- INTERMEDIO -->
+    <div class="nivel intermedio" style="display:none;">
+      <div class="section-title">Rutina intermedia</div>
+
+      <div class="workout-row">
+        <div class="workout-icon">🔥</div>
+        <div style="flex:1;">
+          <div class="workout-title">Calentamiento dinámico</div>
+          <div class="workout-sub">10 min · Movilidad articular</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Calentamiento dinámico')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🦵</div>
+        <div style="flex:1;">
+          <div class="workout-title">Patadas al aire — series</div>
+          <div class="workout-sub">20 min · 4 series</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Patadas al aire')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">💥</div>
+        <div style="flex:1;">
+          <div class="workout-title">Circuito de fuerza</div>
+          <div class="workout-sub">20 min · Burpees, lagartijas, sentadillas</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Circuito de fuerza')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🥊</div>
+        <div style="flex:1;">
+          <div class="workout-title">Combos avanzados</div>
+          <div class="workout-sub">15 min · Golpe + patada</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Combos avanzados')">▶</div>
+      </div>
+    </div>
+
+    <!-- AVANZADO -->
+    <div class="nivel avanzado" style="display:none;">
+      <div class="section-title">Rutina avanzada</div>
+
+      <div class="workout-row">
+        <div class="workout-icon">⚡</div>
+        <div style="flex:1;">
+          <div class="workout-title">HIIT Kickboxing</div>
+          <div class="workout-sub">30 min · Alta intensidad</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: HIIT Kickboxing')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🏆</div>
+        <div style="flex:1;">
+          <div class="workout-title">Simulación de combate</div>
+          <div class="workout-sub">15 min · Shadowboxing</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Simulación de combate')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">💪</div>
+        <div style="flex:1;">
+          <div class="workout-title">Fuerza explosiva</div>
+          <div class="workout-sub">20 min · Pliométricos</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Fuerza explosiva')">▶</div>
+      </div>
+      <div class="workout-row">
+        <div class="workout-icon">🧘</div>
+        <div style="flex:1;">
+          <div class="workout-title">Recuperación activa</div>
+          <div class="workout-sub">10 min · Foam roller + estiramientos</div>
+        </div>
+        <div class="play-btn" onclick="alert('Video: Recuperación activa')">▶</div>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--uma-blue-light); border-color:var(--uma-blue-border); text-align:center; margin-top:4px;">
+      <div style="font-size:13px; color:var(--uma-blue);">
+        💡 Entrena mínimo <strong>3 veces por semana</strong> en casa para complementar tus clases en Union Martial Arts.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
+    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
+    <a href="pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="#" class="bnav-item"><span class="bnav-icon">👤</span>Perfil</a>
+  </div>
+</div>
+
+<script>
+function filtrar(nivel, el) {
+  document.querySelectorAll('.nivel').forEach(d => d.style.display = 'none');
+  document.querySelector('.nivel.' + nivel).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+
+</body>
+</html>

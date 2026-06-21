@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Nuevo Alumno</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+  <div class="nav-header dark">
+    <a href="admin.html" class="back-btn">← Volver</a>
+    <h1>Agregar Nuevo Alumno</h1>
+  </div>
+  <div class="screen-body">
+
+    <div class="section-title">Datos del estudiante</div>
+    <div class="card">
+      <label>Nombre del estudiante</label>
+      <input type="text" id="nombre-alumno" placeholder="Nombre completo" />
+      <label>Fecha de nacimiento</label>
+      <input type="date" id="fecha-nac" />
+      <label>Cinturón / nivel actual</label>
+      <select id="cinturon">
+        <option value="Blanco">⬜ Blanco (principiante)</option>
+        <option value="Amarillo">🟡 Amarillo</option>
+        <option value="Naranja">🟠 Naranja</option>
+        <option value="Verde">🟢 Verde</option>
+        <option value="Azul">🔵 Azul</option>
+        <option value="Rojo">🔴 Rojo</option>
+        <option value="Negro">⬛ Negro</option>
+      </select>
+      <label>Grupo</label>
+      <select id="grupo">
+        <option value="Infantil (5-12 años)">Infantil (5 — 12 años)</option>
+        <option value="Juvenil (13-17 años)">Juvenil (13 — 17 años)</option>
+        <option value="Adultos (18+ años)">Adultos (18+ años)</option>
+      </select>
+      <label>Horario</label>
+      <select id="horario">
+        <option value="Lunes, Miércoles y Viernes 5:00 PM">Lun, Mié y Vie — 5:00 PM</option>
+        <option value="Lunes, Miércoles y Viernes 6:00 PM">Lun, Mié y Vie — 6:00 PM</option>
+        <option value="Lunes, Miércoles y Viernes 7:00 PM">Lun, Mié y Vie — 7:00 PM</option>
+        <option value="Martes y Jueves 6:00 PM">Martes y Jueves — 6:00 PM</option>
+      </select>
+    </div>
+
+    <div class="section-title">Datos del padre / tutor</div>
+    <div class="card">
+      <label>Nombre del padre o madre</label>
+      <input type="text" id="nombre-padre" placeholder="Nombre completo del tutor" />
+      <label>Correo electrónico (para acceso a la app)</label>
+      <input type="email" id="correo-padre" placeholder="correo@ejemplo.com" />
+      <label>Teléfono</label>
+      <input type="text" id="telefono-padre" placeholder="Ej: 656-123-4567" />
+    </div>
+
+    <div class="section-title">Pago inicial</div>
+    <div class="card">
+      <label>Mensualidad</label>
+      <select id="monto-mensual">
+        <option value="800">$800 MXN / mes</option>
+        <option value="700">$700 MXN / mes (beca)</option>
+        <option value="600">$600 MXN / mes (beca especial)</option>
+      </select>
+      <label>Mes de inicio</label>
+      <input type="text" id="mes-inicio" placeholder="Ej: Julio 2026" />
+      <label>Estado del primer pago</label>
+      <select id="estado-primer-pago">
+        <option value="pendiente">Pendiente</option>
+        <option value="pagado">Pagado</option>
+      </select>
+    </div>
+
+    <div id="msg-registro" style="font-size:13px; text-align:center; padding:12px; border-radius:8px; display:none; margin-bottom:10px;"></div>
+
+    <button class="btn-primary" onclick="registrar()">Registrar alumno</button>
+    <div style="font-size:12px; color:var(--text-secondary); text-align:center; margin-top:10px; margin-bottom:20px;">
+      El padre podrá entrar a la app con su correo.<br>Deberás asignarle una contraseña en Supabase → Authentication.
+    </div>
+
+  </div>
+  <div class="bottom-nav">
+    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
+    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
+    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  window.registrar = async function() {
+    const nombreAlumno = document.getElementById('nombre-alumno').value.trim()
+    const fechaNac = document.getElementById('fecha-nac').value
+    const cinturon = document.getElementById('cinturon').value
+    const grupo = document.getElementById('grupo').value
+    const horario = document.getElementById('horario').value
+    const nombrePadre = document.getElementById('nombre-padre').value.trim()
+    const correo = document.getElementById('correo-padre').value.trim()
+    const telefono = document.getElementById('telefono-padre').value.trim()
+    const monto = document.getElementById('monto-mensual').value
+    const mes = document.getElementById('mes-inicio').value.trim()
+    const estadoPago = document.getElementById('estado-primer-pago').value
+    const msg = document.getElementById('msg-registro')
+
+    if (!nombreAlumno || !nombrePadre || !correo) {
+      msg.textContent = 'Nombre del alumno, padre y correo son obligatorios.'
+      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
+      msg.style.display = 'block'; return
+    }
+
+    const { data: alumno, error: errAlumno } = await supabase
+      .from('alumnos')
+      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, cinturon, grupo, horario })
+      .select().single()
+
+    if (errAlumno) {
+      msg.textContent = 'Error al registrar alumno: ' + errAlumno.message
+      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
+      msg.style.display = 'block'; return
+    }
+
+    await supabase.from('padres').insert({
+      nombre: nombrePadre,
+      telefono,
+      alumno_id: alumno.id,
+      es_admin: false
+    })
+
+    if (mes) {
+      await supabase.from('pagos').insert({
+        alumno_id: alumno.id,
+        mes, monto, estado: estadoPago,
+        fecha_pago: estadoPago === 'pagado' ? new Date().toISOString().split('T')[0] : null
+      })
+    }
+
+    msg.textContent = '✅ Alumno registrado. Ve a Supabase → Authentication → Invite User y agrega el correo: ' + correo
+    msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
+    msg.style.display = 'block'
+
+    document.getElementById('nombre-alumno').value = ''
+    document.getElementById('nombre-padre').value = ''
+    document.getElementById('correo-padre').value = ''
+    document.getElementById('telefono-padre').value = ''
+    document.getElementById('mes-inicio').value = ''
+  }
+</script>
+</body>
+</html>

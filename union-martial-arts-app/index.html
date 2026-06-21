@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Login</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+  <div class="login-wrap">
+    <div style="font-size:58px; margin-bottom:10px;">🥋</div>
+    <div style="font-size:22px; font-weight:600; color:#fff; margin-bottom:4px;">Union Martial Arts</div>
+    <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:32px;">Ciudad Juárez, Chihuahua</div>
+
+    <input class="login-input" id="correo" type="email" placeholder="Correo electrónico" />
+    <input class="login-input" id="password" type="password" placeholder="Contraseña" />
+
+    <div id="error-msg" style="color:#ffb3b3; font-size:12px; text-align:center; margin-bottom:8px; display:none;"></div>
+
+    <button class="login-btn" onclick="entrar()">Entrar</button>
+
+    <p class="login-hint">Solo usuarios registrados por la academia.<br>Contacta a tu instructor para acceso.</p>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  window.entrar = async function() {
+    const correo = document.getElementById('correo').value.trim()
+    const password = document.getElementById('password').value.trim()
+    const errorMsg = document.getElementById('error-msg')
+
+    if (!correo || !password) {
+      errorMsg.textContent = 'Por favor escribe tu correo y contraseña.'
+      errorMsg.style.display = 'block'
+      return
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password })
+
+    if (error) {
+      errorMsg.textContent = 'Correo o contraseña incorrectos.'
+      errorMsg.style.display = 'block'
+      return
+    }
+
+    const user = data.user
+
+    const { data: padre } = await supabase
+      .from('padres')
+      .select('es_admin')
+      .eq('user_id', user.id)
+      .single()
+
+    if (padre?.es_admin) {
+      window.location.href = 'admin.html'
+    } else {
+      window.location.href = 'home.html'
+    }
+  }
+
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.entrar()
+  })
+</script>
+
+</body>
+</html>

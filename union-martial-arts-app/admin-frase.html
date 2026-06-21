@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Union Martial Arts — Frase / Mensaje</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+  <div class="nav-header dark">
+    <a href="admin.html" class="back-btn">← Volver</a>
+    <h1>Frase / Mensaje</h1>
+  </div>
+  <div class="screen-body">
+    <div class="section-title">Nueva frase motivacional</div>
+    <div class="card">
+      <label>Frase o mensaje</label>
+      <textarea id="texto" rows="3" placeholder='Ej: "La disciplina es el puente entre las metas y los logros."'
+        style="width:100%; border:0.5px solid var(--uma-blue-border); border-radius:10px; padding:12px; font-size:14px; font-family:inherit; resize:none;"
+        oninput="actualizarPreview()"></textarea>
+      <label>Autor (opcional)</label>
+      <input type="text" id="autor" placeholder="Ej: Jim Rohn" oninput="actualizarPreview()" />
+      <div id="msg-frase" style="font-size:13px; text-align:center; padding:10px; border-radius:8px; display:none; margin-top:8px;"></div>
+      <button class="btn-primary" onclick="publicar()">Publicar frase</button>
+    </div>
+
+    <div class="section-title">Vista previa</div>
+    <div class="frase-card">
+      <div class="frase-label">Union Martial Arts · Frase de la semana</div>
+      <div class="frase-quote" id="preview-texto">"Escribe tu frase arriba para ver la vista previa..."</div>
+      <div class="frase-autor" id="preview-autor">— Union Martial Arts</div>
+    </div>
+
+    <div class="section-title">Frases publicadas</div>
+    <div id="lista-frases">
+      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:16px;">Cargando...</div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
+    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
+    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
+    <a href="admin-frase.html" class="bnav-item active"><span class="bnav-icon">💬</span>Mensajes</a>
+  </div>
+</div>
+<script type="module">
+  import { supabase } from './js/supabase.js'
+
+  window.actualizarPreview = function() {
+    const texto = document.getElementById('texto').value.trim()
+    const autor = document.getElementById('autor').value.trim()
+    document.getElementById('preview-texto').textContent = texto ? '"' + texto + '"' : '"Escribe tu frase arriba para ver la vista previa..."'
+    document.getElementById('preview-autor').textContent = '— ' + (autor || 'Union Martial Arts')
+  }
+
+  async function cargarFrases() {
+    const { data } = await supabase.from('frases').select('*').order('creado_en', { ascending: false }).limit(5)
+    const cont = document.getElementById('lista-frases')
+    if (!data || data.length === 0) {
+      cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:16px;">Sin frases publicadas aún.</div>'
+      return
+    }
+    cont.innerHTML = data.map(f => `
+      <div class="card" style="margin-bottom:10px;">
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;">${f.fecha_envio || ''}</div>
+        <div style="font-size:13px; font-style:italic; color:var(--text-primary); line-height:1.5;">"${f.texto}"</div>
+        ${f.autor ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">— ${f.autor}</div>` : ''}
+        <div style="margin-top:8px;">
+          <span class="badge ${f.activa ? 'green' : 'gray'}">${f.activa ? 'Activa' : 'Inactiva'}</span>
+        </div>
+      </div>`).join('')
+  }
+
+  window.publicar = async function() {
+    const texto = document.getElementById('texto').value.trim()
+    const autor = document.getElementById('autor').value.trim()
+    const msg = document.getElementById('msg-frase')
+
+    if (!texto) {
+      msg.textContent = 'Escribe una frase antes de publicar.'
+      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
+      msg.style.display = 'block'; return
+    }
+
+    await supabase.from('frases').update({ activa: false }).eq('activa', true)
+
+    const { error } = await supabase.from('frases').insert({
+      texto, autor, activa: true,
+      fecha_envio: new Date().toISOString().split('T')[0]
+    })
+
+    if (error) {
+      msg.textContent = 'Error al publicar. Intenta de nuevo.'
+      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
+    } else {
+      msg.textContent = '✅ Frase publicada. Ya aparece en la app de los padres.'
+      msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
+      document.getElementById('texto').value = ''
+      document.getElementById('autor').value = ''
+      actualizarPreview()
+      cargarFrases()
+    }
+    msg.style.display = 'block'
+  }
+
+  cargarFrases()
+</script>
+</body>
+</html>
