@@ -59,8 +59,22 @@
     lucide.createIcons();
   }
   document.getElementById('faqs').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;open=open==+b.dataset.i?-1:+b.dataset.i;render();});
-  document.getElementById('enviar').addEventListener('click',()=>{document.getElementById('qform').style.display='none';document.getElementById('qok').style.display='block';lucide.createIcons();});
-  render();
+  document.getElementById('enviar').addEventListener('click', async () => {
+    const texto = document.querySelector('textarea').value.trim()
+    if (!texto) return
+    import('https://esm.sh/@supabase/supabase-js@2').then(async ({ createClient }) => {
+      const supabase = createClient(
+        'https://gdajgennlsuvndanpxiz.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+      )
+      const { data: { user } } = await supabase.auth.getUser()
+      await supabase.from('mensajes').insert({ de_user_id: user?.id, texto, para_admin: true })
+      document.getElementById('qform').style.display = 'none'
+      document.getElementById('qok').style.display = 'block'
+      lucide.createIcons()
+    })
+  })
+  render()
 </script>
 </body>
 </html>

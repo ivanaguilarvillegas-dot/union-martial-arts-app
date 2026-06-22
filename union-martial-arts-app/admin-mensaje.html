@@ -31,18 +31,94 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const tipos=document.getElementById('tipos');
-  function extra(t){
-    document.getElementById('extra').innerHTML = t==='privado'
-      ? `<label class="field"><span class="lab">Destinatario</span><select><option>Familia Reyes (Mateo)</option><option>Familia Luna (Sofía)</option><option>Familia Ortiz (Diego)</option></select></label>`
-      : t==='frase'
-      ? `<div class="notice" style="background:var(--soft);color:var(--primary);border:none;"><i data-lucide="info"></i> Aparecerá en el inicio y en Meditación de los padres.</div>`
-      : '';
-    lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Cargar mensajes recibidos de padres
+  async function cargarMensajes() {
+    const { data } = await supabase.from('mensajes').select('*, padres(nombre)').eq('para_admin', true).order('creado_en', { ascending: false }).limit(20)
+    const cont = document.getElementById('ok')
+    const lista = document.createElement('div')
+    lista.style.marginTop = '16px'
+    if (data?.length) {
+      lista.innerHTML = '<div class="label" style="margin-bottom:10px">Mensajes de padres</div>' +
+        data.map(m => `
+          <div class="card mb12">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${new Date(m.creado_en).toLocaleDateString('es-MX')} · ${m.padres?.nombre || 'Padre'}</div>
+            <div style="font-size:13.5px;line-height:1.5;">${m.texto}</div>
+          </div>`).join('')
+    } else {
+      lista.innerHTML = '<div class="label" style="margin-bottom:10px">Mensajes de padres</div><div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin mensajes aún.</div>'
+    }
+    document.querySelector('.body').appendChild(lista)
   }
-  tipos.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;[...tipos.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');extra(b.dataset.t);});
-  document.getElementById('send').addEventListener('click',()=>{document.getElementById('form').style.display='none';document.getElementById('ok').style.display='block';lucide.createIcons();});
-  lucide.createIcons();
+
+  // Cargar citas pendientes
+  async function cargarCitas() {
+    const { data } = await supabase.from('citas').select('*').eq('estado', 'pendiente').order('creado_en', { ascending: false })
+    if (!data?.length) return
+    const lista = document.createElement('div')
+    lista.style.marginTop = '16px'
+    lista.innerHTML = '<div class="label" style="margin-bottom:10px">Citas pendientes</div>' +
+      data.map(c => `
+        <div class="card mb12">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${c.fecha_preferida || '—'} ${c.hora_preferida || ''}</div>
+          <div style="font-size:13.5px;font-weight:600;">${c.motivo || 'Sin motivo'}</div>
+          <span class="badge amber" style="margin-top:8px;">Pendiente</span>
+        </div>`).join('')
+    document.querySelector('.body').appendChild(lista)
+  }
+
+  const tipos = document.getElementById('tipos')
+  function extra(t) {
+    document.getElementById('extra').innerHTML = t==='privado'
+      ? `<label class="field"><span class="lab">Destinatario</span><select id="dest-select"><option value="">Cargando...</option></select></label>`
+      : t==='frase'
+      ? `<div class="notice" style="background:var(--soft);color:var(--primary);border:none;"><i data-lucide="info"></i> Aparecerá en el inicio de los padres.</div>`
+      : ''
+    if (t === 'privado') cargarPadres()
+    lucide.createIcons()
+  }
+
+  async function cargarPadres() {
+    const { data } = await supabase.from('padres').select('user_id, nombre').eq('es_admin', false)
+    const sel = document.getElementById('dest-select')
+    if (sel && data) sel.innerHTML = data.map(p => `<option value="${p.user_id}">${p.nombre}</option>`).join('')
+  }
+
+  tipos.addEventListener('click', e => {
+    const b = e.target.closest('[data-t]'); if (!b) return
+    ;[...tipos.children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+    extra(b.dataset.t)
+  })
+
+  document.getElementById('send').addEventListener('click', async () => {
+    const texto = document.querySelector('textarea').value.trim()
+    const tipo = document.querySelector('#tipos .on')?.dataset.t || 'aviso'
+    if (!texto) return
+
+    if (tipo === 'frase') {
+      await supabase.from('frases').update({ activa: false }).eq('activa', true)
+      await supabase.from('frases').insert({ texto, activa: true, fecha_envio: new Date().toISOString().split('T')[0] })
+    } else {
+      const para_admin = false
+      const dest = document.getElementById('dest-select')?.value || null
+      await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin, destinatario_id: dest })
+    }
+
+    document.getElementById('form').style.display = 'none'
+    document.getElementById('ok').style.display = 'block'
+    lucide.createIcons()
+  })
+
+  cargarMensajes()
+  cargarCitas()
+  lucide.createIcons()
 </script>
 </body></html>

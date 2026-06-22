@@ -41,12 +41,25 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  document.getElementById('solicitar').addEventListener('click',()=>{
-    document.getElementById('form').style.display='none';
-    document.getElementById('ok').style.display='block'; lucide.createIcons();
-  });
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  document.getElementById('solicitar').addEventListener('click', async () => {
+    const motivo = document.querySelector('select').value
+    const fecha = document.querySelectorAll('input')[0].value
+    const hora = document.querySelectorAll('input')[1].value
+    await supabase.from('citas').insert({ padre_user_id: user.id, motivo, fecha_preferida: fecha || null, hora_preferida: hora || null })
+    document.getElementById('form').style.display='none'
+    document.getElementById('ok').style.display='block'
+    lucide.createIcons()
+  })
+  lucide.createIcons()
 </script>
 </body>
 </html>
