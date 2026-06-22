@@ -33,10 +33,42 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const tipos=document.getElementById('tipos');
-  tipos.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;[...tipos.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');});
-  document.getElementById('save').addEventListener('click',()=>{document.getElementById('form').style.display='none';document.getElementById('ok').style.display='block';lucide.createIcons();});
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const tipos = document.getElementById('tipos')
+  tipos.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return
+    ;[...tipos.children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+  })
+
+  // Cambiar inputs a tipo date/time/text separados
+  const inputs = document.querySelectorAll('#form input')
+
+  document.getElementById('save').addEventListener('click', async () => {
+    const tipo = document.querySelector('#tipos .on')?.textContent || 'Torneo'
+    const titulo = inputs[0].value.trim()
+    const fecha = inputs[1].value.trim()
+    const hora = inputs[2].value.trim()
+    const lugar = inputs[3].value.trim()
+    const descripcion = document.querySelector('#form textarea').value.trim()
+
+    if (!titulo || !fecha) { alert('Escribe el nombre y la fecha del evento.'); return }
+
+    const { error } = await supabase.from('eventos').insert({ tipo, titulo, fecha, hora: hora || null, lugar: lugar || null, descripcion: descripcion || null })
+    if (error) { alert('Error al guardar: ' + error.message); return }
+
+    document.getElementById('form').style.display = 'none'
+    document.getElementById('ok').style.display = 'block'
+    lucide.createIcons()
+  })
+
+  lucide.createIcons()
 </script>
 </body></html>

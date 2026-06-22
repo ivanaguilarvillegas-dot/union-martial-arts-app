@@ -13,24 +13,92 @@
     <div class="grow"><div class="title">Pagos</div></div>
   </div>
   <div class="body">
-    <div class="card mb12" style="border:1.5px solid var(--primary);">
-      <div style="font-size:12px;color:var(--muted);">Mensualidad Junio 2025 · Programa Básico</div>
-      <div style="font-family:var(--font-display);font-size:32px;font-weight:800;margin:6px 0;">$1,550 <span style="font-size:15px;color:var(--muted);">MXN</span></div>
-      <div style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--red-600);margin-bottom:12px;font-weight:600;"><i data-lucide="alert-circle" class="lucide" style="width:15px;height:15px"></i> Pago pendiente</div>
-      <a class="btn primary block" href="#"><i data-lucide="credit-card"></i> Pagar con Mercado Pago</a>
-    </div>
 
-    <div class="card soft mb18">
-      <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">Métodos de pago</div>
-      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
-        <span style="display:inline-flex;align-items:center;gap:9px;"><i data-lucide="smartphone" class="lucide" style="width:16px;height:16px"></i> Mercado Pago (tarjeta, SPEI, OXXO)</span>
-        <span style="display:inline-flex;align-items:center;gap:9px;"><i data-lucide="banknote" class="lucide" style="width:16px;height:16px"></i> Efectivo en academia</span>
-        <div style="display:flex;gap:9px;align-items:flex-start;">
-          <span style="margin-top:1px;"><i data-lucide="building-2" class="lucide" style="width:16px;height:16px"></i></span>
-          <div><div style="font-weight:600;">Transferencia bancaria — Santander</div>
-            <div style="color:var(--muted);margin-top:2px;">Iván Aguilar Villegas</div>
-            <div style="color:var(--muted);letter-spacing:.02em;">Tarjeta: 5579 0701 5682 7050</div></div>
+    <!-- Tarjeta de pago actual -->
+    <div class="card mb12" style="border:1.5px solid var(--primary);" id="pago-card">
+      <div style="font-size:12px;color:var(--muted);" id="pago-concepto">Cargando…</div>
+      <div style="font-family:var(--font-display);font-size:32px;font-weight:800;margin:6px 0;" id="pago-monto">$— <span style="font-size:15px;color:var(--muted);">MXN</span></div>
+      <div style="display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-bottom:14px;font-weight:600;" id="pago-estado">
+        <i data-lucide="loader" style="width:15px;height:15px"></i> Cargando…
+      </div>
+
+      <!-- Opciones de pago (solo si hay pago pendiente) -->
+      <div id="pago-opciones" style="display:none;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;">¿Cómo vas a pagar?</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+
+          <label style="display:flex;align-items:center;gap:10px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;" id="lbl-efectivo">
+            <input type="radio" name="metodo" value="efectivo" style="accent-color:var(--primary);flex-shrink:0;" />
+            <span style="flex:1;">
+              <span style="font-size:13.5px;font-weight:600;display:block;">💵 Efectivo en academia</span>
+              <span style="font-size:11.5px;color:var(--muted);">Sin comisión adicional</span>
+            </span>
+            <span style="font-size:13px;font-weight:700;" id="total-efectivo">$—</span>
+          </label>
+
+          <label style="display:flex;align-items:center;gap:10px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;" id="lbl-transferencia">
+            <input type="radio" name="metodo" value="transferencia" style="accent-color:var(--primary);flex-shrink:0;" />
+            <span style="flex:1;">
+              <span style="font-size:13.5px;font-weight:600;display:block;">🏦 Transferencia bancaria</span>
+              <span style="font-size:11.5px;color:var(--muted);">Santander · 5579 0701 5682 7050 · Sin comisión</span>
+            </span>
+            <span style="font-size:13px;font-weight:700;color:var(--primary);" id="total-transferencia">$—</span>
+          </label>
+
+          <label style="display:flex;align-items:center;gap:10px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;" id="lbl-mp">
+            <input type="radio" name="metodo" value="mercadopago" style="accent-color:var(--primary);flex-shrink:0;" />
+            <span style="flex:1;">
+              <span style="font-size:13.5px;font-weight:600;display:block;">💳 Mercado Pago</span>
+              <span style="font-size:11.5px;color:var(--muted);">Tarjeta, SPEI u OXXO · comisión aplica por MP</span>
+            </span>
+            <span style="font-size:13px;font-weight:700;color:var(--primary);" id="total-mp">$—</span>
+          </label>
+
         </div>
+
+        <!-- Desglose dinámico -->
+        <div id="desglose" style="display:none;margin-top:12px;padding:10px 12px;background:var(--soft);border-radius:var(--r-md);font-size:13px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="color:var(--muted);">Mensualidad</span>
+            <span id="d-base">$—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;" id="d-com-row">
+            <span style="color:var(--muted);">Comisión (3.50%)</span>
+            <span id="d-com" style="color:var(--primary);">+$—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid var(--border);padding-top:7px;margin-top:4px;">
+            <span>Total a pagar</span>
+            <span id="d-total">$—</span>
+          </div>
+        </div>
+
+        <!-- Botón pagar / enviar comprobante -->
+        <button class="btn primary block mt12" id="btn-pagar" disabled>
+          <i data-lucide="credit-card"></i> Selecciona una forma de pago
+        </button>
+
+        <!-- Área comprobante (transferencia / efectivo) -->
+        <div id="comprobante-area" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Sube tu comprobante de pago (foto o captura):</div>
+          <label style="display:flex;align-items:center;gap:8px;padding:11px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;">
+            <i data-lucide="upload" style="width:16px;height:16px;color:var(--primary);flex-shrink:0;"></i>
+            <span style="font-size:13px;color:var(--primary);font-weight:600;" id="comp-label">Subir comprobante</span>
+            <input type="file" accept="image/*,application/pdf" hidden id="comp-file" />
+          </label>
+          <button class="btn primary block mt10" id="btn-enviar-comp" style="display:none;">
+            <i data-lucide="send"></i> Enviar comprobante al instructor
+          </button>
+        </div>
+
+        <!-- Confirmación enviada -->
+        <div id="comp-ok" style="display:none;" class="notice green mt10">
+          <i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto.
+        </div>
+
+        <!-- Ver recibo (pago ya confirmado) -->
+        <a id="btn-recibo" href="recibo.html" style="display:none;" class="btn secondary block mt10">
+          <i data-lucide="file-text"></i> Ver mi recibo de pago
+        </a>
       </div>
     </div>
 
@@ -52,18 +120,179 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const H = [
-    ['Mensualidad Junio 2025','$1,550 MXN','pend'],
-    ['Mensualidad Mayo 2025','$1,550 MXN · Pagado 3 may','ok'],
-    ['Mensualidad Abril 2025','$1,550 MXN · Pagado 2 abr','ok'],
-    ['Inscripción','$500 MXN · Pagado 15 mar','ok'],
-  ];
-  document.getElementById('hist').innerHTML = H.map(([t,s,st])=>`
-    <div class="row"><span class="ic ${st==='ok'?'green':'red'}"><i data-lucide="${st==='ok'?'check':'clock'}"></i></span>
-      <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
-      <span class="trail"><span class="badge ${st==='ok'?'green':'red'}">${st==='ok'?'Pagado':'Pendiente'}</span></span></div>`).join('');
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const { data: padre } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+  const alumnoId = padre?.alumno_id
+
+  let montoBase = 0
+  let pagoId = null
+  let metodoPago = ''
+
+  const COM = 0.035 // 3.50%
+
+  function fmt(n) { return '$' + Math.round(n).toLocaleString('es-MX') }
+
+  function actualizarDesglose(metodo) {
+    metodoPago = metodo
+    const conComision = metodo === 'mercadopago'
+    const comision = conComision ? montoBase * COM : 0
+    const total = montoBase + comision
+
+    document.getElementById('d-base').textContent = fmt(montoBase)
+    document.getElementById('d-com').textContent = '+' + fmt(comision)
+    document.getElementById('d-com-row').style.display = conComision ? 'flex' : 'none'
+    document.getElementById('d-total').textContent = fmt(total)
+    document.getElementById('desglose').style.display = 'block'
+
+    const btn = document.getElementById('btn-pagar')
+    btn.disabled = false
+
+    if (metodo === 'efectivo') {
+      btn.innerHTML = '<i data-lucide="banknote"></i> Avisar que pagaré en efectivo'
+      document.getElementById('comprobante-area').style.display = 'none'
+    } else if (metodo === 'transferencia') {
+      btn.innerHTML = '<i data-lucide="building-2"></i> Ya transferí — subir comprobante'
+      document.getElementById('comprobante-area').style.display = 'block'
+    } else if (metodo === 'mercadopago') {
+      btn.innerHTML = '<i data-lucide="credit-card"></i> Pagar ' + fmt(total) + ' con Mercado Pago'
+      document.getElementById('comprobante-area').style.display = 'none'
+    }
+
+    // Resaltar opción seleccionada
+    ;['efectivo','transferencia','mp'].forEach(id => {
+      document.getElementById('lbl-' + id).style.borderColor = 'var(--border)'
+    })
+    const lblId = metodo === 'mercadopago' ? 'lbl-mp' : 'lbl-' + metodo
+    document.getElementById(lblId).style.borderColor = 'var(--primary)'
+
+    lucide.createIcons()
+  }
+
+  if (alumnoId) {
+    const { data: pagos } = await supabase.from('pagos').select('*').eq('alumno_id', alumnoId).order('creado_en', { ascending: false })
+
+    if (pagos?.length) {
+      const ultimo = pagos[0]
+      const pendiente = ultimo.estado === 'pendiente'
+      montoBase = Number(ultimo.monto) || 0
+      pagoId = ultimo.id
+
+      document.getElementById('pago-concepto').textContent = `Mensualidad ${ultimo.mes || '—'} · Programa Básico`
+      document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
+
+      const estadoEl = document.getElementById('pago-estado')
+      estadoEl.style.color = pendiente ? 'var(--red-600)' : 'var(--green-600)'
+      estadoEl.innerHTML = pendiente
+        ? `<i data-lucide="alert-circle" style="width:15px;height:15px"></i> Pago pendiente`
+        : `<i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago al día`
+
+      // Mostrar totales en cada opción
+      document.getElementById('total-efectivo').textContent = fmt(montoBase)
+      document.getElementById('total-transferencia').textContent = fmt(montoBase)
+      document.getElementById('total-mp').textContent = fmt(montoBase + montoBase * COM)
+
+      if (pendiente) {
+        document.getElementById('pago-opciones').style.display = 'block'
+      } else {
+        // Pago ya confirmado — mostrar botón de recibo
+        const btnRecibo = document.getElementById('btn-recibo')
+        btnRecibo.href = 'recibo.html?id=' + ultimo.id
+        btnRecibo.style.display = 'flex'
+      }
+
+      // Historial
+      document.getElementById('hist').innerHTML = pagos.map(p => {
+        const ok = p.estado === 'pagado'
+        return `<div class="card mb8" style="padding:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="ic ${ok?'green':'red'}" style="flex-shrink:0;"><i data-lucide="${ok?'check':'clock'}"></i></span>
+            <span class="grow">
+              <span class="t" style="display:block;font-size:13.5px;font-weight:600;">Mensualidad ${p.mes||'—'}</span>
+              <span class="s">$${Number(p.monto).toLocaleString()} MXN${p.fecha_pago ? ' · '+p.fecha_pago : ''}${p.forma_pago ? ' · '+p.forma_pago : ''}</span>
+            </span>
+            <span class="badge ${ok?'green':'red'}" style="flex-shrink:0;">${ok?'Pagado':'Pendiente'}</span>
+          </div>
+          ${ok ? `<a href="recibo.html?id=${p.id}" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:var(--primary);font-weight:600;text-decoration:none;">
+            <i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</a>` : ''}
+        </div>`
+      }).join('')
+    } else {
+      document.getElementById('pago-concepto').textContent = 'Sin pagos registrados'
+      document.getElementById('pago-monto').innerHTML = '$— <span style="font-size:15px;color:var(--muted);">MXN</span>'
+      document.getElementById('pago-estado').innerHTML = '<i data-lucide="info" style="width:15px;height:15px"></i> Sin registros'
+      document.getElementById('hist').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Sin registros de pago.</div>'
+    }
+  }
+
+  // Detectar selección de método
+  document.querySelectorAll('input[name="metodo"]').forEach(radio => {
+    radio.addEventListener('change', e => actualizarDesglose(e.target.value))
+  })
+
+  // Subir comprobante
+  document.getElementById('comp-file').addEventListener('change', e => {
+    if (e.target.files[0]) {
+      document.getElementById('comp-label').textContent = '✅ ' + e.target.files[0].name
+      document.getElementById('btn-enviar-comp').style.display = 'block'
+    }
+  })
+
+  // Botón principal
+  document.getElementById('btn-pagar').addEventListener('click', async () => {
+    if (metodoPago === 'efectivo') {
+      // Notificar al instructor que pagará en efectivo
+      await supabase.from('mensajes').insert({
+        de_user_id: user.id,
+        texto: `${padre?.nombre || 'Un padre'} avisó que pagará en efectivo en la academia.`,
+        para_admin: true
+      })
+      document.getElementById('btn-pagar').innerHTML = '<i data-lucide="check"></i> Aviso enviado al instructor'
+      document.getElementById('btn-pagar').disabled = true
+      lucide.createIcons()
+    } else if (metodoPago === 'mercadopago') {
+      alert('Mercado Pago se activará pronto. Por ahora usa transferencia o efectivo.')
+    }
+  })
+
+  // Enviar comprobante de transferencia
+  document.getElementById('btn-enviar-comp').addEventListener('click', async () => {
+    const file = document.getElementById('comp-file').files[0]
+    if (!file) return
+
+    const nombre = Date.now() + '_comp_' + file.name
+    const { error } = await supabase.storage.from('documentos').upload('comprobantes/' + nombre, file)
+    if (error) { alert('Error al subir: ' + error.message); return }
+
+    const url = supabase.storage.from('documentos').getPublicUrl('comprobantes/' + nombre).data.publicUrl
+
+    // Notificar al instructor
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: `${padre?.nombre || 'Un padre'} envió comprobante de pago (${metodoPago}). Ver: ${url}`,
+      para_admin: true
+    })
+
+    // Marcar pago como "en revisión"
+    if (pagoId) {
+      await supabase.from('pagos').update({ forma_pago: metodoPago, comprobante_url: url }).eq('id', pagoId)
+    }
+
+    document.getElementById('comprobante-area').style.display = 'none'
+    document.getElementById('btn-pagar').style.display = 'none'
+    document.getElementById('comp-ok').style.display = 'flex'
+    lucide.createIcons()
+  })
+
+  lucide.createIcons()
 </script>
 </body>
 </html>

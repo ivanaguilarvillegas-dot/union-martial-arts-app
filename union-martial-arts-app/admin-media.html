@@ -20,15 +20,62 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const V=['Calentamiento básico','Sentadillas + Planchas','Combinación de golpes'];
-  const A=['Respiración 4-7-8','Visualización del campeón','Sueño reparador'];
-  const mediaRow=(t,ic)=>`<div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
-    <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
-    <span style="flex:1;font-size:13.5px;">${t}</span>
-    <span style="font-size:11px;color:var(--green-text);font-weight:600;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="check" style="width:12px;height:12px"></i> Subido</span></div>`;
-  document.getElementById('vids').innerHTML = V.map(t=>mediaRow(t,'video')).join('').replace(/border-bottom:1px solid var\(--ink-100\);"(?=[^]*$)/, m=>m);
-  document.getElementById('auds').innerHTML = A.map(t=>mediaRow(t,'headphones')).join('');
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const mediaRow = (t, ic, url) => `
+    <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
+      <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
+      <span style="flex:1;font-size:13.5px;">${t}</span>
+      ${url ? `<a href="${url}" target="_blank" style="font-size:11px;color:var(--green-text);font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i data-lucide="external-link" style="width:12px;height:12px"></i> Ver</a>` : ''}
+    </div>`
+
+  async function cargar() {
+    // Listar videos
+    const { data: vids } = await supabase.storage.from('media').list('videos', { limit: 20 })
+    const vidEl = document.getElementById('vids')
+    if (vids?.length) {
+      vidEl.innerHTML = vids.map(v => {
+        const url = supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
+        return mediaRow(v.name, 'video', url)
+      }).join('')
+    } else {
+      vidEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;">Sin videos subidos aún.</div>'
+    }
+
+    // Listar audios
+    const { data: auds } = await supabase.storage.from('media').list('audios', { limit: 20 })
+    const audEl = document.getElementById('auds')
+    if (auds?.length) {
+      audEl.innerHTML = auds.map(a => {
+        const url = supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
+        return mediaRow(a.name, 'headphones', url)
+      }).join('')
+    } else {
+      audEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;">Sin audios subidos aún.</div>'
+    }
+    lucide.createIcons()
+  }
+
+  // Subir archivos
+  document.querySelectorAll('input[data-up]').forEach(input => {
+    input.addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return
+      const tipo = input.dataset.up
+      const carpeta = tipo === 'video' ? 'videos' : 'audios'
+      const nombre = Date.now() + '_' + file.name
+      const { error } = await supabase.storage.from('media').upload(carpeta + '/' + nombre, file)
+      if (!error) { alert('✅ Archivo subido correctamente'); cargar() }
+      else alert('Error al subir: ' + error.message)
+    })
+  })
+
+  cargar()
 </script>
 </body></html>

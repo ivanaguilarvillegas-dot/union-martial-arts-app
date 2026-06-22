@@ -25,35 +25,71 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const E = [
-    {t:'Torneo Estatal de Cinturones',f:'28 jun · 9:00 AM',lugar:'Gimnasio Municipal',tipo:'Torneo',tone:'amber',icon:'trophy'},
-    {t:'Examen de cambio de cinta',f:'5 jul · 5:00 PM',lugar:'Academia UNION',tipo:'Evaluación',tone:'blue',icon:'award'},
-    {t:'Clase especial Kobudo',f:'12 jul · 11:00 AM',lugar:'Academia UNION',tipo:'Actividad',tone:'green',icon:'sparkles'},
-    {t:'Convivencia familiar',f:'20 jul · 1:00 PM',lugar:'Parque Central',tipo:'Actividad',tone:'green',icon:'users'},
-  ];
-  const bg={amber:'var(--amber-bg)',green:'var(--green-bg)',blue:'var(--soft)'};
-  const fg={amber:'var(--amber-600)',green:'var(--green-600)',blue:'var(--primary)'};
-  function render(){
-    document.getElementById('list').innerHTML = E.map((e,i)=>`
-      <div class="card">
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const bg={Torneo:'var(--amber-bg)',Evaluación:'var(--soft)',Actividad:'var(--green-bg)',default:'var(--soft)'}
+  const fg={Torneo:'var(--amber-600)',Evaluación:'var(--primary)',Actividad:'var(--green-600)',default:'var(--primary)'}
+  const icon={Torneo:'trophy',Evaluación:'award',Actividad:'sparkles',default:'calendar'}
+
+  let confirmados = new Set()
+  let eventos = []
+
+  async function cargar() {
+    const hoy = new Date().toISOString().split('T')[0]
+    const { data } = await supabase.from('eventos').select('*').gte('fecha', hoy).order('fecha')
+    eventos = data || []
+
+    const { data: confs } = await supabase.from('confirmaciones_torneo').select('evento_id').eq('padre_user_id', user.id)
+    confirmados = new Set(confs?.map(c => c.evento_id) || [])
+    render()
+  }
+
+  function render() {
+    const cont = document.getElementById('list')
+    if (!eventos.length) {
+      cont.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin eventos próximos.</div>'
+      lucide.createIcons(); return
+    }
+    cont.innerHTML = eventos.map(e => {
+      const tipo = e.tipo?.replace(/[^a-zA-ZáéíóúÁÉÍÓÚ ]/g,'').trim() || 'Actividad'
+      const conf = confirmados.has(e.id)
+      return `<div class="card">
         <div style="display:flex;gap:12px;align-items:flex-start;">
-          <span style="width:42px;height:42px;border-radius:var(--r-md);flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:${bg[e.tone]};color:${fg[e.tone]};"><i data-lucide="${e.icon}" style="width:21px;height:21px"></i></span>
+          <span style="width:42px;height:42px;border-radius:var(--r-md);flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:${bg[tipo]||bg.default};color:${fg[tipo]||fg.default};">
+            <i data-lucide="${icon[tipo]||icon.default}" style="width:21px;height:21px"></i></span>
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:700;">${e.t}</div>
-            <div style="font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;"><i data-lucide="calendar" style="width:12px;height:12px"></i> ${e.f}</div>
-            <div style="font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px;"><i data-lucide="map-pin" style="width:12px;height:12px"></i> ${e.lugar}</div>
-            <div style="margin-top:8px;"><span class="badge ${e.tone}">${e.tipo}</span></div>
+            <div style="font-size:14px;font-weight:700;">${e.titulo}</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;"><i data-lucide="calendar" style="width:12px;height:12px"></i> ${e.fecha}${e.hora ? ' · '+e.hora : ''}</div>
+            ${e.lugar ? `<div style="font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px;"><i data-lucide="map-pin" style="width:12px;height:12px"></i> ${e.lugar}</div>` : ''}
+            ${e.descripcion ? `<div style="font-size:12.5px;color:var(--muted);margin-top:4px;">${e.descripcion}</div>` : ''}
+            <div style="margin-top:8px;"><span class="badge amber">${tipo}</span></div>
           </div>
         </div>
-        <div style="margin-top:12px;">${e.conf
+        <div style="margin-top:12px;">${conf
           ? `<div class="notice green" style="margin:0;"><i data-lucide="check-circle"></i> Asistencia confirmada · se notificó al instructor</div>`
-          : `<button class="btn secondary block" data-i="${i}"><i data-lucide="calendar-check"></i> Confirmar asistencia</button>`}</div>
-      </div>`).join('');
-    lucide.createIcons();
+          : `<button class="btn secondary block" data-id="${e.id}"><i data-lucide="calendar-check"></i> Confirmar asistencia</button>`}
+        </div>
+      </div>`
+    }).join('')
+    lucide.createIcons()
   }
-  document.getElementById('list').addEventListener('click',ev=>{const b=ev.target.closest('[data-i]');if(!b)return;E[b.dataset.i].conf=true;render();});
-  render();
+
+  document.getElementById('list').addEventListener('click', async ev => {
+    const b = ev.target.closest('[data-id]'); if (!b) return
+    const evento_id = b.dataset.id
+    await supabase.from('confirmaciones_torneo').insert({ evento_id, padre_user_id: user.id })
+    confirmados.add(evento_id)
+    render()
+  })
+
+  cargar()
 </script>
 </body>
 </html>

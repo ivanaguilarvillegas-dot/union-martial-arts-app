@@ -1,136 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Nuevo Alumno</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nuevo alumno — Union Martial Arts</title>
+<link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-  <div class="nav-header dark">
-    <a href="admin.html" class="back-btn">← Volver</a>
-    <h1>Agregar Nuevo Alumno</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Agregar alumno</div></div>
   </div>
-  <div class="screen-body">
+  <div class="body">
+    <div id="form">
+      <div class="card mb14"><div class="stack">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Datos del alumno</div>
 
-    <div class="section-title">Datos del estudiante</div>
-    <div class="card">
-      <label>Nombre del estudiante</label>
-      <input type="text" id="nombre-alumno" placeholder="Nombre completo" />
-      <label>Fecha de nacimiento</label>
-      <input type="date" id="fecha-nac" />
-      <label>Cinturón / nivel actual</label>
-      <select id="cinturon">
-        <option value="Blanco">⬜ Blanco (principiante)</option>
-        <option value="Amarillo">🟡 Amarillo</option>
-        <option value="Naranja">🟠 Naranja</option>
-        <option value="Verde">🟢 Verde</option>
-        <option value="Azul">🔵 Azul</option>
-        <option value="Rojo">🔴 Rojo</option>
-        <option value="Negro">⬛ Negro</option>
-      </select>
-      <label>Grupo</label>
-      <select id="grupo">
-        <option value="Infantil (5-12 años)">Infantil (5 — 12 años)</option>
-        <option value="Juvenil (13-17 años)">Juvenil (13 — 17 años)</option>
-        <option value="Adultos (18+ años)">Adultos (18+ años)</option>
-      </select>
-      <label>Horario</label>
-      <select id="horario">
-        <option value="Lunes, Miércoles y Viernes 5:00 PM">Lun, Mié y Vie — 5:00 PM</option>
-        <option value="Lunes, Miércoles y Viernes 6:00 PM">Lun, Mié y Vie — 6:00 PM</option>
-        <option value="Lunes, Miércoles y Viernes 7:00 PM">Lun, Mié y Vie — 7:00 PM</option>
-        <option value="Martes y Jueves 6:00 PM">Martes y Jueves — 6:00 PM</option>
-      </select>
+        <label class="field"><span class="lab">Nombre completo</span>
+          <input id="nombre-alumno" placeholder="Nombre del alumno" /></label>
+
+        <label class="field"><span class="lab">Fecha de nacimiento</span>
+          <input type="date" id="fecha-nac" /></label>
+
+        <label class="field"><span class="lab">Cinta / nivel actual</span>
+          <select id="cinta">
+            <option value="Blanca">Blanca (principiante)</option>
+            <option value="Amarilla">Amarilla</option>
+            <option value="Anaranjada">Anaranjada</option>
+            <option value="Morada">Morada</option>
+            <option value="Azul">Azul</option>
+            <option value="Verde">Verde</option>
+            <option value="Café I">Café I</option>
+            <option value="Café II">Café II</option>
+            <option value="Café III">Café III</option>
+            <option value="Roja">Roja</option>
+            <option value="Negra">Negra</option>
+          </select></label>
+
+        <label class="field"><span class="lab">Grupo</span>
+          <select id="grupo">
+            <option value="Infantil (5-12 años)">Infantil (5 — 12 años)</option>
+            <option value="Juvenil (13-17 años)">Juvenil (13 — 17 años)</option>
+            <option value="Adultos (18+ años)">Adultos (18+ años)</option>
+          </select></label>
+
+        <label class="field"><span class="lab">Horario</span>
+          <select id="horario">
+            <option value="Lun, Mié y Vie · 5:00 PM">Lun, Mié y Vie — 5:00 PM</option>
+            <option value="Lun, Mié y Vie · 6:00 PM">Lun, Mié y Vie — 6:00 PM</option>
+            <option value="Lun, Mié y Vie · 7:00 PM">Lun, Mié y Vie — 7:00 PM</option>
+            <option value="Mar y Jue · 6:00 PM">Mar y Jue — 6:00 PM</option>
+            <option value="Sábado · 10:00 AM">Sábado — 10:00 AM (Club Cinta Negra)</option>
+          </select></label>
+      </div></div>
+
+      <div class="card mb14"><div class="stack">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Datos del padre / tutor</div>
+
+        <label class="field"><span class="lab">Nombre del padre o madre</span>
+          <input id="nombre-padre" placeholder="Nombre completo del tutor" /></label>
+
+        <label class="field"><span class="lab">Correo electrónico</span>
+          <input type="email" id="correo-padre" placeholder="correo@ejemplo.com" /></label>
+
+        <label class="field"><span class="lab">Teléfono</span>
+          <input type="tel" id="telefono-padre" placeholder="(656) 000-0000" /></label>
+
+        <label class="field"><span class="lab">Parentesco</span>
+          <select id="parentesco">
+            <option value="Madre">Madre</option>
+            <option value="Padre">Padre</option>
+            <option value="Tutor">Tutor/a</option>
+            <option value="Abuelo/a">Abuelo/a</option>
+          </select></label>
+      </div></div>
+
+      <div class="card mb14"><div class="stack">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Primer pago</div>
+
+        <label class="field"><span class="lab">Mensualidad (MXN)</span>
+          <input type="number" id="monto" placeholder="1550" value="1550" inputmode="numeric" /></label>
+
+        <label class="field"><span class="lab">Mes de inicio</span>
+          <input id="mes-inicio" placeholder="Ej: Julio 2026" /></label>
+
+        <label class="field"><span class="lab">Estado del primer pago</span>
+          <select id="estado-pago">
+            <option value="pendiente">Pendiente</option>
+            <option value="pagado">Pagado</option>
+          </select></label>
+      </div></div>
+
+      <div id="msg" class="notice" style="display:none;margin-bottom:12px;"></div>
+      <button class="btn primary block" id="registrar"><i data-lucide="user-plus"></i> Registrar alumno</button>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.6;padding-bottom:8px;">
+        Después de registrar, ve a<br><strong>Supabase → Authentication → Invite user</strong><br>y agrega el correo del padre para que pueda entrar a la app.
+      </div>
     </div>
 
-    <div class="section-title">Datos del padre / tutor</div>
-    <div class="card">
-      <label>Nombre del padre o madre</label>
-      <input type="text" id="nombre-padre" placeholder="Nombre completo del tutor" />
-      <label>Correo electrónico (para acceso a la app)</label>
-      <input type="email" id="correo-padre" placeholder="correo@ejemplo.com" />
-      <label>Teléfono</label>
-      <input type="text" id="telefono-padre" placeholder="Ej: 656-123-4567" />
+    <div id="ok" style="display:none;">
+      <div class="card green center">
+        <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="user-check" style="width:26px;height:26px"></i></div>
+        <div style="font-size:15px;font-weight:700;color:var(--green-text);" id="ok-nombre">Alumno registrado</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;" id="ok-instruccion"></div>
+      </div>
+      <button class="btn secondary block mt14" onclick="location.reload()"><i data-lucide="plus"></i> Agregar otro alumno</button>
+      <a class="btn primary block mt10" href="admin-alumnos.html"><i data-lucide="users"></i> Ver lista de alumnos</a>
     </div>
-
-    <div class="section-title">Pago inicial</div>
-    <div class="card">
-      <label>Mensualidad</label>
-      <select id="monto-mensual">
-        <option value="800">$800 MXN / mes</option>
-        <option value="700">$700 MXN / mes (beca)</option>
-        <option value="600">$600 MXN / mes (beca especial)</option>
-      </select>
-      <label>Mes de inicio</label>
-      <input type="text" id="mes-inicio" placeholder="Ej: Julio 2026" />
-      <label>Estado del primer pago</label>
-      <select id="estado-primer-pago">
-        <option value="pendiente">Pendiente</option>
-        <option value="pagado">Pagado</option>
-      </select>
-    </div>
-
-    <div id="msg-registro" style="font-size:13px; text-align:center; padding:12px; border-radius:8px; display:none; margin-bottom:10px;"></div>
-
-    <button class="btn-primary" onclick="registrar()">Registrar alumno</button>
-    <div style="font-size:12px; color:var(--text-secondary); text-align:center; margin-top:10px; margin-bottom:20px;">
-      El padre podrá entrar a la app con su correo.<br>Deberás asignarle una contraseña en Supabase → Authentication.
-    </div>
-
   </div>
-  <div class="bottom-nav">
-    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
-    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
-    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
-  </div>
-</div>
 
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a class="on" href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
-  import { supabase } from './js/supabase.js'
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
 
-  window.registrar = async function() {
+  const msg = document.getElementById('msg')
+  function error(txt) {
+    msg.textContent = txt
+    msg.style.display = 'flex'
+    msg.className = 'notice red mb12'
+    lucide.createIcons()
+  }
+
+  document.getElementById('registrar').addEventListener('click', async () => {
     const nombreAlumno = document.getElementById('nombre-alumno').value.trim()
-    const fechaNac = document.getElementById('fecha-nac').value
-    const cinturon = document.getElementById('cinturon').value
-    const grupo = document.getElementById('grupo').value
-    const horario = document.getElementById('horario').value
+    const fechaNac    = document.getElementById('fecha-nac').value
+    const cinta       = document.getElementById('cinta').value
+    const grupo       = document.getElementById('grupo').value
+    const horario     = document.getElementById('horario').value
     const nombrePadre = document.getElementById('nombre-padre').value.trim()
-    const correo = document.getElementById('correo-padre').value.trim()
-    const telefono = document.getElementById('telefono-padre').value.trim()
-    const monto = document.getElementById('monto-mensual').value
-    const mes = document.getElementById('mes-inicio').value.trim()
-    const estadoPago = document.getElementById('estado-primer-pago').value
-    const msg = document.getElementById('msg-registro')
+    const correo      = document.getElementById('correo-padre').value.trim()
+    const telefono    = document.getElementById('telefono-padre').value.trim()
+    const parentesco  = document.getElementById('parentesco').value
+    const monto       = parseFloat(document.getElementById('monto').value) || 0
+    const mes         = document.getElementById('mes-inicio').value.trim()
+    const estadoPago  = document.getElementById('estado-pago').value
 
-    if (!nombreAlumno || !nombrePadre || !correo) {
-      msg.textContent = 'Nombre del alumno, padre y correo son obligatorios.'
-      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-      msg.style.display = 'block'; return
-    }
+    if (!nombreAlumno) { error('Escribe el nombre del alumno.'); return }
+    if (!nombrePadre)  { error('Escribe el nombre del padre/tutor.'); return }
+    if (!correo)       { error('El correo es obligatorio para acceso a la app.'); return }
 
+    // 1. Insertar alumno
     const { data: alumno, error: errAlumno } = await supabase
       .from('alumnos')
-      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, cinturon, grupo, horario })
+      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, cinta, grupo, horario })
       .select().single()
 
-    if (errAlumno) {
-      msg.textContent = 'Error al registrar alumno: ' + errAlumno.message
-      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-      msg.style.display = 'block'; return
-    }
+    if (errAlumno) { error('Error al registrar alumno: ' + errAlumno.message); return }
 
-    await supabase.from('padres').insert({
+    // 2. Insertar padre
+    const { error: errPadre } = await supabase.from('padres').insert({
       nombre: nombrePadre,
+      correo,
       telefono,
+      parentesco,
       alumno_id: alumno.id,
       es_admin: false
     })
+    if (errPadre) { error('Error al registrar padre: ' + errPadre.message); return }
 
-    if (mes) {
+    // 3. Registrar primer pago si hay mes
+    if (mes && monto) {
       await supabase.from('pagos').insert({
         alumno_id: alumno.id,
         mes, monto, estado: estadoPago,
@@ -138,16 +182,15 @@
       })
     }
 
-    msg.textContent = '✅ Alumno registrado. Ve a Supabase → Authentication → Invite User y agrega el correo: ' + correo
-    msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
-    msg.style.display = 'block'
+    // Mostrar confirmación
+    document.getElementById('form').style.display = 'none'
+    document.getElementById('ok').style.display = 'block'
+    document.getElementById('ok-nombre').textContent = '✅ ' + nombreAlumno + ' registrado'
+    document.getElementById('ok-instruccion').textContent = 'Ve a Supabase → Authentication → Invite user y agrega: ' + correo
+    lucide.createIcons()
+  })
 
-    document.getElementById('nombre-alumno').value = ''
-    document.getElementById('nombre-padre').value = ''
-    document.getElementById('correo-padre').value = ''
-    document.getElementById('telefono-padre').value = ''
-    document.getElementById('mes-inicio').value = ''
-  }
+  lucide.createIcons()
 </script>
 </body>
 </html>

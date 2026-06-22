@@ -49,31 +49,61 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const HIST = [
-    ['Viernes 20 jun','18:02 · Clase','calendar-check','green'],
-    ['Sábado 14 jun','11:05 · Torneo','trophy','amber'],
-    ['Miércoles 11 jun','18:05 · Clase','calendar-check','green'],
-    ['Sábado 7 jun','10:30 · Actividad extra','sparkles','green'],
-  ];
-  document.getElementById('hist').innerHTML = HIST.map(([d,s,ic,to])=>`
-    <div class="row"><span class="ic ${to}"><i data-lucide="${ic}"></i></span>
-      <span class="grow"><span class="t">${d}</span><span class="s">${s}</span></span>
-      <span class="trail"><span class="badge green">Confirmado</span></span></div>`).join('');
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
 
-  const tipos = document.getElementById('tipos');
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const { data: padre } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).single()
+  const alumnoId = padre?.alumno_id
+
+  // Tipo de asistencia
+  const tipos = document.getElementById('tipos')
   tipos.addEventListener('click', e => {
-    const b = e.target.closest('[data-tipo]'); if(!b) return;
-    [...tipos.children].forEach(c=>c.classList.remove('on')); b.classList.add('on');
-    const clase = b.dataset.tipo === 'clase';
-    document.getElementById('horaWrap').innerHTML = clase
-      ? `<label class="field"><span class="lab">Hora de entrada (horario de Mateo)</span><select><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option><option>6:15 PM (Mar)</option><option>11:00 AM (Sáb)</option></select></label>`
-      : `<label class="field"><span class="lab">Hora de entrada</span><input type="time" /></label>`;
-  });
-  document.getElementById('confirm').addEventListener('click', ()=>{
-    document.getElementById('msg').style.display='flex'; lucide.createIcons();
-  });
-  lucide.createIcons();
+    const b = e.target.closest('[data-tipo]'); if(!b) return
+    ;[...tipos.children].forEach(c=>c.classList.remove('on')); b.classList.add('on')
+  })
+
+  // Confirmar llegada
+  document.getElementById('confirm').addEventListener('click', async () => {
+    if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
+    const hoy = new Date().toISOString().split('T')[0]
+    const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'clase'
+
+    // Verificar si ya hay checkin hoy
+    const { data: existe } = await supabase.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).single()
+    if (existe) {
+      document.getElementById('msg').style.display = 'flex'
+      document.getElementById('msg').innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste la llegada de hoy.</span>'
+      lucide.createIcons(); return
+    }
+
+    await supabase.from('checkins').insert({ alumno_id: alumnoId, fecha: hoy, tipo })
+    document.getElementById('msg').style.display = 'flex'
+    lucide.createIcons()
+    cargarHistorial()
+  })
+
+  // Historial
+  async function cargarHistorial() {
+    if (!alumnoId) return
+    const { data } = await supabase.from('checkins').select('*').eq('alumno_id', alumnoId).order('fecha', { ascending: false }).limit(10)
+    const cont = document.getElementById('hist')
+    if (!data || !data.length) { cont.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Sin registros aún.</div>'; return }
+    cont.innerHTML = data.map(c => `
+      <div class="row"><span class="ic green"><i data-lucide="calendar-check"></i></span>
+        <span class="grow"><span class="t">${c.fecha}</span><span class="s">${c.tipo || 'Clase'}</span></span>
+        <span class="trail"><span class="badge green">Registrado</span></span></div>`).join('')
+    lucide.createIcons()
+  }
+
+  cargarHistorial()
+  lucide.createIcons()
 </script>
 </body>
 </html>

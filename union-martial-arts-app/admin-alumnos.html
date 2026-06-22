@@ -19,12 +19,34 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const A = [['MR','Mateo Reyes','Cinta Azul · Programa Básico'],['SL','Sofía Luna','Cinta Verde · Anual UNION'],['DO','Diego Ortiz','Cinta Amarilla · Programa Básico'],['VC','Valeria Cruz','Cinta Anaranjada · Club Cinta Negra'],['IM','Iker Méndez','Cinta Blanca · Programa Básico'],['RG','Renata Gil','Cinta Morada · Anual UNION']];
-  document.getElementById('list').innerHTML = A.map(([ini,n,s])=>`
-    <a class="row" href="admin-evaluacion.html"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-      <span class="grow"><span class="t">${n}</span><span class="s">${s}</span></span>
-      <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('');
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const { data: alumnos, count } = await supabase.from('alumnos').select('*', { count: 'exact' }).order('nombre')
+
+  document.querySelector('.sub').textContent = (count || 0) + ' activos'
+
+  const list = document.getElementById('list')
+  if (!alumnos?.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin alumnos registrados.</div>'
+  } else {
+    list.innerHTML = alumnos.map(a => {
+      const ini = a.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+      return `<a class="row" href="admin-evaluacion.html">
+        <span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
+        <span class="grow">
+          <span class="t">${a.nombre}</span>
+          <span class="s">${a.cinta ? 'Cinta ' + a.cinta : 'Sin cinta'}${a.grupo ? ' · ' + a.grupo : ''}</span>
+        </span>
+        <span class="trail"><i data-lucide="chevron-right"></i></span></a>`
+    }).join('')
+  }
+  lucide.createIcons()
 </script>
 </body></html>

@@ -54,27 +54,78 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const campo = (l,v)=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ink-100);"><span style="font-size:13px;color:var(--muted);">${l}</span><span style="font-size:13px;font-weight:600;text-align:right;">${v}</span></div>`;
-  const last = s => s.replace(/border-bottom:1px solid var\(--ink-100\);">(?=[^<]*<\/span><span[^<]*<\/span><\/div>$)/,'">');
-  document.getElementById('tutor').innerHTML = campo('Nombre','Laura Reyes')+campo('Teléfono','(656) 123.4567')+campo('Correo','laura.reyes@correo.com')+campo('Parentesco','Madre');
-  document.getElementById('emerg').innerHTML = campo('Nombre','Carlos Reyes')+campo('Teléfono','(656) 987.6543')+campo('Parentesco','Padre');
-  document.getElementById('autoriz').innerHTML = campo('Nombre','Ana Martínez')+campo('Teléfono','(656) 555.2020')+campo('Parentesco','Tía');
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
 
-  let ok=false;
-  document.getElementById('acepta').addEventListener('click',()=>{
-    ok=!ok; const chk=document.querySelector('#acepta .chk');
-    chk.style.background = ok?'var(--primary)':'#fff';
-    chk.style.border = ok?'none':'1.5px solid var(--border-input)';
-    chk.innerHTML = ok?'<i data-lucide="check" style="width:15px;height:15px"></i>':'';
-    document.getElementById('firmar').disabled=!ok; lucide.createIcons();
-  });
-  document.getElementById('firmar').addEventListener('click',()=>{
-    if(document.getElementById('firmar').disabled)return;
-    document.getElementById('regForm').style.display='none';
-    document.getElementById('firmado').style.display='flex'; lucide.createIcons();
-  });
-  lucide.createIcons();
+  const campo = (l, v) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
+    <span style="font-size:13px;color:var(--muted);">${l}</span>
+    <span style="font-size:13px;font-weight:600;text-align:right;">${v || '—'}</span></div>`
+
+  // Cargar datos reales del padre y alumno
+  const { data: padre } = await supabase.from('padres').select('*, alumnos(*)').eq('user_id', user.id).single()
+  const alumno = padre?.alumnos
+
+  if (alumno) {
+    const ini = alumno.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+    document.querySelector('.avatar').textContent = ini
+    document.querySelector('[style*="font-size:16px"]').textContent = alumno.nombre || '—'
+    document.querySelector('[style*="font-size:12px"][style*="color:var(--muted)"]').textContent = 'Alumno' + (alumno.edad ? ' · ' + alumno.edad + ' años' : '') + (alumno.cinta ? ' · Cinta ' + alumno.cinta : '')
+  }
+
+  if (padre) {
+    document.getElementById('tutor').innerHTML =
+      campo('Nombre', padre.nombre) +
+      campo('Teléfono', padre.telefono) +
+      campo('Correo', padre.correo || user.email) +
+      campo('Parentesco', padre.parentesco)
+
+    document.getElementById('emerg').innerHTML =
+      campo('Nombre', padre.contacto_emergencia_nombre) +
+      campo('Teléfono', padre.contacto_emergencia_tel) +
+      campo('Parentesco', padre.contacto_emergencia_parentesco)
+
+    document.getElementById('autoriz').innerHTML =
+      campo('Nombre', padre.autorizado_nombre) +
+      campo('Teléfono', padre.autorizado_tel) +
+      campo('Parentesco', padre.autorizado_parentesco)
+  }
+
+  // Verificar si ya firmó reglamento
+  const { data: firma } = await supabase.from('firmas_reglamento').select('firmado_en, nombre_firma').eq('padre_user_id', user.id).single()
+  if (firma) {
+    document.getElementById('regForm').style.display = 'none'
+    document.getElementById('firmado').style.display = 'flex'
+    document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado · ${firma.nombre_firma || padre?.nombre || ''} · ${firma.firmado_en?.split('T')[0] || ''}`
+    lucide.createIcons()
+  }
+
+  let aceptado = false
+  document.getElementById('acepta').addEventListener('click', () => {
+    aceptado = !aceptado
+    const chk = document.querySelector('#acepta .chk')
+    chk.style.background = aceptado ? 'var(--primary)' : '#fff'
+    chk.style.border = aceptado ? 'none' : '1.5px solid var(--border-input)'
+    chk.innerHTML = aceptado ? '<i data-lucide="check" style="width:15px;height:15px"></i>' : ''
+    document.getElementById('firmar').disabled = !aceptado
+    lucide.createIcons()
+  })
+
+  document.getElementById('firmar').addEventListener('click', async () => {
+    if (!aceptado) return
+    await supabase.from('firmas_reglamento').upsert({ padre_user_id: user.id, nombre_firma: padre?.nombre, firmado_en: new Date().toISOString() }, { onConflict: 'padre_user_id' })
+    document.getElementById('regForm').style.display = 'none'
+    document.getElementById('firmado').style.display = 'flex'
+    document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado · ${padre?.nombre || ''} · ${new Date().toLocaleDateString('es-MX')}`
+    lucide.createIcons()
+  })
+
+  lucide.createIcons()
 </script>
 </body>
 </html>

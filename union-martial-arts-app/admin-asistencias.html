@@ -18,18 +18,66 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const R = [['MR','Mateo Reyes','Torneo · 6:00 PM','trophy',false],['SL','Sofía Luna','Clase · 6:00 PM','dumbbell',true],['DO','Diego Ortiz','Clase · 6:00 PM','dumbbell',false],['VC','Valeria Cruz','Actividad extra · 6:00 PM','sparkles',true],['IM','Iker Méndez','Clase · 6:00 PM','dumbbell',false],['RG','Renata Gil','Clase · 6:00 PM','dumbbell',false]];
-  const st = R.map(r=>r[4]);
-  function render(){
-    document.getElementById('list').innerHTML = R.map((r,i)=>`
-      <div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${r[0]}</span>
-        <span class="grow"><span class="t">${r[1]}</span><span class="s" style="display:inline-flex;align-items:center;gap:5px;"><i data-lucide="${r[3]}" style="width:12px;height:12px"></i> ${r[2]}</span></span>
-        <span class="trail"><button data-i="${i}" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${st[i]?'var(--green-600)':'var(--sunken)'};color:${st[i]?'#fff':'var(--muted)'};"><i data-lucide="${st[i]?'check':'plus'}" style="width:14px;height:14px"></i> ${st[i]?'Asistió':'Marcar'}</button></span></div>`).join('');
-    document.getElementById('cnt').textContent = st.filter(Boolean).length+'/6 confirmados';
-    lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const hoy = new Date().toISOString().split('T')[0]
+  let alumnos = []
+  let marcados = new Set()
+
+  async function cargar() {
+    const { data } = await supabase.from('alumnos').select('id, nombre').order('nombre')
+    alumnos = data || []
+
+    // Checkins de hoy registrados por padres
+    const { data: checks } = await supabase.from('checkins').select('alumno_id').eq('fecha', hoy)
+    marcados = new Set(checks?.map(c => c.alumno_id) || [])
+    render()
   }
-  document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;st[b.dataset.i]=!st[b.dataset.i];render();});
-  render();
+
+  function iniciales(nombre) {
+    return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+  }
+
+  function render() {
+    document.getElementById('list').innerHTML = alumnos.map((a, i) => {
+      const ok = marcados.has(a.id)
+      return `<div class="row">
+        <span class="avatar" style="width:34px;height:34px;font-size:12px;">${iniciales(a.nombre)}</span>
+        <span class="grow"><span class="t">${a.nombre}</span><span class="s">Clase de hoy</span></span>
+        <span class="trail"><button data-id="${a.id}" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${ok?'var(--green-600)':'var(--sunken)'};color:${ok?'#fff':'var(--muted)'};">
+          <i data-lucide="${ok?'check':'plus'}" style="width:14px;height:14px"></i> ${ok?'Asistió':'Marcar'}
+        </button></span>
+      </div>`
+    }).join('')
+    document.getElementById('cnt').textContent = marcados.size + '/' + alumnos.length + ' confirmados'
+    lucide.createIcons()
+  }
+
+  document.getElementById('list').addEventListener('click', async e => {
+    const b = e.target.closest('[data-id]'); if (!b) return
+    const id = b.dataset.id
+    if (marcados.has(id)) {
+      await supabase.from('checkins').delete().eq('alumno_id', id).eq('fecha', hoy)
+      marcados.delete(id)
+    } else {
+      await supabase.from('checkins').upsert({ alumno_id: id, fecha: hoy }, { onConflict: 'alumno_id,fecha' })
+      marcados.add(id)
+    }
+    render()
+  })
+
+  document.querySelector('.btn.primary').addEventListener('click', () => {
+    alert('✅ Asistencias guardadas para hoy: ' + hoy)
+    window.location.href = 'admin.html'
+  })
+
+  cargar()
 </script>
 </body></html>

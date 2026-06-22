@@ -48,23 +48,57 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const DAILY = [['Actitud',1],['Esfuerzo',1],['Técnica',1],['Participación',1],['Trabajo en equipo',1],['Uniforme completo',1],['Higiene y limpieza',1],['Respeto',1],['Llegó a tiempo',0]];
-  document.getElementById('dailyList').innerHTML = DAILY.map(([t,ok])=>`
-    <div class="checkitem ${ok?'done':''}" style="cursor:default;"><span class="box"><i data-lucide="check"></i></span><span class="txt">${t}</span></div>`).join('');
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
 
-  const MENSUAL = [['Técnica de golpe',8],['Patadas',7],['Defensa',8],['Condición física',6],['Disciplina',9],['Coordinación',8]];
-  document.getElementById('progList').innerHTML = MENSUAL.map(([t,v])=>`
-    <div class="prog"><div class="head"><span>${t}</span><b>${v} / 10</b></div>
-      <div class="track"><div class="fill" style="width:${v*10}%"></div></div></div>`).join('');
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
 
+  const { data: padre } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).single()
+  const alumnoId = padre?.alumno_id
+
+  // Cargar evaluación mensual más reciente
+  if (alumnoId) {
+    const { data: ev } = await supabase.from('evaluaciones').select('*').eq('alumno_id', alumnoId).order('creado_en', { ascending: false }).limit(1).single()
+    if (ev) {
+      const campos = [
+        ['Técnica de golpe', ev.tecnica_golpe],
+        ['Patadas', ev.patadas],
+        ['Defensa', ev.defensa],
+        ['Condición física', ev.condicion_fisica],
+        ['Disciplina', ev.disciplina],
+        ['Coordinación', ev.coordinacion],
+      ].filter(([,v]) => v != null)
+
+      document.getElementById('progList').innerHTML = campos.map(([t,v])=>`
+        <div class="prog"><div class="head"><span>${t}</span><b>${v} / 10</b></div>
+          <div class="track"><div class="fill" style="width:${v*10}%"></div></div></div>`).join('')
+
+      if (campos.length) {
+        const prom = (campos.reduce((s,[,v])=>s+v,0)/campos.length).toFixed(1)
+        document.querySelector('#mensual .card.soft .font-display, #mensual .card.soft div')?.remove()
+        document.querySelector('#mensual .card.soft').innerHTML = `
+          <div style="font-family:var(--font-display);font-size:34px;font-weight:800;color:var(--primary);line-height:1;text-align:center;">${prom} <span style="font-size:18px;opacity:.5;">/ 10</span></div>
+          <div style="font-size:13px;color:var(--primary);margin-top:6px;font-weight:600;text-align:center;">Promedio general del mes</div>`
+      }
+      if (ev.comentarios) {
+        document.querySelector('#diaria .card div[style*="italic"]').textContent = '"' + ev.comentarios + '"'
+      }
+    }
+  }
+
+  // Tabs
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('[data-tab]').forEach(c=>c.classList.remove('on')); b.classList.add('on');
-    const d = b.dataset.tab==='diaria';
-    document.getElementById('diaria').style.display = d?'block':'none';
-    document.getElementById('mensual').style.display = d?'none':'block';
-  }));
-  lucide.createIcons();
+    document.querySelectorAll('[data-tab]').forEach(c=>c.classList.remove('on')); b.classList.add('on')
+    const d = b.dataset.tab==='diaria'
+    document.getElementById('diaria').style.display = d?'block':'none'
+    document.getElementById('mensual').style.display = d?'none':'block'
+  }))
+  lucide.createIcons()
 </script>
 </body>
 </html>

@@ -41,39 +41,88 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const PROD = [
-    {n:'Uniforme oficial UNION',d:'Dobok con logo bordado',p:'1,200'},
-    {n:'Playera deportiva',d:'Dry-fit del equipo',p:'350'},
-    {n:'Guantes de box',d:'12 oz · varios colores',p:'650'},
-  ];
-  function card(x,i){
-    return `<div class="ed">
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  let PROD = []
+
+  async function cargar() {
+    const { data } = await supabase.from('productos').select('*').order('creado_en')
+    PROD = data || []
+    render()
+  }
+
+  function card(x, i) {
+    return `<div class="ed" data-id="${x.id||''}">
       <div class="top">
-        <label class="ph" data-i="${i}">
-          ${x.img?`<img src="${x.img}" alt="" />`:`<i data-lucide="image-plus" class="big"></i>`}
+        <label class="ph">
+          ${x.imagen_url ? `<img src="${x.imagen_url}" alt="" />` : `<i data-lucide="image-plus" class="big"></i>`}
           <span class="cam"><i data-lucide="camera"></i></span>
           <input type="file" accept="image/*" hidden data-file="${i}" />
         </label>
         <div class="fields">
-          <input value="${x.n}" placeholder="Nombre del producto" />
-          <input value="${x.d}" placeholder="Descripción" />
-          <input value="${x.p}" placeholder="Precio (MXN)" inputmode="numeric" />
+          <input class="f-nombre" value="${x.nombre||''}" placeholder="Nombre del producto" />
+          <input class="f-desc" value="${x.descripcion||''}" placeholder="Descripción" />
+          <input class="f-precio" value="${x.precio||''}" placeholder="Precio (MXN)" inputmode="numeric" />
         </div>
       </div>
-    </div>`;
+    </div>`
   }
-  function render(){
-    document.getElementById('list').innerHTML = PROD.map(card).join('');
-    lucide.createIcons();
+
+  function render() {
+    document.getElementById('list').innerHTML = PROD.map(card).join('')
+    lucide.createIcons()
   }
-  document.getElementById('add').addEventListener('click',()=>{PROD.push({n:'',d:'',p:''});render();});
-  document.getElementById('list').addEventListener('change',e=>{
-    const f=e.target.closest('[data-file]'); if(!f||!f.files[0])return;
-    const r=new FileReader(); const i=f.dataset.file;
-    r.onload=()=>{PROD[i].img=r.result;render();}; r.readAsDataURL(f.files[0]);
-  });
-  render();
+
+  // Subir imagen de producto
+  document.getElementById('list').addEventListener('change', async e => {
+    const f = e.target.closest('[data-file]'); if (!f || !f.files[0]) return
+    const file = f.files[0]
+    const i = parseInt(f.dataset.file)
+    const nombre = Date.now() + '_' + file.name
+    const { error } = await supabase.storage.from('tienda').upload(nombre, file)
+    if (!error) {
+      const url = supabase.storage.from('tienda').getPublicUrl(nombre).data.publicUrl
+      PROD[i].imagen_url = url
+      render()
+    }
+  })
+
+  // Agregar producto
+  document.getElementById('add').addEventListener('click', () => {
+    PROD.push({ nombre: '', descripcion: '', precio: '', imagen_url: '' })
+    render()
+  })
+
+  // Guardar tienda
+  document.querySelector('[onclick]').removeAttribute('onclick')
+  document.querySelector('.btn.primary').addEventListener('click', async () => {
+    const cards = document.querySelectorAll('.ed')
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i]
+      const id = card.dataset.id
+      const nombre = card.querySelector('.f-nombre').value.trim()
+      const descripcion = card.querySelector('.f-desc').value.trim()
+      const precio = parseFloat(card.querySelector('.f-precio').value) || 0
+      const imagen_url = PROD[i]?.imagen_url || null
+      if (!nombre) continue
+      if (id) {
+        await supabase.from('productos').update({ nombre, descripcion, precio, imagen_url }).eq('id', id)
+      } else {
+        await supabase.from('productos').insert({ nombre, descripcion, precio, imagen_url })
+      }
+    }
+    alert('✅ Tienda guardada correctamente')
+    cargar()
+  })
+
+  cargar()
 </script>
 </body>
 </html>

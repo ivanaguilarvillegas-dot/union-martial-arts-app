@@ -27,10 +27,49 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const BELTS = ['Blanca','Amarilla','Anaranjada','Morada','Azul','Verde','Café I','Café II','Café III','Roja','Roja-Negra','Negra','Negra I grado','Negra II grado','Negra III grado','Negra IV grado','Negra V grado'];
-  document.getElementById('nv').innerHTML = BELTS.map(b=>`<option>Cinta ${b}</option>`).join('');
-  document.getElementById('save').addEventListener('click',()=>{document.getElementById('form').style.display='none';document.getElementById('ok').style.display='block';lucide.createIcons();});
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const BELTS = ['Blanca','Amarilla','Anaranjada','Morada','Azul','Verde','Café I','Café II','Café III','Roja','Roja-Negra','Negra','Negra I grado','Negra II grado','Negra III grado','Negra IV grado','Negra V grado']
+  document.getElementById('nv').innerHTML = BELTS.map(b => `<option value="${b}">Cinta ${b}</option>`).join('')
+
+  // Cargar alumnos reales
+  const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta').order('nombre')
+  const sel = document.getElementById('al')
+  if (alumnos?.length) {
+    sel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
+  }
+
+  document.getElementById('save').addEventListener('click', async () => {
+    const alumno_id = sel.value
+    const nueva_cinta = document.getElementById('nv').value
+    const fecha = document.querySelector('input[type=date]').value || new Date().toISOString().split('T')[0]
+
+    if (!alumno_id) { alert('Selecciona un alumno.'); return }
+
+    // Actualizar cinta del alumno
+    const { error } = await supabase.from('alumnos').update({ cinta: nueva_cinta }).eq('id', alumno_id)
+    if (error) { alert('Error: ' + error.message); return }
+
+    // Registrar en mensajes para notificar a los padres
+    const alumno = alumnos.find(a => a.id === alumno_id)
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: `¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${nueva_cinta} el ${fecha}. ¡Sigue adelante! 🥋`,
+      para_admin: false
+    })
+
+    document.getElementById('form').style.display = 'none'
+    document.getElementById('ok').style.display = 'block'
+    lucide.createIcons()
+  })
+
+  lucide.createIcons()
 </script>
 </body></html>

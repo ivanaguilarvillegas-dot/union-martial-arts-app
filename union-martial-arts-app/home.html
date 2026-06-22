@@ -12,45 +12,36 @@
     <div class="statusbar dark"><span>9:41</span><span class="right">
       <i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
     <div class="appbar blue">
-      <div class="grow"><div class="hello">Bienvenida,</div><div class="name">Familia Reyes</div></div>
-      <a class="iconbtn-dark" href="index.html" aria-label="Cerrar sesión"><i data-lucide="log-out"></i></a>
+      <div class="grow"><div class="hello">Bienvenida,</div><div class="name" id="nombre-familia">—</div></div>
+      <a class="iconbtn-dark" id="btn-logout" href="#" aria-label="Cerrar sesión"><i data-lucide="log-out"></i></a>
     </div>
   </div>
   <div class="body">
     <div class="hero mb18">
       <div class="orb" style="right:-28px;top:-28px;width:120px;height:120px;"></div>
       <div class="orb" style="right:24px;bottom:-34px;width:80px;height:80px;"></div>
-      <div class="badge-row"><span class="pill"><i data-lucide="award" style="width:13px;height:13px"></i> Cinta Azul</span></div>
-      <div class="hname">Mateo Reyes</div>
-      <div class="hsub">Programa Básico niños · 9 años</div>
+      <div class="badge-row"><span class="pill"><i data-lucide="award" style="width:13px;height:13px"></i> <span id="cinta-alumno">—</span></span></div>
+      <div class="hname" id="nombre-alumno">Mi hijo/a</div>
+      <div class="hsub" id="grupo-alumno">—</div>
       <div class="stats">
-        <div class="stat"><b>24</b><span>Clases</span></div>
-        <div class="stat"><b>92%</b><span>Asistencia</span></div>
-        <div class="stat"><b>Al día</b><span>Pago</span></div>
+        <div class="stat"><b id="stat-clases">—</b><span>Clases</span></div>
+        <div class="stat"><b id="stat-asistencia">—</b><span>Asistencia</span></div>
+        <div class="stat"><b id="stat-pago">—</b><span>Pago</span></div>
       </div>
     </div>
 
-    <div class="card soft mb18">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
-        <span style="color:var(--primary)"><i data-lucide="clock" class="lucide" style="width:16px;height:16px"></i></span>
-        <span style="font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap">Horario de Mateo</span>
+    <div class=”card soft mb18” id=”horario-card” style=”display:none;”>
+      <div style=”display:flex;align-items:center;gap:9px;margin-bottom:8px;”>
+        <span style=”color:var(--primary)”><i data-lucide=”clock” class=”lucide” style=”width:16px;height:16px”></i></span>
+        <span style=”font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap” id=”horario-titulo”>Horario</span>
       </div>
-      <div style="padding-left:25px;font-size:13px;display:flex;flex-direction:column;gap:6px;">
-        <div><div style="font-weight:600">Lunes, Miércoles y Viernes</div><div style="color:var(--muted)">de 6:00 a 7:00 pm</div></div>
-        <div><div style="font-weight:600">Martes</div><div style="color:var(--muted)">de 6:15 a 7:00 pm</div></div>
-        <div><div style="font-weight:600">Sábado</div><div style="color:var(--muted)">de 11:00 am a 12:00 pm</div></div>
-      </div>
+      <div style=”padding-left:25px;font-size:13px;color:var(--muted);” id=”horario-texto”>—</div>
     </div>
 
-    <div class="label">Alertas</div>
-    <div class="stack-10 mb18">
-      <a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
-        <span class="grow"><span class="t">Pago pendiente — Junio</span><span class="s">$1,550 MXN</span></span>
-        <span class="trail"><span class="badge red">Pendiente</span></span></a>
-      <a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
-        <span class="grow"><span class="t">Torneo Estatal de Cinturones</span><span class="s">28 jun · Gimnasio Municipal</span></span></a>
-      <div class="row"><span class="ic"><i data-lucide="quote"></i></span>
-        <span class="grow"><span class="t">Frase del día</span><span class="s">“La disciplina es el puente entre las metas y los logros.”</span></span></div>
+    <div class=”label”>Alertas</div>
+    <div class=”stack-10 mb18” id=”alertas”>
+      <div class=”row”><span class=”ic”><i data-lucide=”loader”></i></span>
+        <span class=”grow”><span class=”t”>Cargando…</span></span></div>
     </div>
 
     <div class="label">Menú</div>
@@ -64,7 +55,98 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  // Logout
+  document.getElementById('btn-logout').addEventListener('click', async (e) => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  // Cargar datos
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).single()
+  if (padre) {
+    document.getElementById('nombre-familia').textContent = 'Familia ' + (padre.nombre?.split(' ')[1] || padre.nombre || '')
+
+    if (padre.alumno_id) {
+      const { data: alumno } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).single()
+      if (alumno) {
+        document.getElementById('nombre-alumno').textContent = alumno.nombre || 'Mi hijo/a'
+        document.getElementById('cinta-alumno').textContent = 'Cinta ' + (alumno.cinta || alumno.cinturon || '—')
+        document.getElementById('grupo-alumno').textContent = (alumno.grupo || '') + (alumno.horario ? ' · ' + alumno.horario : '')
+
+        // Horario dinámico
+        if (alumno.horario) {
+          document.getElementById('horario-card').style.display = 'block'
+          document.getElementById('horario-titulo').textContent = 'Horario de ' + (alumno.nombre?.split(' ')[0] || 'tu hijo/a')
+          document.getElementById('horario-texto').textContent = alumno.horario
+        }
+
+        // Checkins del mes
+        const hoy = new Date()
+        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
+        const { data: checkins } = await supabase.from('checkins').select('id').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+        document.getElementById('stat-clases').textContent = checkins?.length || 0
+
+        // Estado de pago
+        const { data: pagos } = await supabase.from('pagos').select('estado, mes, monto').eq('alumno_id', padre.alumno_id).order('creado_en', { ascending: false }).limit(1)
+        const ultimoPago = pagos?.[0]
+        document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : 'Pendiente'
+
+        // Asistencia % del mes
+        const totalClases = 20
+        const pct = checkins?.length ? Math.round((checkins.length / totalClases) * 100) + '%' : '—'
+        document.getElementById('stat-asistencia').textContent = pct
+
+        // Alertas dinámicas
+        const alertas = []
+
+        // Pago pendiente
+        if (ultimoPago?.estado !== 'pagado') {
+          alertas.push(`<a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
+            <span class="grow"><span class="t">Pago pendiente — ${ultimoPago?.mes || 'este mes'}</span>
+            <span class="s">$${Number(ultimoPago?.monto || 0).toLocaleString()} MXN</span></span>
+            <span class="trail"><span class="badge red">Pendiente</span></span></a>`)
+        }
+
+        // Mensajes del instructor no leídos
+        const { data: msgs } = await supabase.from('mensajes').select('texto, creado_en').eq('para_admin', false).eq('leido', false).order('creado_en', { ascending: false }).limit(3)
+        msgs?.forEach(m => {
+          alertas.push(`<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span>
+            <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${m.texto?.substring(0,60)}…</span></span></div>`)
+        })
+
+        // Próximo evento
+        const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', new Date().toISOString().split('T')[0]).order('fecha').limit(1)
+        if (eventos?.length) {
+          alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
+            <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
+        }
+
+        // Frase del día
+        const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).single()
+        if (frase) {
+          alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
+            <span class="grow"><span class="t">Frase del día</span><span class="s">"${frase.texto}"</span></span></div>`)
+        }
+
+        document.getElementById('alertas').innerHTML = alertas.length
+          ? alertas.join('')
+          : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
+        lucide.createIcons()
+      }
+    }
+  }
+
   const MENU = [
     ['checkin.html','clipboard-check','Check-in','Clase · torneo','blue'],
     ['evaluacion.html','trending-up','Evaluación','Diaria y mensual','green'],

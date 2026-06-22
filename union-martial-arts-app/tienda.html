@@ -40,28 +40,35 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  // El instructor edita estos productos y sube las fotos desde el panel.
-  const PROD = [
-    {n:'Uniforme oficial UNION',d:'Dobok con logo bordado',p:'$1,200',ic:'shirt',img:''},
-    {n:'Playera deportiva',d:'Dry-fit del equipo',p:'$350',ic:'shirt',img:''},
-    {n:'Short de competencia',d:'Kickboxing oficial',p:'$450',ic:'shirt',img:''},
-    {n:'Guantes de box',d:'12 oz · varios colores',p:'$650',ic:'hand',img:''},
-    {n:'Espinilleras',d:'Protección acolchada',p:'$550',ic:'shield',img:''},
-    {n:'Mochila UNION',d:'Para equipo y uniforme',p:'$480',ic:'backpack',img:''},
-  ];
-  const wa = (n,p)=>`https://wa.me/526566379191?text=${encodeURIComponent('Hola, quiero pedir: '+n+' ('+p+')')}`;
-  document.getElementById('grid').innerHTML = PROD.map(x=>`
-    <div class="prod">
-      <div class="ph">${x.img?`<img src="${x.img}" alt="${x.n}" />`:`<i data-lucide="${x.ic}"></i>`}</div>
-      <div class="info">
-        <div class="pn">${x.n}</div>
-        <div class="pd">${x.d}</div>
-        <div class="pp">${x.p}</div>
-      </div>
-      <a class="btn primary block" href="${wa(x.n,x.p)}" target="_blank" rel="noopener">💬 Pedir</a>
-    </div>`).join('');
-  lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const wa = (n, p) => `https://wa.me/526566379191?text=${encodeURIComponent('Hola, quiero pedir: ' + n + ' ($' + p + ' MXN)')}`
+
+  const { data: productos } = await supabase.from('productos').select('*').order('creado_en')
+  const grid = document.getElementById('grid')
+
+  if (!productos?.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin productos disponibles por el momento.</div>'
+  } else {
+    grid.innerHTML = productos.map(x => `
+      <div class="prod">
+        <div class="ph">${x.imagen_url ? `<img src="${x.imagen_url}" alt="${x.nombre}" />` : `<i data-lucide="shopping-bag"></i>`}</div>
+        <div class="info">
+          <div class="pn">${x.nombre}</div>
+          <div class="pd">${x.descripcion || ''}</div>
+          <div class="pp">$${Number(x.precio).toLocaleString()}</div>
+        </div>
+        <a class="btn primary block" href="${wa(x.nombre, x.precio)}" target="_blank" rel="noopener">💬 Pedir</a>
+      </div>`).join('')
+  }
+  lucide.createIcons()
 </script>
 </body>
 </html>

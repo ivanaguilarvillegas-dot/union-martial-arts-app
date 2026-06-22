@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Recibo de Pago — Union Martial Arts</title>
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+  @media print {
+    .no-print { display: none !important; }
+    .phone { box-shadow: none !important; }
+    .screen { border-radius: 0 !important; }
+    body { background: #fff; }
+  }
+
+  .recibo-wrap {
+    margin: 0 auto;
+    padding: 24px 20px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100%;
+  }
+
+  .recibo-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 6px;
+  }
+
+  .recibo-academia {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .recibo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .recibo-titulo {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .recibo-titulo::before, .recibo-titulo::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .recibo-monto {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .recibo-moneda {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .recibo-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--ink-100);
+    width: 100%;
+    gap: 12px;
+  }
+  .recibo-fila:last-child { border-bottom: none; }
+  .recibo-fila .lbl { font-size: 12.5px; color: var(--muted); }
+  .recibo-fila .val { font-size: 13px; font-weight: 700; text-align: right; }
+
+  .recibo-sello {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .recibo-sello .circulo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green-bg);
+    color: var(--green-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .recibo-sello .texto {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-text);
+  }
+
+  .recibo-pie {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--faint);
+    line-height: 1.8;
+  }
+
+  .recibo-divider {
+    width: 100%;
+    border: none;
+    border-top: 1.5px dashed var(--border);
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue no-print">
+    <a class="navback" href="pagos.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Recibo de pago</div></div>
+    <button class="iconbtn-dark" id="btn-guardar" aria-label="Guardar"><i data-lucide="download"></i></button>
+  </div>
+
+  <div class="recibo-wrap" id="recibo">
+    <!-- Logo -->
+    <img class="recibo-logo" src="assets/logo-union-blue.png" alt="Union Martial Arts" />
+    <div class="recibo-academia">Union Martial Arts</div>
+    <div class="recibo-sub">unionmartialarts.jrz@gmail.com · (656) 637.9191</div>
+
+    <div class="recibo-titulo">Recibo de Pago</div>
+
+    <!-- Monto -->
+    <div class="recibo-monto" id="r-monto">$—</div>
+    <div class="recibo-moneda">MXN · Pago confirmado</div>
+
+    <!-- Datos -->
+    <div style="width:100%;background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:4px 16px;">
+      <div class="recibo-fila">
+        <span class="lbl">Alumno</span>
+        <span class="val" id="r-alumno">—</span>
+      </div>
+      <div class="recibo-fila">
+        <span class="lbl">Concepto</span>
+        <span class="val" id="r-concepto">—</span>
+      </div>
+      <div class="recibo-fila">
+        <span class="lbl">Forma de pago</span>
+        <span class="val" id="r-forma">—</span>
+      </div>
+      <div class="recibo-fila">
+        <span class="lbl">Fecha de pago</span>
+        <span class="val" id="r-fecha">—</span>
+      </div>
+    </div>
+
+    <!-- Sello pagado -->
+    <div class="recibo-sello">
+      <div class="circulo"><i data-lucide="check" style="width:22px;height:22px"></i></div>
+      <div class="texto">Pago confirmado</div>
+    </div>
+
+    <hr class="recibo-divider" />
+
+    <!-- Pie -->
+    <div class="recibo-pie">
+      Este recibo es válido como comprobante de pago.<br />
+      Union Martial Arts · Ciudad Juárez, Chihuahua<br />
+      Gracias por tu confianza 🥋
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div style="padding:0 16px 24px;" class="no-print">
+    <button class="btn primary block" id="btn-imprimir">
+      <i data-lucide="printer"></i> Guardar / Imprimir recibo
+    </button>
+    <a class="btn secondary block mt10" href="pagos.html">
+      <i data-lucide="arrow-left"></i> Volver a pagos
+    </a>
+  </div>
+
+  <nav class="bottomnav no-print">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a class="on" href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Leer pagoId desde URL ?id=xxx  o cargar el último pago
+  const params = new URLSearchParams(location.search)
+  const pagoId = params.get('id')
+
+  const { data: padre } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+
+  let pago = null
+  if (pagoId) {
+    const { data } = await supabase.from('pagos').select('*, alumnos(nombre)').eq('id', pagoId).single()
+    pago = data
+  } else {
+    // Último pago pagado del alumno
+    const { data } = await supabase.from('pagos').select('*, alumnos(nombre)')
+      .eq('alumno_id', padre?.alumno_id)
+      .eq('estado', 'pagado')
+      .order('fecha_pago', { ascending: false })
+      .limit(1)
+      .single()
+    pago = data
+  }
+
+  if (pago) {
+    const monto = Number(pago.monto) || 0
+    const forma = pago.forma_pago || 'Efectivo'
+    // Si fue Mercado Pago, mostrar monto con comisión
+    const montoFinal = forma === 'mercadopago' ? Math.round(monto * 1.035) : monto
+
+    document.getElementById('r-monto').textContent = '$' + montoFinal.toLocaleString('es-MX')
+    document.getElementById('r-alumno').textContent = pago.alumnos?.nombre || padre?.nombre || '—'
+    document.getElementById('r-concepto').textContent = 'Mensualidad ' + (pago.mes || '—')
+
+    const formaTexto = {
+      efectivo: 'Efectivo',
+      transferencia: 'Transferencia bancaria',
+      mercadopago: 'Mercado Pago'
+    }
+    document.getElementById('r-forma').textContent = formaTexto[forma] || forma
+
+    const fecha = pago.fecha_pago
+      ? new Date(pago.fecha_pago + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+      : new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+    document.getElementById('r-fecha').textContent = fecha
+  } else {
+    document.getElementById('r-monto').textContent = '$—'
+    document.getElementById('r-concepto').textContent = 'Sin pago registrado'
+  }
+
+  // Guardar / Imprimir
+  document.getElementById('btn-imprimir').addEventListener('click', () => window.print())
+  document.getElementById('btn-guardar').addEventListener('click', () => window.print())
+
+  lucide.createIcons()
+</script>
+</body>
+</html>

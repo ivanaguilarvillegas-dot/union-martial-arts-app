@@ -17,17 +17,92 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const R = [['MR','Mateo Reyes',false],['SL','Sofía Luna',true],['DO','Diego Ortiz',false],['VC','Valeria Cruz',true],['IM','Iker Méndez',false],['RG','Renata Gil',true]];
-  const st = R.map(r=>r[2]);
-  function render(){
-    document.getElementById('list').innerHTML = R.map((r,i)=>`
-      <div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${r[0]}</span>
-        <span class="grow"><span class="t">${r[1]}</span><span class="s">$1,550 MXN</span></span>
-        <span class="trail"><button data-i="${i}" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${st[i]?'var(--green-bg)':'var(--red-bg)'};color:${st[i]?'var(--green-text)':'var(--red-text)'};"><i data-lucide="${st[i]?'check':'clock'}" style="width:14px;height:14px"></i> ${st[i]?'Pagado':'Pendiente'}</button></span></div>`).join('');
-    lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const mes = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' })
+  document.querySelector('.sub').textContent = mes.charAt(0).toUpperCase() + mes.slice(1)
+
+  let pagos = []
+
+  function iniciales(nombre) {
+    return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
   }
-  document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;st[b.dataset.i]=!st[b.dataset.i];render();});
-  render();
+
+  async function cargar() {
+    const { data } = await supabase
+      .from('pagos')
+      .select('*, alumnos(nombre)')
+      .order('creado_en', { ascending: false })
+    pagos = data || []
+    render()
+  }
+
+  function render() {
+    const list = document.getElementById('list')
+    if (!pagos.length) {
+      list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin registros de pago.</div>'
+      return
+    }
+    list.innerHTML = pagos.map(p => {
+      const ok = p.estado === 'pagado'
+      const nombre = p.alumnos?.nombre || 'Alumno'
+      const ini = iniciales(nombre)
+      const tieneComp = !!p.comprobante_url
+      return `<div class="card mb10">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
+          <span class="grow">
+            <span class="t" style="font-size:13.5px;font-weight:600;">${nombre}</span>
+            <span class="s">$${Number(p.monto).toLocaleString()} MXN · ${p.mes||'—'}${p.forma_pago ? ' · '+p.forma_pago : ''}</span>
+          </span>
+          <button data-id="${p.id}" data-ok="${ok}" style="display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${ok?'var(--green-bg)':'var(--red-bg)'};color:${ok?'var(--green-text)':'var(--red-text)'};flex-shrink:0;">
+            <i data-lucide="${ok?'check':'clock'}" style="width:13px;height:13px"></i> ${ok?'Pagado':'Pendiente'}
+          </button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          ${tieneComp ? `<a href="${p.comprobante_url}" target="_blank" class="btn secondary sm" style="font-size:12px;display:inline-flex;align-items:center;gap:5px;"><i data-lucide="file-image" style="width:13px;height:13px"></i> Ver comprobante</a>` : ''}
+          ${ok ? `<a href="recibo.html?id=${p.id}" class="btn secondary sm" style="font-size:12px;display:inline-flex;align-items:center;gap:5px;"><i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</a>` : ''}
+        </div>
+      </div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  // Marcar como pagado / pendiente y generar recibo
+  document.getElementById('list').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-id]')
+    if (!btn) return
+    const id = btn.dataset.id
+    const yaOk = btn.dataset.ok === 'true'
+    const nuevoEstado = yaOk ? 'pendiente' : 'pagado'
+    const hoy = new Date().toISOString().split('T')[0]
+
+    await supabase.from('pagos').update({
+      estado: nuevoEstado,
+      fecha_pago: nuevoEstado === 'pagado' ? hoy : null
+    }).eq('id', id)
+
+    // Si se marcó como pagado, notificar al padre con recibo
+    if (nuevoEstado === 'pagado') {
+      const pago = pagos.find(p => p.id === id)
+      const nombre = pago?.alumnos?.nombre || 'tu hijo/a'
+      await supabase.from('mensajes').insert({
+        de_user_id: user.id,
+        texto: `✅ Pago confirmado · ${nombre} · Mensualidad ${pago?.mes||''} · $${Number(pago?.monto||0).toLocaleString()} MXN · ${pago?.forma_pago||'Efectivo'} · Fecha: ${hoy}`,
+        para_admin: false
+      })
+    }
+
+    await cargar()
+  })
+
+  cargar()
 </script>
 </body></html>

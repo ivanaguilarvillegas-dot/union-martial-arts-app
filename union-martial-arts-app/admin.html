@@ -39,27 +39,64 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Verificar que sea admin
+  const { data: admin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).single()
+  if (!admin?.es_admin) { window.location.href = 'home.html' }
+
+  const hoy = new Date().toISOString().split('T')[0]
+
+  // Cargar estadísticas reales
+  const [{ count: totalAlumnos }, { count: pagPendientes }, { count: asistHoy }, { count: msgNuevos }] = await Promise.all([
+    supabase.from('alumnos').select('*', { count: 'exact', head: true }),
+    supabase.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
+    supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
+    supabase.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
+  ])
+
+  document.querySelector('.tile b').textContent = totalAlumnos || 0
+  document.querySelectorAll('.tile b')[2].textContent = pagPendientes || 0
+  document.querySelectorAll('.tile b')[3].textContent = asistHoy || 0
+
   const ACC = [
-    ['user-check','Confirmar asistencias','6 por confirmar hoy','admin-asistencias.html'],
+    ['user-check','Confirmar asistencias', (asistHoy||0)+' check-ins hoy','admin-asistencias.html'],
     ['clipboard-list','Registrar evaluación','Calificar alumno del día/mes','admin-evaluacion.html'],
-    ['message-square','Enviar mensaje a padres','Aviso, frase o privado','admin-mensaje.html'],
+    ['message-square','Mensajes de padres',(msgNuevos||0)+' sin leer','admin-mensaje.html'],
     ['sliders-horizontal','Editar contenido y precios','Nutrición, rutinas, horarios, reglamento','admin-editar.html'],
     ['award','Subir de cinta','Promover alumno de rango','admin-cinta.html'],
     ['calendar-plus','Crear torneo o actividad','Evento, clase especial, aviso','admin-evento.html'],
-    ['user-plus','Agregar nuevo alumno','Registrar familia','admin-nuevo.html'],
-  ];
+    ['upload','Subir videos y media','Rutinas, audios de meditación','admin-media.html'],
+    ['shopping-bag','Editar tienda','Productos y precios','admin-tienda.html'],
+  ]
   document.getElementById('acc').innerHTML = ACC.map(([ic,t,s,href])=>`
     <a class="row" href="${href}"><span class="ic"><i data-lucide="${ic}"></i></span>
       <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
-      <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('');
+      <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('')
 
-  const HOME = [['MR','Mateo Reyes','Entrenamiento + Meditación'],['SL','Sofía Luna','Nutrición + Entrenamiento'],['RG','Renata Gil','Meditación']];
-  document.getElementById('home').innerHTML = HOME.map(([ini,n,a])=>`
-    <div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-      <span class="grow"><span class="t">${n}</span><span class="s">${a}</span></span>
-      <span class="trail"><span class="badge green"><i data-lucide="check"></i> Completó</span></span></div>`).join('');
-  lucide.createIcons();
+  // Actividad reciente: checkins de hoy
+  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(5)
+  const homeEl = document.getElementById('home')
+  if (checks?.length) {
+    homeEl.innerHTML = checks.map(c => {
+      const nom = c.alumnos?.nombre || 'Alumno'
+      const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
+      return `<div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
+        <span class="grow"><span class="t">${nom}</span><span class="s">Check-in hoy ${c.hora||''}</span></span>
+        <span class="trail"><span class="badge green"><i data-lucide="check"></i> Asistió</span></span></div>`
+    }).join('')
+  } else {
+    homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin check-ins registrados hoy.</div>'
+  }
+
+  lucide.createIcons()
 </script>
 </body>
 </html>

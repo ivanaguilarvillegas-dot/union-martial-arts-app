@@ -22,17 +22,60 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  const D = ['Actitud','Esfuerzo','Técnica','Participación','Trabajo en equipo','Uniforme completo','Higiene y limpieza','Respeto','Llegó a tiempo'];
-  const st={};
-  function render(){
-    document.getElementById('list').innerHTML = D.map((d,i)=>`<button class="checkitem ${st[i]?'done':''}" data-i="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${d}</span></button>`).join('');
-    document.getElementById('cnt').textContent=Object.values(st).filter(Boolean).length+'/9';
-    document.getElementById('cnt').className='badge '+(Object.values(st).filter(Boolean).length?'green':'');
-    lucide.createIcons();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Cargar alumnos reales en el select
+  const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta').order('nombre')
+  const sel = document.querySelector('select')
+  if (alumnos?.length) {
+    sel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
   }
-  document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;st[b.dataset.i]=!st[b.dataset.i];render();});
-  document.getElementById('save').addEventListener('click',()=>{document.getElementById('ok').style.display='flex';lucide.createIcons();window.scrollTo&&document.querySelector('.body').scrollTo(0,0);});
-  render();
+
+  const D = ['Actitud','Esfuerzo','Técnica','Participación','Trabajo en equipo','Uniforme completo','Higiene y limpieza','Respeto','Llegó a tiempo']
+  const st = {}
+
+  function render() {
+    document.getElementById('list').innerHTML = D.map((d,i) =>
+      `<button class="checkitem ${st[i]?'done':''}" data-i="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${d}</span></button>`
+    ).join('')
+    const n = Object.values(st).filter(Boolean).length
+    document.getElementById('cnt').textContent = n + '/' + D.length
+    document.getElementById('cnt').className = 'badge ' + (n ? 'green' : '')
+    lucide.createIcons()
+  }
+
+  document.getElementById('list').addEventListener('click', e => {
+    const b = e.target.closest('[data-i]'); if (!b) return
+    st[b.dataset.i] = !st[b.dataset.i]; render()
+  })
+
+  document.getElementById('save').addEventListener('click', async () => {
+    const alumno_id = sel.value
+    const nota = document.querySelector('textarea').value.trim()
+    const areas = D.filter((_, i) => st[i])
+    const puntuacion = Math.round((areas.length / D.length) * 100)
+    const fecha = new Date().toISOString().split('T')[0]
+
+    const { error } = await supabase.from('evaluaciones').insert({
+      alumno_id, fecha, puntuacion,
+      actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2],
+      participacion: !!st[3], nota
+    })
+
+    if (error) { alert('Error al guardar: ' + error.message); return }
+
+    document.getElementById('ok').style.display = 'flex'
+    lucide.createIcons()
+    document.querySelector('.body').scrollTo(0, 0)
+  })
+
+  render()
 </script>
 </body></html>
