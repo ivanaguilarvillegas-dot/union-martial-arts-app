@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Editar contenido</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Editar contenido</div></div></div>
+  <div class="body">
+    <a class="btn secondary block mb16" href="admin-media.html"><i data-lucide="upload"></i> Subir videos y audios</a>
+    <div id="grupos"></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const G = [
+    ['Precios','dollar-sign',['Inscripción — $500','Mensualidad Básico — $1,550','Anual UNION — $12,500','Club Cinta Negra — $9,950'],''],
+    ['Horarios','clock',['Básico niños: L, M y V de 4:00 a 5:00 / 5:00 a 6:00 / 6:00 a 7:00 pm','Martes 6:15 a 7:00 pm · Sábado 11:00 am a 12:00 pm','Jóvenes/adultos: L, M y V 7:00 a 8:00 pm','Jueves 6:30 a 7:30 pm · Sábado 12:00 a 1:00 pm'],''],
+    ['Nutrición','salad',['Alimentos recomendados','Alimentos a evitar','Día de entrenamiento'],''],
+    ['Tienda en línea','shopping-bag',['Productos, precios y fotos'],'admin-tienda.html'],
+    ['Reglamento','file-text',['Reglamento (PDF) y firmas'],'admin-reglamento.html'],
+  ];
+  document.getElementById('grupos').innerHTML = G.map(([t,ic,items,href])=>{
+    const rows = items.map(it=>{
+      const inner = `<span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
+        <span class="txt" style="flex:1;color:var(--text);">${it}</span>
+        <span style="color:var(--faint);"><i data-lucide="${href?'chevron-right':'pencil'}" style="width:15px;height:15px"></i></span>`;
+      return href
+        ? `<a class="checkitem" href="${href}" style="text-decoration:none;color:var(--text);">${inner}</a>`
+        : `<div class="checkitem" style="cursor:default;">${inner}</div>`;
+    }).join('');
+    return `<div class="label">${t}</div><div class="card flush mb18">${rows}</div>`;
+  }).join('');
+  lucide.createIcons();
+</script>
+</body></html>

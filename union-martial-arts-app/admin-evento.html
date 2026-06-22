@@ -1,111 +1,42 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Crear Evento</title>
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crear torneo o actividad</title><link rel="stylesheet" href="css/uma.css" /></head>
 <body>
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-  <div class="nav-header dark">
-    <a href="admin.html" class="back-btn">← Volver</a>
-    <h1>Crear Evento</h1>
-  </div>
-  <div class="screen-body">
-    <div class="section-title">Nuevo evento</div>
-    <div class="card">
-      <label>Tipo de evento</label>
-      <select id="tipo">
-        <option>🏆 Torneo</option>
-        <option>📚 Clase especial</option>
-        <option>🎓 Examen de cinturón</option>
-        <option>🎉 Evento social</option>
-        <option>⚠️ Aviso importante</option>
-        <option>🏖️ Vacaciones / Sin clases</option>
-      </select>
-      <label>Título del evento</label>
-      <input type="text" id="titulo" placeholder="Ej: Torneo Infantil UMA — Junio" />
-      <label>Fecha</label>
-      <input type="date" id="fecha" />
-      <label>Hora</label>
-      <input type="text" id="hora" placeholder="Ej: 10:00 AM — 2:00 PM" />
-      <label>Lugar</label>
-      <input type="text" id="lugar" placeholder="Ej: Gimnasio Central UMA" />
-      <label>Descripción</label>
-      <textarea id="descripcion" rows="3" placeholder="Detalles del evento para los padres..."
-        style="width:100%; border:0.5px solid var(--uma-blue-border); border-radius:10px; padding:12px; font-size:14px; font-family:inherit; resize:none;"></textarea>
-      <div id="msg-evento" style="font-size:13px; text-align:center; padding:10px; border-radius:8px; display:none; margin-top:8px;"></div>
-      <button class="btn-primary" onclick="publicar()">Publicar evento</button>
-    </div>
-    <div class="section-title">Eventos próximos</div>
-    <div id="lista-eventos">
-      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:16px;">Cargando...</div>
-    </div>
-  </div>
-  <div class="bottom-nav">
-    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
-    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
-    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
-  </div>
-</div>
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  async function cargarEventos() {
-    const hoy = new Date().toISOString().split('T')[0]
-    const { data } = await supabase.from('eventos').select('*').gte('fecha', hoy).order('fecha').limit(5)
-    const cont = document.getElementById('lista-eventos')
-    if (!data || data.length === 0) {
-      cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:16px;">Sin eventos próximos.</div>'
-      return
-    }
-    cont.innerHTML = data.map(e => `
-      <div class="alert-row">
-        <div class="alert-icon amber">📅</div>
-        <div style="flex:1;">
-          <div class="alert-title">${e.titulo}</div>
-          <div class="alert-sub">${e.fecha}${e.lugar ? ' · ' + e.lugar : ''}</div>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Crear torneo o actividad</div></div></div>
+  <div class="body">
+    <div id="form"><div class="card"><div class="stack">
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="tipos">
+          <button class="chip on">Torneo</button><button class="chip">Clase especial</button>
+          <button class="chip">Actividad</button><button class="chip">Aviso</button>
         </div>
-      </div>`).join('')
-  }
-
-  window.publicar = async function() {
-    const titulo = document.getElementById('titulo').value.trim()
-    const fecha = document.getElementById('fecha').value
-    const tipo = document.getElementById('tipo').value
-    const hora = document.getElementById('hora').value.trim()
-    const lugar = document.getElementById('lugar').value.trim()
-    const descripcion = document.getElementById('descripcion').value.trim()
-    const msg = document.getElementById('msg-evento')
-
-    if (!titulo || !fecha) {
-      msg.textContent = 'El título y la fecha son obligatorios.'
-      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-      msg.style.display = 'block'; return
-    }
-
-    const { error } = await supabase.from('eventos').insert({ titulo, fecha, tipo, hora, lugar, descripcion })
-
-    if (error) {
-      msg.textContent = 'Error al publicar. Intenta de nuevo.'
-      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-    } else {
-      msg.textContent = '✅ Evento publicado. Ya aparece en la app de los padres.'
-      msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
-      document.getElementById('titulo').value = ''
-      document.getElementById('fecha').value = ''
-      document.getElementById('hora').value = ''
-      document.getElementById('lugar').value = ''
-      document.getElementById('descripcion').value = ''
-      cargarEventos()
-    }
-    msg.style.display = 'block'
-  }
-
-  cargarEventos()
+      </div>
+      <label class="field"><span class="lab">Nombre del evento</span><input placeholder="Ej. Torneo Estatal de Cinturones" /></label>
+      <label class="field"><span class="lab">Fecha y hora</span><input placeholder="28 jun · 9:00 AM" /></label>
+      <label class="field"><span class="lab">Lugar</span><input placeholder="Gimnasio Municipal" /></label>
+      <label class="field"><span class="lab">Descripción</span><textarea rows="3" placeholder="Detalles del evento…"></textarea></label>
+      <button class="btn primary block" id="save"><i data-lucide="plus"></i> Publicar evento</button>
+    </div></div></div>
+    <div id="ok" style="display:none;"><div class="card green center">
+      <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="calendar-check" style="width:26px;height:26px"></i></div>
+      <div style="font-size:15px;font-weight:700;color:var(--green-text);">Evento publicado</div>
+      <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Visible para los padres en “Torneos y actividades”.</div></div></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const tipos=document.getElementById('tipos');
+  tipos.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;[...tipos.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');});
+  document.getElementById('save').addEventListener('click',()=>{document.getElementById('form').style.display='none';document.getElementById('ok').style.display='block';lucide.createIcons();});
+  lucide.createIcons();
 </script>
-</body>
-</html>
+</body></html>

@@ -1,109 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Nutrición</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Nutrición</title>
+<link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-
-  <div class="nav-header">
-    <a href="home.html" class="back-btn">← Volver</a>
-    <h1>Nutrición</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Nutrición</div></div>
   </div>
+  <div class="body">
+    <div class="label row"><span>Hábitos de hoy</span><span class="badge blue" id="cnt">0/4</span></div>
+    <div class="notice green" id="notif" style="display:none;"><i data-lucide="bell-ring"></i> Se notificó a tu instructor</div>
+    <div class="card flush mb18" style="padding:6px;" id="habitos"></div>
 
-  <div class="screen-body">
-
-    <div class="card" style="background:var(--green-bg); border-color:#b7e4c7;">
-      <div style="font-size:14px; font-weight:500; color:var(--green-text); margin-bottom:10px;">✅ Incluir en tu dieta</div>
-      <span class="chip good">Pollo a la plancha</span>
-      <span class="chip good">Arroz integral</span>
-      <span class="chip good">Plátano</span>
-      <span class="chip good">Huevo</span>
-      <span class="chip good">Atún</span>
-      <span class="chip good">Avena</span>
-      <span class="chip good">Fruta fresca</span>
-      <span class="chip good">Agua natural</span>
-      <span class="chip good">Verduras</span>
-      <span class="chip good">Frijoles</span>
-      <span class="chip good">Yogur natural</span>
-      <span class="chip good">Nueces</span>
+    <div class="card green mb12">
+      <div style="display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--green-text);margin-bottom:12px;"><i data-lucide="circle-check-big" class="lucide" style="width:17px;height:17px"></i> Incluir en tu dieta</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="good"></div>
+    </div>
+    <div class="card red mb18">
+      <div style="display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--red-text);margin-bottom:12px;"><i data-lucide="circle-x" class="lucide" style="width:17px;height:17px"></i> Evitar antes de entrenar</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="bad"></div>
     </div>
 
-    <div class="card" style="background:var(--red-bg); border-color:#fca5a5;">
-      <div style="font-size:14px; font-weight:500; color:var(--red-text); margin-bottom:10px;">❌ Evitar antes de entrenar</div>
-      <span class="chip bad">Refresco</span>
-      <span class="chip bad">Comida rápida</span>
-      <span class="chip bad">Frituras</span>
-      <span class="chip bad">Dulces</span>
-      <span class="chip bad">Jugos de caja</span>
-      <span class="chip bad">Carnes procesadas</span>
-      <span class="chip bad">Exceso de sal</span>
-    </div>
-
-    <div class="section-title">Ejemplo de día de entrenamiento</div>
-    <div class="card">
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="font-size:22px; width:32px; text-align:center; flex-shrink:0;">🌅</div>
-          <div>
-            <div style="font-size:13px; font-weight:500; color:var(--text-primary);">Desayuno</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Avena con plátano + 2 huevos + agua</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="font-size:22px; width:32px; text-align:center; flex-shrink:0;">🍽️</div>
-          <div>
-            <div style="font-size:13px; font-weight:500; color:var(--text-primary);">Comida</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Pollo a la plancha + arroz + ensalada</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="font-size:22px; width:32px; text-align:center; flex-shrink:0;">⏱️</div>
-          <div>
-            <div style="font-size:13px; font-weight:500; color:var(--text-primary);">2 horas antes de entrenar</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Fruta + hidratación abundante</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="font-size:22px; width:32px; text-align:center; flex-shrink:0;">🥊</div>
-          <div>
-            <div style="font-size:13px; font-weight:500; color:var(--text-primary);">Post-entrenamiento</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Huevo + tortilla + agua o leche</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="font-size:22px; width:32px; text-align:center; flex-shrink:0;">🌙</div>
-          <div>
-            <div style="font-size:13px; font-weight:500; color:var(--text-primary);">Cena ligera</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Atún + verduras + agua</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="background:var(--uma-blue-light); border-color:var(--uma-blue-border); text-align:center;">
-      <div style="font-size:22px; margin-bottom:6px;">💧</div>
-      <div style="font-size:14px; font-weight:500; color:var(--uma-blue);">Hidratación</div>
-      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-        Mínimo 8 vasos de agua al día.<br>
-        Antes, durante y después de entrenar.
-      </div>
-    </div>
-
+    <div class="label">Ejemplo de día de entrenamiento</div>
+    <div class="card" id="dia"></div>
   </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const habitos = ['Tomé 8 vasos de agua','Desayuné antes de entrenar','Comí fruta o verdura','Evité refresco y frituras'];
+  const good = ['Pollo a la plancha','Arroz integral','Plátano','Huevo','Atún','Avena','Fruta fresca','Agua natural','Verduras','Frijoles','Yogur natural','Nueces'];
+  const bad = ['Refresco','Comida rápida','Frituras','Dulces','Jugos de caja','Carnes procesadas','Exceso de sal'];
+  const dia = [['sunrise','Desayuno','Avena con plátano + 2 huevos + agua'],['utensils','Comida','Pollo a la plancha + arroz + ensalada'],['timer','2 horas antes de entrenar','Fruta + hidratación abundante'],['zap','Post-entrenamiento','Huevo + tortilla + agua o leche'],['moon','Cena ligera','Atún + verduras + agua']];
 
-  <div class="bottom-nav">
-    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
-    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
-    <a href="pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="#" class="bnav-item"><span class="bnav-icon">👤</span>Perfil</a>
-  </div>
-</div>
+  document.getElementById('good').innerHTML = good.map(f=>`<span class="chip good">${f}</span>`).join('');
+  document.getElementById('bad').innerHTML = bad.map(f=>`<span class="chip bad">${f}</span>`).join('');
+  document.getElementById('dia').innerHTML = `<div style="display:flex;flex-direction:column;gap:14px;">`+dia.map(([ic,t,s])=>`
+    <div style="display:flex;gap:12px;align-items:flex-start;"><span style="width:34px;height:34px;flex-shrink:0;border-radius:var(--r-sm);background:var(--soft);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="${ic}" style="width:17px;height:17px"></i></span>
+      <div><div style="font-size:13.5px;font-weight:700;">${t}</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px;">${s}</div></div></div>`).join('')+`</div>`;
 
+  const state = {};
+  document.getElementById('habitos').innerHTML = habitos.map((h,i)=>`
+    <button class="checkitem" data-h="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${h}</span></button>`).join('');
+  document.getElementById('habitos').addEventListener('click',e=>{
+    const b=e.target.closest('[data-h]'); if(!b)return;
+    state[b.dataset.h]=!state[b.dataset.h]; b.classList.toggle('done');
+    const n=Object.values(state).filter(Boolean).length;
+    document.getElementById('cnt').textContent=n+'/4';
+    document.getElementById('cnt').className='badge '+(n===4?'green':'blue');
+    document.getElementById('notif').style.display = n>0?'flex':'none';
+    lucide.createIcons();
+  });
+  lucide.createIcons();
+</script>
 </body>
 </html>

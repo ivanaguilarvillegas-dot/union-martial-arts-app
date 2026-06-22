@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enviar mensaje</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Enviar mensaje</div></div></div>
+  <div class="body">
+    <div id="form"><div class="card"><div class="stack">
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo de mensaje</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="tipos">
+          <button class="chip on" data-t="aviso">Aviso a todos</button>
+          <button class="chip" data-t="frase">Frase del día</button>
+          <button class="chip" data-t="privado">Privado</button>
+        </div>
+      </div>
+      <div id="extra"></div>
+      <label class="field"><span class="lab">Mensaje</span><textarea rows="4" placeholder="Escribe tu mensaje…"></textarea></label>
+      <button class="btn primary block" id="send"><i data-lucide="send"></i> Enviar</button>
+    </div></div></div>
+    <div id="ok" style="display:none;"><div class="card green center">
+      <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="send" style="width:26px;height:26px"></i></div>
+      <div style="font-size:15px;font-weight:700;color:var(--green-text);">Mensaje enviado</div></div></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a class="on" href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const tipos=document.getElementById('tipos');
+  function extra(t){
+    document.getElementById('extra').innerHTML = t==='privado'
+      ? `<label class="field"><span class="lab">Destinatario</span><select><option>Familia Reyes (Mateo)</option><option>Familia Luna (Sofía)</option><option>Familia Ortiz (Diego)</option></select></label>`
+      : t==='frase'
+      ? `<div class="notice" style="background:var(--soft);color:var(--primary);border:none;"><i data-lucide="info"></i> Aparecerá en el inicio y en Meditación de los padres.</div>`
+      : '';
+    lucide.createIcons();
+  }
+  tipos.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;[...tipos.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');extra(b.dataset.t);});
+  document.getElementById('send').addEventListener('click',()=>{document.getElementById('form').style.display='none';document.getElementById('ok').style.display='block';lucide.createIcons();});
+  lucide.createIcons();
+</script>
+</body></html>

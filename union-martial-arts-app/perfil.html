@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Perfil</title>
+<link rel="stylesheet" href="css/uma.css" />
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Perfil y datos</div></div>
+  </div>
+  <div class="body">
+    <div class="card mb14">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="avatar" style="width:48px;height:48px;font-size:17px;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--belt-blue);border:none;">MR</span>
+        <div><div style="font-size:16px;font-weight:700;">Mateo Reyes</div><div style="font-size:12px;color:var(--muted);">Alumno · 9 años</div></div>
+      </div>
+    </div>
+
+    <div class="label">Datos del padre / tutor</div>
+    <div class="card mb14" id="tutor"></div>
+    <div class="label">Contacto de emergencia</div>
+    <div class="card mb14" id="emerg"></div>
+    <div class="label">Persona autorizada para recoger</div>
+    <div class="card mb14" id="autoriz"></div>
+
+    <div class="label">Reglamento</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px;padding:11px;background:var(--soft);border-radius:var(--r-md);">
+        <span style="color:var(--primary);"><i data-lucide="file-text" style="width:18px;height:18px"></i></span>
+        <span style="flex:1;font-size:13.5px;font-weight:600;">Reglamento de la academia</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);font-weight:600;"><i data-lucide="download" style="width:15px;height:15px"></i> Ver PDF</span>
+      </div>
+      <div id="regForm">
+        <button id="acepta" style="width:100%;display:flex;align-items:flex-start;gap:10px;padding:4px 2px 14px;background:none;border:none;cursor:pointer;text-align:left;">
+          <span class="chk" style="width:24px;height:24px;flex-shrink:0;border-radius:6px;margin-top:1px;display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid var(--border-input);color:#fff;"></span>
+          <span style="font-size:13px;line-height:1.5;">He leído y <strong>acepto</strong> el reglamento de Union Martial Arts en nombre de mi hijo/a.</span>
+        </button>
+        <button class="btn primary block" id="firmar" disabled><i data-lucide="pen-line"></i> Firmar de acuerdo</button>
+      </div>
+      <div id="firmado" style="display:none;align-items:center;gap:7px;font-size:13px;color:var(--green-text);font-weight:600;">
+        <i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado y firmado · Laura Reyes · 21 jun 2025
+      </div>
+    </div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a class="on" href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const campo = (l,v)=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ink-100);"><span style="font-size:13px;color:var(--muted);">${l}</span><span style="font-size:13px;font-weight:600;text-align:right;">${v}</span></div>`;
+  const last = s => s.replace(/border-bottom:1px solid var\(--ink-100\);">(?=[^<]*<\/span><span[^<]*<\/span><\/div>$)/,'">');
+  document.getElementById('tutor').innerHTML = campo('Nombre','Laura Reyes')+campo('Teléfono','(656) 123.4567')+campo('Correo','laura.reyes@correo.com')+campo('Parentesco','Madre');
+  document.getElementById('emerg').innerHTML = campo('Nombre','Carlos Reyes')+campo('Teléfono','(656) 987.6543')+campo('Parentesco','Padre');
+  document.getElementById('autoriz').innerHTML = campo('Nombre','Ana Martínez')+campo('Teléfono','(656) 555.2020')+campo('Parentesco','Tía');
+
+  let ok=false;
+  document.getElementById('acepta').addEventListener('click',()=>{
+    ok=!ok; const chk=document.querySelector('#acepta .chk');
+    chk.style.background = ok?'var(--primary)':'#fff';
+    chk.style.border = ok?'none':'1.5px solid var(--border-input)';
+    chk.innerHTML = ok?'<i data-lucide="check" style="width:15px;height:15px"></i>':'';
+    document.getElementById('firmar').disabled=!ok; lucide.createIcons();
+  });
+  document.getElementById('firmar').addEventListener('click',()=>{
+    if(document.getElementById('firmar').disabled)return;
+    document.getElementById('regForm').style.display='none';
+    document.getElementById('firmado').style.display='flex'; lucide.createIcons();
+  });
+  lucide.createIcons();
+</script>
+</body>
+</html>

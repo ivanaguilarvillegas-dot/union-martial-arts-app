@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contenido y media</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin-editar.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Contenido y media</div></div></div>
+  <div class="body">
+    <div class="card soft mb16"><div style="font-size:13px;line-height:1.6;">Sube tus propios <strong>videos de rutinas</strong> y <strong>audios de meditación</strong>. Los alumnos los verán en sus secciones.</div></div>
+    <div class="label row"><span>Rutinas (video)</span><label class="btn secondary sm"><i data-lucide="upload"></i> Subir video<input type="file" accept="video/*" hidden data-up="video" /></label></div>
+    <div class="card flush mb18" style="padding:14px;" id="vids"></div>
+    <div class="label row"><span>Meditación (audio)</span><label class="btn secondary sm"><i data-lucide="upload"></i> Subir audio<input type="file" accept="audio/*" hidden data-up="audio" /></label></div>
+    <div class="card flush" style="padding:14px;" id="auds"></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const V=['Calentamiento básico','Sentadillas + Planchas','Combinación de golpes'];
+  const A=['Respiración 4-7-8','Visualización del campeón','Sueño reparador'];
+  const mediaRow=(t,ic)=>`<div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
+    <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
+    <span style="flex:1;font-size:13.5px;">${t}</span>
+    <span style="font-size:11px;color:var(--green-text);font-weight:600;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="check" style="width:12px;height:12px"></i> Subido</span></div>`;
+  document.getElementById('vids').innerHTML = V.map(t=>mediaRow(t,'video')).join('').replace(/border-bottom:1px solid var\(--ink-100\);"(?=[^]*$)/, m=>m);
+  document.getElementById('auds').innerHTML = A.map(t=>mediaRow(t,'headphones')).join('');
+  lucide.createIcons();
+</script>
+</body></html>

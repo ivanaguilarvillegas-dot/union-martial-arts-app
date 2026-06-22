@@ -1,175 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Entrena en Casa</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — En Casa</title>
+<link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-
-  <div class="nav-header">
-    <a href="home.html" class="back-btn">← Volver</a>
-    <h1>Entrena en Casa</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Entrena en Casa</div></div>
   </div>
-
-  <div class="screen-body">
-
-    <div class="tabs">
-      <a href="#" class="tab active" onclick="filtrar('principiante', this)">Principiante</a>
-      <a href="#" class="tab" onclick="filtrar('intermedio', this)">Intermedio</a>
-      <a href="#" class="tab" onclick="filtrar('avanzado', this)">Avanzado</a>
+  <div class="body">
+    <div style="display:flex;gap:8px;margin-bottom:14px;" id="tabs">
+      <button class="chip on" data-lvl="principiante">Principiante</button>
+      <button class="chip" data-lvl="intermedio">Intermedio</button>
+      <button class="chip" data-lvl="avanzado">Avanzado</button>
     </div>
-
-    <!-- PRINCIPIANTE -->
-    <div class="nivel principiante">
-      <div class="section-title">Rutina para principiantes</div>
-
-      <div class="workout-row">
-        <div class="workout-icon">🤸</div>
-        <div style="flex:1;">
-          <div class="workout-title">Calentamiento básico</div>
-          <div class="workout-sub">10 min · Sin equipo · Estiramientos</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Calentamiento básico\n\n(En la versión real se abre el video)')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">💪</div>
-        <div style="flex:1;">
-          <div class="workout-title">Sentadillas + Planchas</div>
-          <div class="workout-sub">15 min · 3 series de 10</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Sentadillas + Planchas')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🥊</div>
-        <div style="flex:1;">
-          <div class="workout-title">Combinación de golpes</div>
-          <div class="workout-sub">10 min · Frente al espejo</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Combinación de golpes')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🏃</div>
-        <div style="flex:1;">
-          <div class="workout-title">Cardio — saltar la cuerda</div>
-          <div class="workout-sub">5 min · Ritmo moderado</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Saltar la cuerda')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🧘</div>
-        <div style="flex:1;">
-          <div class="workout-title">Enfriamiento y estiramiento</div>
-          <div class="workout-sub">5 min · Siempre al final</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Enfriamiento')">▶</div>
-      </div>
-    </div>
-
-    <!-- INTERMEDIO -->
-    <div class="nivel intermedio" style="display:none;">
-      <div class="section-title">Rutina intermedia</div>
-
-      <div class="workout-row">
-        <div class="workout-icon">🔥</div>
-        <div style="flex:1;">
-          <div class="workout-title">Calentamiento dinámico</div>
-          <div class="workout-sub">10 min · Movilidad articular</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Calentamiento dinámico')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🦵</div>
-        <div style="flex:1;">
-          <div class="workout-title">Patadas al aire — series</div>
-          <div class="workout-sub">20 min · 4 series</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Patadas al aire')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">💥</div>
-        <div style="flex:1;">
-          <div class="workout-title">Circuito de fuerza</div>
-          <div class="workout-sub">20 min · Burpees, lagartijas, sentadillas</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Circuito de fuerza')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🥊</div>
-        <div style="flex:1;">
-          <div class="workout-title">Combos avanzados</div>
-          <div class="workout-sub">15 min · Golpe + patada</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Combos avanzados')">▶</div>
-      </div>
-    </div>
-
-    <!-- AVANZADO -->
-    <div class="nivel avanzado" style="display:none;">
-      <div class="section-title">Rutina avanzada</div>
-
-      <div class="workout-row">
-        <div class="workout-icon">⚡</div>
-        <div style="flex:1;">
-          <div class="workout-title">HIIT Kickboxing</div>
-          <div class="workout-sub">30 min · Alta intensidad</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: HIIT Kickboxing')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🏆</div>
-        <div style="flex:1;">
-          <div class="workout-title">Simulación de combate</div>
-          <div class="workout-sub">15 min · Shadowboxing</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Simulación de combate')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">💪</div>
-        <div style="flex:1;">
-          <div class="workout-title">Fuerza explosiva</div>
-          <div class="workout-sub">20 min · Pliométricos</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Fuerza explosiva')">▶</div>
-      </div>
-      <div class="workout-row">
-        <div class="workout-icon">🧘</div>
-        <div style="flex:1;">
-          <div class="workout-title">Recuperación activa</div>
-          <div class="workout-sub">10 min · Foam roller + estiramientos</div>
-        </div>
-        <div class="play-btn" onclick="alert('Video: Recuperación activa')">▶</div>
-      </div>
-    </div>
-
-    <div class="card" style="background:var(--uma-blue-light); border-color:var(--uma-blue-border); text-align:center; margin-top:4px;">
-      <div style="font-size:13px; color:var(--uma-blue);">
-        💡 Entrena mínimo <strong>3 veces por semana</strong> en casa para complementar tus clases en Union Martial Arts.
-      </div>
-    </div>
-
+    <div class="label row"><span>Rutina de hoy</span><span class="badge blue" id="cnt">0/5 hechos</span></div>
+    <div class="notice green" id="notif" style="display:none;"><i data-lucide="bell-ring"></i> Se notificó a tu instructor</div>
+    <div class="stack-10 mb14" id="list"></div>
+    <div class="card soft center"><span style="font-size:13px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;"><i data-lucide="lightbulb" class="lucide" style="width:15px;height:15px"></i> Entrena mínimo <strong>&nbsp;3 veces por semana&nbsp;</strong> en casa.</span></div>
   </div>
-
-  <div class="bottom-nav">
-    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
-    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
-    <a href="pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="#" class="bnav-item"><span class="bnav-icon">👤</span>Perfil</a>
-  </div>
-</div>
-
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
-function filtrar(nivel, el) {
-  document.querySelectorAll('.nivel').forEach(d => d.style.display = 'none');
-  document.querySelector('.nivel.' + nivel).style.display = 'block';
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-}
+  const LEVELS = {
+    principiante:[['flame','Calentamiento básico','10 min · Sin equipo · Estiramientos'],['dumbbell','Sentadillas + Planchas','15 min · 3 series de 10'],['target','Combinación de golpes','10 min · Frente al espejo'],['footprints','Cardio — saltar la cuerda','5 min · Ritmo moderado'],['leaf','Enfriamiento y estiramiento','5 min · Siempre al final']],
+    intermedio:[['flame','Calentamiento dinámico','10 min · Movilidad articular'],['activity','Patadas al aire — series','20 min · 4 series'],['zap','Circuito de fuerza','20 min · Burpees, lagartijas'],['target','Combos avanzados','15 min · Golpe + patada']],
+    avanzado:[['flame','HIIT Kickboxing','30 min · Alta intensidad'],['trophy','Simulación de combate','15 min · Shadowboxing'],['zap','Fuerza explosiva','20 min · Pliométricos'],['leaf','Recuperación activa','10 min · Foam roller']],
+  };
+  let lvl='principiante'; const done={};
+  function render(){
+    const items=LEVELS[lvl];
+    document.getElementById('list').innerHTML = items.map((it,i)=>{
+      const k=lvl+i, on=!!done[k];
+      return `<div class="row"><span class="ic amber"><i data-lucide="${it[0]}"></i></span>
+        <span class="grow"><span class="t">${it[1]}</span><span class="s">${it[2]}</span></span>
+        <span class="trail" style="gap:8px;">
+          <button class="iconbtn" aria-label="Reproducir"><i data-lucide="play"></i></button>
+          <button class="iconbtn ${on?'':''}" data-k="${k}" aria-label="Marcar" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};"><i data-lucide="check"></i></button>
+        </span></div>`;
+    }).join('');
+    const n=items.filter((_,i)=>done[lvl+i]).length;
+    document.getElementById('cnt').textContent=n+'/'+items.length+' hechos';
+    document.getElementById('cnt').className='badge '+(n===items.length?'green':'blue');
+    document.getElementById('notif').style.display = n>0?'flex':'none';
+    lucide.createIcons();
+  }
+  document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-lvl]');if(!b)return;
+    [...e.currentTarget.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');lvl=b.dataset.lvl;render();});
+  document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;
+    done[b.dataset.k]=!done[b.dataset.k];render();});
+  render();
 </script>
-
 </body>
 </html>

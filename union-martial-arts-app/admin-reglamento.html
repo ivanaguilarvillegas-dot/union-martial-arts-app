@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reglamento y firmas</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin-editar.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Reglamento y firmas</div></div></div>
+  <div class="body">
+    <div class="label">Documento</div>
+    <div class="card mb16">
+      <label style="display:flex;align-items:center;gap:11px;padding:11px;background:var(--soft);border-radius:var(--r-md);cursor:pointer;">
+        <span style="color:var(--primary);"><i data-lucide="file-up" style="width:18px;height:18px"></i></span>
+        <span style="flex:1;font-size:13.5px;font-weight:600;" id="fname">Subir reglamento (PDF)</span>
+        <span style="color:var(--primary);"><i data-lucide="upload" style="width:16px;height:16px"></i></span>
+        <input type="file" accept="application/pdf" hidden id="pdf" />
+      </label>
+      <label class="checkitem" style="border:none;margin-top:8px;cursor:pointer;" id="req">
+        <span class="box" id="reqbox" style="background:var(--green-600);color:#fff;"><i data-lucide="check"></i></span>
+        <span class="txt" style="color:var(--text);font-weight:600;">Requerir firma de los padres</span>
+      </label>
+    </div>
+    <div class="label">Estado de firmas</div>
+    <div class="stack-8" id="list"></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const F = [['Familia Reyes',true],['Familia Luna',true],['Familia Ortiz',false],['Familia Cruz',false],['Familia Méndez',true]];
+  document.getElementById('list').innerHTML = F.map(([n,ok])=>`
+    <div class="row"><span class="ic ${ok?'green':'amber'}"><i data-lucide="${ok?'badge-check':'clock'}"></i></span>
+      <span class="grow"><span class="t">${n}</span><span class="s">${ok?'Firmado de acuerdo':'Pendiente de firma'}</span></span>
+      <span class="trail"><span class="badge ${ok?'green':'amber'}">${ok?'Firmado':'Pendiente'}</span></span></div>`).join('');
+  document.getElementById('pdf').addEventListener('change',e=>{if(e.target.files[0]){document.getElementById('fname').textContent=e.target.files[0].name;}});
+  let req=true;
+  document.getElementById('req').addEventListener('click',()=>{req=!req;const b=document.getElementById('reqbox');b.style.background=req?'var(--green-600)':'var(--sunken)';b.style.color=req?'#fff':'var(--faint)';b.innerHTML=req?'<i data-lucide="check"></i>':'';lucide.createIcons();});
+  lucide.createIcons();
+</script>
+</body></html>

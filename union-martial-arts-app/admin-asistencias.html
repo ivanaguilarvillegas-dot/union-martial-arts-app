@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Confirmar asistencias</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Clase de hoy · 6:00 PM</div><div class="title">Confirmar asistencias</div></div></div>
+  <div class="body">
+    <div class="label row"><span>Lista de hoy</span><span class="badge green" id="cnt">2/6 confirmados</span></div>
+    <div class="stack-8" id="list"></div>
+    <button class="btn primary block mt16" onclick="location.href='admin.html'"><i data-lucide="save"></i> Guardar asistencias</button>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const R = [['MR','Mateo Reyes','Torneo · 6:00 PM','trophy',false],['SL','Sofía Luna','Clase · 6:00 PM','dumbbell',true],['DO','Diego Ortiz','Clase · 6:00 PM','dumbbell',false],['VC','Valeria Cruz','Actividad extra · 6:00 PM','sparkles',true],['IM','Iker Méndez','Clase · 6:00 PM','dumbbell',false],['RG','Renata Gil','Clase · 6:00 PM','dumbbell',false]];
+  const st = R.map(r=>r[4]);
+  function render(){
+    document.getElementById('list').innerHTML = R.map((r,i)=>`
+      <div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${r[0]}</span>
+        <span class="grow"><span class="t">${r[1]}</span><span class="s" style="display:inline-flex;align-items:center;gap:5px;"><i data-lucide="${r[3]}" style="width:12px;height:12px"></i> ${r[2]}</span></span>
+        <span class="trail"><button data-i="${i}" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${st[i]?'var(--green-600)':'var(--sunken)'};color:${st[i]?'#fff':'var(--muted)'};"><i data-lucide="${st[i]?'check':'plus'}" style="width:14px;height:14px"></i> ${st[i]?'Asistió':'Marcar'}</button></span></div>`).join('');
+    document.getElementById('cnt').textContent = st.filter(Boolean).length+'/6 confirmados';
+    lucide.createIcons();
+  }
+  document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;st[b.dataset.i]=!st[b.dataset.i];render();});
+  render();
+</script>
+</body></html>

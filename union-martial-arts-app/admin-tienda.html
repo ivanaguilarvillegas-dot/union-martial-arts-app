@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Editar tienda</title>
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+  .ed { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg); padding:12px; box-shadow:var(--shadow-card); }
+  .ed .top { display:flex; gap:12px; }
+  .ed .ph { width:78px; height:78px; flex-shrink:0; border-radius:var(--r-md); background:linear-gradient(135deg,var(--soft),#fff); display:flex; align-items:center; justify-content:center; color:var(--uma-blue-300); overflow:hidden; position:relative; cursor:pointer; }
+  .ed .ph img { width:100%; height:100%; object-fit:cover; }
+  .ed .ph .cam { position:absolute; bottom:3px; right:3px; width:22px; height:22px; border-radius:var(--r-full); background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; }
+  .ed .ph .cam svg { width:13px; height:13px; }
+  .ed .ph svg.big { width:26px; height:26px; }
+  .ed input { width:100%; height:38px; padding:0 10px; border:1px solid var(--border-input); border-radius:var(--r-sm); font-family:var(--font); font-size:13px; outline:none; }
+  .ed input:focus { border-color:var(--primary); }
+  .ed .fields { flex:1; display:flex; flex-direction:column; gap:6px; }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="admin-editar.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Editar tienda</div></div>
+  </div>
+  <div class="body">
+    <div class="card soft mb16" style="display:flex;align-items:center;gap:10px;">
+      <span style="color:var(--primary)"><i data-lucide="info" class="lucide" style="width:16px;height:16px"></i></span>
+      <span style="font-size:12.5px;">Edita nombre, descripción y precio, y <strong>sube la foto</strong> de cada producto.</span>
+    </div>
+    <div class="stack-10" id="list"></div>
+    <button class="btn secondary block mt14" id="add"><i data-lucide="plus"></i> Agregar producto</button>
+    <button class="btn primary block mt12" onclick="location.href='admin.html'"><i data-lucide="save"></i> Guardar tienda</button>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const PROD = [
+    {n:'Uniforme oficial UNION',d:'Dobok con logo bordado',p:'1,200'},
+    {n:'Playera deportiva',d:'Dry-fit del equipo',p:'350'},
+    {n:'Guantes de box',d:'12 oz · varios colores',p:'650'},
+  ];
+  function card(x,i){
+    return `<div class="ed">
+      <div class="top">
+        <label class="ph" data-i="${i}">
+          ${x.img?`<img src="${x.img}" alt="" />`:`<i data-lucide="image-plus" class="big"></i>`}
+          <span class="cam"><i data-lucide="camera"></i></span>
+          <input type="file" accept="image/*" hidden data-file="${i}" />
+        </label>
+        <div class="fields">
+          <input value="${x.n}" placeholder="Nombre del producto" />
+          <input value="${x.d}" placeholder="Descripción" />
+          <input value="${x.p}" placeholder="Precio (MXN)" inputmode="numeric" />
+        </div>
+      </div>
+    </div>`;
+  }
+  function render(){
+    document.getElementById('list').innerHTML = PROD.map(card).join('');
+    lucide.createIcons();
+  }
+  document.getElementById('add').addEventListener('click',()=>{PROD.push({n:'',d:'',p:''});render();});
+  document.getElementById('list').addEventListener('change',e=>{
+    const f=e.target.closest('[data-file]'); if(!f||!f.files[0])return;
+    const r=new FileReader(); const i=f.dataset.file;
+    r.onload=()=>{PROD[i].img=r.result;render();}; r.readAsDataURL(f.files[0]);
+  });
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Tienda</title>
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+  .prod { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-card); display:flex; flex-direction:column; }
+  .prod .ph { aspect-ratio:1/1; max-height:200px; background:linear-gradient(135deg,var(--soft),#fff); display:flex; align-items:center; justify-content:center; color:var(--uma-blue-300); }
+  .prod .ph img { width:100%; height:100%; object-fit:cover; }
+  .prod .ph svg { width:42px; height:42px; }
+  .prod .info { padding:12px; flex:1; display:flex; flex-direction:column; gap:2px; }
+  .prod .pn { font-size:13.5px; font-weight:600; line-height:1.3; }
+  .prod .pd { font-size:11.5px; color:var(--muted); }
+  .prod .pp { font-family:var(--font-display); font-size:17px; font-weight:800; color:var(--primary); margin-top:4px; }
+  .prod .btn { border-radius:0; margin-top:auto; }
+  .pgrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Tienda del equipo</div></div>
+  </div>
+  <div class="body">
+    <div class="card soft mb16" style="display:flex;align-items:center;gap:10px;">
+      <span style="color:var(--primary)"><i data-lucide="shopping-bag" class="lucide" style="width:18px;height:18px"></i></span>
+      <span style="font-size:12.5px;color:var(--text);">Uniformes, ropa deportiva y accesorios oficiales. Haz tu pedido por WhatsApp.</span>
+    </div>
+    <div class="pgrid" id="grid"></div>
+    <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  // El instructor edita estos productos y sube las fotos desde el panel.
+  const PROD = [
+    {n:'Uniforme oficial UNION',d:'Dobok con logo bordado',p:'$1,200',ic:'shirt',img:''},
+    {n:'Playera deportiva',d:'Dry-fit del equipo',p:'$350',ic:'shirt',img:''},
+    {n:'Short de competencia',d:'Kickboxing oficial',p:'$450',ic:'shirt',img:''},
+    {n:'Guantes de box',d:'12 oz · varios colores',p:'$650',ic:'hand',img:''},
+    {n:'Espinilleras',d:'Protección acolchada',p:'$550',ic:'shield',img:''},
+    {n:'Mochila UNION',d:'Para equipo y uniforme',p:'$480',ic:'backpack',img:''},
+  ];
+  const wa = (n,p)=>`https://wa.me/526566379191?text=${encodeURIComponent('Hola, quiero pedir: '+n+' ('+p+')')}`;
+  document.getElementById('grid').innerHTML = PROD.map(x=>`
+    <div class="prod">
+      <div class="ph">${x.img?`<img src="${x.img}" alt="${x.n}" />`:`<i data-lucide="${x.ic}"></i>`}</div>
+      <div class="info">
+        <div class="pn">${x.n}</div>
+        <div class="pd">${x.d}</div>
+        <div class="pp">${x.p}</div>
+      </div>
+      <a class="btn primary block" href="${wa(x.n,x.p)}" target="_blank" rel="noopener">💬 Pedir</a>
+    </div>`).join('');
+  lucide.createIcons();
+</script>
+</body>
+</html>

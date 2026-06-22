@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Agendar cita</title>
+<link rel="stylesheet" href="css/uma.css" />
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Agendar cita</div></div>
+  </div>
+  <div class="body">
+    <div id="form">
+      <div class="card">
+        <div class="stack">
+          <label class="field"><span class="lab">Motivo de la cita</span>
+            <select><option>Hablar del progreso de mi hijo/a</option><option>Dudas sobre pagos / programas</option><option>Cambio de horario</option><option>Otro</option></select></label>
+          <label class="field"><span class="lab">Día deseado</span><input type="date" /></label>
+          <label class="field"><span class="lab">Hora deseada</span><input type="time" /></label>
+          <button class="btn primary block" id="solicitar"><i data-lucide="calendar-clock"></i> Solicitar cita</button>
+        </div>
+      </div>
+    </div>
+    <div id="ok" style="display:none;">
+      <div class="card green center">
+        <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="calendar-check" style="width:26px;height:26px"></i></div>
+        <div style="font-size:15px;font-weight:700;color:var(--green-text);">Cita solicitada · por confirmar</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">El instructor revisará tu solicitud y te enviará la confirmación por notificación.</div>
+      </div>
+    </div>
+    <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  document.getElementById('solicitar').addEventListener('click',()=>{
+    document.getElementById('form').style.display='none';
+    document.getElementById('ok').style.display='block'; lucide.createIcons();
+  });
+  lucide.createIcons();
+</script>
+</body>
+</html>

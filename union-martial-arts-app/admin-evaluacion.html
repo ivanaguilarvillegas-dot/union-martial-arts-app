@@ -1,121 +1,38 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Registrar Evaluación</title>
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Registrar evaluación</title><link rel="stylesheet" href="css/uma.css" /></head>
 <body>
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-  <div class="nav-header dark">
-    <a href="admin.html" class="back-btn">← Volver</a>
-    <h1>Registrar Evaluación</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Evaluación del día</div><div class="title">Registrar evaluación</div></div></div>
+  <div class="body">
+    <div class="notice green" id="ok" style="display:none;"><i data-lucide="check-circle"></i> Evaluación guardada</div>
+    <div class="card mb14"><label class="field"><span class="lab">Alumno</span>
+      <select><option>Mateo Reyes — Cinta Azul</option><option>Sofía Luna — Cinta Verde</option><option>Diego Ortiz — Cinta Amarilla</option></select></label></div>
+    <div class="label row"><span>Áreas del día</span><span class="badge" id="cnt">0/9</span></div>
+    <div class="card flush mb14" style="padding:6px;" id="list"></div>
+    <label class="field mb14"><span class="lab">Nota del día (opcional)</span><textarea rows="3" placeholder="Comentario para los padres…"></textarea></label>
+    <button class="btn primary block" id="save"><i data-lucide="save"></i> Guardar evaluación</button>
   </div>
-  <div class="screen-body">
-    <div class="card">
-      <label>Alumno</label>
-      <select id="sel-alumno"><option value="">Cargando alumnos...</option></select>
-      <label>Mes de evaluación</label>
-      <input type="text" id="mes-eval" placeholder="Ej: Junio 2026" />
-    </div>
-    <div class="section-title">Calificaciones (1 — 10)</div>
-    <div class="card" id="criterios-box"></div>
-    <div id="promedio-box" class="card" style="background:var(--uma-blue-light); border-color:var(--uma-blue-border); text-align:center; display:none;">
-      <div style="font-size:28px; font-weight:600; color:var(--uma-blue);" id="promedio-num">—</div>
-      <div style="font-size:13px; color:var(--uma-blue);">Promedio general</div>
-    </div>
-    <div class="section-title">Comentario del instructor</div>
-    <div class="card">
-      <textarea id="comentario" rows="4" placeholder="Observaciones sobre el alumno este mes..."
-        style="width:100%; border:0.5px solid var(--uma-blue-border); border-radius:10px; padding:12px; font-size:14px; font-family:inherit; resize:none;"></textarea>
-    </div>
-    <div id="msg-eval" style="font-size:13px; text-align:center; padding:10px; border-radius:8px; display:none; margin-bottom:10px;"></div>
-    <button class="btn-primary" onclick="guardar()">Guardar evaluación</button>
-  </div>
-  <div class="bottom-nav">
-    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
-    <a href="admin-alumnos.html" class="bnav-item"><span class="bnav-icon">👥</span>Alumnos</a>
-    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
-  </div>
-</div>
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  const criterios = [
-    { id: 'tecnica_golpe', label: 'Técnica de golpe' },
-    { id: 'patadas', label: 'Patadas' },
-    { id: 'defensa', label: 'Defensa' },
-    { id: 'condicion_fisica', label: 'Condición física' },
-    { id: 'disciplina', label: 'Disciplina' },
-    { id: 'trabajo_equipo', label: 'Trabajo en equipo' },
-  ]
-
-  const box = document.getElementById('criterios-box')
-  criterios.forEach(c => {
-    box.innerHTML += `
-      <div style="margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
-          <span>${c.label}</span>
-          <span id="val-${c.id}" style="color:var(--uma-blue); font-weight:500;">5</span>
-        </div>
-        <input type="range" min="1" max="10" value="5" step="1" style="width:100%;"
-          oninput="document.getElementById('val-${c.id}').textContent=this.value; calcProm()" />
-      </div>`
-  })
-
-  window.calcProm = function() {
-    const inputs = document.querySelectorAll('input[type=range]')
-    const sum = Array.from(inputs).reduce((a, el) => a + Number(el.value), 0)
-    const prom = (sum / inputs.length).toFixed(1)
-    document.getElementById('promedio-num').textContent = prom + ' / 10'
-    document.getElementById('promedio-box').style.display = 'block'
-    return prom
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const D = ['Actitud','Esfuerzo','Técnica','Participación','Trabajo en equipo','Uniforme completo','Higiene y limpieza','Respeto','Llegó a tiempo'];
+  const st={};
+  function render(){
+    document.getElementById('list').innerHTML = D.map((d,i)=>`<button class="checkitem ${st[i]?'done':''}" data-i="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${d}</span></button>`).join('');
+    document.getElementById('cnt').textContent=Object.values(st).filter(Boolean).length+'/9';
+    document.getElementById('cnt').className='badge '+(Object.values(st).filter(Boolean).length?'green':'');
+    lucide.createIcons();
   }
-
-  async function cargarAlumnos() {
-    const { data } = await supabase.from('alumnos').select('id, nombre').eq('activo', true).order('nombre')
-    const sel = document.getElementById('sel-alumno')
-    sel.innerHTML = '<option value="">Seleccionar alumno...</option>'
-    data?.forEach(a => sel.innerHTML += `<option value="${a.id}">${a.nombre}</option>`)
-  }
-
-  window.guardar = async function() {
-    const alumno_id = document.getElementById('sel-alumno').value
-    const mes = document.getElementById('mes-eval').value.trim()
-    const comentario = document.getElementById('comentario').value.trim()
-    const msg = document.getElementById('msg-eval')
-
-    if (!alumno_id || !mes) {
-      msg.textContent = 'Selecciona un alumno y escribe el mes.'
-      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-      msg.style.display = 'block'; return
-    }
-
-    const inputs = document.querySelectorAll('input[type=range]')
-    const vals = Array.from(inputs).map(i => Number(i.value))
-    const promedio = (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1)
-
-    const { error } = await supabase.from('evaluaciones').insert({
-      alumno_id, mes, comentario, promedio,
-      tecnica_golpe: vals[0], patadas: vals[1], defensa: vals[2],
-      condicion_fisica: vals[3], disciplina: vals[4], trabajo_equipo: vals[5]
-    })
-
-    if (error) {
-      msg.textContent = 'Error al guardar. Intenta de nuevo.'
-      msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-    } else {
-      msg.textContent = '✅ Evaluación guardada. El padre ya puede verla en la app.'
-      msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
-    }
-    msg.style.display = 'block'
-  }
-
-  calcProm()
-  cargarAlumnos()
+  document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;st[b.dataset.i]=!st[b.dataset.i];render();});
+  document.getElementById('save').addEventListener('click',()=>{document.getElementById('ok').style.display='flex';lucide.createIcons();window.scrollTo&&document.querySelector('.body').scrollTo(0,0);});
+  render();
 </script>
-</body>
-</html>
+</body></html>

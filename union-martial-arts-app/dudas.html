@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Dudas</title>
+<link rel="stylesheet" href="css/uma.css" />
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Área de dudas</div></div>
+  </div>
+  <div class="body">
+    <div class="label">Preguntas frecuentes</div>
+    <div class="stack-8 mb18" id="faqs"></div>
+
+    <div class="label">¿No encuentras tu respuesta?</div>
+    <div class="card soft">
+      <div id="qform">
+        <div style="font-size:13px;margin-bottom:10px;">Escribe tu propia pregunta y el instructor te responderá.</div>
+        <label class="field"><textarea rows="3" placeholder="Escribe tu pregunta aquí…"></textarea></label>
+        <button class="btn primary block mt12" id="enviar"><i data-lucide="message-square"></i> Enviar pregunta al instructor</button>
+      </div>
+      <div id="qok" style="display:none;text-align:center;">
+        <span style="color:var(--green-600);display:inline-block;margin-bottom:6px;"><i data-lucide="send" style="width:22px;height:22px"></i></span>
+        <div style="font-size:14px;font-weight:700;color:var(--green-text);">Pregunta enviada</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">Tu instructor te responderá pronto.</div>
+      </div>
+    </div>
+    <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const FAQ = [
+    ['¿Qué necesita mi hijo para su primera clase?','Ropa cómoda y agua. El uniforme se entrega al inscribirse.'],
+    ['¿Cómo cambio de horario?','Agenda una cita o escríbenos; ajustamos según disponibilidad.'],
+    ['¿Cuándo son los exámenes de cinta?','Cada cambio se evalúa mensualmente; verás la fecha en Torneos y actividades.'],
+    ['¿Puedo pagar en línea?','Sí, con Mercado Pago desde la sección Pagos (tarjeta, SPEI u OXXO).'],
+  ];
+  let open=0;
+  function render(){
+    document.getElementById('faqs').innerHTML = FAQ.map(([q,a],i)=>`
+      <div class="card flush">
+        <button class="q" data-i="${i}" style="width:100%;display:flex;align-items:center;gap:10px;padding:14px;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--font);">
+          <span style="flex:1;font-size:14px;font-weight:600;">${q}</span>
+          <span style="color:var(--faint);flex-shrink:0;"><i data-lucide="${open===i?'chevron-up':'chevron-down'}" style="width:18px;height:18px"></i></span>
+        </button>
+        ${open===i?`<div style="padding:0 14px 14px;font-size:13px;color:var(--muted);line-height:1.6;">${a}</div>`:''}
+      </div>`).join('');
+    lucide.createIcons();
+  }
+  document.getElementById('faqs').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;open=open==+b.dataset.i?-1:+b.dataset.i;render();});
+  document.getElementById('enviar').addEventListener('click',()=>{document.getElementById('qform').style.display='none';document.getElementById('qok').style.display='block';lucide.createIcons();});
+  render();
+</script>
+</body>
+</html>

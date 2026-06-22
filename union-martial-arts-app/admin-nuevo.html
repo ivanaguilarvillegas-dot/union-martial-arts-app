@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nuevo alumno</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin-alumnos.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Agregar nuevo alumno</div></div></div>
+  <div class="body">
+    <div id="form">
+      <div class="label">Datos del alumno</div>
+      <div class="card mb16"><div class="stack">
+        <label class="field"><span class="lab">Nombre completo</span><input placeholder="Nombre del alumno" /></label>
+        <label class="field"><span class="lab">Edad</span><input placeholder="9" inputmode="numeric" /></label>
+        <label class="field"><span class="lab">Cinta actual</span><select id="belt"></select></label>
+        <label class="field"><span class="lab">Programa</span><select><option>Programa Básico</option><option>Anual UNION</option><option>Club Cinta Negra</option><option>Programa Élite UACJ</option></select></label>
+      </div></div>
+      <div class="label">Padre / tutor</div>
+      <div class="card mb16"><div class="stack">
+        <label class="field"><span class="lab">Nombre del tutor</span><input placeholder="Nombre completo" /></label>
+        <label class="field"><span class="lab">Teléfono</span><input placeholder="(656) 000.0000" /></label>
+        <label class="field"><span class="lab">Correo</span><input placeholder="correo@ejemplo.com" /></label>
+      </div></div>
+      <div class="label">Emergencia y persona autorizada</div>
+      <div class="card mb16"><div class="stack">
+        <label class="field"><span class="lab">Contacto de emergencia</span><input placeholder="Nombre y teléfono" /></label>
+        <label class="field"><span class="lab">Persona autorizada para recoger</span><input placeholder="Nombre y parentesco" /></label>
+      </div></div>
+      <button class="btn primary block" id="save"><i data-lucide="save"></i> Registrar alumno</button>
+    </div>
+    <div id="ok" style="display:none;"><div class="card green center">
+      <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="user-check" style="width:26px;height:26px"></i></div>
+      <div style="font-size:15px;font-weight:700;color:var(--green-text);">Alumno registrado</div></div></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a class="on" href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const BELTS=['Blanca','Amarilla','Anaranjada','Morada','Azul','Verde','Café I','Café II','Café III','Roja','Roja-Negra','Negra'];
+  document.getElementById('belt').innerHTML = BELTS.map(b=>`<option>${b}</option>`).join('');
+  document.getElementById('save').addEventListener('click',()=>{document.getElementById('form').style.display='none';document.getElementById('ok').style.display='block';lucide.createIcons();});
+  lucide.createIcons();
+</script>
+</body></html>

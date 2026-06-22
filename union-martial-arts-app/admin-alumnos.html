@@ -1,117 +1,30 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Alumnos</title>
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Alumnos</title><link rel="stylesheet" href="css/uma.css" /></head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-  <div class="nav-header dark">
-    <a href="admin.html" class="back-btn">← Volver</a>
-    <h1>Alumnos registrados</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">48 activos</div><div class="title">Alumnos</div></div>
+    <a class="iconbtn-dark" href="admin-nuevo.html" aria-label="Agregar"><i data-lucide="user-plus"></i></a></div>
+  <div class="body">
+    <a class="btn secondary block mb14" href="admin-nuevo.html"><i data-lucide="user-plus"></i> Agregar nuevo alumno</a>
+    <div class="label">Lista de alumnos</div>
+    <div class="stack-8" id="list"></div>
   </div>
-  <div class="screen-body">
-    <input type="text" id="buscador" placeholder="🔍 Buscar alumno..." oninput="buscar(this.value)" />
-    <div class="tabs">
-      <a href="#" class="tab active" onclick="filtro('todos',this)">Todos</a>
-      <a href="#" class="tab" onclick="filtro('pagado',this)">Al día</a>
-      <a href="#" class="tab" onclick="filtro('pendiente',this)">Pendiente</a>
-    </div>
-    <div class="section-title" id="contador-label">Cargando...</div>
-    <div id="lista-alumnos">
-      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Cargando alumnos...</div>
-    </div>
-  </div>
-  <div class="bottom-nav">
-    <a href="admin.html" class="bnav-item"><span class="bnav-icon">📊</span>Panel</a>
-    <a href="admin-alumnos.html" class="bnav-item active"><span class="bnav-icon">👥</span>Alumnos</a>
-    <a href="admin-pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="admin-frase.html" class="bnav-item"><span class="bnav-icon">💬</span>Mensajes</a>
-  </div>
-</div>
-
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  let todosAlumnos = []
-  let estadoPagos = {}
-  let filtroActual = 'todos'
-
-  async function cargarDatos() {
-    const { data: alumnos } = await supabase
-      .from('alumnos')
-      .select('*')
-      .eq('activo', true)
-      .order('nombre')
-
-    const { data: pagos } = await supabase
-      .from('pagos')
-      .select('alumno_id, estado')
-      .order('creado_en', { ascending: false })
-
-    pagos?.forEach(p => {
-      if (!estadoPagos[p.alumno_id]) estadoPagos[p.alumno_id] = p.estado
-    })
-
-    todosAlumnos = alumnos || []
-    renderizar(todosAlumnos)
-  }
-
-  function iniciales(nombre) {
-    return nombre?.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase() || '?'
-  }
-
-  function renderizar(lista) {
-    const cont = document.getElementById('lista-alumnos')
-    document.getElementById('contador-label').textContent = lista.length + ' alumno' + (lista.length !== 1 ? 's' : '')
-    if (lista.length === 0) {
-      cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Sin resultados.</div>'
-      return
-    }
-    cont.innerHTML = lista.map(a => {
-      const estado = estadoPagos[a.id] || 'sin registro'
-      const badge = estado === 'pagado'
-        ? '<span class="badge green">Al día</span>'
-        : estado === 'pendiente'
-        ? '<span class="badge red">Pendiente</span>'
-        : '<span class="badge gray">Sin pago</span>'
-      return `
-        <div class="student-row">
-          <div class="avatar">${iniciales(a.nombre)}</div>
-          <div style="flex:1;">
-            <div class="student-name">${a.nombre}</div>
-            <div class="student-sub">Cint. ${a.cinturon} · ${a.grupo || ''}</div>
-          </div>
-          ${badge}
-        </div>`
-    }).join('')
-  }
-
-  window.filtro = function(estado, el) {
-    filtroActual = estado
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-    el.classList.add('active')
-    const q = document.getElementById('buscador').value.toLowerCase()
-    aplicarFiltros(q)
-  }
-
-  window.buscar = function(texto) {
-    aplicarFiltros(texto.toLowerCase())
-  }
-
-  function aplicarFiltros(q) {
-    let lista = todosAlumnos.filter(a => a.nombre.toLowerCase().includes(q))
-    if (filtroActual !== 'todos') {
-      lista = lista.filter(a => estadoPagos[a.id] === filtroActual)
-    }
-    renderizar(lista)
-  }
-
-  cargarDatos()
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a class="on" href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const A = [['MR','Mateo Reyes','Cinta Azul · Programa Básico'],['SL','Sofía Luna','Cinta Verde · Anual UNION'],['DO','Diego Ortiz','Cinta Amarilla · Programa Básico'],['VC','Valeria Cruz','Cinta Anaranjada · Club Cinta Negra'],['IM','Iker Méndez','Cinta Blanca · Programa Básico'],['RG','Renata Gil','Cinta Morada · Anual UNION']];
+  document.getElementById('list').innerHTML = A.map(([ini,n,s])=>`
+    <a class="row" href="admin-evaluacion.html"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
+      <span class="grow"><span class="t">${n}</span><span class="s">${s}</span></span>
+      <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('');
+  lucide.createIcons();
 </script>
-</body>
-</html>
+</body></html>
