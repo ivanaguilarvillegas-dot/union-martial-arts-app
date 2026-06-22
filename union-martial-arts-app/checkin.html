@@ -1,161 +1,79 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Check-in</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Check-in</title>
+<link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-
-  <div class="nav-header">
-    <a href="home.html" class="back-btn">← Volver</a>
-    <h1>Check-in</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Check-in</div></div>
   </div>
-
-  <div class="screen-body">
-
-    <div class="section-title">Registrar llegada de hoy</div>
-    <div class="card">
-      <label>Día de la clase</label>
-      <select id="sel-dia"></select>
-
-      <label>Hora de entrada</label>
-      <select id="sel-hora">
-        <option>5:00 PM</option>
-        <option>6:00 PM</option>
-        <option>7:00 PM</option>
-      </select>
-
-      <div id="msg-checkin" style="font-size:13px; text-align:center; padding:8px; border-radius:8px; display:none; margin-top:8px;"></div>
-
-      <button class="btn-primary" onclick="registrarCheckin()">Confirmar llegada</button>
-    </div>
-
-    <div class="section-title">Historial reciente</div>
-    <div id="historial-checkins">
-      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Cargando historial...</div>
-    </div>
-
-  </div>
-
-  <div class="bottom-nav">
-    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
-    <a href="checkin.html" class="bnav-item active"><span class="bnav-icon">✅</span>Check-in</a>
-    <a href="pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="evaluacion.html" class="bnav-item"><span class="bnav-icon">📊</span>Perfil</a>
-  </div>
-</div>
-
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  let alumnoId = null
-
-  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
-  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-
-  function formatearFecha(fechaStr) {
-    const d = new Date(fechaStr + 'T12:00:00')
-    return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`
-  }
-
-  function generarDias() {
-    const sel = document.getElementById('sel-dia')
-    for (let i = 0; i < 7; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const val = d.toISOString().split('T')[0]
-      const opt = document.createElement('option')
-      opt.value = val
-      opt.textContent = i === 0 ? 'Hoy — ' + formatearFecha(val) : formatearFecha(val)
-      sel.appendChild(opt)
-    }
-  }
-
-  async function cargarDatos() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = 'index.html'; return }
-
-    const { data: padre } = await supabase
-      .from('padres')
-      .select('alumno_id')
-      .eq('user_id', user.id)
-      .single()
-
-    alumnoId = padre?.alumno_id
-    cargarHistorial()
-  }
-
-  async function cargarHistorial() {
-    if (!alumnoId) return
-    const { data } = await supabase
-      .from('checkins')
-      .select('*')
-      .eq('alumno_id', alumnoId)
-      .order('fecha', { ascending: false })
-      .limit(10)
-
-    const cont = document.getElementById('historial-checkins')
-    if (!data || data.length === 0) {
-      cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Sin asistencias registradas aún.</div>'
-      return
-    }
-
-    cont.innerHTML = data.map(c => `
-      <div class="checkin-row">
+  <div class="body">
+    <div class="label">Registrar llegada de hoy</div>
+    <div class="card mb18">
+      <div class="stack">
         <div>
-          <div style="font-size:14px; font-weight:500;">${formatearFecha(c.fecha)}</div>
-          <div style="font-size:12px; color:var(--text-secondary);">${c.hora?.substring(0,5) || ''}</div>
+          <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo de asistencia</div>
+          <div style="display:flex;gap:8px;" id="tipos">
+            <button class="chip on" data-tipo="clase">Clase</button>
+            <button class="chip" data-tipo="torneo">Torneo</button>
+            <button class="chip" data-tipo="actividad">Actividad extra</button>
+          </div>
         </div>
-        <span class="badge green">Asistió</span>
-      </div>`).join('')
-  }
+        <label class="field"><span class="lab">Día</span>
+          <select><option>Hoy — Lunes 23 jun</option><option>Domingo 22 jun</option><option>Sábado 21 jun</option></select></label>
+        <div id="horaWrap">
+          <label class="field" id="horaClase"><span class="lab">Hora de entrada (horario de Mateo)</span>
+            <select><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option><option>6:15 PM (Mar)</option><option>11:00 AM (Sáb)</option></select></label>
+        </div>
+        <div class="notice green" id="msg" style="display:none;flex-direction:column;align-items:flex-start;">
+          <span style="display:inline-flex;align-items:center;gap:6px;margin-bottom:4px;"><i data-lucide="shield-check"></i> ¡Llegada registrada!</span>
+          <span style="font-weight:500;">Gracias, tu hijo está en buenas manos. 🥋 El instructor confirmará su asistencia.</span>
+        </div>
+        <button class="btn primary block" id="confirm"><i data-lucide="check"></i> Confirmar llegada</button>
+      </div>
+    </div>
 
-  window.registrarCheckin = async function() {
-    if (!alumnoId) return
-    const fecha = document.getElementById('sel-dia').value
-    const hora = document.getElementById('sel-hora').value
-    const msg = document.getElementById('msg-checkin')
+    <div class="label">Historial reciente</div>
+    <div class="stack-8" id="hist"></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a class="on" href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const HIST = [
+    ['Viernes 20 jun','18:02 · Clase','calendar-check','green'],
+    ['Sábado 14 jun','11:05 · Torneo','trophy','amber'],
+    ['Miércoles 11 jun','18:05 · Clase','calendar-check','green'],
+    ['Sábado 7 jun','10:30 · Actividad extra','sparkles','green'],
+  ];
+  document.getElementById('hist').innerHTML = HIST.map(([d,s,ic,to])=>`
+    <div class="row"><span class="ic ${to}"><i data-lucide="${ic}"></i></span>
+      <span class="grow"><span class="t">${d}</span><span class="s">${s}</span></span>
+      <span class="trail"><span class="badge green">Confirmado</span></span></div>`).join('');
 
-    const { data: existe } = await supabase
-      .from('checkins')
-      .select('id')
-      .eq('alumno_id', alumnoId)
-      .eq('fecha', fecha)
-      .single()
-
-    if (existe) {
-      msg.textContent = '⚠️ Ya registraste asistencia este día.'
-      msg.style.background = '#FFF5F5'
-      msg.style.color = '#9B2C2C'
-      msg.style.display = 'block'
-      return
-    }
-
-    const { error } = await supabase
-      .from('checkins')
-      .insert({ alumno_id: alumnoId, fecha, hora })
-
-    if (error) {
-      msg.textContent = 'Error al registrar. Intenta de nuevo.'
-      msg.style.background = '#FFF5F5'
-      msg.style.color = '#9B2C2C'
-    } else {
-      msg.textContent = '✅ Asistencia registrada exitosamente.'
-      msg.style.background = '#F0FFF4'
-      msg.style.color = '#276749'
-      cargarHistorial()
-    }
-    msg.style.display = 'block'
-  }
-
-  generarDias()
-  cargarDatos()
+  const tipos = document.getElementById('tipos');
+  tipos.addEventListener('click', e => {
+    const b = e.target.closest('[data-tipo]'); if(!b) return;
+    [...tipos.children].forEach(c=>c.classList.remove('on')); b.classList.add('on');
+    const clase = b.dataset.tipo === 'clase';
+    document.getElementById('horaWrap').innerHTML = clase
+      ? `<label class="field"><span class="lab">Hora de entrada (horario de Mateo)</span><select><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option><option>6:15 PM (Mar)</option><option>11:00 AM (Sáb)</option></select></label>`
+      : `<label class="field"><span class="lab">Hora de entrada</span><input type="time" /></label>`;
+  });
+  document.getElementById('confirm').addEventListener('click', ()=>{
+    document.getElementById('msg').style.display='flex'; lucide.createIcons();
+  });
+  lucide.createIcons();
 </script>
-
 </body>
 </html>

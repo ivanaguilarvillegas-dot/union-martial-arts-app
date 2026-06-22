@@ -1,120 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Pagos</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Pagos</title>
+<link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-
-  <div class="nav-header">
-    <a href="home.html" class="back-btn">← Volver</a>
-    <h1>Pagos</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Pagos</div></div>
   </div>
-
-  <div class="screen-body">
-
-    <div id="pago-pendiente" style="display:none;">
-      <div class="card" style="border:1.5px solid var(--uma-blue);">
-        <div style="font-size:12px; color:var(--text-secondary);" id="pago-mes">Mensualidad</div>
-        <div style="font-size:32px; font-weight:600; color:var(--text-primary); margin:6px 0;" id="pago-monto">$800 MXN</div>
-        <div style="font-size:13px; color:var(--red-alert); margin-bottom:4px;">⚠️ Pago pendiente</div>
-        <button class="btn-primary" onclick="alert('En la versión con pagos en línea aquí se abre Conekta o Stripe.\n\nPor ahora contacta a tu instructor para registrar el pago.')">
-          💳 Contactar para pagar
-        </button>
-      </div>
+  <div class="body">
+    <div class="card mb12" style="border:1.5px solid var(--primary);">
+      <div style="font-size:12px;color:var(--muted);">Mensualidad Junio 2025 · Programa Básico</div>
+      <div style="font-family:var(--font-display);font-size:32px;font-weight:800;margin:6px 0;">$1,550 <span style="font-size:15px;color:var(--muted);">MXN</span></div>
+      <div style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--red-600);margin-bottom:12px;font-weight:600;"><i data-lucide="alert-circle" class="lucide" style="width:15px;height:15px"></i> Pago pendiente</div>
+      <a class="btn primary block" href="#"><i data-lucide="credit-card"></i> Pagar con Mercado Pago</a>
     </div>
 
-    <div id="pago-ok" style="display:none;">
-      <div class="card" style="background:var(--green-bg); border-color:#b7e4c7; text-align:center;">
-        <div style="font-size:28px; margin-bottom:6px;">✅</div>
-        <div style="font-size:15px; font-weight:500; color:var(--green-text);">Pago al día</div>
-        <div style="font-size:13px; color:var(--green-text); margin-top:4px;" id="pago-ok-mes"></div>
-      </div>
-    </div>
-
-    <div class="card" style="background:var(--uma-blue-light); border-color:var(--uma-blue-border);">
-      <div style="font-size:13px; font-weight:500; color:var(--uma-blue); margin-bottom:8px;">Métodos de pago aceptados</div>
-      <div style="font-size:13px; color:var(--text-secondary); line-height:1.8;">
-        💵 Efectivo en academia<br>
-        📱 Transferencia bancaria<br>
-        💳 Tarjeta (próximamente)
-      </div>
-    </div>
-
-    <div class="section-title">Historial de pagos</div>
-    <div id="historial-pagos">
-      <div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Cargando...</div>
-    </div>
-
-  </div>
-
-  <div class="bottom-nav">
-    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
-    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
-    <a href="pagos.html" class="bnav-item active"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="evaluacion.html" class="bnav-item"><span class="bnav-icon">📊</span>Perfil</a>
-  </div>
-</div>
-
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  async function cargarDatos() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = 'index.html'; return }
-
-    const { data: padre } = await supabase
-      .from('padres')
-      .select('alumno_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!padre) return
-
-    const { data: pagos } = await supabase
-      .from('pagos')
-      .select('*')
-      .eq('alumno_id', padre.alumno_id)
-      .order('creado_en', { ascending: false })
-
-    if (!pagos || pagos.length === 0) {
-      document.getElementById('historial-pagos').innerHTML =
-        '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Sin pagos registrados aún.</div>'
-      return
-    }
-
-    const ultimo = pagos[0]
-    if (ultimo.estado === 'pendiente') {
-      document.getElementById('pago-pendiente').style.display = 'block'
-      document.getElementById('pago-mes').textContent = 'Mensualidad ' + (ultimo.mes || '')
-      document.getElementById('pago-monto').textContent = '$' + ultimo.monto + ' MXN'
-    } else {
-      document.getElementById('pago-ok').style.display = 'block'
-      document.getElementById('pago-ok-mes').textContent = ultimo.mes + ' — $' + ultimo.monto + ' MXN'
-    }
-
-    const iconos = { pagado: '✅', pendiente: '⏳', tardio: '⚠️' }
-    const colores = { pagado: 'green', pendiente: 'red', tardio: 'gray' }
-    const textos = { pagado: 'Pagado', pendiente: 'Pendiente', tardio: 'Tardío' }
-
-    document.getElementById('historial-pagos').innerHTML = pagos.map(p => `
-      <div class="alert-row">
-        <div class="alert-icon ${p.estado === 'pagado' ? 'green' : 'red'}">${iconos[p.estado] || '📋'}</div>
-        <div style="flex:1;">
-          <div class="alert-title">${p.mes || 'Sin mes'}</div>
-          <div class="alert-sub">$${p.monto} MXN${p.fecha_pago ? ' · Pagado ' + p.fecha_pago : ''}</div>
+    <div class="card soft mb18">
+      <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">Métodos de pago</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+        <span style="display:inline-flex;align-items:center;gap:9px;"><i data-lucide="smartphone" class="lucide" style="width:16px;height:16px"></i> Mercado Pago (tarjeta, SPEI, OXXO)</span>
+        <span style="display:inline-flex;align-items:center;gap:9px;"><i data-lucide="banknote" class="lucide" style="width:16px;height:16px"></i> Efectivo en academia</span>
+        <div style="display:flex;gap:9px;align-items:flex-start;">
+          <span style="margin-top:1px;"><i data-lucide="building-2" class="lucide" style="width:16px;height:16px"></i></span>
+          <div><div style="font-weight:600;">Transferencia bancaria — Santander</div>
+            <div style="color:var(--muted);margin-top:2px;">Iván Aguilar Villegas</div>
+            <div style="color:var(--muted);letter-spacing:.02em;">Tarjeta: 5579 0701 5682 7050</div></div>
         </div>
-        <span class="badge ${colores[p.estado] || 'gray'}">${textos[p.estado] || p.estado}</span>
-      </div>`).join('')
-  }
+      </div>
+    </div>
 
-  cargarDatos()
+    <div class="label">Programas UNION</div>
+    <div class="stack-8 mb18">
+      <a class="row" href="programas.html"><span class="ic"><i data-lucide="star"></i></span><span class="grow"><span class="t">Programa Básico</span><span class="s">Inscripción $500 · Mensualidad $1,550</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>
+      <a class="row" href="programas.html"><span class="ic"><i data-lucide="calendar"></i></span><span class="grow"><span class="t">Anual UNION</span><span class="s">Contado $12,500 · 3 pagos $14,500</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>
+      <a class="row" href="programas.html"><span class="ic"><i data-lucide="crown"></i></span><span class="grow"><span class="t">Club Cinta Negra</span><span class="s">Anualidad $9,950 · 8 h de entrenamiento</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>
+    </div>
+
+    <div class="label">Historial de pagos</div>
+    <div class="stack-8" id="hist"></div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a class="on" href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const H = [
+    ['Mensualidad Junio 2025','$1,550 MXN','pend'],
+    ['Mensualidad Mayo 2025','$1,550 MXN · Pagado 3 may','ok'],
+    ['Mensualidad Abril 2025','$1,550 MXN · Pagado 2 abr','ok'],
+    ['Inscripción','$500 MXN · Pagado 15 mar','ok'],
+  ];
+  document.getElementById('hist').innerHTML = H.map(([t,s,st])=>`
+    <div class="row"><span class="ic ${st==='ok'?'green':'red'}"><i data-lucide="${st==='ok'?'check':'clock'}"></i></span>
+      <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
+      <span class="trail"><span class="badge ${st==='ok'?'green':'red'}">${st==='ok'?'Pagado':'Pendiente'}</span></span></div>`).join('');
+  lucide.createIcons();
 </script>
-
 </body>
 </html>

@@ -1,113 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Login</title>
-  <link rel="stylesheet" href="css/styles.css" />
-  <style>
-    .login-wrap { min-height: 620px; background: #fff; padding-top: 10px !important; }
-    .phone-frame { background: #fff !important; }
-    .status-bar { background: #fff !important; color: #1B4FD8 !important; }
-    .status-bar span { color: #1B4FD8 !important; }
-    .login-input {
-      display: block;
-      width: 100%;
-      background: #f4f6fb !important;
-      border: 1.5px solid #d0d8f0 !important;
-      border-radius: 12px;
-      padding: 13px 14px;
-      color: #1a1a2e !important;
-      font-size: 15px;
-      margin-bottom: 12px;
-      box-sizing: border-box;
-    }
-    .login-input::placeholder { color: #9aa5c4 !important; }
-    .login-btn {
-      display: block;
-      width: 100%;
-      background: #1B4FD8;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-      text-align: center;
-    }
-    .contact-text { color: #888 !important; }
-    .contact-info { color: #1B4FD8 !important; }
-    .contact-divider { border-top: 0.5px solid #e0e0e0 !important; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Acceso</title>
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+  .login { flex:1; display:flex; flex-direction:column; padding:0 28px 30px; background:#fff; position:relative; overflow:hidden; }
+  .login .logo { width:100%; max-width:330px; display:block; margin:0 auto; }
+  .login .portal { text-align:center; font-size:12px; color:var(--faint); letter-spacing:.16em;
+    text-transform:uppercase; margin:14px 0 26px; font-weight:700; }
+  .login .spacer { flex:1; min-height:16px; }
+  .login .foot { padding-top:18px; border-top:1px solid var(--ink-100); text-align:center; }
+  .login .foot .q { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .login .foot a { display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px;
+    color:var(--primary); font-weight:600; text-decoration:none; margin-top:7px; }
+  .login .social { display:flex; justify-content:center; gap:14px; margin-top:14px; }
+  .login .social a { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px;
+    border-radius:var(--r-full); background:var(--soft); font-size:20px; text-decoration:none; margin:0; }
+  @keyframes rise { from{transform:translateY(16px)} to{transform:translateY(0)} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+  .login .logo { animation:rise .7s cubic-bezier(.16,1,.3,1), float 4.5s ease-in-out .7s infinite; }
+  @media (prefers-reduced-motion: reduce){ .login .logo{animation:none} }
+</style>
 </head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-
-  <div class="login-wrap">
-
-    <img src="logo1.png" alt="Union Martial Arts" style="width:100%; max-width:380px; margin-bottom:24px; margin-top:0; display:block;" />
-
-    <input class="login-input" id="correo" type="email" placeholder="Correo electrónico" />
-    <input class="login-input" id="password" type="password" placeholder="Contraseña" />
-
-    <div id="error-msg" style="color:#ffb3b3; font-size:12px; text-align:center; margin-bottom:8px; display:none;"></div>
-
-    <button class="login-btn" onclick="entrar()">Entrar</button>
-
-    <div style="margin-top:20px; padding-top:16px; border-top:0.5px solid #e0e0e0; width:100%; text-align:center;">
-      <div style="font-size:12px; color:#888; margin-bottom:10px;">¿Necesitas acceso? Contáctanos</div>
-      <div style="font-size:13px; color:#1B4FD8; margin-bottom:6px;">☎️ (656) 637.9191</div>
-      <div style="font-size:13px; color:#1B4FD8; margin-bottom:16px;">📧 unionmartialarts.jrz@gmail.com</div>
+<div class="phone"><div class="screen">
+  <div class="statusbar"><span>9:41</span><span class="right">
+    <i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+  <div class="login">
+    <img class="logo" src="assets/logo-union-stacked.png" alt="Union Martial Arts" />
+    <div class="portal">Portal de Padres</div>
+    <label class="field"><span class="lab">Correo electrónico</span>
+      <input type="email" placeholder="tu@correo.com" /></label>
+    <label class="field"><span class="lab">Contraseña</span>
+      <input type="password" placeholder="••••••••" /></label>
+    <a class="btn primary lg block mt16" href="home.html">Entrar</a>
+    <a class="btn ghost block mt12" href="admin.html"><i data-lucide="shield"></i> Entrar como instructor</a>
+    <div class="spacer"></div>
+    <div class="foot">
+      <div class="q">¿Necesitas acceso? Contáctanos</div>
+      <a href="https://wa.me/526566379191" target="_blank" rel="noopener"><i data-lucide="phone"></i> WhatsApp · (656) 637.9191</a>
+      <a href="mailto:unionmartialarts.jrz@gmail.com"><i data-lucide="mail"></i> unionmartialarts.jrz@gmail.com</a>
+      <div class="social">
+        <a href="https://www.instagram.com/union_martial_arts/" target="_blank" rel="noopener" aria-label="Instagram">📸</a>
+        <a href="https://www.facebook.com/unionmartialartsmex/" target="_blank" rel="noopener" aria-label="Facebook">👍</a>
+        <a href="https://www.tiktok.com/@unionmartialarts" target="_blank" rel="noopener" aria-label="TikTok">🎵</a>
+        <a href="https://wa.me/526566379191" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
+      </div>
     </div>
-
   </div>
-</div>
-
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  window.entrar = async function() {
-    const correo = document.getElementById('correo').value.trim()
-    const password = document.getElementById('password').value.trim()
-    const errorMsg = document.getElementById('error-msg')
-
-    if (!correo || !password) {
-      errorMsg.textContent = 'Por favor escribe tu correo y contraseña.'
-      errorMsg.style.display = 'block'
-      return
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password })
-
-    if (error) {
-      errorMsg.textContent = 'Correo o contraseña incorrectos.'
-      errorMsg.style.display = 'block'
-      return
-    }
-
-    const user = data.user
-
-    const { data: padre } = await supabase
-      .from('padres')
-      .select('es_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (padre?.es_admin) {
-      window.location.href = 'admin.html'
-    } else {
-      window.location.href = 'home.html'
-    }
-  }
-
-  document.getElementById('password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') window.entrar()
-  })
-</script>
-
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

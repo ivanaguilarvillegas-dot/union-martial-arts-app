@@ -1,140 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Union Martial Arts — Evaluación</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Evaluación</title>
+<link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
-
-<div class="phone-frame">
-  <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
-
-  <div class="nav-header">
-    <a href="home.html" class="back-btn">← Volver</a>
-    <h1 id="titulo-eval">Evaluación</h1>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Progreso de Mateo</div><div class="title">Evaluación</div></div>
   </div>
-
-  <div class="screen-body">
-
-    <div id="sin-evaluacion" style="text-align:center; padding:40px 20px; display:none;">
-      <div style="font-size:40px; margin-bottom:12px;">📋</div>
-      <div style="font-size:15px; font-weight:500; color:var(--text-primary);">Sin evaluación aún</div>
-      <div style="font-size:13px; color:var(--text-secondary); margin-top:6px;">Tu instructor registrará la evaluación mensual próximamente.</div>
+  <div class="body">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="chip on" data-tab="diaria">Diaria</button>
+      <button class="chip" data-tab="mensual">Mensual</button>
     </div>
 
-    <div id="contenido-eval" style="display:none;">
-      <div class="card">
-        <div style="font-size:14px; font-weight:500; margin-bottom:16px;">🥋 <span id="cinturon-eval"></span> · Union Martial Arts</div>
-
-        <div class="eval-bar-wrap">
-          <div class="eval-label"><span>Técnica de golpe</span><span id="val-golpe">—</span></div>
-          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-golpe" style="width:0%"></div></div>
+    <div id="diaria">
+      <div class="card mb14">
+        <div class="label row" style="margin-bottom:12px;"><span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500;font-size:13px;">Clase de hoy · Lunes 23 jun</span><span class="badge green">8/9</span></div>
+        <div id="dailyList"></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--ink-100);">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Nota del instructor</div>
+          <div style="font-size:13.5px;font-style:italic;line-height:1.55;">“Mateo trabajó muy bien hoy. Reforcemos la puntualidad.”</div>
         </div>
-        <div class="eval-bar-wrap">
-          <div class="eval-label"><span>Patadas</span><span id="val-patadas">—</span></div>
-          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-patadas" style="width:0%"></div></div>
-        </div>
-        <div class="eval-bar-wrap">
-          <div class="eval-label"><span>Defensa</span><span id="val-defensa">—</span></div>
-          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-defensa" style="width:0%"></div></div>
-        </div>
-        <div class="eval-bar-wrap">
-          <div class="eval-label"><span>Condición física</span><span id="val-fisica">—</span></div>
-          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-fisica" style="width:0%"></div></div>
-        </div>
-        <div class="eval-bar-wrap">
-          <div class="eval-label"><span>Disciplina</span><span id="val-disciplina">—</span></div>
-          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-disciplina" style="width:0%"></div></div>
-        </div>
-        <div class="eval-bar-wrap">
-          <div class="eval-label"><span>Trabajo en equipo</span><span id="val-equipo">—</span></div>
-          <div class="eval-bar-bg"><div class="eval-bar-fill" id="bar-equipo" style="width:0%"></div></div>
-        </div>
-
-        <div id="comentario-box" style="margin-top:16px; padding-top:14px; border-top:0.5px solid var(--uma-blue-border); display:none;">
-          <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Comentario del instructor:</div>
-          <div id="comentario-texto" style="font-size:14px; line-height:1.6; color:var(--text-primary);"></div>
-        </div>
-      </div>
-
-      <div style="background:var(--uma-blue-light); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px;">
-        <div style="font-size:30px; font-weight:600; color:var(--uma-blue);" id="promedio-final">—</div>
-        <div style="font-size:13px; color:var(--uma-blue); margin-top:4px;">Promedio general del mes</div>
       </div>
     </div>
 
+    <div id="mensual" style="display:none;">
+      <div class="card mb14">
+        <div class="label row" style="margin-bottom:14px;"><span style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;font-size:13px;">Evaluación de Junio</span><span class="badge blue">Cinta Azul</span></div>
+        <div id="progList"></div>
+      </div>
+      <div class="card soft center">
+        <div style="font-family:var(--font-display);font-size:34px;font-weight:800;color:var(--primary);line-height:1;">7.7 <span style="font-size:18px;opacity:.5;">/ 10</span></div>
+        <div style="font-size:13px;color:var(--primary);margin-top:6px;font-weight:600;">Promedio general del mes</div>
+      </div>
+    </div>
   </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  const DAILY = [['Actitud',1],['Esfuerzo',1],['Técnica',1],['Participación',1],['Trabajo en equipo',1],['Uniforme completo',1],['Higiene y limpieza',1],['Respeto',1],['Llegó a tiempo',0]];
+  document.getElementById('dailyList').innerHTML = DAILY.map(([t,ok])=>`
+    <div class="checkitem ${ok?'done':''}" style="cursor:default;"><span class="box"><i data-lucide="check"></i></span><span class="txt">${t}</span></div>`).join('');
 
-  <div class="bottom-nav">
-    <a href="home.html" class="bnav-item"><span class="bnav-icon">🏠</span>Inicio</a>
-    <a href="checkin.html" class="bnav-item"><span class="bnav-icon">✅</span>Check-in</a>
-    <a href="pagos.html" class="bnav-item"><span class="bnav-icon">💳</span>Pagos</a>
-    <a href="evaluacion.html" class="bnav-item active"><span class="bnav-icon">📊</span>Perfil</a>
-  </div>
-</div>
+  const MENSUAL = [['Técnica de golpe',8],['Patadas',7],['Defensa',8],['Condición física',6],['Disciplina',9],['Coordinación',8]];
+  document.getElementById('progList').innerHTML = MENSUAL.map(([t,v])=>`
+    <div class="prog"><div class="head"><span>${t}</span><b>${v} / 10</b></div>
+      <div class="track"><div class="fill" style="width:${v*10}%"></div></div></div>`).join('');
 
-<script type="module">
-  import { supabase } from './js/supabase.js'
-
-  function setBar(id, barId, valor) {
-    document.getElementById(id).textContent = valor + ' / 10'
-    document.getElementById(barId).style.width = (valor * 10) + '%'
-  }
-
-  async function cargarDatos() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = 'index.html'; return }
-
-    const { data: padre } = await supabase
-      .from('padres')
-      .select('alumno_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!padre) return
-
-    const { data: alumno } = await supabase
-      .from('alumnos')
-      .select('cinturon')
-      .eq('id', padre.alumno_id)
-      .single()
-
-    const { data: evals } = await supabase
-      .from('evaluaciones')
-      .select('*')
-      .eq('alumno_id', padre.alumno_id)
-      .order('creado_en', { ascending: false })
-      .limit(1)
-
-    if (!evals || evals.length === 0) {
-      document.getElementById('sin-evaluacion').style.display = 'block'
-      return
-    }
-
-    const ev = evals[0]
-    document.getElementById('contenido-eval').style.display = 'block'
-    document.getElementById('titulo-eval').textContent = 'Evaluación — ' + (ev.mes || '')
-    document.getElementById('cinturon-eval').textContent = 'Cinturón ' + (alumno?.cinturon || '')
-
-    setBar('val-golpe', 'bar-golpe', ev.tecnica_golpe)
-    setBar('val-patadas', 'bar-patadas', ev.patadas)
-    setBar('val-defensa', 'bar-defensa', ev.defensa)
-    setBar('val-fisica', 'bar-fisica', ev.condicion_fisica)
-    setBar('val-disciplina', 'bar-disciplina', ev.disciplina)
-    setBar('val-equipo', 'bar-equipo', ev.trabajo_equipo)
-
-    document.getElementById('promedio-final').textContent = (ev.promedio || '—') + ' / 10'
-
-    if (ev.comentario) {
-      document.getElementById('comentario-box').style.display = 'block'
-      document.getElementById('comentario-texto').textContent = '"' + ev.comentario + '"'
-    }
-  }
-
-  cargarDatos()
+  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('[data-tab]').forEach(c=>c.classList.remove('on')); b.classList.add('on');
+    const d = b.dataset.tab==='diaria';
+    document.getElementById('diaria').style.display = d?'block':'none';
+    document.getElementById('mensual').style.display = d?'none':'block';
+  }));
+  lucide.createIcons();
 </script>
-
 </body>
 </html>
