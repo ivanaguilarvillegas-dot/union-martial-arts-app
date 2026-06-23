@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Avisos — Union MA</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0f2167">
+<meta name="theme-color" content="#0047AB">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Union MA">
@@ -16,16 +16,17 @@
 .page-bg { background:#f0f2f5; min-height:100%; padding:0 0 90px; }
 
 /* Hero */
-.notif-hero { background:linear-gradient(135deg,#0f2167 0%,#1440b0 100%); padding:16px 18px 22px; color:#fff; }
+.notif-hero { background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 100%); padding:16px 18px 22px; color:#fff; }
 .notif-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .hero-logo { display:flex; align-items:center; gap:10px; }
-.hero-logo img { width:32px; height:32px; }
+.hero-logo-circle { width:40px; height:40px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.hero-logo-circle img { width:28px; height:28px; object-fit:contain; }
 .hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
 .hero-actions { display:flex; align-items:center; gap:10px; }
 .hero-bell { position:relative; }
 .hero-bell-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0f2167; }
-.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0f2167; }
+.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0047AB; }
+.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0047AB; }
 .hero-title { font-size:22px; font-weight:800; margin-bottom:3px; }
 .hero-sub { font-size:13px; opacity:.7; }
 
@@ -87,7 +88,7 @@
 .evento-btn { display:block; text-align:center; background:#eff6ff; color:#1d4ed8; font-size:12px; font-weight:700; padding:7px; border-radius:8px; text-decoration:none; margin-top:9px; }
 
 /* Frase */
-.frase-card { background:linear-gradient(135deg,#0f2167,#1440b0); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+.frase-card { background:linear-gradient(135deg,#0047AB,#1a5cc8); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
 .frase-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .frase-label { font-size:10px; font-weight:700; color:rgba(255,255,255,.6); margin-bottom:3px; letter-spacing:.05em; text-transform:uppercase; }
 .frase-txt { font-size:13px; color:#fff; font-style:italic; line-height:1.5; }
@@ -103,7 +104,7 @@
   <div class="notif-hero">
     <div class="notif-hero-top">
       <div class="hero-logo">
-        <img src="/assets/logo-union-white.png" alt="UMA" />
+        <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
         <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
       </div>
       <div class="hero-actions">
