@@ -311,10 +311,14 @@
   // Botón principal
   document.getElementById('btn-pagar').addEventListener('click', async () => {
     if (metodoPago === 'efectivo') {
-      // Notificar al instructor que pagará en efectivo
+      const montoFinal = montoBase
+      // Actualizar monto en BD
+      if (pagoId) {
+        await supabase.from('pagos').update({ monto: montoFinal, forma_pago: 'efectivo' }).eq('id', pagoId)
+      }
       await supabase.from('mensajes').insert({
         de_user_id: user.id,
-        texto: `${padre?.nombre || 'Un padre'} avisó que pagará en efectivo en la academia.`,
+        texto: `${padre?.nombre || 'Un padre'} avisó que pagará $${montoFinal.toLocaleString('es-MX')} en efectivo en la academia.`,
         para_admin: true
       })
       document.getElementById('btn-pagar').innerHTML = '<i data-lucide="check"></i> Aviso enviado al instructor'
@@ -330,22 +334,23 @@
     const file = document.getElementById('comp-file').files[0]
     if (!file) return
 
+    const montoFinal = montoBase
     const nombre = Date.now() + '_comp_' + file.name
-    const { error } = await supabase.storage.from('documentos').upload('comprobantes/' + nombre, file)
+    const { error } = await supabase.storage.from('media').upload('comprobantes/' + nombre, file)
     if (error) { alert('Error al subir: ' + error.message); return }
 
-    const url = supabase.storage.from('documentos').getPublicUrl('comprobantes/' + nombre).data.publicUrl
+    const url = supabase.storage.from('media').getPublicUrl('comprobantes/' + nombre).data.publicUrl
 
-    // Notificar al instructor
+    // Notificar al instructor con el monto real
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: `${padre?.nombre || 'Un padre'} envió comprobante de pago (${metodoPago}). Ver: ${url}`,
+      texto: `${padre?.nombre || 'Un padre'} envió comprobante de pago $${montoFinal.toLocaleString('es-MX')} (${metodoPago}). Ver: ${url}`,
       para_admin: true
     })
 
-    // Marcar pago como "en revisión"
+    // Actualizar pago con monto real + comprobante
     if (pagoId) {
-      await supabase.from('pagos').update({ forma_pago: metodoPago, comprobante_url: url }).eq('id', pagoId)
+      await supabase.from('pagos').update({ monto: montoFinal, forma_pago: metodoPago, comprobante_url: url }).eq('id', pagoId)
     }
 
     document.getElementById('comprobante-area').style.display = 'none'
