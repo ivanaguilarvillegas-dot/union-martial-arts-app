@@ -143,18 +143,27 @@
       // Stats — solo si hay alumno vinculado
       if (padre.alumno_id) {
         try {
-          const { data: checkins } = await supabase.from('checkins').select('id').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia).neq('tipo', 'ausencia')
-          const n = checkins?.length || 0
+          // Traer todos los checkins del mes y filtrar en JS para evitar problemas con NULLs
+          const { data: checkins } = await supabase.from('checkins')
+            .select('id, tipo').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+          const asistencias = (checkins || []).filter(c => c.tipo !== 'ausencia')
+          const n = asistencias.length
           document.getElementById('stat-clases').textContent = n
           document.getElementById('stat-asistencia').textContent = n ? Math.round((n / 20) * 100) + '%' : '0%'
-        } catch(e) {
-          document.getElementById('stat-clases').textContent = '—'
-          document.getElementById('stat-asistencia').textContent = '—'
-        }
+        } catch(e) {}
 
         try {
-          const { data: pagos } = await supabase.from('pagos').select('estado, mes, monto').eq('alumno_id', padre.alumno_id).order('fecha', { ascending: false }).limit(1)
-          const ultimoPago = pagos?.[0] || null
+          // Intentar con creado_en primero, luego sin orden si falla
+          let ultimoPago = null
+          const { data: p1, error: e1 } = await supabase.from('pagos')
+            .select('estado, mes, monto').eq('alumno_id', padre.alumno_id)
+            .order('creado_en', { ascending: false }).limit(1)
+          if (!e1) { ultimoPago = p1?.[0] || null }
+          else {
+            const { data: p2 } = await supabase.from('pagos')
+              .select('estado, mes, monto').eq('alumno_id', padre.alumno_id).limit(1)
+            ultimoPago = p2?.[0] || null
+          }
           document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : (ultimoPago ? 'Pendiente' : '—')
           if (ultimoPago && ultimoPago.estado !== 'pagado') {
             alertas.push(`<a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
@@ -162,9 +171,7 @@
               <span class="s">$${Number(ultimoPago.monto || 0).toLocaleString()} MXN</span></span>
               <span class="trail"><span class="badge red">Pendiente</span></span></a>`)
           }
-        } catch(e) {
-          document.getElementById('stat-pago').textContent = '—'
-        }
+        } catch(e) {}
       }
 
       // Mensajes del instructor a padres
