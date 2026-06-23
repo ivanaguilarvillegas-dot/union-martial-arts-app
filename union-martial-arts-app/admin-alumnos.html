@@ -20,9 +20,9 @@
 </div></div>
 
 <!-- Modal editar alumno -->
-<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:380px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-    <div style="font-size:15px;font-weight:700;margin-bottom:12px;flex-shrink:0;">Editar alumno</div>
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:380px;margin:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">Editar alumno</div>
     <input type="hidden" id="edit-id" />
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre completo</label>
@@ -64,8 +64,7 @@
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Horario</label>
       <div id="edit-horario-checks" style="display:flex;flex-direction:column;gap:8px;margin-top:2px;"></div>
     </div>
-    <!-- Scroll para campos extras -->
-    <div style="max-height:55vh;overflow-y:auto;padding-right:4px;">
+    <div>
       <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Padre / tutor</div>
         <div style="margin-bottom:10px;">
