@@ -84,7 +84,22 @@
   document.getElementById('list').addEventListener('click', async ev => {
     const b = ev.target.closest('[data-id]'); if (!b) return
     const evento_id = b.dataset.id
+    const evento = eventos.find(e => e.id === evento_id)
+
     await supabase.from('confirmaciones_torneo').insert({ evento_id, padre_user_id: user.id })
+
+    // Obtener nombre del padre y alumno para notificar
+    const { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).maybeSingle()
+    let alumnoNombre = ''
+    if (padre?.alumno_id) {
+      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', padre.alumno_id).maybeSingle()
+      alumnoNombre = al?.nombre || ''
+    }
+
+    // Notificar al instructor
+    const texto = `🏆 Confirmación de asistencia — ${alumnoNombre || padre?.nombre || 'Padre'} asistirá a: ${evento?.titulo || 'Evento'} (${evento?.fecha || ''}${evento?.hora ? ' · ' + evento.hora : ''})`
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+
     confirmados.add(evento_id)
     render()
   })
