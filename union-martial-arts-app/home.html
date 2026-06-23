@@ -130,9 +130,13 @@
   <!-- Tarjeta alumno -->
   <div class="alumno-card">
     <div class="alumno-foto">
-      <div class="foto-circle" id="foto-wrap">
+      <div class="foto-circle" id="foto-wrap" style="position:relative;cursor:pointer;" onclick="document.getElementById('foto-input').click()" title="Cambiar foto">
         <i data-lucide="user"></i>
+        <div id="foto-cam" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+          <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+        </div>
       </div>
+      <input type="file" id="foto-input" accept="image/*" style="display:none">
       <!-- Cinta SVG profesional -->
       <div id="cinta-wrap" style="display:none;text-align:center;">
         <svg id="cinta-svg" width="72" height="26" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
@@ -523,8 +527,34 @@
 
         // Foto si existe
         if (al.foto_url) {
-          document.getElementById('foto-wrap').innerHTML = `<img src="${al.foto_url}" alt="${al.nombre}" style="width:100%;height:100%;object-fit:cover;" />`
+          document.getElementById('foto-wrap').innerHTML = `
+            <img src="${al.foto_url}" alt="${al.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+              <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+            </div>`
         }
+
+        // Subida de foto
+        document.getElementById('foto-input').addEventListener('change', async (e) => {
+          const file = e.target.files[0]
+          if (!file) return
+          const ext = file.name.split('.').pop().toLowerCase()
+          const path = `alumno-${al.id}.${ext}`
+          const wrap = document.getElementById('foto-wrap')
+          wrap.style.opacity = '.5'
+          const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert: true, contentType: file.type })
+          if (error) { alert('Error al subir: ' + error.message); wrap.style.opacity = '1'; return }
+          const { data: { publicUrl } } = supabase.storage.from('fotos-alumnos').getPublicUrl(path)
+          const urlConCache = publicUrl + '?t=' + Date.now()
+          await supabase.from('alumnos').update({ foto_url: urlConCache }).eq('id', al.id)
+          wrap.style.opacity = '1'
+          wrap.innerHTML = `
+            <img src="${urlConCache}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+              <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+            </div>`
+          wrap.onclick = () => document.getElementById('foto-input').click()
+        })
 
         // Próxima clase desde horario
         const pc = proximaClase(al.horario)

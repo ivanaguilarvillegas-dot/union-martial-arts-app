@@ -1,6 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Alumnos</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Alumnos</title><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
@@ -24,6 +30,28 @@
   <div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:380px;margin:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
     <div style="font-size:15px;font-weight:700;margin-bottom:12px;">Editar alumno</div>
     <input type="hidden" id="edit-id" />
+
+    <!-- Foto del alumno -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:12px;">
+      <div id="admin-foto-wrap" style="width:62px;height:62px;border-radius:50%;background:#e6f0ff;border:2.5px solid #b5d0f5;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;cursor:pointer;" onclick="document.getElementById('admin-foto-input').click()">
+        <i data-lucide="user" style="width:26px;height:26px;color:#4a7fcb;"></i>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
+          <i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Foto del alumno</div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn secondary" style="font-size:11px;padding:5px 12px;height:auto;" onclick="document.getElementById('admin-foto-input').click()">
+            <i data-lucide="upload" style="width:12px;height:12px;"></i> Subir
+          </button>
+          <button type="button" id="admin-foto-borrar" class="btn" style="font-size:11px;padding:5px 12px;height:auto;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;display:none;" onclick="borrarFotoAdmin()">
+            <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Borrar
+          </button>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="admin-foto-input" accept="image/*" style="display:none">
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre completo</label>
       <input type="text" id="edit-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
@@ -224,6 +252,18 @@
       document.getElementById('edit-fecha-ingreso').value = a.fecha_ingreso || ''
       document.getElementById('edit-cinta').value = a.cinta || ''
       document.getElementById('edit-grupo').value = a.grupo || ''
+
+      // Foto en modal
+      const fotoWrap = document.getElementById('admin-foto-wrap')
+      const fotoBorrar = document.getElementById('admin-foto-borrar')
+      if (a.foto_url) {
+        fotoWrap.innerHTML = `<img src="${a.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /><div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>`
+        fotoBorrar.style.display = 'flex'
+      } else {
+        fotoWrap.innerHTML = `<i data-lucide="user" style="width:26px;height:26px;color:#4a7fcb;"></i><div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>`
+        fotoBorrar.style.display = 'none'
+      }
+      lucide.createIcons()
       actualizarHorariosEdit(a.grupo || '', a.horario || '')
       // Cargar datos del padre vinculado
       const { data: p } = await supabase.from('padres').select('nombre, telefono, correo, parentesco, contacto_emergencia_nombre, contacto_emergencia_tel, contacto_emergencia_parentesco, autorizado_nombre, autorizado_tel, autorizado_parentesco').eq('alumno_id', a.id).maybeSingle()
@@ -253,6 +293,50 @@
   document.getElementById('modal-cancelar').addEventListener('click', () => {
     document.getElementById('modal').style.display = 'none'
   })
+
+  // Subir foto desde admin
+  document.getElementById('admin-foto-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const id = document.getElementById('edit-id').value
+    if (!id) return
+    const ext = file.name.split('.').pop().toLowerCase()
+    const path = `alumno-${id}.${ext}`
+    const fotoWrap = document.getElementById('admin-foto-wrap')
+    fotoWrap.style.opacity = '.5'
+    const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert: true, contentType: file.type })
+    if (error) { alert('Error: ' + error.message); fotoWrap.style.opacity = '1'; return }
+    const { data: { publicUrl } } = supabase.storage.from('fotos-alumnos').getPublicUrl(path)
+    const url = publicUrl + '?t=' + Date.now()
+    await supabase.from('alumnos').update({ foto_url: url }).eq('id', id)
+    // Actualizar en memoria
+    const al = alumnos.find(a => a.id === id)
+    if (al) al.foto_url = url
+    fotoWrap.style.opacity = '1'
+    fotoWrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /><div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>`
+    document.getElementById('admin-foto-borrar').style.display = 'flex'
+    lucide.createIcons()
+    render()
+  })
+
+  // Borrar foto desde admin
+  window.borrarFotoAdmin = async () => {
+    const id = document.getElementById('edit-id').value
+    if (!id) return
+    if (!confirm('¿Borrar la foto del alumno?')) return
+    // Intentar borrar de storage (ambas extensiones comunes)
+    for (const ext of ['jpg','jpeg','png','webp']) {
+      await supabase.storage.from('fotos-alumnos').remove([`alumno-${id}.${ext}`])
+    }
+    await supabase.from('alumnos').update({ foto_url: null }).eq('id', id)
+    const al = alumnos.find(a => a.id === id)
+    if (al) al.foto_url = null
+    const fotoWrap = document.getElementById('admin-foto-wrap')
+    fotoWrap.innerHTML = `<i data-lucide="user" style="width:26px;height:26px;color:#4a7fcb;"></i><div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>`
+    document.getElementById('admin-foto-borrar').style.display = 'none'
+    lucide.createIcons()
+    render()
+  }
 
   document.getElementById('modal-guardar').addEventListener('click', async () => {
     const id = document.getElementById('edit-id').value
@@ -310,4 +394,10 @@
 
   cargar()
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
 </body></html>
+
