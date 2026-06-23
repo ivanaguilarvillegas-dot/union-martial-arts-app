@@ -170,14 +170,23 @@
   async function mostrarBadge() {
     let count = 0
     const hoy = new Date().toISOString().split('T')[0]
+    const visto = localStorage.getItem('notif_visto') || '2000-01-01'
+
     const [a, f, e] = await Promise.allSettled([
-      supabase.from('configuracion').select('clave').eq('clave', 'aviso_general'),
-      supabase.from('frases').select('id').eq('activa', true),
+      supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle(),
+      supabase.from('frases').select('id, fecha_envio').eq('activa', true).maybeSingle(),
       supabase.from('eventos').select('id').gte('fecha', hoy)
     ])
-    if (a.value?.data?.length) count += 1
-    if (f.value?.data?.length) count += 1
-    if (e.value?.data?.length) count += e.value.data.length
+
+    const aviso = a.value?.data
+    if (aviso?.valor && aviso.actualizado_en > visto) count += 1
+
+    const frase = f.value?.data
+    if (frase && (!frase.fecha_envio || frase.fecha_envio > visto.split('T')[0])) count += 1
+
+    const numEvs = e.value?.data?.length || 0
+    if (numEvs > 0) count += numEvs
+
     if (count > 0) {
       const link = document.querySelector('a[href="notificaciones.html"]')
       if (link) {

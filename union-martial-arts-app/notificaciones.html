@@ -45,6 +45,9 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  // Marcar como visto
+  localStorage.setItem('notif_visto', new Date().toISOString())
+
   // Horario del alumno
   const { data: padre } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
   if (padre?.alumno_id) {
