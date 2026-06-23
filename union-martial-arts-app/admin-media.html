@@ -86,7 +86,10 @@
   ]
 
   function clave(nombre) {
-    return nombre.toLowerCase().replace(/[^a-záéíóúñ0-9]/gi, '_').substring(0, 30)
+    return nombre.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]/g, '_')
+      .substring(0, 30)
   }
 
   function matchMedia(archivos, nombre) {

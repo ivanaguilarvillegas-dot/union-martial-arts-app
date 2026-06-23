@@ -69,7 +69,7 @@
       const k = lvl + i, on = !!done[k]
       // Buscar video del instructor que coincida con el nombre
       const vid = videos.find(v => v.nombre.toLowerCase().includes(it[1].toLowerCase().split(' ')[0].toLowerCase()))
-      const nombreClave = it[1].toLowerCase().replace(/[^a-záéíóúñ0-9]/gi, '_').substring(0, 30)
+      const nombreClave = it[1].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'_').substring(0,30)
       return `<div class="row"><span class="ic amber"><i data-lucide="${it[0]}"></i></span>
         <span class="grow"><span class="t">${it[1]}</span><span class="s">${it[2]}</span></span>
         <span class="trail" style="gap:8px;">
