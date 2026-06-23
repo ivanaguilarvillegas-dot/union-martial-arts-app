@@ -1,6 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Enviar mensaje</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Enviar mensaje</title><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
@@ -53,9 +59,10 @@
         .limit(20)
 
       // Cargamos todos los padres para hacer match por user_id
-      const { data: padres } = await supabase.from('padres').select('user_id, nombre')
+      const { data: padres } = await supabase.from('padres').select('id, user_id, nombre')
       const padreMap = {}
-      padres?.forEach(p => { if (p.user_id) padreMap[p.user_id] = p.nombre })
+      const padreIdMap = {}
+      padres?.forEach(p => { if (p.user_id) { padreMap[p.user_id] = p.nombre; padreIdMap[p.user_id] = p.id } })
 
       if (msgs?.length) {
         lista.innerHTML = '<div class="label" style="margin-bottom:10px">Mensajes de padres</div>' +
@@ -70,7 +77,7 @@
               <div id="resp-${idx}" style="display:none;">
                 <textarea rows="2" placeholder="Escribe tu respuesta…" style="width:100%;border:1px solid var(--border-input);border-radius:var(--r-sm);padding:8px;font-size:13px;font-family:var(--font);resize:none;" id="txt-${idx}"></textarea>
                 <div style="display:flex;gap:8px;margin-top:6px;">
-                  <button class="btn primary sm" data-send="${idx}" data-uid="${m.de_user_id}"><i data-lucide="send"></i> Enviar</button>
+                  <button class="btn primary sm" data-send="${idx}" data-uid="${m.de_user_id}" data-padrid="${padreIdMap[m.de_user_id]||''}"><i data-lucide="send"></i> Enviar</button>
                   <button class="btn secondary sm" data-cancel="${idx}">Cancelar</button>
                 </div>
               </div>
@@ -98,10 +105,11 @@
           if (sBtn) {
             const i = sBtn.dataset.send
             const uid = sBtn.dataset.uid
+            const padrid = sBtn.dataset.padrid || null
             const texto = document.getElementById('txt-' + i).value.trim()
             if (!texto) return
             sBtn.disabled = true; sBtn.textContent = 'Enviando…'
-            await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false })
+            await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: padrid })
             document.getElementById('msg-' + i).innerHTML += `<div style="margin-top:8px;padding:8px;background:var(--soft);border-radius:var(--r-sm);font-size:12.5px;color:var(--primary);"><b>Tu respuesta:</b> ${texto}</div>`
             document.getElementById('resp-' + i).style.display = 'none'
             lucide.createIcons()
@@ -128,6 +136,8 @@
   // Cargar citas pendientes
   async function cargarCitas() {
     try {
+      const { data: padresAll } = await supabase.from('padres').select('id, user_id')
+      const padreUidToId = {}; padresAll?.forEach(p => { if (p.user_id) padreUidToId[p.user_id] = p.id })
       const { data } = await supabase.from('citas').select('*').eq('estado', 'pendiente').order('fecha_preferida', { ascending: true })
       if (!data?.length) return
       const wrap = document.createElement('div')
@@ -184,7 +194,7 @@
           btnP.disabled = true; btnP.textContent = 'Enviando…'
           await supabase.from('citas').update({ fecha_preferida: fecha, hora_preferida: hora || null }).eq('id', id)
           const texto = `📅 El instructor propone nueva fecha para tu cita: ${fecha}${hora ? ' a las ' + hora : ''}. Confirma respondiendo este mensaje.`
-          await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false })
+          await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: padreUidToId[uid]||null })
           document.getElementById('cambio-' + id).innerHTML = '<div style="color:var(--green-text);font-size:13px;font-weight:600;">✅ Propuesta enviada al padre.</div>'
           return
         }
@@ -195,7 +205,7 @@
           btnA.disabled = true; btnA.textContent = 'Aceptando…'
           await supabase.from('citas').update({ estado: 'aceptada' }).eq('id', id)
           const texto = `✅ Tu cita fue confirmada — ${btnA.dataset.fecha}${btnA.dataset.hora ? ' a las ' + btnA.dataset.hora : ''}. ¡Te esperamos! 🥋`
-          await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false })
+          await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: padreUidToId[uid]||null })
           document.getElementById('cita-' + id).innerHTML = `<div style="color:var(--green-text);font-size:13px;font-weight:600;">✅ Cita aceptada y padre notificado.</div>`
           return
         }
@@ -205,7 +215,7 @@
           const uid = btnR.dataset.uid
           if (!confirm('¿Rechazar esta cita?')) return
           await supabase.from('citas').update({ estado: 'rechazada' }).eq('id', id)
-          await supabase.from('mensajes').insert({ de_user_id: user.id, texto: '❌ Tu solicitud de cita no pudo confirmarse. Por favor agenda otra fecha o contáctanos.', para_admin: false })
+          await supabase.from('mensajes').insert({ de_user_id: user.id, texto: '❌ Tu solicitud de cita no pudo confirmarse. Por favor agenda otra fecha o contáctanos.', para_admin: false, destinatario_id: padreUidToId[uid]||null })
           document.getElementById('cita-' + id).innerHTML = `<div style="color:var(--red-text,#c00);font-size:13px;font-weight:600;">❌ Cita rechazada.</div>`
         }
       })
@@ -224,9 +234,9 @@
   }
 
   async function cargarPadres() {
-    const { data } = await supabase.from('padres').select('user_id, nombre').eq('es_admin', false)
+    const { data } = await supabase.from('padres').select('id, nombre').eq('es_admin', false)
     const sel = document.getElementById('dest-select')
-    if (sel && data) sel.innerHTML = data.map(p => `<option value="${p.user_id}">${p.nombre}</option>`).join('')
+    if (sel && data) sel.innerHTML = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('')
   }
 
   tipos.addEventListener('click', e => {
@@ -263,8 +273,8 @@
       .order('creado_en', { ascending: false }).limit(20)
     if (!msgs?.length) return
 
-    const { data: padres } = await supabase.from('padres').select('user_id, nombre')
-    const padreMap = {}; padres?.forEach(p => { if (p.user_id) padreMap[p.user_id] = p.nombre })
+    const { data: padres } = await supabase.from('padres').select('id, nombre')
+    const padreMap = {}; padres?.forEach(p => { padreMap[p.id] = p.nombre })
 
     const wrap = document.createElement('div')
     wrap.style.marginTop = '16px'
@@ -329,4 +339,10 @@
   cargarAvisoActual()
   lucide.createIcons()
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
 </body></html>
+

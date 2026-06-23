@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Avisos — Union MA</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0047AB">
+<meta name="theme-color" content="#0f2167">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Union MA">
@@ -16,17 +16,16 @@
 .page-bg { background:#f0f2f5; min-height:100%; padding:0 0 90px; }
 
 /* Hero */
-.notif-hero { background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 100%); padding:16px 18px 22px; color:#fff; }
+.notif-hero { background:linear-gradient(135deg,#0f2167 0%,#1440b0 100%); padding:16px 18px 22px; color:#fff; }
 .notif-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .hero-logo { display:flex; align-items:center; gap:10px; }
-.hero-logo-circle { width:40px; height:40px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.hero-logo-circle img { width:28px; height:28px; object-fit:contain; }
+.hero-logo img { width:32px; height:32px; }
 .hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
 .hero-actions { display:flex; align-items:center; gap:10px; }
 .hero-bell { position:relative; }
 .hero-bell-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0047AB; }
-.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0047AB; }
+.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0f2167; }
+.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0f2167; }
 .hero-title { font-size:22px; font-weight:800; margin-bottom:3px; }
 .hero-sub { font-size:13px; opacity:.7; }
 
@@ -78,7 +77,7 @@
 .eventos-scroll { display:flex; gap:10px; overflow-x:auto; padding:0 16px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
 .eventos-scroll::-webkit-scrollbar { display:none; }
 .evento-card { background:#fff; border-radius:14px; width:210px; flex-shrink:0; scroll-snap-align:start; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid #f3f4f6; }
-.evento-img { width:100%; height:100px; background:#003380; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.evento-img { width:100%; height:100px; background:#0d1a5e; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
 .evento-img img { width:100%; height:100%; object-fit:cover; }
 .evento-img-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:rgba(255,255,255,.6); width:100%; height:100%; }
 .evento-tipo-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,.5); color:#fff; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; backdrop-filter:blur(4px); }
@@ -88,7 +87,7 @@
 .evento-btn { display:block; text-align:center; background:#eff6ff; color:#1d4ed8; font-size:12px; font-weight:700; padding:7px; border-radius:8px; text-decoration:none; margin-top:9px; }
 
 /* Frase */
-.frase-card { background:linear-gradient(135deg,#0047AB,#1a5cc8); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+.frase-card { background:linear-gradient(135deg,#0f2167,#1440b0); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
 .frase-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .frase-label { font-size:10px; font-weight:700; color:rgba(255,255,255,.6); margin-bottom:3px; letter-spacing:.05em; text-transform:uppercase; }
 .frase-txt { font-size:13px; color:#fff; font-style:italic; line-height:1.5; }
@@ -104,7 +103,7 @@
   <div class="notif-hero">
     <div class="notif-hero-top">
       <div class="hero-logo">
-        <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+        <img src="/assets/logo-union-white.png" alt="UMA" />
         <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
       </div>
       <div class="hero-actions">
@@ -239,7 +238,7 @@
     // Padre
     let padre = null
     try {
-      const { data: p1 } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+      const { data: p1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
       if (p1) { padre = p1 }
       else {
         const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
@@ -302,7 +301,7 @@
       const { data: msgs } = await supabase.from('mensajes')
         .select('id, texto, creado_en, leido')
         .eq('para_admin', false)
-        .eq('destinatario_id', user.id)
+        .eq('destinatario_id', padre?.id)
         .order('creado_en', { ascending: false })
         .limit(3)
 
@@ -347,7 +346,7 @@
             ? `<img src="${ev.foto_url}" alt="${ev.titulo}" style="width:100%;height:100%;object-fit:cover;">`
             : `<div class="evento-img-placeholder"><i class="ti ${ic}" style="font-size:30px;color:rgba(255,255,255,.5);"></i></div>`
           return `<div class="evento-card">
-            <div class="evento-img" style="background:#003380;">
+            <div class="evento-img" style="background:#0d1a5e;">
               ${imgHTML}
               ${ev.tipo ? `<div class="evento-tipo-badge">${ev.tipo.toUpperCase()}</div>` : ''}
             </div>
