@@ -46,10 +46,31 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const habitos = ['Tomé 8 vasos de agua','Desayuné antes de entrenar','Comí fruta o verdura','Evité refresco y frituras']
-  const good = ['Pollo a la plancha','Arroz integral','Plátano','Huevo','Atún','Avena','Fruta fresca','Agua natural','Verduras','Frijoles','Yogur natural','Nueces']
-  const bad = ['Refresco','Comida rápida','Frituras','Dulces','Jugos de caja','Carnes procesadas','Exceso de sal']
+  // Defaults
+  let good = ['Pollo a la plancha','Arroz integral','Plátano','Huevo','Atún','Avena','Fruta fresca','Agua natural','Verduras','Frijoles','Yogur natural','Nueces']
+  let bad = ['Refresco','Comida rápida','Frituras','Dulces','Jugos de caja','Carnes procesadas','Exceso de sal']
+  let habitos = ['Tomé 8 vasos de agua','Desayuné antes de entrenar','Comí fruta o verdura','Evité refresco y frituras']
   const dia = [['sunrise','Desayuno','Avena con plátano + 2 huevos + agua'],['utensils','Comida','Pollo a la plancha + arroz + ensalada'],['timer','2 horas antes de entrenar','Fruta + hidratación abundante'],['zap','Post-entrenamiento','Huevo + tortilla + agua o leche'],['moon','Cena ligera','Atún + verduras + agua']]
+
+  // Cargar configuración del instructor
+  try {
+    const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
+      .in('clave', ['nutricion_recomendados','nutricion_evitar',
+        'nutricion_habito_1','nutricion_habito_2','nutricion_habito_3','nutricion_habito_4',
+        'nutricion_desayuno','nutricion_comida','nutricion_pre','nutricion_post','nutricion_cena'])
+    if (cfgRows?.length) {
+      const m = {}; cfgRows.forEach(c => { m[c.clave] = c.valor })
+      if (m.nutricion_recomendados) good = m.nutricion_recomendados.split(',').map(s => s.trim()).filter(Boolean)
+      if (m.nutricion_evitar) bad = m.nutricion_evitar.split(',').map(s => s.trim()).filter(Boolean)
+      const h = [m.nutricion_habito_1, m.nutricion_habito_2, m.nutricion_habito_3, m.nutricion_habito_4].filter(Boolean)
+      if (h.length) habitos = h
+      if (m.nutricion_desayuno) dia[0][2] = m.nutricion_desayuno
+      if (m.nutricion_comida)   dia[1][2] = m.nutricion_comida
+      if (m.nutricion_pre)      dia[2][2] = m.nutricion_pre
+      if (m.nutricion_post)     dia[3][2] = m.nutricion_post
+      if (m.nutricion_cena)     dia[4][2] = m.nutricion_cena
+    }
+  } catch(e) {}
 
   document.getElementById('good').innerHTML = good.map(f => `<span class="chip good">${f}</span>`).join('')
   document.getElementById('bad').innerHTML = bad.map(f => `<span class="chip bad">${f}</span>`).join('')
