@@ -80,11 +80,15 @@
   const { data: frase } = await supabase.from('frases').select('texto, fecha_envio').eq('activa', true).maybeSingle()
   if (frase?.texto) {
     document.getElementById('frase-wrap').innerHTML = `
-      <div class="card soft" style="text-align:center;padding:20px 16px;">
-        <div style="font-size:22px;color:var(--primary);margin-bottom:10px;">"</div>
-        <div style="font-size:14px;font-style:italic;line-height:1.7;color:var(--text);">${frase.texto}</div>
-        <div style="font-size:22px;color:var(--primary);margin-top:6px;">"</div>
+      <div style="background:linear-gradient(135deg,#0d1f6e,#1a3aad);border-radius:16px;padding:24px 18px;text-align:center;">
+        <div style="font-size:28px;color:rgba(255,255,255,.5);line-height:1;margin-bottom:8px;">"</div>
+        <div style="font-size:14.5px;font-style:italic;line-height:1.75;color:#fff;font-weight:500;">${frase.texto}</div>
+        <div style="font-size:28px;color:rgba(255,255,255,.5);line-height:1;margin-top:8px;">"</div>
+        <div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.05em;">
+          <i data-lucide="award" style="width:12px;height:12px"></i> UNION MARTIAL ARTS
+        </div>
       </div>`
+    lucide.createIcons()
   }
 
   // Eventos próximos
