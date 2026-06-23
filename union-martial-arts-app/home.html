@@ -115,65 +115,93 @@
 
       document.getElementById('nombre-familia').textContent = 'Familia ' + (padre.nombre?.split(' ')[1] || padre.nombre || '')
 
-      if (!padre.alumno_id) return
-
-      const { data: alumno } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).single()
-      if (!alumno) return
-
-      document.getElementById('nombre-alumno').textContent = alumno.nombre || 'Mi hijo/a'
-      document.getElementById('cinta-alumno').textContent = 'Cinta ' + (alumno.cinta || alumno.cinturon || '—')
-      document.getElementById('grupo-alumno').textContent = (alumno.grupo || '') + (alumno.horario ? ' · ' + alumno.horario : '')
-
-      if (alumno.horario) {
-        document.getElementById('horario-card').style.display = 'block'
-        document.getElementById('horario-titulo').textContent = 'Horario de ' + (alumno.nombre?.split(' ')[0] || 'tu hijo/a')
-        document.getElementById('horario-texto').textContent = alumno.horario
-      }
-
-      // Estadísticas
       const hoy = new Date()
+      const hoyStr = hoy.toISOString().split('T')[0]
       const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
-      const { data: checkins } = await supabase.from('checkins').select('id').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
-      document.getElementById('stat-clases').textContent = checkins?.length || 0
-
-      const { data: pagos } = await supabase.from('pagos').select('estado, mes, monto').eq('alumno_id', padre.alumno_id).order('creado_en', { ascending: false }).limit(1)
-      const ultimoPago = pagos?.[0]
-      document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : 'Pendiente'
-
-      const pct = checkins?.length ? Math.round((checkins.length / 20) * 100) + '%' : '—'
-      document.getElementById('stat-asistencia').textContent = pct
-
-      // Alertas
       const alertas = []
 
-      if (ultimoPago?.estado !== 'pagado') {
-        alertas.push(`<a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
-          <span class="grow"><span class="t">Pago pendiente — ${ultimoPago?.mes || 'este mes'}</span>
-          <span class="s">$${Number(ultimoPago?.monto || 0).toLocaleString()} MXN</span></span>
-          <span class="trail"><span class="badge red">Pendiente</span></span></a>`)
+      // Cargar alumno si hay alumno_id
+      let alumno = null
+      if (padre.alumno_id) {
+        try {
+          const { data: al } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
+          alumno = al
+        } catch(e) {}
       }
 
+      if (alumno) {
+        document.getElementById('nombre-alumno').textContent = alumno.nombre || 'Mi hijo/a'
+        document.getElementById('cinta-alumno').textContent = 'Cinta ' + (alumno.cinta || alumno.cinturon || '—')
+        document.getElementById('grupo-alumno').textContent = (alumno.grupo || '') + (alumno.horario ? ' · ' + alumno.horario : '')
+        if (alumno.horario) {
+          document.getElementById('horario-card').style.display = 'block'
+          document.getElementById('horario-titulo').textContent = 'Horario de ' + (alumno.nombre?.split(' ')[0] || 'tu hijo/a')
+          document.getElementById('horario-texto').textContent = alumno.horario
+        }
+      }
+
+      // Stats — solo si hay alumno vinculado
+      if (padre.alumno_id) {
+        try {
+          const { data: checkins } = await supabase.from('checkins').select('id').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia).neq('tipo', 'ausencia')
+          const n = checkins?.length || 0
+          document.getElementById('stat-clases').textContent = n
+          document.getElementById('stat-asistencia').textContent = n ? Math.round((n / 20) * 100) + '%' : '0%'
+        } catch(e) {
+          document.getElementById('stat-clases').textContent = '—'
+          document.getElementById('stat-asistencia').textContent = '—'
+        }
+
+        try {
+          const { data: pagos } = await supabase.from('pagos').select('estado, mes, monto').eq('alumno_id', padre.alumno_id).order('fecha', { ascending: false }).limit(1)
+          const ultimoPago = pagos?.[0] || null
+          document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : (ultimoPago ? 'Pendiente' : '—')
+          if (ultimoPago && ultimoPago.estado !== 'pagado') {
+            alertas.push(`<a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
+              <span class="grow"><span class="t">Pago pendiente — ${ultimoPago.mes || 'este mes'}</span>
+              <span class="s">$${Number(ultimoPago.monto || 0).toLocaleString()} MXN</span></span>
+              <span class="trail"><span class="badge red">Pendiente</span></span></a>`)
+          }
+        } catch(e) {
+          document.getElementById('stat-pago').textContent = '—'
+        }
+      }
+
+      // Mensajes del instructor a padres (sin filtro leido para mayor compatibilidad)
       try {
-        const { data: msgs } = await supabase.from('mensajes').select('texto, creado_en').eq('para_admin', false).eq('leido', false).order('creado_en', { ascending: false }).limit(3)
+        const { data: msgs } = await supabase.from('mensajes')
+          .select('texto, creado_en')
+          .eq('para_admin', false)
+          .order('creado_en', { ascending: false })
+          .limit(3)
         msgs?.forEach(m => {
-          alertas.push(`<a class="row" href="mensajes.html"><span class="ic blue"><i data-lucide="message-square"></i></span>
-            <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${(m.texto||'').substring(0,60)}…</span></span></a>`)
+          const preview = (m.texto || '').substring(0, 65)
+          alertas.push(`<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span>
+            <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${preview}${m.texto?.length > 65 ? '…' : ''}</span></span></div>`)
         })
       } catch(e) {}
 
+      // Frase del día — busca en tabla frases o en configuracion
       try {
-        const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoy.toISOString().split('T')[0]).order('fecha').limit(1)
-        if (eventos?.length) {
-          alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
-            <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
+        let textoFrase = null
+        const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
+        if (frase?.texto) { textoFrase = frase.texto }
+        else {
+          const { data: cfg } = await supabase.from('configuracion').select('valor').eq('clave', 'frase_dia').maybeSingle()
+          if (cfg?.valor) textoFrase = cfg.valor
+        }
+        if (textoFrase) {
+          alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
+            <span class="grow"><span class="t">Frase del día</span><span class="s">"${textoFrase}"</span></span></div>`)
         }
       } catch(e) {}
 
+      // Próximos eventos
       try {
-        const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).single()
-        if (frase) {
-          alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
-            <span class="grow"><span class="t">Frase del día</span><span class="s">"${frase.texto}"</span></span></div>`)
+        const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(1)
+        if (eventos?.length) {
+          alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
+            <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
         }
       } catch(e) {}
 
@@ -183,7 +211,7 @@
       lucide.createIcons()
 
     } catch(err) {
-      document.getElementById('alertas').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">No se pudieron cargar los datos.</div>'
+      document.getElementById('alertas').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Sin alertas por ahora.</div>'
       lucide.createIcons()
     }
   }
