@@ -118,8 +118,10 @@
   // Guardar tienda
   document.getElementById('btn-guardar').addEventListener('click', async () => {
     const btn = document.getElementById('btn-guardar')
-    btn.disabled = true; btn.textContent = 'Guardando…'
+    btn.disabled = true; btn.innerHTML = '<i data-lucide="loader"></i> Guardando…'
+    lucide.createIcons()
     const cards = document.querySelectorAll('.ed')
+    let hayError = null
     for (let i = 0; i < cards.length; i++) {
       const c = cards[i]
       const id = c.dataset.id
@@ -129,17 +131,23 @@
       const imagen_url = PROD[i]?.imagen_url || null
       if (!nombre) continue
       if (id) {
-        await supabase.from('productos').update({ nombre, descripcion, precio, imagen_url }).eq('id', id)
+        const { error } = await supabase.from('productos').update({ nombre, descripcion, precio, imagen_url }).eq('id', id)
+        if (error) { hayError = error.message; break }
       } else {
-        const { data: nuevo } = await supabase.from('productos').insert({ nombre, descripcion, precio, imagen_url }).select().single()
+        const { data: nuevo, error } = await supabase.from('productos').insert({ nombre, descripcion, precio, imagen_url }).select().single()
+        if (error) { hayError = error.message; break }
         if (nuevo) PROD[i] = nuevo
       }
     }
     btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar cambios'
-    document.getElementById('save-msg').style.display = 'flex'
     lucide.createIcons()
-    setTimeout(() => { document.getElementById('save-msg').style.display = 'none' }, 3000)
-    cargar()
+    if (hayError) {
+      alert('❌ Error al guardar: ' + hayError)
+    } else {
+      document.getElementById('save-msg').style.display = 'flex'
+      setTimeout(() => { document.getElementById('save-msg').style.display = 'none' }, 3000)
+      cargar()
+    }
   })
 
   cargar()
