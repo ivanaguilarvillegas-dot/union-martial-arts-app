@@ -1,16 +1,47 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contenido y media</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Videos y audios</title><link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead dark"><a class="navback" href="admin-editar.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Contenido y media</div></div></div>
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Videos y audios</div></div></div>
   <div class="body">
-    <div class="card soft mb16"><div style="font-size:13px;line-height:1.6;">Sube tus propios <strong>videos de rutinas</strong> y <strong>audios de meditación</strong>. Los alumnos los verán en sus secciones.</div></div>
-    <div class="label row"><span>Rutinas (video)</span><label class="btn secondary sm"><i data-lucide="upload"></i> Subir video<input type="file" accept="video/*" hidden data-up="video" /></label></div>
-    <div class="card flush mb18" style="padding:14px;" id="vids"></div>
-    <div class="label row"><span>Meditación (audio)</span><label class="btn secondary sm"><i data-lucide="upload"></i> Subir audio<input type="file" accept="audio/*" hidden data-up="audio" /></label></div>
-    <div class="card flush" style="padding:14px;" id="auds"></div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;" id="tabs">
+      <button class="chip on" data-tab="entrena">Ejercicios en casa</button>
+      <button class="chip" data-tab="meditacion">Meditación</button>
+      <button class="chip" data-tab="extras">Extras</button>
+    </div>
+
+    <!-- Ejercicios -->
+    <div id="tab-entrena">
+      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Sube un video para cada ejercicio. Los padres lo verán junto al ejercicio en la app.</div>
+      <div id="entrena-list"></div>
+    </div>
+
+    <!-- Meditación -->
+    <div id="tab-meditacion" style="display:none;">
+      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Sube un audio para cada sesión de meditación nocturna.</div>
+      <div id="med-list"></div>
+    </div>
+
+    <!-- Extras -->
+    <div id="tab-extras" style="display:none;">
+      <div class="label row"><span>Videos extras</span>
+        <label class="btn secondary sm" style="cursor:pointer;"><i data-lucide="upload"></i> Subir video
+          <input type="file" accept="video/*" hidden id="up-video-extra" />
+        </label>
+      </div>
+      <div id="extras-vid" class="stack-10 mb16"></div>
+      <div class="label row"><span>Audios extras</span>
+        <label class="btn secondary sm" style="cursor:pointer;"><i data-lucide="upload"></i> Subir audio
+          <input type="file" accept="audio/*" hidden id="up-audio-extra" />
+        </label>
+      </div>
+      <div id="extras-aud" class="stack-10"></div>
+    </div>
+
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
@@ -29,66 +60,182 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const mediaRow = (nombre, ic, url, carpeta) => `
-    <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
-      <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
-      <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nombre.replace(/^\d+_/, '')}</span>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        ${url ? `<a href="${url}" target="_blank" style="font-size:11px;color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:3px;text-decoration:none;padding:5px 8px;background:var(--soft);border-radius:var(--r-sm);"><i data-lucide="external-link" style="width:12px;height:12px"></i> Ver</a>` : ''}
-        <button data-borrar="${carpeta}/${nombre}" style="font-size:11px;color:var(--red-text);font-weight:600;display:inline-flex;align-items:center;gap:3px;padding:5px 8px;background:var(--red-bg);border:none;border-radius:var(--r-sm);cursor:pointer;"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Borrar</button>
+  // Ejercicios predefinidos
+  const EJERCICIOS = [
+    { nivel:'Principiante', ic:'flame',      nombre:'Calentamiento básico',        desc:'10 min · Sin equipo' },
+    { nivel:'Principiante', ic:'dumbbell',   nombre:'Sentadillas + Planchas',      desc:'15 min · 3 series de 10' },
+    { nivel:'Principiante', ic:'target',     nombre:'Combinación de golpes',       desc:'10 min · Frente al espejo' },
+    { nivel:'Principiante', ic:'footprints', nombre:'Cardio — saltar la cuerda',   desc:'5 min · Ritmo moderado' },
+    { nivel:'Principiante', ic:'leaf',       nombre:'Enfriamiento y estiramiento', desc:'5 min · Siempre al final' },
+    { nivel:'Intermedio',   ic:'flame',      nombre:'Calentamiento dinámico',      desc:'10 min · Movilidad articular' },
+    { nivel:'Intermedio',   ic:'activity',   nombre:'Patadas al aire — series',    desc:'20 min · 4 series' },
+    { nivel:'Intermedio',   ic:'zap',        nombre:'Circuito de fuerza',          desc:'20 min · Burpees, lagartijas' },
+    { nivel:'Intermedio',   ic:'target',     nombre:'Combos avanzados',            desc:'15 min · Golpe + patada' },
+    { nivel:'Avanzado',     ic:'flame',      nombre:'HIIT Kickboxing',             desc:'30 min · Alta intensidad' },
+    { nivel:'Avanzado',     ic:'trophy',     nombre:'Simulación de combate',       desc:'15 min · Shadowboxing' },
+    { nivel:'Avanzado',     ic:'zap',        nombre:'Fuerza explosiva',            desc:'20 min · Pliométricos' },
+    { nivel:'Avanzado',     ic:'leaf',       nombre:'Recuperación activa',         desc:'10 min · Foam roller' },
+  ]
+
+  // Sesiones de meditación predefinidas
+  const SESIONES = [
+    { nombre:'Respiración 4-7-8',          desc:'5 minutos · Relajación profunda' },
+    { nombre:'Visualización del campeón',   desc:'8 minutos · Para atletas jóvenes' },
+    { nombre:'Gratitud y metas',            desc:'6 minutos · Reflexión positiva' },
+    { nombre:'Sueño reparador',             desc:'10 minutos · Antes de dormir' },
+  ]
+
+  function clave(nombre) {
+    return nombre.toLowerCase().replace(/[^a-záéíóúñ0-9]/gi, '_').substring(0, 30)
+  }
+
+  function matchMedia(archivos, nombre) {
+    const palabra = nombre.toLowerCase().split(' ')[0]
+    return archivos.find(a => a.nombre.toLowerCase().includes(palabra)) || null
+  }
+
+  let videos = [], audios = []
+
+  async function cargarMedia() {
+    const [vidRes, audRes] = await Promise.allSettled([
+      supabase.storage.from('media').list('videos', { limit: 50 }),
+      supabase.storage.from('media').list('audios', { limit: 50 }),
+    ])
+    videos = (vidRes.value?.data || [])
+      .filter(v => v.name !== '.emptyFolderPlaceholder')
+      .map(v => ({ nombre: v.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''), path: 'videos/' + v.name, url: supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl }))
+    audios = (audRes.value?.data || [])
+      .filter(a => a.name !== '.emptyFolderPlaceholder')
+      .map(a => ({ nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''), path: 'audios/' + a.name, url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl }))
+    renderEjercicios()
+    renderMeditacion()
+    renderExtras()
+  }
+
+  function itemRow(ic, nombre, desc, nivel, archivo, tipo) {
+    const claveNombre = clave(nombre)
+    const tiene = !!archivo
+    return `<div class="card mb10" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${tiene ? 10 : 0}px;">
+        <span class="ic ${tiene ? 'green' : ''}" style="flex-shrink:0;"><i data-lucide="${ic}"></i></span>
+        <span class="grow">
+          <span class="t" style="display:block;">${nombre}</span>
+          <span class="s">${nivel ? nivel + ' · ' : ''}${desc}</span>
+        </span>
+        <span class="badge ${tiene ? 'green' : 'red'}" style="flex-shrink:0;">${tiene ? 'Con ' + (tipo === 'video' ? 'video' : 'audio') : 'Sin ' + (tipo === 'video' ? 'video' : 'audio')}</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${tiene ? `<a href="${archivo.url}" target="_blank" class="btn secondary sm"><i data-lucide="play" style="width:13px;height:13px"></i> Ver</a>` : ''}
+        <label class="btn secondary sm" style="cursor:pointer;">
+          <i data-lucide="upload" style="width:13px;height:13px"></i> ${tiene ? 'Reemplazar' : 'Subir'}
+          <input type="file" accept="${tipo === 'video' ? 'video/*' : 'audio/*'}" hidden data-clave="${claveNombre}" data-tipo="${tipo}" />
+        </label>
+        ${tiene ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-borrar="${archivo.path}"><i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar</button>` : ''}
       </div>
     </div>`
+  }
 
-  async function cargar() {
-    // Listar videos
-    const { data: vids } = await supabase.storage.from('media').list('videos', { limit: 50 })
-    const vidEl = document.getElementById('vids')
-    if (vids?.filter(v => v.name !== '.emptyFolderPlaceholder').length) {
-      vidEl.innerHTML = vids.filter(v => v.name !== '.emptyFolderPlaceholder').map(v => {
-        const url = supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
-        return mediaRow(v.name, 'video', url, 'videos')
-      }).join('')
-    } else {
-      vidEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;">Sin videos subidos aún.</div>'
-    }
-
-    // Listar audios
-    const { data: auds } = await supabase.storage.from('media').list('audios', { limit: 50 })
-    const audEl = document.getElementById('auds')
-    if (auds?.filter(a => a.name !== '.emptyFolderPlaceholder').length) {
-      audEl.innerHTML = auds.filter(a => a.name !== '.emptyFolderPlaceholder').map(a => {
-        const url = supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
-        return mediaRow(a.name, 'headphones', url, 'audios')
-      }).join('')
-    } else {
-      audEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;">Sin audios subidos aún.</div>'
-    }
+  function renderEjercicios() {
+    let html = ''
+    let nivelActual = ''
+    EJERCICIOS.forEach(e => {
+      if (e.nivel !== nivelActual) {
+        nivelActual = e.nivel
+        html += `<div class="label">${e.nivel}</div>`
+      }
+      const archivo = matchMedia(videos, e.nombre)
+      html += itemRow(e.ic, e.nombre, e.desc, '', archivo, 'video')
+    })
+    document.getElementById('entrena-list').innerHTML = html
     lucide.createIcons()
   }
 
-  // Borrar archivo
+  function renderMeditacion() {
+    document.getElementById('med-list').innerHTML = SESIONES.map(s => {
+      const archivo = matchMedia(audios, s.nombre)
+      return itemRow('headphones', s.nombre, s.desc, '', archivo, 'audio')
+    }).join('')
+    lucide.createIcons()
+  }
+
+  function renderExtras() {
+    const predVids = new Set(EJERCICIOS.map(e => e.nombre.toLowerCase().split(' ')[0]))
+    const predAuds = new Set(SESIONES.map(s => s.nombre.toLowerCase().split(' ')[0]))
+
+    const extrasVid = videos.filter(v => ![...predVids].some(p => v.nombre.toLowerCase().includes(p)))
+    const extrasAud = audios.filter(a => ![...predAuds].some(p => a.nombre.toLowerCase().includes(p)))
+
+    document.getElementById('extras-vid').innerHTML = extrasVid.length
+      ? extrasVid.map(v => `<div class="row"><span class="ic amber"><i data-lucide="video"></i></span>
+          <span class="grow"><span class="t">${v.nombre}</span></span>
+          <span class="trail" style="gap:6px;">
+            <a href="${v.url}" target="_blank" class="iconbtn"><i data-lucide="play"></i></a>
+            <button class="iconbtn" style="color:var(--red-600);" data-borrar="${v.path}"><i data-lucide="trash-2"></i></button>
+          </span></div>`).join('')
+      : '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin videos extras.</div>'
+
+    document.getElementById('extras-aud').innerHTML = extrasAud.length
+      ? extrasAud.map(a => `<div class="row"><span class="ic blue"><i data-lucide="music"></i></span>
+          <span class="grow"><span class="t">${a.nombre}</span></span>
+          <span class="trail" style="gap:6px;">
+            <a href="${a.url}" target="_blank" class="iconbtn"><i data-lucide="play"></i></a>
+            <button class="iconbtn" style="color:var(--red-600);" data-borrar="${a.path}"><i data-lucide="trash-2"></i></button>
+          </span></div>`).join('')
+      : '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin audios extras.</div>'
+
+    lucide.createIcons()
+  }
+
+  // Subir archivo a ejercicio/sesión predefinida
+  document.querySelector('.body').addEventListener('change', async e => {
+    const input = e.target.closest('input[data-clave]')
+    if (!input) return
+    const file = input.files[0]; if (!file) return
+    const claveVal = input.dataset.clave
+    const tipo = input.dataset.tipo
+    const carpeta = tipo === 'video' ? 'videos' : 'audios'
+    const ext = file.name.split('.').pop()
+    const path = carpeta + '/' + claveVal + '.' + ext
+    input.closest('.btn').textContent = 'Subiendo…'
+    const { error } = await supabase.storage.from('media').upload(path, file, { upsert: true })
+    if (error) { alert('❌ Error: ' + error.message) }
+    await cargarMedia()
+  })
+
+  // Subir extras
+  document.getElementById('up-video-extra').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return
+    const { error } = await supabase.storage.from('media').upload('videos/' + Date.now() + '_' + file.name, file)
+    if (error) { alert('❌ Error: ' + error.message); return }
+    await cargarMedia()
+  })
+  document.getElementById('up-audio-extra').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return
+    const { error } = await supabase.storage.from('media').upload('audios/' + Date.now() + '_' + file.name, file)
+    if (error) { alert('❌ Error: ' + error.message); return }
+    await cargarMedia()
+  })
+
+  // Borrar
   document.querySelector('.body').addEventListener('click', async e => {
     const btn = e.target.closest('[data-borrar]'); if (!btn) return
     const path = btn.dataset.borrar
-    if (!confirm('¿Borrar ' + path.split('/').pop().replace(/^\d+_/, '') + '?')) return
+    if (!confirm('¿Borrar este archivo?')) return
     const { error } = await supabase.storage.from('media').remove([path])
-    if (error) { alert('Error al borrar: ' + error.message); return }
-    cargar()
+    if (error) { alert('❌ Error: ' + error.message); return }
+    await cargarMedia()
   })
 
-  // Subir archivos
-  document.querySelectorAll('input[data-up]').forEach(input => {
-    input.addEventListener('change', async e => {
-      const file = e.target.files[0]; if (!file) return
-      const tipo = input.dataset.up
-      const carpeta = tipo === 'video' ? 'videos' : 'audios'
-      const nombre = Date.now() + '_' + file.name
-      const { error } = await supabase.storage.from('media').upload(carpeta + '/' + nombre, file)
-      if (!error) { alert('✅ Archivo subido correctamente'); cargar() }
-      else alert('Error al subir: ' + error.message)
-    })
+  // Tabs
+  document.getElementById('tabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-tab]'); if (!b) return
+    ;[...document.getElementById('tabs').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+    document.getElementById('tab-entrena').style.display = 'none'
+    document.getElementById('tab-meditacion').style.display = 'none'
+    document.getElementById('tab-extras').style.display = 'none'
+    document.getElementById('tab-' + b.dataset.tab).style.display = 'block'
   })
 
-  cargar()
+  cargarMedia()
 </script>
 </body></html>
