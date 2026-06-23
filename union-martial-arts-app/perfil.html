@@ -14,10 +14,14 @@
   </div>
   <div class="body">
     <div class="card mb14">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span class="avatar" style="width:48px;height:48px;font-size:17px;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--belt-blue);border:none;">MR</span>
-        <div><div style="font-size:16px;font-weight:700;">Mateo Reyes</div><div style="font-size:12px;color:var(--muted);">Alumno · 9 años</div></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <span class="avatar" style="width:48px;height:48px;font-size:17px;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--belt-blue);border:none;" id="av">?</span>
+        <div>
+          <div style="font-size:16px;font-weight:700;" id="av-nombre">—</div>
+          <div style="font-size:12px;color:var(--muted);" id="av-sub">Alumno</div>
+        </div>
       </div>
+      <div id="datos-alumno"></div>
     </div>
 
     <div class="label">Datos del padre / tutor</div>
@@ -81,9 +85,28 @@
 
   if (alumno) {
     const ini = alumno.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
-    document.querySelector('.avatar').textContent = ini
-    document.querySelector('[style*="font-size:16px"]').textContent = alumno.nombre || '—'
-    document.querySelector('[style*="font-size:12px"][style*="color:var(--muted)"]').textContent = 'Alumno' + (alumno.edad ? ' · ' + alumno.edad + ' años' : '') + (alumno.cinta ? ' · Cinta ' + alumno.cinta : '')
+    document.getElementById('av').textContent = ini
+    document.getElementById('av-nombre').textContent = alumno.nombre || '—'
+    document.getElementById('av-sub').textContent = (alumno.grupo || 'Alumno') + (alumno.cinta ? ' · Cinta ' + alumno.cinta : '')
+
+    let horariosHtml = ''
+    if (alumno.horario) {
+      const hs = alumno.horario.split(' | ').filter(Boolean)
+      horariosHtml = hs.map(h => `<div style="display:flex;gap:8px;padding:3px 0;font-size:13px;font-weight:600;text-align:right;justify-content:flex-end;"><span>${h}</span></div>`).join('')
+    }
+
+    const fmt = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' }) : '—'
+
+    document.getElementById('datos-alumno').innerHTML =
+      campo('Grupo', alumno.grupo) +
+      campo('Cinta', alumno.cinta) +
+      campo('Fecha de nacimiento', fmt(alumno.fecha_nacimiento)) +
+      campo('Fecha de inscripción', fmt(alumno.fecha_ingreso)) +
+      (alumno.horario ? `<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
+        <span style="font-size:13px;color:var(--muted);flex-shrink:0;">Horario(s)</span>
+        <div style="display:flex;flex-direction:column;gap:4px;text-align:right;">
+          ${alumno.horario.split(' | ').filter(Boolean).map(h => `<span style="font-size:13px;font-weight:600;">${h}</span>`).join('')}
+        </div></div>` : campo('Horario', '—'))
   }
 
   if (padre) {
