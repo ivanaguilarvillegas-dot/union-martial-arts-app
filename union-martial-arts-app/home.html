@@ -31,8 +31,7 @@
     </div>
 
 
-    <div class=”label”>Alertas</div>
-    <div class=”stack-10 mb18” id=”alertas”></div>
+    <div id=”alertas” style=”display:none;”></div>
 
     <div class="label">Menú</div>
     <div class="grid2" id="menu"></div>
@@ -86,6 +85,7 @@
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = 'index.html'; return }
     cargarAlertas()
+    mostrarBadge()
 
     const hoy = new Date()
     const hoyStr = hoy.toISOString().split('T')[0]
@@ -164,16 +164,28 @@
       ? items.join('')
       : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
 
-    // Badge con número en tarjeta Avisos
-    if (items.length) {
-      const avisoLink = document.querySelector('a[href="notificaciones.html"]')
-      if (avisoLink) {
-        avisoLink.style.position = 'relative'
-        avisoLink.insertAdjacentHTML('beforeend',
-          `<span style="position:absolute;top:8px;right:8px;min-width:20px;height:20px;padding:0 5px;background:#dc2626;color:#fff;border-radius:10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff;box-sizing:border-box;">${items.length}</span>`)
+    lucide.createIcons()
+  }
+
+  async function mostrarBadge() {
+    let count = 0
+    const hoy = new Date().toISOString().split('T')[0]
+    const [a, f, e] = await Promise.allSettled([
+      supabase.from('configuracion').select('clave').eq('clave', 'aviso_general'),
+      supabase.from('frases').select('id').eq('activa', true),
+      supabase.from('eventos').select('id').gte('fecha', hoy)
+    ])
+    if (a.value?.data?.length) count += 1
+    if (f.value?.data?.length) count += 1
+    if (e.value?.data?.length) count += e.value.data.length
+    if (count > 0) {
+      const link = document.querySelector('a[href="notificaciones.html"]')
+      if (link) {
+        link.style.position = 'relative'
+        link.insertAdjacentHTML('beforeend',
+          `<span style="position:absolute;top:8px;right:8px;min-width:20px;height:20px;padding:0 6px;background:#dc2626;color:#fff;border-radius:10px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff;box-sizing:border-box;line-height:1;">${count}</span>`)
       }
     }
-    lucide.createIcons()
   }
 
   cargarDatos()
