@@ -257,8 +257,47 @@
     lucide.createIcons()
   })
 
+  async function cargarEnviados() {
+    const { data: msgs } = await supabase.from('mensajes')
+      .select('id, texto, creado_en, destinatario_id').eq('para_admin', false).eq('de_user_id', user.id)
+      .order('creado_en', { ascending: false }).limit(20)
+    if (!msgs?.length) return
+
+    const { data: padres } = await supabase.from('padres').select('user_id, nombre')
+    const padreMap = {}; padres?.forEach(p => { if (p.user_id) padreMap[p.user_id] = p.nombre })
+
+    const wrap = document.createElement('div')
+    wrap.style.marginTop = '16px'
+    wrap.innerHTML = '<div class="label" style="margin-bottom:10px">Mensajes enviados</div>' +
+      msgs.map(m => {
+        const dest = m.destinatario_id ? (padreMap[m.destinatario_id] || 'Padre') : 'Todos'
+        const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+        return `<div class="card mb10" id="env-${m.id}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:11px;font-weight:600;color:var(--primary);">${dest}</span>
+            <span style="font-size:11px;color:var(--muted);">${fecha}</span>
+          </div>
+          <div style="font-size:13.5px;line-height:1.5;margin-bottom:10px;">${m.texto}</div>
+          <button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-del-env="${m.id}">
+            <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar
+          </button>
+        </div>`
+      }).join('')
+
+    wrap.addEventListener('click', async e => {
+      const btn = e.target.closest('[data-del-env]'); if (!btn) return
+      if (!confirm('¿Borrar este mensaje?')) return
+      const { error } = await supabase.from('mensajes').delete().eq('id', btn.dataset.delEnv)
+      if (!error) document.getElementById('env-' + btn.dataset.delEnv)?.remove()
+    })
+
+    document.querySelector('.body').appendChild(wrap)
+    lucide.createIcons()
+  }
+
   cargarMensajes()
   cargarCitas()
+  cargarEnviados()
   lucide.createIcons()
 </script>
 </body></html>

@@ -74,13 +74,16 @@
     document.getElementById('privados-wrap').style.display = 'block'
     document.getElementById('privados-list').innerHTML = privados.map(m => {
       const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
-      return `<div class="card mb10" style="border-left:3px solid var(--green-600);">
+      return `<div class="card mb10" style="border-left:3px solid var(--green-600);" id="msg-${m.id}">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
           <span style="color:var(--green-600);"><i data-lucide="mail" style="width:15px;height:15px"></i></span>
           <span style="font-size:11px;font-weight:600;color:var(--green-600);">MENSAJE PRIVADO</span>
           <span style="font-size:11px;color:var(--muted);margin-left:auto;">${fecha}</span>
         </div>
-        <div style="font-size:13.5px;line-height:1.6;">${m.texto}</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:10px;">${m.texto}</div>
+        <button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-del="${m.id}">
+          <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar
+        </button>
       </div>`
     }).join('')
     lucide.createIcons()
@@ -132,6 +135,14 @@
         </div>
       </div>`).join('')
   }
+
+  // Borrar mensaje privado (padre)
+  document.body.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-del]'); if (!btn) return
+    if (!confirm('¿Borrar este mensaje?')) return
+    const { error } = await supabase.from('mensajes').delete().eq('id', btn.dataset.del)
+    if (!error) document.getElementById('msg-' + btn.dataset.del)?.remove()
+  })
 
   lucide.createIcons()
 </script>
