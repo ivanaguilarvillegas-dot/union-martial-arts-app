@@ -159,15 +159,17 @@
     const hoyStr = new Date().toISOString().split('T')[0]
 
     const { data: msgs, error: errMsg } = await supabase
-      .from('mensajes').select('texto').neq('para_admin', true)
-      .order('creado_en', { ascending: false }).limit(5)
+      .from('mensajes').select('texto, para_admin')
+      .order('creado_en', { ascending: false }).limit(10)
 
     if (errMsg) {
-      el.innerHTML = '<div class="row"><span class="ic red"><i data-lucide="alert-circle"></i></span><span class="grow"><span class="t">Error mensajes</span><span class="s">' + errMsg.message + '</span></span></div>'
+      el.innerHTML = '<div class="row"><span class="ic red"><i data-lucide="alert-circle"></i></span><span class="grow"><span class="t">Error: ' + errMsg.message + '</span></span></div>'
       lucide.createIcons(); return
     }
 
-    ;(msgs || []).forEach(m => {
+    const msgsParaPadres = (msgs || []).filter(m => m.para_admin === false)
+
+    ;(msgsParaPadres || []).forEach(m => {
       const t = (m.texto || '').substring(0, 80)
       items.push('<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span><span class="grow"><span class="t">Aviso del instructor</span><span class="s">' + t + '</span></span></div>')
     })
