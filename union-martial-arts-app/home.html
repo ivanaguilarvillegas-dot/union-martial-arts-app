@@ -150,36 +150,26 @@
       } catch(e) {}
     }
 
-    // Alertas — se cargan SIEMPRE, sin importar si hay padre o alumno
+    // Alertas — se cargan SIEMPRE
     const alertas = []
-
     try {
-      const { data: msgs } = await supabase.from('mensajes')
-        .select('texto, creado_en').eq('para_admin', false)
-        .order('creado_en', { ascending: false }).limit(5)
-      msgs?.forEach(m => {
-        const preview = (m.texto || '').substring(0, 70)
-        alertas.push(`<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span>
-          <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${preview}${(m.texto||'').length > 70 ? '…' : ''}</span></span></div>`)
+      const [rMsgs, rFrase, rEv] = await Promise.all([
+        supabase.from('mensajes').select('texto').eq('para_admin', false).order('creado_en', { ascending: false }).limit(5),
+        supabase.from('frases').select('texto').eq('activa', true).maybeSingle(),
+        supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(1)
+      ])
+      rMsgs.data?.forEach(m => {
+        const preview = (m.texto || '').substring(0, 70).replace(/`/g, "'")
+        alertas.push('<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span><span class="grow"><span class="t">Mensaje del instructor</span><span class="s">' + preview + ((m.texto||'').length > 70 ? '…' : '') + '</span></span></div>')
       })
-    } catch(e) {}
-
-    try {
-      const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
-      if (frase?.texto) {
-        alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
-          <span class="grow"><span class="t">Frase del día</span><span class="s">"${frase.texto}"</span></span></div>`)
+      if (rFrase.data?.texto) {
+        alertas.push('<div class="row"><span class="ic"><i data-lucide="quote"></i></span><span class="grow"><span class="t">Frase del día</span><span class="s">"' + rFrase.data.texto.replace(/`/g, "'") + '"</span></span></div>')
+      }
+      if (rEv.data?.length) {
+        const ev = rEv.data[0]
+        alertas.push('<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span><span class="grow"><span class="t">' + ev.titulo + '</span><span class="s">' + ev.fecha + (ev.lugar ? ' · ' + ev.lugar : '') + '</span></span></a>')
       }
     } catch(e) {}
-
-    try {
-      const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(1)
-      if (eventos?.length) {
-        alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
-          <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
-      }
-    } catch(e) {}
-
     document.getElementById('alertas').innerHTML = alertas.length
       ? alertas.join('')
       : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
