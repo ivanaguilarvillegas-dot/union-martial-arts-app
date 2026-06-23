@@ -5,12 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Evaluación</title>
 <link rel="stylesheet" href="css/uma.css" />
+<style>
+  .check-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--ink-100); font-size:13px; }
+  .check-item:last-child { border-bottom:none; }
+  .check-item .ic-sm { width:22px; height:22px; border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .check-item .ic-sm.ok { background:var(--green-bg); color:var(--green-text); }
+  .check-item .ic-sm.no { background:var(--red-bg,#fee); color:var(--red-text,#c00); }
+  .check-item .ic-sm svg { width:13px; height:13px; }
+  .eval-card { margin-bottom:12px; }
+  .eval-date { font-size:12px; color:var(--muted); font-weight:500; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+</style>
 </head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead blue">
     <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="sub">Progreso de Mateo</div><div class="title">Evaluación</div></div>
+    <div class="grow"><div class="sub" id="sub-nombre">Progreso</div><div class="title">Evaluación</div></div>
   </div>
   <div class="body">
     <div style="display:flex;gap:8px;margin-bottom:16px;">
@@ -18,26 +28,14 @@
       <button class="chip" data-tab="mensual">Mensual</button>
     </div>
 
+    <!-- Panel diaria -->
     <div id="diaria">
-      <div class="card mb14">
-        <div class="label row" style="margin-bottom:12px;"><span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500;font-size:13px;">Clase de hoy · Lunes 23 jun</span><span class="badge green">8/9</span></div>
-        <div id="dailyList"></div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--ink-100);">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Nota del instructor</div>
-          <div style="font-size:13.5px;font-style:italic;line-height:1.55;">“Mateo trabajó muy bien hoy. Reforcemos la puntualidad.”</div>
-        </div>
-      </div>
+      <div id="diaria-list"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div></div>
     </div>
 
+    <!-- Panel mensual -->
     <div id="mensual" style="display:none;">
-      <div class="card mb14">
-        <div class="label row" style="margin-bottom:14px;"><span style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;font-size:13px;">Evaluación de Junio</span><span class="badge blue">Cinta Azul</span></div>
-        <div id="progList"></div>
-      </div>
-      <div class="card soft center">
-        <div style="font-family:var(--font-display);font-size:34px;font-weight:800;color:var(--primary);line-height:1;">7.7 <span style="font-size:18px;opacity:.5;">/ 10</span></div>
-        <div style="font-size:13px;color:var(--primary);margin-top:6px;font-weight:600;">Promedio general del mes</div>
-      </div>
+      <div id="mensual-content"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div></div>
     </div>
   </div>
   <nav class="bottomnav">
@@ -58,46 +56,141 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const { data: padre } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).single()
-  const alumnoId = padre?.alumno_id
-
-  // Cargar evaluación mensual más reciente
-  if (alumnoId) {
-    const { data: ev } = await supabase.from('evaluaciones').select('*').eq('alumno_id', alumnoId).order('creado_en', { ascending: false }).limit(1).single()
-    if (ev) {
-      const campos = [
-        ['Técnica de golpe', ev.tecnica_golpe],
-        ['Patadas', ev.patadas],
-        ['Defensa', ev.defensa],
-        ['Condición física', ev.condicion_fisica],
-        ['Disciplina', ev.disciplina],
-        ['Coordinación', ev.coordinacion],
-      ].filter(([,v]) => v != null)
-
-      document.getElementById('progList').innerHTML = campos.map(([t,v])=>`
-        <div class="prog"><div class="head"><span>${t}</span><b>${v} / 10</b></div>
-          <div class="track"><div class="fill" style="width:${v*10}%"></div></div></div>`).join('')
-
-      if (campos.length) {
-        const prom = (campos.reduce((s,[,v])=>s+v,0)/campos.length).toFixed(1)
-        document.querySelector('#mensual .card.soft .font-display, #mensual .card.soft div')?.remove()
-        document.querySelector('#mensual .card.soft').innerHTML = `
-          <div style="font-family:var(--font-display);font-size:34px;font-weight:800;color:var(--primary);line-height:1;text-align:center;">${prom} <span style="font-size:18px;opacity:.5;">/ 10</span></div>
-          <div style="font-size:13px;color:var(--primary);margin-top:6px;font-weight:600;text-align:center;">Promedio general del mes</div>`
-      }
-      if (ev.comentarios) {
-        document.querySelector('#diaria .card div[style*="italic"]').textContent = '"' + ev.comentarios + '"'
-      }
+  // Obtener alumno
+  let padre = null, alumnoId = null, alumnoNombre = ''
+  try {
+    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+    if (!p) {
+      const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).single()
+      if (pe) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id); padre = pe }
+    } else { padre = p }
+    alumnoId = padre?.alumno_id
+    if (alumnoId) {
+      const { data: al } = await supabase.from('alumnos').select('nombre, cinta').eq('id', alumnoId).single()
+      alumnoNombre = al?.nombre || ''
+      document.getElementById('sub-nombre').textContent = 'Progreso de ' + alumnoNombre
     }
+  } catch(e) {}
+
+  const ITEMS = [
+    { k: 'actitud',      label: 'Actitud' },
+    { k: 'esfuerzo',     label: 'Esfuerzo' },
+    { k: 'tecnica',      label: 'Técnica' },
+    { k: 'participacion',label: 'Participación' },
+  ]
+
+  const fmtFecha = f => {
+    if (!f) return '—'
+    const d = new Date(f + 'T12:00:00')
+    return d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
+  }
+
+  function checkHtml(ok) {
+    return `<span class="ic-sm ${ok ? 'ok' : 'no'}"><i data-lucide="${ok ? 'check' : 'x'}"></i></span>`
+  }
+
+  // === EVALUACIONES DIARIAS ===
+  async function cargarDiarias() {
+    if (!alumnoId) {
+      document.getElementById('diaria-list').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Sin alumno vinculado.</div>'
+      return
+    }
+    const { data: evals } = await supabase.from('evaluaciones')
+      .select('*').eq('alumno_id', alumnoId)
+      .not('actitud', 'is', null)
+      .order('fecha', { ascending: false }).limit(15)
+
+    const el = document.getElementById('diaria-list')
+    if (!evals?.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Sin evaluaciones diarias aún.</div>'
+      return
+    }
+
+    el.innerHTML = evals.map(e => {
+      const pct = e.puntuacion ?? 0
+      const badgeColor = pct >= 80 ? 'green' : pct >= 50 ? 'blue' : ''
+      const itemsHtml = ITEMS.map(it => `
+        <div class="check-item">
+          ${checkHtml(!!e[it.k])}
+          <span style="flex:1;">${it.label}</span>
+          <span style="font-size:12px;color:${e[it.k] ? 'var(--green-text)' : 'var(--muted)'};">${e[it.k] ? 'Cumplió' : 'Por mejorar'}</span>
+        </div>`).join('')
+
+      return `<div class="card eval-card">
+        <div class="eval-date">
+          <span>${fmtFecha(e.fecha)}</span>
+          <span class="badge ${badgeColor}">${pct}%</span>
+        </div>
+        ${itemsHtml}
+        ${e.nota ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--ink-100);">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">NOTA DEL INSTRUCTOR</div>
+          <div style="font-size:13.5px;font-style:italic;line-height:1.5;">"${e.nota}"</div>
+        </div>` : ''}
+      </div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  // === EVALUACIÓN MENSUAL ===
+  async function cargarMensual() {
+    if (!alumnoId) return
+    const { data: evals } = await supabase.from('evaluaciones')
+      .select('*').eq('alumno_id', alumnoId)
+      .not('tecnica_golpe', 'is', null)
+      .order('fecha', { ascending: false }).limit(3)
+
+    const el = document.getElementById('mensual-content')
+    if (!evals?.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Sin evaluaciones mensuales aún.</div>'
+      return
+    }
+
+    const AREAS = [
+      { k: 'tecnica_golpe',   label: 'Técnica de golpe' },
+      { k: 'patadas',         label: 'Patadas' },
+      { k: 'defensa',         label: 'Defensa' },
+      { k: 'condicion_fisica',label: 'Condición física' },
+      { k: 'disciplina',      label: 'Disciplina' },
+      { k: 'coordinacion',    label: 'Coordinación' },
+    ]
+
+    el.innerHTML = evals.map((e, idx) => {
+      const campos = AREAS.filter(a => e[a.k] != null)
+      const prom = campos.length ? (campos.reduce((s,a)=>s+e[a.k],0)/campos.length).toFixed(1) : null
+      return `
+        ${idx > 0 ? '<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:16px 0 8px;">Evaluación anterior</div>' : ''}
+        <div class="card mb14">
+          <div class="eval-date">
+            <span>${fmtFecha(e.fecha)}</span>
+            ${prom ? `<span class="badge blue">Prom. ${prom}/10</span>` : ''}
+          </div>
+          ${campos.map(a => `
+            <div class="prog" style="margin-bottom:12px;">
+              <div class="head" style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+                <span>${a.label}</span><b style="color:var(--primary);">${e[a.k]}/10</b>
+              </div>
+              <div class="track"><div class="fill" style="width:${e[a.k]*10}%"></div></div>
+            </div>`).join('')}
+          ${e.comentarios ? `<div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--ink-100);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">COMENTARIO</div>
+            <div style="font-size:13.5px;font-style:italic;line-height:1.5;">"${e.comentarios}"</div>
+          </div>` : ''}
+        </div>`
+    }).join('')
+
+    lucide.createIcons()
   }
 
   // Tabs
-  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('[data-tab]').forEach(c=>c.classList.remove('on')); b.classList.add('on')
-    const d = b.dataset.tab==='diaria'
-    document.getElementById('diaria').style.display = d?'block':'none'
-    document.getElementById('mensual').style.display = d?'none':'block'
+  document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach(c => c.classList.remove('on')); b.classList.add('on')
+    const d = b.dataset.tab === 'diaria'
+    document.getElementById('diaria').style.display = d ? 'block' : 'none'
+    document.getElementById('mensual').style.display = d ? 'none' : 'block'
   }))
+
+  cargarDiarias()
+  cargarMensual()
   lucide.createIcons()
 </script>
 </body>
