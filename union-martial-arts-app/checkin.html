@@ -124,11 +124,11 @@
     const hoy = new Date().toISOString().split('T')[0]
     const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'clase'
 
-    const { data: existe } = await supabase.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).maybeSingle()
+    const { data: existe } = await supabase.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).eq('tipo', tipo).maybeSingle()
     if (existe) {
       const m = document.getElementById('msg-asiste')
       m.style.display = 'flex'
-      m.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste la llegada de hoy.</span>'
+      m.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste ' + tipo + ' de hoy.</span>'
       lucide.createIcons(); return
     }
 
