@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Editar programas</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark"><a class="navback" href="admin-editar.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Editar programas</div></div></div>
+  <div class="body">
+
+    <div class="label">Precios</div>
+    <div class="card mb14"><div class="stack">
+      <label class="field"><span class="lab">Inscripción</span>
+        <input id="precio_inscripcion" placeholder="Ej: $500 MXN" /></label>
+      <label class="field"><span class="lab">Mensualidad Básico</span>
+        <input id="precio_mensual_basico" placeholder="Ej: $1,550 / mes" /></label>
+      <label class="field"><span class="lab">Plan Anual UNION</span>
+        <input id="precio_anual" placeholder="Ej: $12,500 contado" /></label>
+      <label class="field"><span class="lab">Club Cinta Negra (anualidad)</span>
+        <input id="precio_cinta_negra" placeholder="Ej: $9,950 anualidad" /></label>
+    </div></div>
+
+    <div class="label">Horarios — Programa Básico</div>
+    <div class="card mb14"><div class="stack">
+      <label class="field"><span class="lab">Niños</span>
+        <textarea id="horario_basico_ninos" rows="2" placeholder="Ej: Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM"></textarea></label>
+      <label class="field"><span class="lab">Jóvenes y Adultos</span>
+        <textarea id="horario_jovenes" rows="2" placeholder="Ej: Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM"></textarea></label>
+    </div></div>
+
+    <div class="label">Club Cinta Negra</div>
+    <div class="card mb14"><div class="stack">
+      <label class="field"><span class="lab">Horario niños</span>
+        <input id="horario_club_ninos" placeholder="Ej: Niños · Sáb 10:00 AM–12:00 PM" /></label>
+      <label class="field"><span class="lab">Horario jóvenes</span>
+        <input id="horario_club_jovenes" placeholder="Ej: Jóvenes · Sáb 12:00–2:00 PM" /></label>
+      <label class="field"><span class="lab">Descripción extra (opcional)</span>
+        <textarea id="club_descripcion" rows="2" placeholder="Ej: Programa Kobudo + Liderazgo · Uniformes Club"></textarea></label>
+    </div></div>
+
+    <div class="label">Programa Élite UACJ</div>
+    <div class="card mb14"><div class="stack">
+      <label class="field"><span class="lab">Descripción / requisitos</span>
+        <textarea id="elite_descripcion" rows="3" placeholder="Ej: Ruta al equipo representativo universitario..."></textarea></label>
+    </div></div>
+
+    <div id="msg" class="notice" style="display:none;margin-bottom:12px;"></div>
+    <button class="btn primary block" id="guardar"><i data-lucide="save"></i> Guardar cambios</button>
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const CLAVES = ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra',
+    'horario_basico_ninos','horario_jovenes','horario_club_ninos','horario_club_jovenes',
+    'club_descripcion','elite_descripcion']
+
+  // Cargar valores actuales
+  const { data: rows } = await supabase.from('configuracion').select('clave, valor').in('clave', CLAVES)
+  ;(rows || []).forEach(r => {
+    const el = document.getElementById(r.clave)
+    if (el) el.value = r.valor || ''
+  })
+
+  document.getElementById('guardar').addEventListener('click', async () => {
+    const btn = document.getElementById('guardar')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+
+    const upserts = CLAVES.map(c => ({
+      clave: c,
+      valor: document.getElementById(c)?.value?.trim() || ''
+    })).filter(r => r.valor)
+
+    const { error } = await supabase.from('configuracion').upsert(upserts, { onConflict: 'clave' })
+
+    const msg = document.getElementById('msg')
+    if (error) {
+      msg.textContent = '❌ Error: ' + error.message
+      msg.className = 'notice red'; msg.style.display = 'flex'
+    } else {
+      msg.textContent = '✅ Cambios guardados — los padres ya ven los nuevos datos.'
+      msg.className = 'notice green'; msg.style.display = 'flex'
+    }
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar cambios'
+    lucide.createIcons()
+    setTimeout(() => msg.style.display = 'none', 3000)
+  })
+
+  lucide.createIcons()
+</script>
+</body></html>

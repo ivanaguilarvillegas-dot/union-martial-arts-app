@@ -33,30 +33,33 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  // Cargar precios y horarios desde configuracion
   const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
     .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra',
-      'horario_basico_ninos','horario_martes_jueves','horario_jovenes','horario_jueves_sabado'])
+      'horario_basico_ninos','horario_jovenes','horario_club_ninos','horario_club_jovenes',
+      'club_descripcion','elite_descripcion'])
   const cfg = {}; (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor })
-
   const v = k => cfg[k] || null
 
-  const insc     = v('precio_inscripcion')    || 'Inscripción — $500'
-  const mensual  = v('precio_mensual_basico') || '$1,550 / mes'
-  const anual    = v('precio_anual')          || '$12,500 contado'
-  const cintaNegra = v('precio_cinta_negra') || '$9,950 anualidad'
-  const h0 = v('horario_basico_ninos')  || 'Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM'
-  const h2 = v('horario_jovenes')       || 'Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM'
+  const insc       = v('precio_inscripcion')    || '$500 MXN'
+  const mensual    = v('precio_mensual_basico') || '$1,550 / mes'
+  const anual      = v('precio_anual')          || '$12,500 contado'
+  const cintaNegra = v('precio_cinta_negra')    || '$9,950 anualidad'
+  const h0  = v('horario_basico_ninos')   || 'Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM'
+  const h2  = v('horario_jovenes')        || 'Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM'
+  const cn  = v('horario_club_ninos')     || 'Niños · Sáb 10:00 AM–12:00 PM'
+  const cj  = v('horario_club_jovenes')   || 'Jóvenes · Sáb 12:00–2:00 PM'
+  const cdesc = v('club_descripcion')     || 'Programa Kobudo + Liderazgo · Uniforme Club + evaluaciones mensuales'
+  const edesc = v('elite_descripcion')    || 'Construye su currículum deportivo desde primaria, secundaria y prepa'
 
   const P = [
-    {n:'Programa Básico',icon:'star',insc: insc,precio: mensual,pop:false,
+    {n:'Programa Básico',icon:'star',insc:'Inscripción ' + insc,precio: mensual,pop:false,
       items:['5 clases por semana', h0, h2, 'Evaluaciones del día']},
     {n:'Anual UNION',icon:'calendar',insc:'o 3 pagos · mejor precio por clase',precio: anual,pop:true,
       items:['Empiezas en Básico y tras 3 meses pasas a este plan','Todo el año cubierto','Mejor precio por clase']},
     {n:'Club Cinta Negra',icon:'crown',insc:'Programa extra · 8 h de entrenamiento',precio: cintaNegra,pop:false,
-      items:['Programa Kobudo + Liderazgo','Niños · Sáb 10:00 AM–12:00 PM · Jóvenes · Sáb 12:00–2:00 PM','Uniforme Club + evaluaciones mensuales','Competencias de Federación + Acrogimnasia']},
+      items:[cdesc, cn, cj, 'Competencias de Federación + Acrogimnasia']},
     {n:'Programa Élite UACJ',icon:'graduation-cap',insc:'Ruta al equipo representativo universitario',precio:'Camino UACJ',pop:false,elite:true,
-      items:['Construye su currículum deportivo desde primaria, secundaria y prepa','Pre-califica al equipo representativo de Kickboxing de la UACJ','Requiere tener Anual UNION + Club Cinta Negra','Participar y calificar en los torneos del circuito anual','Cumplir con los reglamentos de la academia']},
+      items:[edesc,'Pre-califica al equipo representativo de Kickboxing de la UACJ','Requiere Anual UNION + Club Cinta Negra','Participar en los torneos del circuito anual']},
   ]
   document.getElementById('planes').innerHTML = P.map(p=>`
     <div class="card" ${p.pop?'style="border:1.5px solid var(--primary);"':p.elite?'style="border:1.5px solid var(--amber-600);background:linear-gradient(180deg,var(--amber-bg),#fff);"':''}>
