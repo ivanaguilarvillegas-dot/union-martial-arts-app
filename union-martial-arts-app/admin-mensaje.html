@@ -295,9 +295,38 @@
     lucide.createIcons()
   }
 
+  // Mostrar aviso actual con opción de borrar
+  async function cargarAvisoActual() {
+    const { data } = await supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle()
+    if (!data?.valor) return
+    const fecha = new Date(data.actualizado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+    const wrap = document.createElement('div')
+    wrap.style.marginTop = '16px'
+    wrap.innerHTML = `<div class="label" style="margin-bottom:10px">Aviso general activo</div>
+      <div class="card" id="aviso-admin-card" style="border-left:3px solid var(--primary);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:600;color:var(--primary);">AVISO A TODOS</span>
+          <span style="font-size:11px;color:var(--muted);">${fecha}</span>
+        </div>
+        <div style="font-size:13.5px;line-height:1.5;margin-bottom:10px;">${data.valor}</div>
+        <button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" id="btn-del-aviso-admin">
+          <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar aviso
+        </button>
+      </div>`
+    document.querySelector('.body').appendChild(wrap)
+    lucide.createIcons()
+
+    document.getElementById('btn-del-aviso-admin').addEventListener('click', async () => {
+      if (!confirm('¿Borrar el aviso general?')) return
+      await supabase.from('configuracion').delete().eq('clave', 'aviso_general')
+      document.getElementById('aviso-admin-card').remove()
+    })
+  }
+
   cargarMensajes()
   cargarCitas()
   cargarEnviados()
+  cargarAvisoActual()
   lucide.createIcons()
 </script>
 </body></html>

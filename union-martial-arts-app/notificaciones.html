@@ -94,14 +94,23 @@
   if (aviso?.valor) {
     const fecha = aviso.actualizado_en ? new Date(aviso.actualizado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : ''
     document.getElementById('avisos-wrap').innerHTML = `
-      <div class="card" style="border-left:3px solid var(--primary);">
+      <div class="card" id="aviso-card" style="border-left:3px solid var(--primary);">
         <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
           <span style="color:var(--primary);"><i data-lucide="message-square" style="width:16px;height:16px"></i></span>
           <span style="font-size:12px;font-weight:600;color:var(--primary);">INSTRUCTOR</span>
           <span style="font-size:11px;color:var(--muted);margin-left:auto;">${fecha}</span>
         </div>
-        <div style="font-size:13.5px;line-height:1.6;">${aviso.valor}</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:10px;">${aviso.valor}</div>
+        <button class="btn sm" id="btn-del-aviso" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;">
+          <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar
+        </button>
       </div>`
+
+    document.getElementById('btn-del-aviso').addEventListener('click', async () => {
+      if (!confirm('¿Borrar este aviso?')) return
+      await supabase.from('configuracion').delete().eq('clave', 'aviso_general')
+      document.getElementById('aviso-card').remove()
+    })
   }
 
   // Frase del día
