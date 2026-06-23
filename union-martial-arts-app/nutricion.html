@@ -441,6 +441,14 @@
   const state = {}
   let notifEnviada = false
 
+  const toasts = [
+    '',
+    '¡Buen comienzo! Sigue así 💪',
+    '¡Ya van 2! ¡Intenta uno más! 🌟',
+    '¡Casi! Solo un hábito más ⭐',
+    '¡Perfecto! Todos los hábitos del día 🎉',
+  ]
+
   habitosEl.addEventListener('click', async e => {
     const item = e.target.closest('[data-h]'); if (!item) return
     const idx = item.dataset.h
@@ -452,7 +460,15 @@
     badge.style.background = n === habitos.length ? '#16a34a' : 'rgba(255,255,255,.2)'
 
     if (state[idx]) {
-      showToast('✅ Hábito registrado. Tu instructor podrá verlo en el seguimiento de hoy.')
+      showToast(toasts[n] || '✅ Hábito registrado')
+      // Guardar cada hábito individual
+      try {
+        await supabase.from('mensajes').insert({
+          de_user_id: user.id,
+          texto: `🥗 Hábito ${n}/${habitos.length}: ${habitos[idx].txt} · ${new Date().toLocaleDateString('es-MX')}`,
+          para_admin: true
+        })
+      } catch(e) {}
     }
 
     if (n === habitos.length && !notifEnviada) {
@@ -460,7 +476,7 @@
       try {
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
-          texto: '🥗 Hábitos de nutrición completados hoy · ' + new Date().toLocaleDateString('es-MX'),
+          texto: '🥗 ¡Hábitos de nutrición completados hoy! · ' + new Date().toLocaleDateString('es-MX'),
           para_admin: true
         })
       } catch(e) {}
