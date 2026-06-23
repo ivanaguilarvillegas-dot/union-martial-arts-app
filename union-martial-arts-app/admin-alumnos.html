@@ -4,7 +4,7 @@
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="sub">48 activos</div><div class="title">Alumnos</div></div>
+    <div class="grow"><div class="sub" id="sub">Cargando…</div><div class="title">Alumnos</div></div>
     <a class="iconbtn-dark" href="admin-nuevo-alumno.html" aria-label="Agregar"><i data-lucide="user-plus"></i></a></div>
   <div class="body">
     <a class="btn secondary block mb14" href="admin-nuevo-alumno.html"><i data-lucide="user-plus"></i> Agregar nuevo alumno</a>
@@ -18,6 +18,53 @@
     <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
   </nav>
 </div></div>
+
+<!-- Modal editar alumno -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px;">Editar alumno</div>
+    <input type="hidden" id="edit-id" />
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre completo</label>
+      <input type="text" id="edit-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Cinta</label>
+      <select id="edit-cinta" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
+        <option value="">Sin cinta</option>
+        <option value="blanca">Blanca</option>
+        <option value="amarilla">Amarilla</option>
+        <option value="naranja">Naranja</option>
+        <option value="verde">Verde</option>
+        <option value="azul">Azul</option>
+        <option value="morada">Morada</option>
+        <option value="café">Café</option>
+        <option value="negra">Negra</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Grupo / nivel</label>
+      <input type="text" id="edit-grupo" placeholder="Niños, Jóvenes, Adultos…" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn secondary" style="flex:1;" id="modal-cancelar">Cancelar</button>
+      <button class="btn primary" style="flex:1;" id="modal-guardar"><i data-lucide="save"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmar borrar -->
+<div id="modal-borrar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:8px;">¿Eliminar alumno?</div>
+    <div style="font-size:13.5px;color:var(--muted);margin-bottom:18px;" id="borrar-nombre-txt">Esta acción no se puede deshacer.</div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn secondary" style="flex:1;" id="borrar-cancelar">Cancelar</button>
+      <button class="btn" style="flex:1;background:var(--red-600);color:#fff;" id="borrar-confirmar"><i data-lucide="trash-2"></i> Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -28,25 +75,100 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const { data: alumnos, count } = await supabase.from('alumnos').select('*', { count: 'exact' }).order('nombre')
+  let alumnos = []
+  let borrarId = null
 
-  document.querySelector('.sub').textContent = (count || 0) + ' activos'
-
-  const list = document.getElementById('list')
-  if (!alumnos?.length) {
-    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin alumnos registrados.</div>'
-  } else {
-    list.innerHTML = alumnos.map(a => {
-      const ini = a.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
-      return `<a class="row" href="admin-evaluacion.html">
-        <span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-        <span class="grow">
-          <span class="t">${a.nombre}</span>
-          <span class="s">${a.cinta ? 'Cinta ' + a.cinta : 'Sin cinta'}${a.grupo ? ' · ' + a.grupo : ''}</span>
-        </span>
-        <span class="trail"><i data-lucide="chevron-right"></i></span></a>`
-    }).join('')
+  async function cargar() {
+    const { data, count } = await supabase.from('alumnos').select('*', { count: 'exact' }).order('nombre')
+    alumnos = data || []
+    document.getElementById('sub').textContent = (count || 0) + ' activos'
+    render()
   }
-  lucide.createIcons()
+
+  function render() {
+    const list = document.getElementById('list')
+    if (!alumnos.length) {
+      list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin alumnos registrados.</div>'
+    } else {
+      list.innerHTML = alumnos.map(a => {
+        const ini = a.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+        return `<div class="row" style="gap:10px;">
+          <a href="admin-evaluacion.html?alumno=${a.id}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit;min-width:0;">
+            <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
+            <span class="grow" style="min-width:0;">
+              <span class="t" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre}</span>
+              <span class="s">${a.cinta ? 'Cinta ' + a.cinta : 'Sin cinta'}${a.grupo ? ' · ' + a.grupo : ''}</span>
+            </span>
+          </a>
+          <span style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="iconbtn" data-editar="${a.id}" style="width:32px;height:32px;" title="Editar"><i data-lucide="pencil" style="width:15px;height:15px"></i></button>
+            <button class="iconbtn" data-borrar="${a.id}" style="width:32px;height:32px;color:var(--red-600);" title="Eliminar"><i data-lucide="trash-2" style="width:15px;height:15px"></i></button>
+          </span>
+        </div>`
+      }).join('')
+    }
+    lucide.createIcons()
+  }
+
+  // Editar
+  document.getElementById('list').addEventListener('click', e => {
+    const editBtn = e.target.closest('[data-editar]')
+    if (editBtn) {
+      const a = alumnos.find(x => x.id === editBtn.dataset.editar)
+      if (!a) return
+      document.getElementById('edit-id').value = a.id
+      document.getElementById('edit-nombre').value = a.nombre || ''
+      document.getElementById('edit-cinta').value = a.cinta || ''
+      document.getElementById('edit-grupo').value = a.grupo || ''
+      document.getElementById('modal').style.display = 'flex'
+      lucide.createIcons()
+      return
+    }
+    const borrarBtn = e.target.closest('[data-borrar]')
+    if (borrarBtn) {
+      borrarId = borrarBtn.dataset.borrar
+      const a = alumnos.find(x => x.id === borrarId)
+      document.getElementById('borrar-nombre-txt').textContent = '¿Eliminar a ' + (a?.nombre || 'este alumno') + '? Esta acción no se puede deshacer.'
+      document.getElementById('modal-borrar').style.display = 'flex'
+    }
+  })
+
+  document.getElementById('modal-cancelar').addEventListener('click', () => {
+    document.getElementById('modal').style.display = 'none'
+  })
+
+  document.getElementById('modal-guardar').addEventListener('click', async () => {
+    const id = document.getElementById('edit-id').value
+    const nombre = document.getElementById('edit-nombre').value.trim()
+    const cinta = document.getElementById('edit-cinta').value
+    const grupo = document.getElementById('edit-grupo').value.trim()
+    if (!nombre) { alert('El nombre es obligatorio'); return }
+    const btn = document.getElementById('modal-guardar')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+    const { error } = await supabase.from('alumnos').update({ nombre, cinta: cinta || null, grupo: grupo || null }).eq('id', id)
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar'; lucide.createIcons()
+    if (error) { alert('❌ Error: ' + error.message); return }
+    document.getElementById('modal').style.display = 'none'
+    await cargar()
+  })
+
+  document.getElementById('borrar-cancelar').addEventListener('click', () => {
+    document.getElementById('modal-borrar').style.display = 'none'
+    borrarId = null
+  })
+
+  document.getElementById('borrar-confirmar').addEventListener('click', async () => {
+    if (!borrarId) return
+    const btn = document.getElementById('borrar-confirmar')
+    btn.disabled = true; btn.textContent = 'Eliminando…'
+    const { error } = await supabase.from('alumnos').delete().eq('id', borrarId)
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="trash-2"></i> Eliminar'; lucide.createIcons()
+    if (error) { alert('❌ Error: ' + error.message); return }
+    document.getElementById('modal-borrar').style.display = 'none'
+    borrarId = null
+    await cargar()
+  })
+
+  cargar()
 </script>
 </body></html>

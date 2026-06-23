@@ -28,7 +28,7 @@
     <div class="label">Acciones</div>
     <div class="stack-10 mb18" id="acc"></div>
 
-    <div class="label">Actividad en casa de hoy</div>
+    <div class="label">Asistencia de hoy</div>
     <div class="stack-8" id="home"></div>
   </div>
   <nav class="bottomnav">
@@ -90,11 +90,11 @@
       const nom = c.alumnos?.nombre || 'Alumno'
       const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
       return `<div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-        <span class="grow"><span class="t">${nom}</span><span class="s">Check-in hoy ${c.hora||''}</span></span>
+        <span class="grow"><span class="t">${nom}</span><span class="s">Asistencia · ${c.tipo||'Clase'}${c.hora ? ' · ' + c.hora : ''}</span></span>
         <span class="trail"><span class="badge green"><i data-lucide="check"></i> Asistió</span></span></div>`
     }).join('')
   } else {
-    homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin check-ins registrados hoy.</div>'
+    homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin asistencias registradas hoy.</div>'
   }
 
   lucide.createIcons()
