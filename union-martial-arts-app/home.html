@@ -607,23 +607,23 @@
       }
     } catch(e) {}
 
-    // Evaluación — última del mes
+    // Evaluación — última puntuación del mes
     try {
       const { data: evals } = await supabase.from('evaluaciones')
-        .select('nivel').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+        .select('puntuacion').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
         .order('fecha', { ascending: false }).limit(1)
-      const niv = evals?.[0]?.nivel
-      const etiquetas = { excelente:'Excelente', bueno:'Bueno', regular:'Regular', mejorar:'Por mejorar' }
-      document.getElementById('stat-eval').textContent = etiquetas[niv?.toLowerCase()] || (niv || '—')
+      const pts = evals?.[0]?.puntuacion
+      
+      document.getElementById('stat-eval').textContent = pts != null ? pts + '%' : '—'
     } catch(e) {
       document.getElementById('stat-eval').textContent = '—'
     }
 
-    // Hábitos del mes
+    // Hábitos del mes — desde mensajes con emoji
     try {
-      const { data: habitos } = await supabase.from('habitos')
-        .select('completados').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
-      const total = (habitos || []).reduce((s, h) => s + (h.completados || 0), 0)
+      const { data: msgs } = await supabase.from('mensajes')
+        .select('texto').eq('de_user_id', user.id).eq('para_admin', true).gte('creado_en', primerDia + 'T00:00:00')
+      const total = (msgs || []).filter(m => m.texto?.includes('🥗 Hábito')).length
       document.getElementById('stat-habitos').textContent = total || '—'
     } catch(e) {
       document.getElementById('stat-habitos').textContent = '—'
