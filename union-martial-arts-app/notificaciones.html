@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Avisos y horario</title><link rel="stylesheet" href="css/uma.css" /></head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Avisos y horario</div></div>
+  </div>
+  <div class="body">
+    <div id="horario-wrap" style="display:none;">
+      <div class="label">Horario</div>
+      <div class="card soft mb18" id="horario-card"></div>
+    </div>
+
+    <div class="label">Avisos del instructor</div>
+    <div id="avisos-wrap" class="mb18">
+      <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="avisos-empty">Sin avisos por el momento.</div>
+    </div>
+
+    <div class="label">Frase del día</div>
+    <div id="frase-wrap" class="mb18">
+      <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="frase-empty">Sin frase del día.</div>
+    </div>
+
+    <div class="label">Próximos eventos</div>
+    <div class="stack-10" id="eventos-wrap">
+      <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="eventos-empty">Sin eventos próximos.</div>
+    </div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Horario del alumno
+  const { data: padre } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+  if (padre?.alumno_id) {
+    const { data: al } = await supabase.from('alumnos').select('nombre, horario').eq('id', padre.alumno_id).maybeSingle()
+    if (al?.horario) {
+      const hs = al.horario.split(' | ').filter(Boolean)
+      document.getElementById('horario-card').innerHTML =
+        `<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:10px;">${al.nombre}</div>` +
+        hs.map(h => `<div style="font-size:13px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--ink-100);">· ${h}</div>`).join('')
+      document.getElementById('horario-wrap').style.display = 'block'
+    }
+  }
+
+  // Aviso general
+  const { data: aviso } = await supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle()
+  if (aviso?.valor) {
+    const fecha = aviso.actualizado_en ? new Date(aviso.actualizado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : ''
+    document.getElementById('avisos-wrap').innerHTML = `
+      <div class="card" style="border-left:3px solid var(--primary);">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+          <span style="color:var(--primary);"><i data-lucide="message-square" style="width:16px;height:16px"></i></span>
+          <span style="font-size:12px;font-weight:600;color:var(--primary);">INSTRUCTOR</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:auto;">${fecha}</span>
+        </div>
+        <div style="font-size:13.5px;line-height:1.6;">${aviso.valor}</div>
+      </div>`
+  }
+
+  // Frase del día
+  const { data: frase } = await supabase.from('frases').select('texto, fecha_envio').eq('activa', true).maybeSingle()
+  if (frase?.texto) {
+    document.getElementById('frase-wrap').innerHTML = `
+      <div class="card soft" style="text-align:center;padding:20px 16px;">
+        <div style="font-size:22px;color:var(--primary);margin-bottom:10px;">"</div>
+        <div style="font-size:14px;font-style:italic;line-height:1.7;color:var(--text);">${frase.texto}</div>
+        <div style="font-size:22px;color:var(--primary);margin-top:6px;">"</div>
+      </div>`
+  }
+
+  // Eventos próximos
+  const hoy = new Date().toISOString().split('T')[0]
+  const { data: evs } = await supabase.from('eventos').select('titulo, fecha, lugar, descripcion').gte('fecha', hoy).order('fecha').limit(5)
+  if (evs?.length) {
+    document.getElementById('eventos-wrap').innerHTML = evs.map(ev => `
+      <div class="card mb10">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="ic amber"><i data-lucide="calendar"></i></span>
+          <span class="grow">
+            <span class="t">${ev.titulo}</span>
+            <span class="s">${ev.fecha}${ev.lugar ? ' · ' + ev.lugar : ''}</span>
+            ${ev.descripcion ? `<span style="display:block;font-size:12px;color:var(--muted);margin-top:3px;">${ev.descripcion}</span>` : ''}
+          </span>
+        </div>
+      </div>`).join('')
+  }
+
+  lucide.createIcons()
+</script>
+</body></html>
