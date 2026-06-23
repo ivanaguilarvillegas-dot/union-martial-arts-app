@@ -99,9 +99,22 @@
     lvl = b.dataset.lvl; render()
   })
 
-  document.getElementById('list').addEventListener('click', e => {
+  let notifEnviada = {}
+  document.getElementById('list').addEventListener('click', async e => {
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
+    const items = LEVELS[lvl]
+    const n = items.filter((_, i) => done[lvl + i]).length
+    if (n === items.length && !notifEnviada[lvl]) {
+      notifEnviada[lvl] = true
+      try {
+        await supabase.from('mensajes').insert({
+          de_user_id: user.id,
+          texto: '🏋️ Rutina en casa completada — nivel ' + lvl + ' (' + items.length + ' ejercicios) · ' + new Date().toLocaleDateString('es-MX'),
+          para_admin: true
+        })
+      } catch(e) {}
+    }
   })
 
   cargarVideos()

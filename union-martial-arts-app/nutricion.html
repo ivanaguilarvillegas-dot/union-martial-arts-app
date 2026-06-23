@@ -64,7 +64,8 @@
     `<button class="checkitem" data-h="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${h}</span></button>`
   ).join('')
 
-  document.getElementById('habitos').addEventListener('click', e => {
+  let notifNutEnviada = false
+  document.getElementById('habitos').addEventListener('click', async e => {
     const b = e.target.closest('[data-h]'); if (!b) return
     state[b.dataset.h] = !state[b.dataset.h]
     b.classList.toggle('done')
@@ -73,6 +74,16 @@
     document.getElementById('cnt').className = 'badge ' + (n === 4 ? 'green' : 'blue')
     document.getElementById('notif').style.display = n > 0 ? 'flex' : 'none'
     lucide.createIcons()
+    if (n === 4 && !notifNutEnviada) {
+      notifNutEnviada = true
+      try {
+        await supabase.from('mensajes').insert({
+          de_user_id: user.id,
+          texto: '🥗 Hábitos de nutrición completados hoy · ' + new Date().toLocaleDateString('es-MX'),
+          para_admin: true
+        })
+      } catch(e) {}
+    }
   })
 
   lucide.createIcons()

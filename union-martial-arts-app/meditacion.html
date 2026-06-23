@@ -110,9 +110,21 @@
     lucide.createIcons()
   }
 
-  document.getElementById('list').addEventListener('click', e => {
+  let notifMedEnviada = false
+  document.getElementById('list').addEventListener('click', async e => {
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
+    const n = Object.values(done).filter(Boolean).length
+    if (n >= total && !notifMedEnviada) {
+      notifMedEnviada = true
+      try {
+        await supabase.from('mensajes').insert({
+          de_user_id: user.id,
+          texto: '🧘 Sesión de meditación completada — ' + n + ' ejercicios · ' + new Date().toLocaleDateString('es-MX'),
+          para_admin: true
+        })
+      } catch(e) {}
+    }
   })
 
   cargar()
