@@ -73,7 +73,16 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).single()
+  // Buscar padre por user_id; si no existe, auto-enlazar por correo
+  let { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).single()
+  if (!padre) {
+    // Primera vez que entra: enlazar por correo
+    const { data: padreByEmail } = await supabase.from('padres').select('id, nombre, alumno_id').eq('correo', user.email).is('user_id', null).single()
+    if (padreByEmail) {
+      await supabase.from('padres').update({ user_id: user.id }).eq('id', padreByEmail.id)
+      padre = padreByEmail
+    }
+  }
   if (padre) {
     document.getElementById('nombre-familia').textContent = 'Familia ' + (padre.nombre?.split(' ')[1] || padre.nombre || '')
 

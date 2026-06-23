@@ -68,7 +68,15 @@
     <span style="font-size:13px;font-weight:600;text-align:right;">${v || '—'}</span></div>`
 
   // Cargar datos reales del padre y alumno
-  const { data: padre } = await supabase.from('padres').select('*, alumnos(*)').eq('user_id', user.id).single()
+  let { data: padre } = await supabase.from('padres').select('*, alumnos(*)').eq('user_id', user.id).single()
+  if (!padre) {
+    const { data: padreByEmail } = await supabase.from('padres').select('id').eq('correo', user.email).is('user_id', null).single()
+    if (padreByEmail) {
+      await supabase.from('padres').update({ user_id: user.id }).eq('id', padreByEmail.id)
+      const { data: padreLinked } = await supabase.from('padres').select('*, alumnos(*)').eq('id', padreByEmail.id).single()
+      padre = padreLinked
+    }
+  }
   const alumno = padre?.alumnos
 
   if (alumno) {
