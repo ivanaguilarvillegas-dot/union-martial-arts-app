@@ -94,14 +94,27 @@
 
   document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-entrar').click() })
 
-  // Botón entrar como instructor: fuerza ir a admin.html sin validar rol
+  // Botón entrar como instructor
   document.getElementById('btn-instructor').addEventListener('click', async (e) => {
     e.preventDefault()
-    const correo = document.getElementById('correo').value.trim()
-    const pass = document.getElementById('password').value.trim()
+    const correoEl = document.getElementById('correo')
+    const passEl = document.getElementById('password')
+    const correo = correoEl.value.trim()
+    const pass = passEl.value.trim()
     const err = document.getElementById('error-msg')
     err.style.display = 'none'
-    if (!correo || !pass) { err.textContent = 'Escribe tu correo y contraseña.'; err.style.display = 'block'; return }
+    // Si los campos están vacíos, resaltar y enfocar
+    if (!correo || !pass) {
+      document.querySelector('.portal').textContent = 'Acceso instructor — ingresa tus datos'
+      document.querySelector('.portal').style.color = 'var(--primary)'
+      correoEl.focus()
+      correoEl.style.borderColor = 'var(--primary)'
+      passEl.style.borderColor = !correo ? 'var(--primary)' : ''
+      err.textContent = 'Escribe tu correo y contraseña de instructor.'
+      err.style.display = 'block'
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: pass })
     if (error) { err.textContent = 'Correo o contraseña incorrectos.'; err.style.display = 'block'; return }
     window.location.href = 'admin.html'

@@ -95,12 +95,13 @@
           <i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto.
         </div>
 
-        <!-- Ver recibo (pago ya confirmado) -->
-        <a id="btn-recibo" href="recibo.html" style="display:none;" class="btn secondary block mt10">
-          <i data-lucide="file-text"></i> Ver mi recibo de pago
-        </a>
       </div>
     </div>
+
+    <!-- Ver recibo (pago ya confirmado) — fuera de pago-opciones para que siempre sea visible -->
+    <a id="btn-recibo" href="recibo.html" style="display:none;" class="btn primary block mb14">
+      <i data-lucide="file-text"></i> Ver mi recibo de pago
+    </a>
 
     <div class="label">Pagar por concepto</div>
     <div class="stack-8 mb14" id="planes-pago"></div>
@@ -356,6 +357,7 @@
     document.getElementById('comprobante-area').style.display = 'none'
     document.getElementById('btn-pagar').style.display = 'none'
     document.getElementById('comp-ok').style.display = 'flex'
+    document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto. <a href="${url}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante →</a>`
     lucide.createIcons()
   })
 

@@ -40,6 +40,9 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  const { data: meAdmin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).maybeSingle()
+  const esAdmin = !!meAdmin?.es_admin
+
   // Rutinas estáticas por nivel (se muestran siempre)
   const LEVELS = {
     principiante:[['flame','Calentamiento básico','10 min · Sin equipo · Estiramientos'],['dumbbell','Sentadillas + Planchas','15 min · 3 series de 10'],['target','Combinación de golpes','10 min · Frente al espejo'],['footprints','Cardio — saltar la cuerda','5 min · Ritmo moderado'],['leaf','Enfriamiento y estiramiento','5 min · Siempre al final']],
@@ -66,10 +69,12 @@
       const k = lvl + i, on = !!done[k]
       // Buscar video del instructor que coincida con el nombre
       const vid = videos.find(v => v.nombre.toLowerCase().includes(it[1].toLowerCase().split(' ')[0].toLowerCase()))
+      const nombreClave = it[1].toLowerCase().replace(/[^a-záéíóúñ0-9]/gi, '_').substring(0, 30)
       return `<div class="row"><span class="ic amber"><i data-lucide="${it[0]}"></i></span>
         <span class="grow"><span class="t">${it[1]}</span><span class="s">${it[2]}</span></span>
         <span class="trail" style="gap:8px;">
           ${vid ? `<a class="iconbtn" href="${vid.url}" target="_blank" aria-label="Ver video"><i data-lucide="play"></i></a>` : `<button class="iconbtn" disabled style="opacity:.3;" aria-label="Sin video"><i data-lucide="play"></i></button>`}
+          ${esAdmin ? `<label class="iconbtn" title="Subir video" style="cursor:pointer;"><i data-lucide="upload" style="width:14px;height:14px"></i><input type="file" accept="video/*" hidden data-ejercicio="${nombreClave}" /></label>` : ''}
           <button class="iconbtn" data-k="${k}" aria-label="Marcar" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
             <i data-lucide="check"></i></button>
         </span></div>`
@@ -115,6 +120,21 @@
         })
       } catch(e) {}
     }
+  })
+
+  // Instructor: subir video a ejercicio específico
+  document.getElementById('list').addEventListener('change', async e => {
+    const input = e.target.closest('input[data-ejercicio]')
+    if (!input || !esAdmin) return
+    const file = input.files[0]; if (!file) return
+    const ejercicio = input.dataset.ejercicio
+    const ext = file.name.split('.').pop()
+    const nombre = ejercicio + '.' + ext
+    input.parentElement.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px"></i>'
+    lucide.createIcons()
+    const { error } = await supabase.storage.from('media').upload('videos/' + nombre, file, { upsert: true })
+    if (error) { alert('❌ Error: ' + error.message); await cargarVideos(); return }
+    await cargarVideos()
   })
 
   cargarVideos()

@@ -42,9 +42,36 @@
         <option value="negra">Negra</option>
       </select>
     </div>
-    <div style="margin-bottom:16px;">
+    <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Grupo / nivel</label>
-      <input type="text" id="edit-grupo" placeholder="Niños, Jóvenes, Adultos…" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+      <select id="edit-grupo" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
+        <option value="">Sin grupo</option>
+        <option value="Infantil (5-12 años)">Infantil (5-12 años)</option>
+        <option value="Juvenil (13-17 años)">Juvenil (13-17 años)</option>
+        <option value="Adultos (18+ años)">Adultos (18+ años)</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Horario</label>
+      <select id="edit-horario" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
+        <option value="">Sin horario</option>
+        <option value="Lun, Mié y Vie · 5:00 PM">Lun, Mié y Vie — 5:00 PM</option>
+        <option value="Lun, Mié y Vie · 6:00 PM">Lun, Mié y Vie — 6:00 PM</option>
+        <option value="Lun, Mié y Vie · 7:00 PM">Lun, Mié y Vie — 7:00 PM</option>
+        <option value="Mar y Jue · 6:00 PM">Mar y Jue — 6:00 PM</option>
+        <option value="Sábado · 10:00 AM">Sábado — 10:00 AM</option>
+      </select>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Contacto del padre/tutor</div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+        <input type="tel" id="edit-telefono" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Correo</label>
+        <input type="email" id="edit-correo" placeholder="correo@ejemplo.com" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+      </div>
     </div>
     <div style="display:flex;gap:10px;">
       <button class="btn secondary" style="flex:1;" id="modal-cancelar">Cancelar</button>
@@ -111,7 +138,7 @@
   }
 
   // Editar
-  document.getElementById('list').addEventListener('click', e => {
+  document.getElementById('list').addEventListener('click', async e => {
     const editBtn = e.target.closest('[data-editar]')
     if (editBtn) {
       const a = alumnos.find(x => x.id === editBtn.dataset.editar)
@@ -120,6 +147,11 @@
       document.getElementById('edit-nombre').value = a.nombre || ''
       document.getElementById('edit-cinta').value = a.cinta || ''
       document.getElementById('edit-grupo').value = a.grupo || ''
+      document.getElementById('edit-horario').value = a.horario || ''
+      // Cargar datos del padre vinculado
+      const { data: p } = await supabase.from('padres').select('telefono, correo').eq('alumno_id', a.id).maybeSingle()
+      document.getElementById('edit-telefono').value = p?.telefono || ''
+      document.getElementById('edit-correo').value = p?.correo || ''
       document.getElementById('modal').style.display = 'flex'
       lucide.createIcons()
       return
@@ -141,11 +173,22 @@
     const id = document.getElementById('edit-id').value
     const nombre = document.getElementById('edit-nombre').value.trim()
     const cinta = document.getElementById('edit-cinta').value
-    const grupo = document.getElementById('edit-grupo').value.trim()
+    const grupo = document.getElementById('edit-grupo').value
+    const horario = document.getElementById('edit-horario').value
+    const telefono = document.getElementById('edit-telefono').value.trim()
+    const correo = document.getElementById('edit-correo').value.trim()
     if (!nombre) { alert('El nombre es obligatorio'); return }
     const btn = document.getElementById('modal-guardar')
     btn.disabled = true; btn.textContent = 'Guardando…'
-    const { error } = await supabase.from('alumnos').update({ nombre, cinta: cinta || null, grupo: grupo || null }).eq('id', id)
+    const { error } = await supabase.from('alumnos').update({
+      nombre, cinta: cinta || null, grupo: grupo || null, horario: horario || null
+    }).eq('id', id)
+    if (!error && (telefono || correo)) {
+      await supabase.from('padres').update({
+        ...(telefono && { telefono }),
+        ...(correo && { correo })
+      }).eq('alumno_id', id)
+    }
     btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar'; lucide.createIcons()
     if (error) { alert('❌ Error: ' + error.message); return }
     document.getElementById('modal').style.display = 'none'

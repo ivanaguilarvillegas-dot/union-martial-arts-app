@@ -154,25 +154,29 @@
 
   async function cargarAlertas() {
     const el = document.getElementById('alertas')
-    const hoyStr = new Date().toISOString().split('T')[0]
+    if (!el) return
     const items = []
+    const hoyStr = new Date().toISOString().split('T')[0]
     try {
-      const { data: msgs } = await supabase.from('mensajes').select('texto').eq('para_admin', false).order('creado_en', { ascending: false }).limit(5)
-      ;(msgs || []).forEach(m => {
+      const [msgRes, fraseRes, evRes] = await Promise.allSettled([
+        supabase.from('mensajes').select('texto').eq('para_admin', false).order('creado_en', { ascending: false }).limit(5),
+        supabase.from('frases').select('texto').eq('activa', true).maybeSingle(),
+        supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(3)
+      ])
+      ;(msgRes.value?.data || []).forEach(m => {
         const t = (m.texto || '').substring(0, 70)
-        items.push('<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span><span class="grow"><span class="t">Mensaje del instructor</span><span class="s">' + t + '</span></span></div>')
+        items.push('<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span><span class="grow"><span class="t">Aviso del instructor</span><span class="s">' + t + '</span></span></div>')
+      })
+      const frase = fraseRes.value?.data
+      if (frase?.texto) items.push('<div class="row"><span class="ic"><i data-lucide="quote"></i></span><span class="grow"><span class="t">Frase del día</span><span class="s">' + frase.texto + '</span></span></div>')
+      ;(evRes.value?.data || []).forEach(ev => {
+        items.push('<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span><span class="grow"><span class="t">' + ev.titulo + '</span><span class="s">' + ev.fecha + (ev.lugar ? ' · ' + ev.lugar : '') + '</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>')
       })
     } catch(e) {}
-    try {
-      const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
-      if (frase && frase.texto) items.push('<div class="row"><span class="ic"><i data-lucide="quote"></i></span><span class="grow"><span class="t">Frase del día</span><span class="s">' + frase.texto + '</span></span></div>')
-    } catch(e) {}
-    try {
-      const { data: evs } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(1)
-      if (evs && evs.length) items.push('<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span><span class="grow"><span class="t">' + evs[0].titulo + '</span><span class="s">' + evs[0].fecha + (evs[0].lugar ? ' · ' + evs[0].lugar : '') + '</span></span></a>')
-    } catch(e) {}
-    el.innerHTML = items.length ? items.join('') : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
-    lucide.createIcons()
+    el.innerHTML = items.length
+      ? items.join('')
+      : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
+    try { lucide.createIcons() } catch(e) {}
   }
 
   cargarDatos()

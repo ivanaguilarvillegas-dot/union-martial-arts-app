@@ -107,7 +107,11 @@
 
   document.getElementById('list').addEventListener('click', e => {
     const comp = e.target.closest('[data-comp]')
-    if (comp) { window.open(decodeURIComponent(comp.dataset.comp), '_blank'); return }
+    if (comp) {
+      const url = decodeURIComponent(comp.dataset.comp)
+      if (!url || url === 'null' || url === 'undefined') { alert('No hay comprobante disponible.'); return }
+      window.open(url, '_blank'); return
+    }
     const rec = e.target.closest('[data-recibo]')
     if (rec) { window.open('recibo.html?id=' + rec.dataset.recibo, '_blank'); return }
 
