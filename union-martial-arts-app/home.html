@@ -502,8 +502,8 @@
 
     if (padre) {
       const partes = (padre.nombre || '').trim().split(/\s+/).filter(Boolean)
-      // Intenta apellido: primer token si hay más de uno, si no el único
-      const apellido = partes[0] || padre.nombre || ''
+      // Formato "Nombre Apellido" → toma la última palabra como apellido
+      const apellido = partes.length > 1 ? partes[partes.length - 1] : partes[0] || ''
       document.getElementById('saludo-nombre').textContent = 'Familia ' + apellido
     }
 
