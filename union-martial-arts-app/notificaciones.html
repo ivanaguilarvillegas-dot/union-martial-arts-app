@@ -1,39 +1,216 @@
-﻿<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Avisos</title><link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f2167">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Union MA">
-  <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" /></head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Avisos — Union MA</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+<style>
+/* ─── Layout ─── */
+.page-bg { background:#f0f2f5; min-height:100%; padding:0 0 90px; }
+
+/* ─── Hero header ─── */
+.notif-hero {
+  background:linear-gradient(135deg,#0f2167 0%,#1440b0 100%);
+  padding:16px 18px 22px;
+  color:#fff;
+}
+.notif-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.hero-logo { display:flex; align-items:center; gap:10px; }
+.hero-logo img { width:32px; height:32px; }
+.hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
+.hero-actions { display:flex; align-items:center; gap:10px; }
+.hero-bell { position:relative; }
+.hero-bell-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0f2167; }
+.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0f2167; }
+.hero-title { font-size:22px; font-weight:800; margin-bottom:3px; }
+.hero-sub { font-size:13px; opacity:.7; }
+
+/* ─── Sección header ─── */
+.sec { padding:16px 14px 0; }
+.sec-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,.07); margin:0 14px 14px; }
+.sec-hdr { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid #f3f4f6; }
+.sec-hdr-ic { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sec-hdr-ic.blue  { background:#eff6ff; }
+.sec-hdr-ic.amber { background:#fffbeb; }
+.sec-hdr-ic.green { background:#f0fdf4; }
+.sec-hdr-ic.purple{ background:#f5f3ff; }
+.sec-hdr-txt { flex:1; }
+.sec-hdr-title { font-size:15px; font-weight:700; color:#111827; }
+.sec-hdr-sub { font-size:12px; color:#6b7280; margin-top:1px; }
+.sec-hdr-action { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#1d4ed8; text-decoration:none; white-space:nowrap; }
+.sec-hdr-count { background:#1d4ed8; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:99px; }
+
+/* ─── Avisos ─── */
+.aviso-row { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid #f9fafb; }
+.aviso-row:last-child { border-bottom:none; }
+.aviso-ic { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+.aviso-ic.red    { background:#fef2f2; }
+.aviso-ic.amber  { background:#fffbeb; }
+.aviso-ic.blue   { background:#eff6ff; }
+.aviso-body { flex:1; min-width:0; }
+.aviso-badges { margin-bottom:5px; }
+.badge-imp  { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:.04em; }
+.badge-imp.urgente    { background:#fee2e2; color:#dc2626; }
+.badge-imp.importante { background:#fef3c7; color:#b45309; }
+.badge-imp.informativo{ background:#dbeafe; color:#1d4ed8; }
+.aviso-title { font-size:14px; font-weight:700; color:#111827; margin-bottom:3px; line-height:1.3; }
+.aviso-msg { font-size:13px; color:#4b5563; line-height:1.5; margin-bottom:6px; }
+.aviso-meta { display:flex; align-items:center; gap:4px; font-size:12px; color:#9ca3af; }
+.aviso-meta i { width:12px; height:12px; }
+.aviso-arr { color:#d1d5db; margin-left:4px; margin-top:2px; }
+.aviso-arr i { width:16px; height:16px; }
+
+/* ─── Mensajes privados ─── */
+.msg-row { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid #f9fafb; cursor:pointer; transition:background .15s; }
+.msg-row:last-child { border-bottom:none; }
+.msg-row:active { background:#f8fafc; }
+.msg-dot { width:8px; height:8px; border-radius:50%; background:#1d4ed8; flex-shrink:0; margin-top:6px; }
+.msg-dot.read { background:transparent; }
+.msg-avatar { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; overflow:hidden; }
+.msg-avatar img { width:100%; height:100%; object-fit:cover; }
+.msg-body { flex:1; min-width:0; }
+.msg-name { font-size:14px; font-weight:700; color:#111827; }
+.msg-preview { font-size:13px; color:#6b7280; margin-top:2px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.msg-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+.msg-nuevo { background:#1d4ed8; color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:99px; }
+.msg-time { font-size:11px; color:#9ca3af; }
+.msg-arr { color:#d1d5db; }
+
+/* ─── Eventos ─── */
+.eventos-scroll { display:flex; gap:10px; overflow-x:auto; padding:0 16px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.eventos-scroll::-webkit-scrollbar { display:none; }
+.evento-card { background:#fff; border-radius:14px; width:220px; flex-shrink:0; scroll-snap-align:start; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.evento-img { width:100%; height:110px; object-fit:cover; background:#0d1a5e; display:flex; align-items:center; justify-content:center; position:relative; }
+.evento-img img { width:100%; height:100%; object-fit:cover; }
+.evento-img-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:rgba(255,255,255,.6); height:110px; width:100%; }
+.evento-img-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 60%); }
+.evento-img-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,.5); color:#fff; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; letter-spacing:.04em; backdrop-filter:blur(4px); }
+.evento-body { padding:12px 12px 14px; }
+.evento-nombre { font-size:14px; font-weight:700; color:#111827; margin-bottom:8px; }
+.evento-detail { display:flex; align-items:center; gap:5px; font-size:12px; color:#6b7280; margin-bottom:4px; }
+.evento-detail i { width:13px; height:13px; flex-shrink:0; color:#9ca3af; }
+.evento-btn { display:block; text-align:center; background:#eff6ff; color:#1d4ed8; font-size:12px; font-weight:700; padding:7px; border-radius:8px; text-decoration:none; margin-top:10px; }
+
+/* ─── Frase del día ─── */
+.frase-card { background:linear-gradient(135deg,#0f2167,#1440b0); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+.frase-ic { width:40px; height:40px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.frase-label { font-size:11px; font-weight:700; color:rgba(255,255,255,.6); margin-bottom:3px; letter-spacing:.04em; text-transform:uppercase; }
+.frase-txt { font-size:13px; color:#fff; font-style:italic; line-height:1.5; }
+
+/* ─── Empty state ─── */
+.empty-sec { padding:24px 16px; text-align:center; color:#9ca3af; }
+.empty-sec i { display:block; margin:0 auto 8px; opacity:.4; }
+.empty-sec p { font-size:13px; }
+</style>
+</head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="navhead blue">
-    <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Avisos</div></div>
+<div class="phone"><div class="screen" style="background:#f0f2f5;overflow-y:auto;">
+
+  <!-- Hero -->
+  <div class="notif-hero">
+    <div class="notif-hero-top">
+      <div class="hero-logo">
+        <img src="/assets/logo-union-white.png" alt="UMA" />
+        <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
+      </div>
+      <div class="hero-actions">
+        <div class="hero-bell">
+          <div class="hero-bell-ic"><i class="ti ti-bell" style="font-size:18px;color:#fff;"></i></div>
+          <div class="hero-bell-badge" id="bell-count" style="display:none;">0</div>
+        </div>
+        <div class="hero-avatar" id="hero-initials">—</div>
+      </div>
+    </div>
+    <div class="hero-title">Avisos y horario</div>
+    <div class="hero-sub">Comunicación e información importante</div>
   </div>
-  <div class="body">
-    <div id="privados-wrap" style="display:none;">
-      <div class="label">Mensajes para ti</div>
-      <div id="privados-list" class="mb18"></div>
+
+  <div class="page-bg">
+
+    <!-- ══ 1. AVISOS GENERALES ══ -->
+    <div class="sec-card" style="margin-top:16px;">
+      <div class="sec-hdr">
+        <div class="sec-hdr-ic amber">
+          <i class="ti ti-speakerphone" style="font-size:20px;color:#d97706;"></i>
+        </div>
+        <div class="sec-hdr-txt">
+          <div class="sec-hdr-title">Avisos generales</div>
+          <div class="sec-hdr-sub">Información importante para todos los alumnos.</div>
+        </div>
+        <a class="sec-hdr-action" href="notificaciones.html">Ver todos <i class="ti ti-chevron-right" style="font-size:14px;"></i></a>
+      </div>
+      <div id="avisos-list">
+        <div class="empty-sec">
+          <i class="ti ti-speakerphone" style="font-size:28px;"></i>
+          <p>No hay avisos generales por el momento.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="label">Avisos del instructor</div>
-    <div id="avisos-wrap" class="mb18">
-      <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="avisos-empty">Sin avisos por el momento.</div>
+    <!-- ══ 2. MENSAJES PRIVADOS ══ -->
+    <div class="sec-card">
+      <div class="sec-hdr">
+        <div class="sec-hdr-ic blue">
+          <i class="ti ti-message-dots" style="font-size:20px;color:#1d4ed8;"></i>
+        </div>
+        <div class="sec-hdr-txt">
+          <div class="sec-hdr-title">Mensajes privados</div>
+          <div class="sec-hdr-sub">Mensajes directos de los instructores para ti.</div>
+        </div>
+        <a class="sec-hdr-action" href="notificaciones.html#msgs">
+          Ver todos <span class="sec-hdr-count" id="msgs-count" style="display:none;">0</span>
+          <i class="ti ti-chevron-right" style="font-size:14px;"></i>
+        </a>
+      </div>
+      <div id="msgs-list">
+        <div class="empty-sec">
+          <i class="ti ti-message-off" style="font-size:28px;"></i>
+          <p>No tienes mensajes privados por el momento.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="label">Frase del día</div>
-    <div id="frase-wrap" class="mb18">
-      <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="frase-empty">Sin frase del día.</div>
+    <!-- ══ 3. PRÓXIMOS EVENTOS ══ -->
+    <div class="sec-card">
+      <div class="sec-hdr" style="border-bottom:none;padding-bottom:10px;">
+        <div class="sec-hdr-ic amber">
+          <i class="ti ti-trophy" style="font-size:20px;color:#d97706;"></i>
+        </div>
+        <div class="sec-hdr-txt">
+          <div class="sec-hdr-title">Próximos eventos</div>
+          <div class="sec-hdr-sub">Torneos, exámenes y actividades.</div>
+        </div>
+        <a class="sec-hdr-action" href="torneos.html">Ver todos <i class="ti ti-chevron-right" style="font-size:14px;"></i></a>
+      </div>
+      <div class="eventos-scroll" id="eventos-list">
+        <div style="padding:8px 0 8px 0;color:#9ca3af;font-size:13px;text-align:center;width:100%;">Sin eventos próximos.</div>
+      </div>
     </div>
 
-    <div class="label">Próximos eventos</div>
-    <div class="stack-10" id="eventos-wrap">
-      <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="eventos-empty">Sin eventos próximos.</div>
+    <!-- ══ 4. FRASE DEL DÍA ══ -->
+    <div style="padding:0 14px 8px;" id="frase-wrap" style="display:none;">
+      <div class="frase-card">
+        <div class="frase-ic">
+          <i class="ti ti-quote" style="font-size:20px;color:#fff;"></i>
+        </div>
+        <div>
+          <div class="frase-label">Frase del día</div>
+          <div class="frase-txt" id="frase-txt">"La disciplina tarde o temprano vence al talento."</div>
+        </div>
+      </div>
     </div>
-  </div>
+
+  </div><!-- /page-bg -->
+
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
@@ -41,6 +218,7 @@
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>
 </div></div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -48,104 +226,179 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) { window.location.href = 'index.html' }
 
-  // Marcar como visto
+  function timeAgo(iso) {
+    const diff = Math.floor((Date.now() - new Date(iso)) / 1000)
+    if (diff < 3600)  return 'Hace ' + Math.max(1, Math.floor(diff/60)) + ' min'
+    if (diff < 86400) return 'Hace ' + Math.floor(diff/3600) + ' h'
+    if (diff < 172800) return 'Hace 1 día'
+    return 'Hace ' + Math.floor(diff/86400) + ' días'
+  }
+
+  function initials(name) {
+    if (!name) return '?'
+    return name.trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase()
+  }
+
+  function avatarColor(name) {
+    const colors = ['#0047AB','#16a34a','#7c3aed','#d97706','#dc2626','#0891b2']
+    let h = 0; for (const c of (name||'')) h = (h*31 + c.charCodeAt(0)) % colors.length
+    return colors[h]
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html'; return }
+
   localStorage.setItem('notif_visto', new Date().toISOString())
 
-  // Mensajes privados dirigidos a este padre
-  const { data: privados } = await supabase.from('mensajes')
-    .select('id, texto, creado_en').eq('para_admin', false).eq('destinatario_id', user.id)
-    .order('creado_en', { ascending: false }).limit(10)
-  if (privados?.length) {
-    document.getElementById('privados-wrap').style.display = 'block'
-    document.getElementById('privados-list').innerHTML = privados.map(m => {
-      const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
-      return `<div class="card mb10" style="border-left:3px solid var(--green-600);" id="msg-${m.id}">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="color:var(--green-600);"><i data-lucide="mail" style="width:15px;height:15px"></i></span>
-          <span style="font-size:11px;font-weight:600;color:var(--green-600);">MENSAJE PRIVADO</span>
-          <span style="font-size:11px;color:var(--muted);margin-left:auto;">${fecha}</span>
-        </div>
-        <div style="font-size:13.5px;line-height:1.6;margin-bottom:10px;">${m.texto}</div>
-        <button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-del="${m.id}">
-          <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar
-        </button>
-      </div>`
-    }).join('')
-    lucide.createIcons()
-  }
-
-  // Aviso general
-  const { data: aviso } = await supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle()
-  if (aviso?.valor) {
-    const fecha = aviso.actualizado_en ? new Date(aviso.actualizado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : ''
-    document.getElementById('avisos-wrap').innerHTML = `
-      <div class="card" id="aviso-card" style="border-left:3px solid var(--primary);">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
-          <span style="color:var(--primary);"><i data-lucide="message-square" style="width:16px;height:16px"></i></span>
-          <span style="font-size:12px;font-weight:600;color:var(--primary);">INSTRUCTOR</span>
-          <span style="font-size:11px;color:var(--muted);margin-left:auto;">${fecha}</span>
-        </div>
-        <div style="font-size:13.5px;line-height:1.6;margin-bottom:10px;">${aviso.valor}</div>
-        <button class="btn sm" id="btn-del-aviso" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;">
-          <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar
-        </button>
-      </div>`
-
-    document.getElementById('btn-del-aviso').addEventListener('click', async () => {
-      if (!confirm('¿Borrar este aviso?')) return
-      await supabase.from('configuracion').delete().eq('clave', 'aviso_general')
-      document.getElementById('aviso-card').remove()
-    })
-  }
-
-  // Frase del día
-  const { data: frase } = await supabase.from('frases').select('texto, fecha_envio').eq('activa', true).maybeSingle()
-  if (frase?.texto) {
-    document.getElementById('frase-wrap').innerHTML = `
-      <div style="background:linear-gradient(135deg,var(--navy,#0f2167),var(--primary));border-radius:16px;padding:24px 18px;text-align:center;">
-        <div style="font-size:28px;color:rgba(255,255,255,.5);line-height:1;margin-bottom:8px;">"</div>
-        <div style="font-size:14.5px;font-style:italic;line-height:1.75;color:#fff;font-weight:500;">${frase.texto}</div>
-        <div style="font-size:28px;color:rgba(255,255,255,.5);line-height:1;margin-top:8px;">"</div>
-        <div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.05em;">
-          <i data-lucide="award" style="width:12px;height:12px"></i> UNION MARTIAL ARTS
-        </div>
-      </div>`
-    lucide.createIcons()
-  }
-
-  // Eventos próximos
-  const hoy = new Date().toISOString().split('T')[0]
-  const { data: evs } = await supabase.from('eventos').select('titulo, fecha, lugar, descripcion').gte('fecha', hoy).order('fecha').limit(5)
-  if (evs?.length) {
-    document.getElementById('eventos-wrap').innerHTML = evs.map(ev => `
-      <div class="card mb10">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="ic amber"><i data-lucide="calendar"></i></span>
-          <span class="grow">
-            <span class="t">${ev.titulo}</span>
-            <span class="s">${ev.fecha}${ev.lugar ? ' · ' + ev.lugar : ''}</span>
-            ${ev.descripcion ? `<span style="display:block;font-size:12px;color:var(--muted);margin-top:3px;">${ev.descripcion}</span>` : ''}
-          </span>
-        </div>
-      </div>`).join('')
-  }
-
-  // Borrar mensaje privado (padre)
-  document.body.addEventListener('click', async e => {
-    const btn = e.target.closest('[data-del]'); if (!btn) return
-    if (!confirm('¿Borrar este mensaje?')) return
-    btn.textContent = 'Borrando…'; btn.disabled = true
-    const { error } = await supabase.from('mensajes').delete().eq('id', btn.dataset.del)
-    if (error) {
-      alert('❌ Error al borrar: ' + error.message)
-      btn.textContent = 'Borrar'; btn.disabled = false
-    } else {
-      document.getElementById('msg-' + btn.dataset.del)?.remove()
+  // Padre
+  let padre = null
+  try {
+    const { data: p1 } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+    if (p1) { padre = p1 }
+    else {
+      const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
+      if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
     }
-  })
+  } catch(e) {}
+
+  // Iniciales en hero
+  if (padre?.nombre) {
+    document.getElementById('hero-initials').textContent = initials(padre.nombre)
+  }
+
+  // ── AVISOS GENERALES ──────────────────────────────────────
+  // Leer hasta 3 avisos desde configuracion (clave aviso_1, aviso_2, aviso_3)
+  // y también el aviso_general legacy
+  try {
+    const claves = ['aviso_general','aviso_1','aviso_2','aviso_3']
+    const { data: cfgs } = await supabase.from('configuracion').select('clave, valor, actualizado_en').in('clave', claves)
+
+    const PRIORIDAD_IC = {
+      urgente:    { cls:'red',   icon:'ti-alert-circle',  badge:'urgente',    col:'#dc2626' },
+      importante: { cls:'amber', icon:'ti-calendar-event',badge:'importante', col:'#d97706' },
+      informativo:{ cls:'blue',  icon:'ti-info-circle',   badge:'informativo',col:'#1d4ed8' },
+    }
+
+    // Parsear avisos — cada valor puede ser "titulo|mensaje|prioridad" o texto libre
+    const avisos = []
+    for (const r of (cfgs || [])) {
+      if (!r.valor) continue
+      const parts = r.valor.split('|')
+      if (parts.length >= 2) {
+        avisos.push({ titulo: parts[0].trim(), msg: parts[1].trim(), prioridad: (parts[2]||'informativo').trim().toLowerCase(), fecha: r.actualizado_en })
+      } else {
+        avisos.push({ titulo: 'Aviso', msg: r.valor.trim(), prioridad: 'informativo', fecha: r.actualizado_en })
+      }
+    }
+
+    if (avisos.length) {
+      document.getElementById('avisos-list').innerHTML = avisos.slice(0,3).map(a => {
+        const p = PRIORIDAD_IC[a.prioridad] || PRIORIDAD_IC.informativo
+        const fecha = a.fecha ? new Date(a.fecha).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' }) : ''
+        return `<div class="aviso-row">
+          <div class="aviso-ic ${p.cls}">
+            <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
+          </div>
+          <div class="aviso-body">
+            <div class="aviso-badges"><span class="badge-imp ${a.prioridad}">${a.prioridad.charAt(0).toUpperCase()+a.prioridad.slice(1)}</span></div>
+            <div class="aviso-title">${a.titulo}</div>
+            <div class="aviso-msg">${a.msg}</div>
+            ${fecha ? `<div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>` : ''}
+          </div>
+          <div class="aviso-arr"><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></div>
+        </div>`
+      }).join('')
+    }
+  } catch(e) {}
+
+  // ── MENSAJES PRIVADOS ──────────────────────────────────────
+  try {
+    const { data: msgs } = await supabase.from('mensajes')
+      .select('id, texto, creado_en, leido, de_user_id')
+      .eq('para_admin', false)
+      .eq('destinatario_id', user.id)
+      .order('creado_en', { ascending: false })
+      .limit(3)
+
+    const sinLeer = (msgs||[]).filter(m => !m.leido).length
+    if (sinLeer > 0) {
+      const el = document.getElementById('msgs-count')
+      el.textContent = sinLeer; el.style.display = 'inline-block'
+      document.getElementById('bell-count').textContent = sinLeer
+      document.getElementById('bell-count').style.display = 'flex'
+    }
+
+    if (msgs?.length) {
+      document.getElementById('msgs-list').innerHTML = msgs.map(m => {
+        const nombre = 'Instructor'
+        const ini = initials(nombre)
+        const col = avatarColor(nombre)
+        const leido = m.leido
+        return `<div class="msg-row">
+          <div class="msg-dot${leido ? ' read' : ''}"></div>
+          <div class="msg-avatar" style="background:${col};">
+            <span style="color:#fff;font-size:13px;font-weight:700;">${ini}</span>
+          </div>
+          <div class="msg-body">
+            <div class="msg-name">${nombre}</div>
+            <div class="msg-preview">${m.texto || ''}</div>
+          </div>
+          <div class="msg-right">
+            ${!leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
+            <span class="msg-time">${timeAgo(m.creado_en)}</span>
+            <i class="ti ti-chevron-right msg-arr" style="font-size:16px;color:#d1d5db;"></i>
+          </div>
+        </div>`
+      }).join('')
+    }
+  } catch(e) {}
+
+  // ── PRÓXIMOS EVENTOS ──────────────────────────────────────
+  try {
+    const hoy = new Date().toISOString().split('T')[0]
+    const { data: evs } = await supabase.from('eventos')
+      .select('titulo, fecha, lugar, descripcion, foto_url, tipo, hora')
+      .gte('fecha', hoy).order('fecha').limit(5)
+
+    if (evs?.length) {
+      const TIPO_ICON = { torneo:'ti-trophy', examen:'ti-award', actividad:'ti-star', seminario:'ti-school', default:'ti-calendar-event' }
+      document.getElementById('eventos-list').innerHTML = evs.map(ev => {
+        const ic = TIPO_ICON[ev.tipo?.toLowerCase()] || TIPO_ICON.default
+        const fechaFmt = new Date(ev.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' })
+        const imgHTML = ev.foto_url
+          ? `<img src="${ev.foto_url}" alt="${ev.titulo}" style="width:100%;height:100%;object-fit:cover;" />`
+          : `<div class="evento-img-placeholder"><i class="ti ${ic}" style="font-size:32px;"></i><span style="font-size:11px;font-weight:700;letter-spacing:.05em;">${(ev.tipo||'EVENTO').toUpperCase()}</span></div>`
+        return `<div class="evento-card">
+          <div class="evento-img" style="background:#0d1a5e;">
+            ${imgHTML}
+            ${ev.foto_url ? '<div class="evento-img-overlay"></div>' : ''}
+            ${ev.tipo ? `<div class="evento-img-badge">${ev.tipo.toUpperCase()}</div>` : ''}
+          </div>
+          <div class="evento-body">
+            <div class="evento-nombre">${ev.titulo}</div>
+            <div class="evento-detail"><i class="ti ti-calendar" style="width:13px;height:13px;color:#9ca3af;"></i>${fechaFmt}</div>
+            ${ev.lugar ? `<div class="evento-detail"><i class="ti ti-map-pin" style="width:13px;height:13px;color:#9ca3af;"></i>${ev.lugar}</div>` : ''}
+            ${ev.hora  ? `<div class="evento-detail"><i class="ti ti-clock" style="width:13px;height:13px;color:#9ca3af;"></i>${ev.hora}</div>` : ''}
+            ${ev.descripcion ? `<div class="evento-detail" style="align-items:flex-start;"><i class="ti ti-info-circle" style="width:13px;height:13px;color:#9ca3af;margin-top:1px;"></i><span style="line-height:1.4;">${ev.descripcion}</span></div>` : ''}
+            <a class="evento-btn" href="torneos.html">Ver detalles</a>
+          </div>
+        </div>`
+      }).join('')
+    }
+  } catch(e) {}
+
+  // ── FRASE DEL DÍA ──────────────────────────────────────
+  try {
+    const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
+    if (frase?.texto) {
+      document.getElementById('frase-txt').textContent = '"' + frase.texto + '"'
+      document.getElementById('frase-wrap').style.display = 'block'
+    }
+  } catch(e) {
+    // Mostrar frase por defecto si no hay tabla
+    document.getElementById('frase-wrap').style.display = 'block'
+  }
 
   lucide.createIcons()
 </script>
@@ -154,5 +407,5 @@
     navigator.serviceWorker.register('/sw.js').catch(() => {})
   }
 </script>
-</body></html>
-
+</body>
+</html>
