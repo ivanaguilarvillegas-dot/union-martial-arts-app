@@ -23,6 +23,9 @@
         <label class="field"><span class="lab">Fecha de nacimiento</span>
           <input type="date" id="fecha-nac" /></label>
 
+        <label class="field"><span class="lab">Fecha de inscripción</span>
+          <input type="date" id="fecha-ingreso" /></label>
+
         <label class="field"><span class="lab">Cinta / nivel actual</span>
           <select id="cinta">
             <option value="Blanca">Blanca (principiante)</option>
@@ -165,7 +168,8 @@
 
   document.getElementById('registrar').addEventListener('click', async () => {
     const nombreAlumno = document.getElementById('nombre-alumno').value.trim()
-    const fechaNac    = document.getElementById('fecha-nac').value
+    const fechaNac     = document.getElementById('fecha-nac').value
+    const fechaIngreso = document.getElementById('fecha-ingreso').value
     const cinta       = document.getElementById('cinta').value
     const grupo       = document.getElementById('grupo').value
     const horario     = getHorariosSeleccionados()
@@ -184,7 +188,7 @@
     // 1. Insertar alumno
     const { data: alumno, error: errAlumno } = await supabase
       .from('alumnos')
-      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, cinta, grupo, horario })
+      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario })
       .select().single()
 
     if (errAlumno) { error('Error al registrar alumno: ' + errAlumno.message); return }

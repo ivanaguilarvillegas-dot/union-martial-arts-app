@@ -45,26 +45,16 @@
   const mensual  = v('precio_mensual_basico') || '$1,550 / mes'
   const anual    = v('precio_anual')          || '$12,500 contado'
   const cintaNegra = v('precio_cinta_negra') || '$9,950 anualidad'
+  const h0 = v('horario_basico_ninos')  || 'Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM'
+  const h2 = v('horario_jovenes')       || 'Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM'
+
   const P = [
-    {n:'Programa Básico Niños',icon:'star',insc: insc,precio: mensual,pop:false,
-      items:[
-        'Lunes, Miércoles y Viernes · 4:00–5:00 PM',
-        'Lunes, Miércoles y Viernes · 5:00–6:00 PM',
-        'Lunes, Miércoles y Viernes · 6:00–7:00 PM',
-        'Martes · 6:15–7:00 PM',
-        'Sábado · 11:00 AM–12:00 PM',
-        'Evaluaciones del día',
-      ]},
-    {n:'Programa Básico Jóvenes y Adultos',icon:'star',insc: insc,precio: mensual,pop:false,
-      items:[
-        'Lunes, Miércoles, Jueves y Viernes · 7:00–8:00 PM',
-        'Sábado · 12:00–1:00 PM',
-        'Evaluaciones del día',
-      ]},
+    {n:'Programa Básico',icon:'star',insc: insc,precio: mensual,pop:false,
+      items:['5 clases por semana', h0, h2, 'Evaluaciones del día']},
     {n:'Anual UNION',icon:'calendar',insc:'o 3 pagos · mejor precio por clase',precio: anual,pop:true,
       items:['Empiezas en Básico y tras 3 meses pasas a este plan','Todo el año cubierto','Mejor precio por clase']},
     {n:'Club Cinta Negra',icon:'crown',insc:'Programa extra · 8 h de entrenamiento',precio: cintaNegra,pop:false,
-      items:['Programa Kobudo + Liderazgo','Niños · Sábado 10:00 AM–12:00 PM','Jóvenes · Sábado 12:00–2:00 PM','Uniforme Club + evaluaciones mensuales','Competencias de Federación + Acrogimnasia']},
+      items:['Programa Kobudo + Liderazgo','Niños · Sáb 10:00 AM–12:00 PM · Jóvenes · Sáb 12:00–2:00 PM','Uniforme Club + evaluaciones mensuales','Competencias de Federación + Acrogimnasia']},
     {n:'Programa Élite UACJ',icon:'graduation-cap',insc:'Ruta al equipo representativo universitario',precio:'Camino UACJ',pop:false,elite:true,
       items:['Construye su currículum deportivo desde primaria, secundaria y prepa','Pre-califica al equipo representativo de Kickboxing de la UACJ','Requiere tener Anual UNION + Club Cinta Negra','Participar y calificar en los torneos del circuito anual','Cumplir con los reglamentos de la academia']},
   ]

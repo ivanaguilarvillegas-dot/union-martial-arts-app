@@ -29,6 +29,10 @@
       <input type="text" id="edit-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
     </div>
     <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Fecha de inscripción</label>
+      <input type="date" id="edit-fecha-ingreso" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Cinta</label>
       <select id="edit-cinta" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
         <option value="">Sin cinta</option>
@@ -217,6 +221,7 @@
       if (!a) return
       document.getElementById('edit-id').value = a.id
       document.getElementById('edit-nombre').value = a.nombre || ''
+      document.getElementById('edit-fecha-ingreso').value = a.fecha_ingreso || ''
       document.getElementById('edit-cinta').value = a.cinta || ''
       document.getElementById('edit-grupo').value = a.grupo || ''
       actualizarHorariosEdit(a.grupo || '', a.horario || '')
@@ -259,8 +264,10 @@
     const btn = document.getElementById('modal-guardar')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
+    const fechaIngreso = document.getElementById('edit-fecha-ingreso').value
     const { error } = await supabase.from('alumnos').update({
-      nombre, cinta: cinta || null, grupo: grupo || null, horario: horario || null
+      nombre, cinta: cinta || null, grupo: grupo || null, horario: horario || null,
+      fecha_ingreso: fechaIngreso || null
     }).eq('id', id)
 
     if (!error) {
