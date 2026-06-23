@@ -172,15 +172,16 @@
     const hoy = new Date().toISOString().split('T')[0]
     const visto = localStorage.getItem('notif_visto') || '2000-01-01'
 
-    const [a, f, e] = await Promise.allSettled([
+    const { data: { user } } = await supabase.auth.getUser()
+    const [a, p] = await Promise.allSettled([
       supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle(),
-      supabase.from('frases').select('id, fecha_envio').eq('activa', true).maybeSingle(),
-      supabase.from('eventos').select('id').gte('fecha', hoy)
+      supabase.from('mensajes').select('id, creado_en').eq('para_admin', false).eq('destinatario_id', user?.id).gt('creado_en', visto)
     ])
 
-    // Solo el aviso del instructor cuenta como "no leído" si llegó después de la última visita
     const aviso = a.value?.data
     if (aviso?.valor && aviso.actualizado_en > visto) count += 1
+
+    count += (p.value?.data?.length || 0)
 
     if (count > 0) {
       const link = document.querySelector('a[href="notificaciones.html"]')

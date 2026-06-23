@@ -13,6 +13,11 @@
       <div class="card soft mb18" id="horario-card"></div>
     </div>
 
+    <div id="privados-wrap" style="display:none;">
+      <div class="label">Mensajes para ti</div>
+      <div id="privados-list" class="mb18"></div>
+    </div>
+
     <div class="label">Avisos del instructor</div>
     <div id="avisos-wrap" class="mb18">
       <div class="card soft center" style="color:var(--muted);font-size:13px;padding:16px;" id="avisos-empty">Sin avisos por el momento.</div>
@@ -61,6 +66,26 @@
     }
   }
 
+  // Mensajes privados dirigidos a este padre
+  const { data: privados } = await supabase.from('mensajes')
+    .select('texto, creado_en').eq('para_admin', false).eq('destinatario_id', user.id)
+    .order('creado_en', { ascending: false }).limit(10)
+  if (privados?.length) {
+    document.getElementById('privados-wrap').style.display = 'block'
+    document.getElementById('privados-list').innerHTML = privados.map(m => {
+      const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+      return `<div class="card mb10" style="border-left:3px solid var(--green-600);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="color:var(--green-600);"><i data-lucide="mail" style="width:15px;height:15px"></i></span>
+          <span style="font-size:11px;font-weight:600;color:var(--green-600);">MENSAJE PRIVADO</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:auto;">${fecha}</span>
+        </div>
+        <div style="font-size:13.5px;line-height:1.6;">${m.texto}</div>
+      </div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
   // Aviso general
   const { data: aviso } = await supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle()
   if (aviso?.valor) {
@@ -80,7 +105,7 @@
   const { data: frase } = await supabase.from('frases').select('texto, fecha_envio').eq('activa', true).maybeSingle()
   if (frase?.texto) {
     document.getElementById('frase-wrap').innerHTML = `
-      <div style="background:linear-gradient(135deg,#0d1f6e,#1a3aad);border-radius:16px;padding:24px 18px;text-align:center;">
+      <div style="background:linear-gradient(135deg,var(--navy,#0f2167),var(--primary));border-radius:16px;padding:24px 18px;text-align:center;">
         <div style="font-size:28px;color:rgba(255,255,255,.5);line-height:1;margin-bottom:8px;">"</div>
         <div style="font-size:14.5px;font-style:italic;line-height:1.75;color:#fff;font-weight:500;">${frase.texto}</div>
         <div style="font-size:28px;color:rgba(255,255,255,.5);line-height:1;margin-top:8px;">"</div>
