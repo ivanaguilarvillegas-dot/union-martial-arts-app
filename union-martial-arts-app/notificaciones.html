@@ -19,7 +19,8 @@
 .notif-hero { background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 100%); padding:16px 18px 22px; color:#fff; }
 .notif-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .hero-logo { display:flex; align-items:center; gap:10px; }
-.hero-logo img { width:32px; height:32px; }
+.hero-logo-circle { width:40px; height:40px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.hero-logo-circle img { width:28px; height:28px; object-fit:contain; }
 .hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
 .hero-actions { display:flex; align-items:center; gap:10px; }
 .hero-bell { position:relative; }
@@ -103,7 +104,7 @@
   <div class="notif-hero">
     <div class="notif-hero-top">
       <div class="hero-logo">
-        <img src="/assets/logo-union-white.png" alt="UMA" />
+        <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
         <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
       </div>
       <div class="hero-actions">
