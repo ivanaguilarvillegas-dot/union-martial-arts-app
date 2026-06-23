@@ -31,11 +31,11 @@
     </div>
 
     <div class=”card soft mb18” id=”horario-card” style=”display:none;”>
-      <div style=”display:flex;align-items:center;gap:9px;margin-bottom:8px;”>
-        <span style=”color:var(--primary)”><i data-lucide=”clock” class=”lucide” style=”width:16px;height:16px”></i></span>
-        <span style=”font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap” id=”horario-titulo”>Horario</span>
+      <div style=”display:flex;align-items:center;gap:9px;margin-bottom:10px;”>
+        <span style=”color:var(--primary)”><i data-lucide=”clock” style=”width:16px;height:16px”></i></span>
+        <span style=”font-size:13px;font-weight:700;color:var(--primary);” id=”horario-titulo”>Horario</span>
       </div>
-      <div style=”padding-left:25px;font-size:13px;color:var(--muted);” id=”horario-texto”>—</div>
+      <div id=”horario-texto” style=”display:flex;flex-direction:column;gap:6px;padding-left:25px;”></div>
     </div>
 
     <div class=”label”>Alertas</div>
@@ -122,11 +122,18 @@
         if (al) {
           document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
           document.getElementById('cinta-alumno').textContent = 'Cinta ' + (al.cinta || al.cinturon || '—')
-          document.getElementById('grupo-alumno').textContent = (al.grupo || '') + (al.horario ? ' · ' + al.horario : '')
+          document.getElementById('grupo-alumno').textContent = al.grupo || '—'
           if (al.horario) {
             document.getElementById('horario-card').style.display = 'block'
             document.getElementById('horario-titulo').textContent = 'Horario de ' + (al.nombre?.split(' ')[0] || 'tu hijo/a')
-            document.getElementById('horario-texto').textContent = al.horario
+            const horarios = al.horario.split(' | ').filter(Boolean)
+            document.getElementById('horario-texto').innerHTML = horarios.map(h =>
+              `<div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted);">
+                <span style="color:var(--primary);flex-shrink:0;margin-top:1px;"><i data-lucide="chevron-right" style="width:13px;height:13px"></i></span>
+                <span>${h}</span>
+              </div>`
+            ).join('')
+            lucide.createIcons()
           }
         }
       } catch(e) {}
