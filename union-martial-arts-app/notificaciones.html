@@ -251,11 +251,13 @@
 
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {
-      const [{ data: avisos }, { data: confirmados }] = await Promise.all([
-        supabase.from('avisos').select('id,titulo,mensaje,prioridad,creado_en')
-          .eq('activo', true).order('creado_en', { ascending: false }).limit(5),
-        supabase.from('avisos_confirmaciones').select('aviso_id').eq('user_id', user.id)
-      ])
+      const { data: avisos } = await supabase.from('avisos').select('id,titulo,mensaje,prioridad,creado_en')
+        .eq('activo', true).order('creado_en', { ascending: false }).limit(5)
+      let confirmados = []
+      try {
+        const { data: cd } = await supabase.from('avisos_confirmaciones').select('aviso_id').eq('user_id', user.id)
+        confirmados = cd || []
+      } catch(_) {}
 
       const PMAP = {
         urgente:    { cls:'red',   icon:'ti-alert-circle',  col:'#dc2626' },

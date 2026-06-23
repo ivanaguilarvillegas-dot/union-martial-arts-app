@@ -157,7 +157,7 @@
     }
     // Parsear horario
     // Soporta: "Lunes·6pm | Miércoles·6pm" o "Lunes 6pm, Miércoles 6pm" o "Lunes - 6pm"
-    const segmentos = al.horario.split(/\s*[|,;]\s*/).map(s => s.trim()).filter(Boolean)
+    const segmentos = al.horario.split('|').map(s => s.trim()).filter(Boolean)
 
     const rows = segmentos.map(seg => {
       // Separadores: ·, -, :, espacio doble, o primera palabra = día

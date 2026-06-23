@@ -255,7 +255,8 @@
       await supabase.from('frases').insert({ texto, activa: true, fecha_envio: new Date().toISOString().split('T')[0] })
     } else if (tipo === 'aviso') {
       // Insertar en avisos para que aparezca en notificaciones
-      await supabase.from('avisos').insert({ titulo: 'Aviso general', mensaje: texto, prioridad: 'informativo', activo: true, creado_por: user.id })
+      const { error: avErr } = await supabase.from('avisos').insert({ titulo: 'Aviso general', mensaje: texto, prioridad: 'informativo', activo: true, creado_por: user.id })
+      if (avErr) { alert('Error al guardar aviso: ' + avErr.message); return }
     } else {
       // Mensaje privado
       const dest = document.getElementById('dest-select')?.value || null
