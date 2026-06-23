@@ -4,31 +4,385 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Nutrición</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
+<style>
+/* Toast */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #16a34a; color: #fff; border-radius: 12px; padding: 10px 18px;
+  font-size: 13px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  opacity: 0; transition: all .3s; z-index: 999; white-space: nowrap;
+  display: flex; align-items: center; gap: 7px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Sección headers */
+.sec-head {
+  display: flex; align-items: center; gap: 9px;
+  margin: 18px 0 10px;
+}
+.sec-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.sec-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.sec-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+
+/* Habit items */
+.habit-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-bottom: 1px solid var(--ink-100);
+  cursor: pointer; transition: background .12s; background: #fff;
+}
+.habit-item:last-child { border-bottom: none; }
+.habit-item:active { background: var(--soft); }
+.habit-emoji { font-size: 22px; width: 32px; text-align: center; flex-shrink: 0; }
+.habit-txt { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+.habit-box {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid #d1d5db;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.habit-item.done .habit-box { background: #16a34a; border-color: #16a34a; }
+.habit-item.done .habit-box::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 800; }
+.habit-item.done .habit-txt { color: #16a34a; text-decoration: line-through; opacity: .7; }
+.habit-count { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 99px; }
+
+/* Food chips */
+.food-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.food-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #f9fafb; border: 1px solid #e5e7eb;
+  border-radius: 99px; padding: 5px 10px; font-size: 12px; font-weight: 500;
+}
+
+/* Plato */
+.plato-wrap { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.plato-svg-wrap { flex-shrink: 0; }
+.plato-legend { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.plato-legend-item {}
+.plato-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+.plato-legend-title { font-size: 12px; font-weight: 700; }
+.plato-legend-items { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+
+/* Porciones mano */
+.hand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hand-item { background: var(--soft); border-radius: 10px; padding: 10px; text-align: center; }
+.hand-emoji { font-size: 24px; margin-bottom: 4px; }
+.hand-label { font-size: 11px; font-weight: 700; color: var(--text); }
+.hand-desc { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+/* Agua / Proteína tabla */
+.ref-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ref-table th { font-size: 10.5px; font-weight: 700; color: var(--muted); text-align: left; padding: 4px 6px 8px; text-transform: uppercase; letter-spacing: .04em; }
+.ref-table td { padding: 8px 6px; border-bottom: 1px solid var(--ink-100); }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-kg { font-weight: 700; color: var(--primary); }
+.ref-val { font-weight: 600; }
+.ref-note { color: var(--muted); font-size: 11px; }
+
+/* Formula badge */
+.formula-badge {
+  background: linear-gradient(135deg, #1d4ed8, #4f46e5);
+  color: #fff; border-radius: 10px; padding: 8px 12px;
+  font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 10px;
+}
+
+/* Evitar grid */
+.evitar-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.evitar-item { background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 6px; text-align: center; }
+.evitar-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+.evitar-label { font-size: 11px; font-weight: 600; color: #dc2626; }
+
+/* Comidas */
+.comidas-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.comida-item { flex-shrink: 0; background: var(--soft); border-radius: 12px; padding: 12px 10px; text-align: center; min-width: 70px; }
+.comida-emoji { font-size: 24px; display: block; margin-bottom: 5px; }
+.comida-label { font-size: 10.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+
+/* Meta semana */
+.meta-wrap { background: linear-gradient(135deg, #0f2167, #1d4ed8); border-radius: 14px; padding: 16px; color: #fff; }
+.meta-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .75; margin-bottom: 10px; }
+.meta-stats { display: flex; gap: 10px; margin-bottom: 14px; }
+.meta-stat { flex: 1; background: rgba(255,255,255,.12); border-radius: 10px; padding: 10px 8px; text-align: center; }
+.meta-stat .n { font-size: 20px; font-weight: 800; }
+.meta-stat .l { font-size: 10px; opacity: .8; margin-top: 2px; }
+.meta-days { display: flex; gap: 5px; justify-content: center; }
+.meta-day { width: 30px; text-align: center; }
+.meta-day .dow { font-size: 9px; opacity: .65; font-weight: 600; text-transform: uppercase; }
+.meta-day .dot { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.15); margin: 4px auto 0; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.meta-day .dot.on { background: #16a34a; }
+
+.note-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 9px 12px; font-size: 12px; color: #92400e; margin-top: 8px; display: flex; gap: 7px; align-items: flex-start; }
+</style>
 </head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead blue">
     <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Nutrición</div></div>
+    <span id="cnt-badge" class="habit-count" style="background:rgba(255,255,255,.2);color:#fff;">0/4</span>
   </div>
+
   <div class="body">
-    <div class="label row"><span>Hábitos de hoy</span><span class="badge blue" id="cnt">0/4</span></div>
-    <div class="notice green" id="notif" style="display:none;"><i data-lucide="bell-ring"></i> Se notificó a tu instructor</div>
-    <div class="card flush mb18" style="padding:6px;" id="habitos"></div>
 
-    <div class="card green mb12">
-      <div style="display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--green-text);margin-bottom:12px;"><i data-lucide="circle-check-big" class="lucide" style="width:17px;height:17px"></i> Incluir en tu dieta</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="good"></div>
+    <!-- TOAST -->
+    <div class="toast" id="toast">✅ Hábito registrado</div>
+
+    <!-- 1. HÁBITOS DE HOY -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#dcfce7;">📋</div>
+      <div>
+        <div class="sec-title">1. Hábitos de hoy</div>
+        <div class="sec-sub">Marca lo que tu hijo cumplió hoy</div>
+      </div>
     </div>
-    <div class="card red mb18">
-      <div style="display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--red-text);margin-bottom:12px;"><i data-lucide="circle-x" class="lucide" style="width:17px;height:17px"></i> Evitar antes de entrenar</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="bad"></div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5;">
+      Marca la palomita en cada hábito que tu hijo sí cumplió hoy. Esta información se comparte con su instructor para dar seguimiento a su progreso.
+    </p>
+    <div class="card flush mb14" id="habitos"></div>
+
+    <!-- 2. ANTES DE ENTRENAR -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#fef3c7;">⚡</div>
+      <div>
+        <div class="sec-title">2. Antes de entrenar</div>
+        <div class="sec-sub">Elige opciones ligeras con energía</div>
+      </div>
+    </div>
+    <div class="card mb14">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5;">Elige opciones ligeras que ayuden con energía e hidratación antes de clase.</p>
+      <div class="food-grid">
+        <span class="food-chip">🍌 Plátano</span>
+        <span class="food-chip">🍎 Fruta</span>
+        <span class="food-chip">🥣 Avena</span>
+        <span class="food-chip">🥛 Yogurt natural</span>
+        <span class="food-chip">🍞 Pan integral</span>
+        <span class="food-chip">🥜 Crema de cacahuate</span>
+        <span class="food-chip">🌮 Tortilla con huevo</span>
+        <span class="food-chip">💧 Agua natural</span>
+      </div>
     </div>
 
-    <div class="label">Ejemplo de día de entrenamiento</div>
-    <div class="card" id="dia"></div>
-  </div>
+    <!-- 3. DESPUÉS DE ENTRENAR -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#dbeafe;">💪</div>
+      <div>
+        <div class="sec-title">3. Después de entrenar</div>
+        <div class="sec-sub">Proteína + agua para recuperarse</div>
+      </div>
+    </div>
+    <div class="card mb14">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5;">Después de entrenar, procura incluir proteína, agua y una fuente de energía para apoyar la recuperación.</p>
+      <div class="food-grid">
+        <span class="food-chip">🥚 Huevo</span>
+        <span class="food-chip">🍗 Pollo</span>
+        <span class="food-chip">🐟 Pescado</span>
+        <span class="food-chip">🐟 Atún</span>
+        <span class="food-chip">🥛 Yogurt griego</span>
+        <span class="food-chip">🥛 Leche</span>
+        <span class="food-chip">🧀 Queso cottage</span>
+        <span class="food-chip">🫘 Frijoles</span>
+        <span class="food-chip">🥤 Licuado de plátano</span>
+        <span class="food-chip">🥞 Hot cakes de avena</span>
+        <span class="food-chip">🥦 Jugo verde</span>
+      </div>
+    </div>
+
+    <!-- 4. ARMA SU PLATO -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#f0fdf4;">🥗</div>
+      <div>
+        <div class="sec-title">4. Arma su plato</div>
+        <div class="sec-sub">Plato balanceado para un día de entrenamiento</div>
+      </div>
+    </div>
+    <div class="card mb10">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Procura incluir verduras, proteína y una fuente de energía en cada comida.</p>
+      <div class="plato-wrap">
+        <!-- SVG Plato -->
+        <div class="plato-svg-wrap">
+          <svg width="130" height="130" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="65" cy="65" r="62" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+            <!-- 1/2 verduras (izquierda) -->
+            <path d="M65 65 L3 65 A62 62 0 0 1 65 3 Z" fill="#86efac"/>
+            <path d="M65 65 L65 3 A62 62 0 0 1 127 65 Z" fill="#86efac"/>
+            <!-- 1/4 proteína (derecha arriba) -->
+            <path d="M65 65 L127 65 A62 62 0 0 1 65 127 Z" fill="#fca5a5"/>
+            <!-- 1/4 cereales (derecha abajo) -->
+            <path d="M65 65 L65 127 A62 62 0 0 1 3 65 Z" fill="#fde68a"/>
+            <!-- Borde del plato -->
+            <circle cx="65" cy="65" r="62" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+            <!-- Líneas divisoras -->
+            <line x1="65" y1="3" x2="65" y2="127" stroke="#fff" stroke-width="2"/>
+            <line x1="3" y1="65" x2="127" y2="65" stroke="#fff" stroke-width="2"/>
+            <!-- Textos -->
+            <text x="35" y="38" text-anchor="middle" font-size="7.5" font-weight="700" fill="#166534">½ Verduras</text>
+            <text x="35" y="48" text-anchor="middle" font-size="7" fill="#166534">y frutas</text>
+            <text x="97" y="52" text-anchor="middle" font-size="7.5" font-weight="700" fill="#991b1b">¼ Proteína</text>
+            <text x="35" y="95" text-anchor="middle" font-size="7.5" font-weight="700" fill="#92400e">¼ Energía</text>
+            <text x="35" y="105" text-anchor="middle" font-size="7" fill="#92400e">cereales</text>
+            <!-- Plato rim -->
+            <circle cx="65" cy="65" r="58" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+          </svg>
+        </div>
+        <!-- Leyenda -->
+        <div class="plato-legend">
+          <div class="plato-legend-item">
+            <div><span class="plato-legend-dot" style="background:#86efac;"></span><span class="plato-legend-title" style="color:#166534;">Verduras y frutas</span></div>
+            <div class="plato-legend-items">Ensalada, pepino, zanahoria, brócoli, manzana, plátano, fresas</div>
+          </div>
+          <div class="plato-legend-item">
+            <div><span class="plato-legend-dot" style="background:#fca5a5;"></span><span class="plato-legend-title" style="color:#991b1b;">Proteína</span></div>
+            <div class="plato-legend-items">Carne, pollo, pescado, huevo, atún, frijoles</div>
+          </div>
+          <div class="plato-legend-item">
+            <div><span class="plato-legend-dot" style="background:#fde68a;"></span><span class="plato-legend-title" style="color:#92400e;">Energía / cereales</span></div>
+            <div class="plato-legend-items">Arroz, avena, tortilla integral, pan, pasta, papa</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Porciones con la mano -->
+      <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Guía rápida de porciones</div>
+      <div class="hand-grid">
+        <div class="hand-item">
+          <div class="hand-emoji">🤚</div>
+          <div class="hand-label">Proteína</div>
+          <div class="hand-desc">Tamaño de la palma</div>
+        </div>
+        <div class="hand-item">
+          <div class="hand-emoji">✊</div>
+          <div class="hand-label">Arroz / pasta / papa</div>
+          <div class="hand-desc">Tamaño del puño</div>
+        </div>
+        <div class="hand-item">
+          <div class="hand-emoji">👍</div>
+          <div class="hand-label">Grasas / aderezo</div>
+          <div class="hand-desc">Tamaño del pulgar</div>
+        </div>
+        <div class="hand-item">
+          <div class="hand-emoji">✊</div>
+          <div class="hand-label">Fruta</div>
+          <div class="hand-desc">Tamaño del puño</div>
+        </div>
+      </div>
+      <div class="note-box" style="margin-top:10px;">
+        🥦 <span>Verduras: al menos <b>la mitad del plato</b> en cada comida.</span>
+      </div>
+    </div>
+
+    <!-- 5. AGUA E HIDRATACIÓN -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#dbeafe;">💧</div>
+      <div>
+        <div class="sec-title">5. Agua e hidratación</div>
+        <div class="sec-sub">Hidratarse también es parte del entrenamiento</div>
+      </div>
+    </div>
+    <div class="card mb14">
+      <div class="formula-badge">💧 Peso del alumno × 35 ml = agua aprox. al día</div>
+      <table class="ref-table">
+        <thead><tr><th>Peso</th><th>Agua aprox.</th><th>Vasos</th></tr></thead>
+        <tbody>
+          <tr><td class="ref-kg">30 kg</td><td class="ref-val">≈ 1,050 ml</td><td>💧💧💧💧 4–5</td></tr>
+          <tr><td class="ref-kg">40 kg</td><td class="ref-val">≈ 1,400 ml</td><td>💧💧💧💧💧 5–6</td></tr>
+          <tr><td class="ref-kg">50 kg</td><td class="ref-val">≈ 1,750 ml</td><td>💧💧💧💧💧💧 7</td></tr>
+        </tbody>
+      </table>
+      <div class="note-box">
+        ☀️ <span>Si hace mucho calor o entrena fuerte, puede necesitar <b>más agua</b>.</span>
+      </div>
+    </div>
+
+    <!-- 6. PROTEÍNA AL DÍA -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#fce7f3;">🍗</div>
+      <div>
+        <div class="sec-title">6. Proteína al día</div>
+        <div class="sec-sub">Para recuperación y crecimiento muscular</div>
+      </div>
+    </div>
+    <div class="card mb14">
+      <div class="formula-badge" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">🍗 Peso × 1.2 a 1.5 g = proteína aprox. al día</div>
+      <table class="ref-table">
+        <thead><tr><th>Peso</th><th>Proteína aprox.</th></tr></thead>
+        <tbody>
+          <tr><td class="ref-kg">30 kg</td><td class="ref-val">≈ 36 a 45 g al día 🥚🍗</td></tr>
+          <tr><td class="ref-kg">40 kg</td><td class="ref-val">≈ 48 a 60 g al día 🥚🍗🐟</td></tr>
+          <tr><td class="ref-kg">50 kg</td><td class="ref-val">≈ 60 a 75 g al día 🥚🍗🐟🧀</td></tr>
+        </tbody>
+      </table>
+      <div class="note-box">
+        💡 <span>No es necesario en una sola comida — se distribuye durante el día.</span>
+      </div>
+    </div>
+
+    <!-- 7. COMIDAS SUGERIDAS -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#fef9c3;">🍽️</div>
+      <div>
+        <div class="sec-title">7. Comidas sugeridas al día</div>
+        <div class="sec-sub">Repartir la energía durante el día</div>
+      </div>
+    </div>
+    <div class="card mb14">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Lo ideal es repartir la energía entre 3 comidas principales y 1 o 2 colaciones, según su horario de escuela y entrenamiento.</p>
+      <div class="comidas-grid">
+        <div class="comida-item"><span class="comida-emoji">🌅</span><span class="comida-label">Desayuno</span></div>
+        <div class="comida-item"><span class="comida-emoji">🍽️</span><span class="comida-label">Comida</span></div>
+        <div class="comida-item"><span class="comida-emoji">🌙</span><span class="comida-label">Cena</span></div>
+        <div class="comida-item"><span class="comida-emoji">⚡</span><span class="comida-label">Colación pre-clase</span></div>
+        <div class="comida-item"><span class="comida-emoji">💪</span><span class="comida-label">Colación post-clase</span></div>
+      </div>
+    </div>
+
+    <!-- 8. QUÉ EVITAR -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#fee2e2;">🚫</div>
+      <div>
+        <div class="sec-title">8. Qué conviene evitar</div>
+        <div class="sec-sub">Con frecuencia o antes de entrenar</div>
+      </div>
+    </div>
+    <div class="card mb14">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Algunas opciones pueden hacer más pesada la digestión o no ayudar al rendimiento si se consumen con frecuencia.</p>
+      <div class="evitar-grid">
+        <div class="evitar-item"><span class="evitar-emoji">🥤</span><span class="evitar-label">Refresco</span></div>
+        <div class="evitar-item"><span class="evitar-emoji">🍟</span><span class="evitar-label">Frituras</span></div>
+        <div class="evitar-item"><span class="evitar-emoji">🍬</span><span class="evitar-label">Dulces en exceso</span></div>
+        <div class="evitar-item"><span class="evitar-emoji">🍔</span><span class="evitar-label">Comida rápida frecuente</span></div>
+        <div class="evitar-item"><span class="evitar-emoji">🧃</span><span class="evitar-label">Jugos azucarados</span></div>
+        <div class="evitar-item"><span class="evitar-emoji">🍕</span><span class="evitar-label">Comida pesada pre-clase</span></div>
+      </div>
+    </div>
+
+    <!-- 9. META DE LA SEMANA -->
+    <div class="sec-head">
+      <div class="sec-icon" style="background:#ede9fe;">🏆</div>
+      <div>
+        <div class="sec-title">9. Meta de la semana</div>
+        <div class="sec-sub">Seguimiento semanal de hábitos</div>
+      </div>
+    </div>
+    <div class="meta-wrap mb18">
+      <div class="meta-title">Esta semana</div>
+      <div class="meta-stats">
+        <div class="meta-stat"><div class="n" id="meta-habitos">—</div><div class="l">hábitos completados</div></div>
+        <div class="meta-stat"><div class="n" id="meta-dias">—</div><div class="l">días registrados</div></div>
+      </div>
+      <div class="meta-days" id="meta-days-row"></div>
+    </div>
+
+  </div><!-- /body -->
+
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
@@ -36,6 +390,7 @@
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>
 </div></div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -46,63 +401,62 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  // Defaults
-  let good = ['Pollo a la plancha','Arroz integral','Plátano','Huevo','Atún','Avena','Fruta fresca','Agua natural','Verduras','Frijoles','Yogur natural','Nueces']
-  let bad = ['Refresco','Comida rápida','Frituras','Dulces','Jugos de caja','Carnes procesadas','Exceso de sal']
-  let habitos = ['Tomé 8 vasos de agua','Desayuné antes de entrenar','Comí fruta o verdura','Evité refresco y frituras']
-  const dia = [['sunrise','Desayuno','Avena con plátano + 2 huevos + agua'],['utensils','Comida','Pollo a la plancha + arroz + ensalada'],['timer','2 horas antes de entrenar','Fruta + hidratación abundante'],['zap','Post-entrenamiento','Huevo + tortilla + agua o leche'],['moon','Cena ligera','Atún + verduras + agua']]
+  // TOAST
+  function showToast(msg) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 2500)
+  }
+
+  // Hábitos por defecto
+  let habitos = [
+    { txt: 'Tomé 8 vasos de agua', emoji: '💧' },
+    { txt: 'Desayuné antes de entrenar', emoji: '🍳' },
+    { txt: 'Comí fruta o verdura', emoji: '🍎' },
+    { txt: 'Evité refresco y frituras', emoji: '🚫' },
+  ]
 
   // Cargar configuración del instructor
   try {
     const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
-      .in('clave', ['nutricion_recomendados','nutricion_evitar',
-        'nutricion_habito_1','nutricion_habito_2','nutricion_habito_3','nutricion_habito_4',
-        'nutricion_desayuno','nutricion_comida','nutricion_pre','nutricion_post','nutricion_cena'])
+      .in('clave', ['nutricion_habito_1','nutricion_habito_2','nutricion_habito_3','nutricion_habito_4'])
     if (cfgRows?.length) {
       const m = {}; cfgRows.forEach(c => { m[c.clave] = c.valor })
-      if (m.nutricion_recomendados) {
-        const raw = m.nutricion_recomendados.includes(':') ? m.nutricion_recomendados.split(':').slice(1).join(':') : m.nutricion_recomendados
-        good = raw.split(',').map(s => s.trim()).filter(Boolean)
-      }
-      if (m.nutricion_evitar) {
-        const raw = m.nutricion_evitar.includes(':') ? m.nutricion_evitar.split(':').slice(1).join(':') : m.nutricion_evitar
-        bad = raw.split(',').map(s => s.trim()).filter(Boolean)
-      }
       const h = [m.nutricion_habito_1, m.nutricion_habito_2, m.nutricion_habito_3, m.nutricion_habito_4].filter(Boolean)
-      if (h.length) habitos = h
-      if (m.nutricion_desayuno) dia[0][2] = m.nutricion_desayuno
-      if (m.nutricion_comida)   dia[1][2] = m.nutricion_comida
-      if (m.nutricion_pre)      dia[2][2] = m.nutricion_pre
-      if (m.nutricion_post)     dia[3][2] = m.nutricion_post
-      if (m.nutricion_cena)     dia[4][2] = m.nutricion_cena
+      if (h.length) habitos = h.map(txt => ({ txt, emoji: '✅' }))
     }
   } catch(e) {}
 
-  document.getElementById('good').innerHTML = good.map(f => `<span class="chip good">${f}</span>`).join('')
-  document.getElementById('bad').innerHTML = bad.map(f => `<span class="chip bad">${f}</span>`).join('')
-  document.getElementById('dia').innerHTML = `<div style="display:flex;flex-direction:column;gap:14px;">` + dia.map(([ic,t,s]) => `
-    <div style="display:flex;gap:12px;align-items:flex-start;">
-      <span style="width:34px;height:34px;flex-shrink:0;border-radius:var(--r-sm);background:var(--soft);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="${ic}" style="width:17px;height:17px"></i></span>
-      <div><div style="font-size:13.5px;font-weight:700;">${t}</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px;">${s}</div></div>
-    </div>`).join('') + `</div>`
-
-  const state = {}
-  document.getElementById('habitos').innerHTML = habitos.map((h, i) =>
-    `<button class="checkitem" data-h="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${h}</span></button>`
+  // Render hábitos
+  const habitosEl = document.getElementById('habitos')
+  habitosEl.innerHTML = habitos.map((h, i) =>
+    `<div class="habit-item" data-h="${i}">
+      <span class="habit-emoji">${h.emoji}</span>
+      <span class="habit-txt">${h.txt}</span>
+      <span class="habit-box"></span>
+    </div>`
   ).join('')
 
-  let notifNutEnviada = false
-  document.getElementById('habitos').addEventListener('click', async e => {
-    const b = e.target.closest('[data-h]'); if (!b) return
-    state[b.dataset.h] = !state[b.dataset.h]
-    b.classList.toggle('done')
+  const state = {}
+  let notifEnviada = false
+
+  habitosEl.addEventListener('click', async e => {
+    const item = e.target.closest('[data-h]'); if (!item) return
+    const idx = item.dataset.h
+    state[idx] = !state[idx]
+    item.classList.toggle('done', state[idx])
     const n = Object.values(state).filter(Boolean).length
-    document.getElementById('cnt').textContent = n + '/4'
-    document.getElementById('cnt').className = 'badge ' + (n === 4 ? 'green' : 'blue')
-    document.getElementById('notif').style.display = n > 0 ? 'flex' : 'none'
-    lucide.createIcons()
-    if (n === 4 && !notifNutEnviada) {
-      notifNutEnviada = true
+    const badge = document.getElementById('cnt-badge')
+    badge.textContent = n + '/' + habitos.length
+    badge.style.background = n === habitos.length ? '#16a34a' : 'rgba(255,255,255,.2)'
+
+    if (state[idx]) {
+      showToast('✅ Hábito registrado. Tu instructor podrá verlo en el seguimiento de hoy.')
+    }
+
+    if (n === habitos.length && !notifEnviada) {
+      notifEnviada = true
       try {
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
@@ -113,7 +467,43 @@
     }
   })
 
+  // Meta de la semana
+  try {
+    const hoy = new Date()
+    const dow = hoy.getDay() // 0=dom
+    const lunes = new Date(hoy); lunes.setDate(hoy.getDate() - (dow === 0 ? 6 : dow - 1))
+    const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6)
+    const ini = lunes.toISOString().split('T')[0]
+    const fin = domingo.toISOString().split('T')[0]
+
+    const { data: msgs } = await supabase.from('mensajes')
+      .select('texto, creado_en').eq('de_user_id', user.id).eq('para_admin', true)
+      .gte('creado_en', ini + 'T00:00:00').lte('creado_en', fin + 'T23:59:59')
+    const nutMsgs = (msgs || []).filter(m => m.texto?.includes('🥗'))
+    const diasSet = new Set(nutMsgs.map(m => m.creado_en?.split('T')[0]))
+    document.getElementById('meta-habitos').textContent = nutMsgs.length * habitos.length
+    document.getElementById('meta-dias').textContent = diasSet.size + ' de 7'
+
+    // Días semana
+    const DIAS = ['L','M','M','J','V','S','D']
+    const row = document.getElementById('meta-days-row')
+    row.innerHTML = DIAS.map((d, i) => {
+      const fecha = new Date(lunes); fecha.setDate(lunes.getDate() + i)
+      const fechaStr = fecha.toISOString().split('T')[0]
+      const on = diasSet.has(fechaStr)
+      return `<div class="meta-day">
+        <div class="dow">${d}</div>
+        <div class="dot ${on ? 'on' : ''}">${on ? '✓' : ''}</div>
+      </div>`
+    }).join('')
+  } catch(e) {}
+
   lucide.createIcons()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>
