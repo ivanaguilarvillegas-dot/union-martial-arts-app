@@ -51,8 +51,9 @@
             <option value="Adultos (18+ años)">Adultos (18+ años)</option>
           </select></label>
 
-        <label class="field"><span class="lab">Horario</span>
-          <select id="horario"></select></label>
+        <div class="field"><span class="lab">Horarios (selecciona todos los que apliquen)</span>
+          <div id="horario-checks" style="display:flex;flex-direction:column;gap:8px;margin-top:6px;"></div>
+        </div>
       </div></div>
 
       <div class="card mb14"><div class="stack">
@@ -148,7 +149,15 @@
     const grupo = document.getElementById('grupo').value
     const esInfantil = grupo.includes('Infantil')
     const opciones = esInfantil ? HORARIOS.infantil : HORARIOS.adultos
-    document.getElementById('horario').innerHTML = opciones.map(h => `<option value="${h}">${h}</option>`).join('')
+    document.getElementById('horario-checks').innerHTML = opciones.map((h, i) => `
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border-input);border-radius:10px;cursor:pointer;font-size:13.5px;">
+        <input type="checkbox" value="${h}" style="width:16px;height:16px;accent-color:var(--primary);flex-shrink:0;" />
+        ${h}
+      </label>`).join('')
+  }
+
+  function getHorariosSeleccionados() {
+    return [...document.querySelectorAll('#horario-checks input:checked')].map(i => i.value).join(' | ')
   }
 
   document.getElementById('grupo').addEventListener('change', actualizarHorarios)
@@ -167,7 +176,7 @@
     const fechaNac    = document.getElementById('fecha-nac').value
     const cinta       = document.getElementById('cinta').value
     const grupo       = document.getElementById('grupo').value
-    const horario     = document.getElementById('horario').value
+    const horario     = getHorariosSeleccionados()
     const nombrePadre = document.getElementById('nombre-padre').value.trim()
     const correo      = document.getElementById('correo-padre').value.trim()
     const telefono    = document.getElementById('telefono-padre').value.trim()

@@ -53,7 +53,7 @@
     </div>
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Horario</label>
-      <select id="edit-horario" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;"></select>
+      <div id="edit-horario-checks" style="display:flex;flex-direction:column;gap:8px;margin-top:2px;"></div>
     </div>
     <!-- Scroll para campos extras -->
     <div style="max-height:55vh;overflow-y:auto;padding-right:4px;">
@@ -160,8 +160,16 @@
   function actualizarHorariosEdit(grupoVal, horarioActual) {
     const esInfantil = grupoVal.includes('Infantil')
     const opciones = esInfantil ? HORARIOS.infantil : HORARIOS.adultos
-    const sel = document.getElementById('edit-horario')
-    sel.innerHTML = '<option value="">Sin horario</option>' + opciones.map(h => `<option value="${h}"${h === horarioActual ? ' selected' : ''}>${h}</option>`).join('')
+    const seleccionados = (horarioActual || '').split(' | ')
+    document.getElementById('edit-horario-checks').innerHTML = opciones.map(h => `
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border-input);border-radius:10px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" value="${h}" ${seleccionados.includes(h) ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--primary);flex-shrink:0;" />
+        ${h}
+      </label>`).join('')
+  }
+
+  function getHorariosEdit() {
+    return [...document.querySelectorAll('#edit-horario-checks input:checked')].map(i => i.value).join(' | ')
   }
 
   document.getElementById('edit-grupo').addEventListener('change', e => {
@@ -248,7 +256,7 @@
     const nombre = document.getElementById('edit-nombre').value.trim()
     const cinta = document.getElementById('edit-cinta').value
     const grupo = document.getElementById('edit-grupo').value
-    const horario = document.getElementById('edit-horario').value
+    const horario = getHorariosEdit()
     if (!nombre) { alert('El nombre es obligatorio'); return }
     const btn = document.getElementById('modal-guardar')
     btn.disabled = true; btn.textContent = 'Guardando…'
