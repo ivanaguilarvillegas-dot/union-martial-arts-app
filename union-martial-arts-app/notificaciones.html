@@ -68,7 +68,7 @@
 
   // Mensajes privados dirigidos a este padre
   const { data: privados } = await supabase.from('mensajes')
-    .select('texto, creado_en').eq('para_admin', false).eq('destinatario_id', user.id)
+    .select('id, texto, creado_en').eq('para_admin', false).eq('destinatario_id', user.id)
     .order('creado_en', { ascending: false }).limit(10)
   if (privados?.length) {
     document.getElementById('privados-wrap').style.display = 'block'
@@ -149,8 +149,14 @@
   document.body.addEventListener('click', async e => {
     const btn = e.target.closest('[data-del]'); if (!btn) return
     if (!confirm('¿Borrar este mensaje?')) return
+    btn.textContent = 'Borrando…'; btn.disabled = true
     const { error } = await supabase.from('mensajes').delete().eq('id', btn.dataset.del)
-    if (!error) document.getElementById('msg-' + btn.dataset.del)?.remove()
+    if (error) {
+      alert('❌ Error al borrar: ' + error.message)
+      btn.textContent = 'Borrar'; btn.disabled = false
+    } else {
+      document.getElementById('msg-' + btn.dataset.del)?.remove()
+    }
   })
 
   lucide.createIcons()
