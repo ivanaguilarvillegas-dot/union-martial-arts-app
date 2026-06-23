@@ -20,7 +20,7 @@
 .home-header-right { display:flex; gap:12px; align-items:center; }
 .notif-btn { position:relative; }
 .notif-btn i { color:#fff; width:22px; height:22px; }
-.notif-badge { position:absolute; top:-9px; right:-10px; background:#dc2626; color:#fff; border-radius:14px; font-size:12px; font-weight:900; padding:3px 7px; min-width:22px; text-align:center; box-shadow:0 2px 6px rgba(220,38,38,.7); }
+.notif-badge { position:absolute; top:-11px; right:-12px; background:#dc2626; color:#fff; border-radius:16px; font-size:13px; font-weight:900; padding:4px 8px; min-width:24px; text-align:center; box-shadow:0 2px 8px rgba(220,38,38,.8); line-height:1; }
 
 .alumno-card { background:#fff; border-radius:14px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
 .alumno-foto { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
@@ -539,7 +539,7 @@
           const file = e.target.files[0]
           if (!file) return
           const ext = file.name.split('.').pop().toLowerCase()
-          const path = `alumno-${al.id}.${ext}`
+          const path = `${user.id}/alumno-${al.id}.${ext}`
           const wrap = document.getElementById('foto-wrap')
           wrap.style.opacity = '.5'
           const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert: true, contentType: file.type })

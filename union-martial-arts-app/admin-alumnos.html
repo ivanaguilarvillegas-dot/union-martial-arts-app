@@ -301,7 +301,7 @@
     const id = document.getElementById('edit-id').value
     if (!id) return
     const ext = file.name.split('.').pop().toLowerCase()
-    const path = `alumno-${id}.${ext}`
+    const path = `${user.id}/alumno-${id}.${ext}`
     const fotoWrap = document.getElementById('admin-foto-wrap')
     fotoWrap.style.opacity = '.5'
     const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert: true, contentType: file.type })
