@@ -16,26 +16,118 @@
     <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
   </nav>
 </div></div>
+
+<!-- Modal de edición -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;" id="modal-titulo">Editar</div>
+    <textarea id="modal-input" rows="4" style="width:100%;border:1.5px solid var(--border-input);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn secondary" style="flex:1;" id="modal-cancelar">Cancelar</button>
+      <button class="btn primary" style="flex:1;" id="modal-guardar"><i data-lucide="save"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Grupos de contenido con claves para guardar en Supabase
   const G = [
-    ['Precios','dollar-sign',['Inscripción — $500','Mensualidad Básico — $1,550','Anual UNION — $12,500','Club Cinta Negra — $9,950'],''],
-    ['Horarios','clock',['Básico niños: L, M y V de 4:00 a 5:00 / 5:00 a 6:00 / 6:00 a 7:00 pm','Martes 6:15 a 7:00 pm · Sábado 11:00 am a 12:00 pm','Jóvenes/adultos: L, M y V 7:00 a 8:00 pm','Jueves 6:30 a 7:30 pm · Sábado 12:00 a 1:00 pm'],''],
-    ['Nutrición','salad',['Alimentos recomendados','Alimentos a evitar','Día de entrenamiento'],''],
-    ['Tienda en línea','shopping-bag',['Productos, precios y fotos'],'admin-tienda.html'],
-    ['Reglamento','file-text',['Reglamento (PDF) y firmas'],'admin-reglamento.html'],
-  ];
-  document.getElementById('grupos').innerHTML = G.map(([t,ic,items,href])=>{
-    const rows = items.map(it=>{
-      const inner = `<span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
-        <span class="txt" style="flex:1;color:var(--text);">${it}</span>
-        <span style="color:var(--faint);"><i data-lucide="${href?'chevron-right':'pencil'}" style="width:15px;height:15px"></i></span>`;
-      return href
-        ? `<a class="checkitem" href="${href}" style="text-decoration:none;color:var(--text);">${inner}</a>`
-        : `<div class="checkitem" style="cursor:default;">${inner}</div>`;
-    }).join('');
-    return `<div class="label">${t}</div><div class="card flush mb18">${rows}</div>`;
-  }).join('');
-  lucide.createIcons();
+    { titulo: 'Precios', ic: 'dollar-sign', items: [
+      { clave: 'precio_inscripcion',    default: 'Inscripción — $500' },
+      { clave: 'precio_mensual_basico', default: 'Mensualidad Básico — $1,550' },
+      { clave: 'precio_anual',          default: 'Anual UNION — $12,500' },
+      { clave: 'precio_cinta_negra',    default: 'Club Cinta Negra — $9,950' },
+    ]},
+    { titulo: 'Horarios', ic: 'clock', items: [
+      { clave: 'horario_basico_ninos',  default: 'Básico niños: L, M y V de 4:00 a 5:00 / 5:00 a 6:00 / 6:00 a 7:00 pm' },
+      { clave: 'horario_martes_jueves', default: 'Martes 6:15 a 7:00 pm · Sábado 11:00 am a 12:00 pm' },
+      { clave: 'horario_jovenes',       default: 'Jóvenes/adultos: L, M y V 7:00 a 8:00 pm' },
+      { clave: 'horario_jueves_sabado', default: 'Jueves 6:30 a 7:30 pm · Sábado 12:00 a 1:00 pm' },
+    ]},
+    { titulo: 'Nutrición', ic: 'salad', items: [
+      { clave: 'nutricion_recomendados', default: 'Alimentos recomendados: pollo, arroz integral, verduras, fruta, agua' },
+      { clave: 'nutricion_evitar',       default: 'Alimentos a evitar: frituras, refresco, comida chatarra, azúcar' },
+      { clave: 'nutricion_entrenamiento',default: 'Día de entrenamiento: come 2 horas antes, hidratación constante' },
+    ]},
+    { titulo: 'Tienda en línea', ic: 'shopping-bag', items: [
+      { clave: null, default: 'Productos, precios y fotos', href: 'admin-tienda.html' },
+    ]},
+    { titulo: 'Reglamento', ic: 'file-text', items: [
+      { clave: null, default: 'Reglamento (PDF) y firmas', href: 'admin-reglamento.html' },
+    ]},
+  ]
+
+  // Cargar valores guardados de Supabase
+  const { data: config } = await supabase.from('configuracion').select('clave, valor')
+  const cfg = {}
+  config?.forEach(r => { cfg[r.clave] = r.valor })
+
+  function render() {
+    document.getElementById('grupos').innerHTML = G.map(g => {
+      const rows = g.items.map(it => {
+        const texto = it.clave ? (cfg[it.clave] || it.default) : it.default
+        if (it.href) {
+          return `<a class="checkitem" href="${it.href}" style="text-decoration:none;color:var(--text);">
+            <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${g.ic}" style="width:16px;height:16px"></i></span>
+            <span style="flex:1;color:var(--text);">${texto}</span>
+            <span style="color:var(--faint);"><i data-lucide="chevron-right" style="width:15px;height:15px"></i></span>
+          </a>`
+        }
+        return `<div class="checkitem" style="cursor:pointer;" data-clave="${it.clave}" data-texto="${encodeURIComponent(texto)}" data-titulo="${encodeURIComponent(g.titulo + ': ' + it.default.substring(0,30))}">
+          <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${g.ic}" style="width:16px;height:16px"></i></span>
+          <span style="flex:1;color:var(--text);">${texto}</span>
+          <span style="color:var(--primary);"><i data-lucide="pencil" style="width:15px;height:15px"></i></span>
+        </div>`
+      }).join('')
+      return `<div class="label">${g.titulo}</div><div class="card flush mb18">${rows}</div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  render()
+
+  // Abrir modal al tocar un item editable
+  let claveActual = null
+  document.getElementById('grupos').addEventListener('click', e => {
+    const item = e.target.closest('[data-clave]')
+    if (!item) return
+    claveActual = item.dataset.clave
+    const titulo = decodeURIComponent(item.dataset.titulo)
+    const texto = decodeURIComponent(item.dataset.texto)
+    document.getElementById('modal-titulo').textContent = titulo
+    document.getElementById('modal-input').value = texto
+    document.getElementById('modal').style.display = 'flex'
+  })
+
+  document.getElementById('modal-cancelar').addEventListener('click', () => {
+    document.getElementById('modal').style.display = 'none'
+    claveActual = null
+  })
+
+  document.getElementById('modal-guardar').addEventListener('click', async () => {
+    const valor = document.getElementById('modal-input').value.trim()
+    if (!valor || !claveActual) return
+    const btn = document.getElementById('modal-guardar')
+    btn.disabled = true
+    btn.textContent = 'Guardando…'
+
+    await supabase.from('configuracion').upsert({ clave: claveActual, valor, actualizado_en: new Date().toISOString() }, { onConflict: 'clave' })
+
+    cfg[claveActual] = valor
+    document.getElementById('modal').style.display = 'none'
+    claveActual = null
+    btn.disabled = false
+    btn.innerHTML = '<i data-lucide="save"></i> Guardar'
+    render()
+  })
 </script>
 </body></html>

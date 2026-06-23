@@ -62,100 +62,7 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  // Logout
-  document.getElementById('btn-logout').addEventListener('click', async (e) => {
-    e.preventDefault()
-    await supabase.auth.signOut()
-    window.location.href = 'index.html'
-  })
-
-  // Cargar datos
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) { window.location.href = 'index.html' }
-
-  // Buscar padre por user_id; si no existe, auto-enlazar por correo
-  let { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).single()
-  if (!padre) {
-    // Primera vez que entra: enlazar por correo
-    const { data: padreByEmail } = await supabase.from('padres').select('id, nombre, alumno_id').eq('correo', user.email).is('user_id', null).single()
-    if (padreByEmail) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', padreByEmail.id)
-      padre = padreByEmail
-    }
-  }
-  if (padre) {
-    document.getElementById('nombre-familia').textContent = 'Familia ' + (padre.nombre?.split(' ')[1] || padre.nombre || '')
-
-    if (padre.alumno_id) {
-      const { data: alumno } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).single()
-      if (alumno) {
-        document.getElementById('nombre-alumno').textContent = alumno.nombre || 'Mi hijo/a'
-        document.getElementById('cinta-alumno').textContent = 'Cinta ' + (alumno.cinta || alumno.cinturon || '—')
-        document.getElementById('grupo-alumno').textContent = (alumno.grupo || '') + (alumno.horario ? ' · ' + alumno.horario : '')
-
-        // Horario dinámico
-        if (alumno.horario) {
-          document.getElementById('horario-card').style.display = 'block'
-          document.getElementById('horario-titulo').textContent = 'Horario de ' + (alumno.nombre?.split(' ')[0] || 'tu hijo/a')
-          document.getElementById('horario-texto').textContent = alumno.horario
-        }
-
-        // Checkins del mes
-        const hoy = new Date()
-        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
-        const { data: checkins } = await supabase.from('checkins').select('id').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
-        document.getElementById('stat-clases').textContent = checkins?.length || 0
-
-        // Estado de pago
-        const { data: pagos } = await supabase.from('pagos').select('estado, mes, monto').eq('alumno_id', padre.alumno_id).order('creado_en', { ascending: false }).limit(1)
-        const ultimoPago = pagos?.[0]
-        document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : 'Pendiente'
-
-        // Asistencia % del mes
-        const totalClases = 20
-        const pct = checkins?.length ? Math.round((checkins.length / totalClases) * 100) + '%' : '—'
-        document.getElementById('stat-asistencia').textContent = pct
-
-        // Alertas dinámicas
-        const alertas = []
-
-        // Pago pendiente
-        if (ultimoPago?.estado !== 'pagado') {
-          alertas.push(`<a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
-            <span class="grow"><span class="t">Pago pendiente — ${ultimoPago?.mes || 'este mes'}</span>
-            <span class="s">$${Number(ultimoPago?.monto || 0).toLocaleString()} MXN</span></span>
-            <span class="trail"><span class="badge red">Pendiente</span></span></a>`)
-        }
-
-        // Mensajes del instructor no leídos
-        const { data: msgs } = await supabase.from('mensajes').select('texto, creado_en').eq('para_admin', false).eq('leido', false).order('creado_en', { ascending: false }).limit(3)
-        msgs?.forEach(m => {
-          alertas.push(`<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span>
-            <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${m.texto?.substring(0,60)}…</span></span></div>`)
-        })
-
-        // Próximo evento
-        const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', new Date().toISOString().split('T')[0]).order('fecha').limit(1)
-        if (eventos?.length) {
-          alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
-            <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
-        }
-
-        // Frase del día
-        const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).single()
-        if (frase) {
-          alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
-            <span class="grow"><span class="t">Frase del día</span><span class="s">"${frase.texto}"</span></span></div>`)
-        }
-
-        document.getElementById('alertas').innerHTML = alertas.length
-          ? alertas.join('')
-          : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
-        lucide.createIcons()
-      }
-    }
-  }
-
+  // Menú siempre se dibuja primero, sin esperar datos
   const MENU = [
     ['checkin.html','clipboard-check','Check-in','Clase · torneo','blue'],
     ['evaluacion.html','trending-up','Evaluación','Diaria y mensual','green'],
@@ -168,14 +75,120 @@
     ['cita.html','calendar-clock','Agendar cita','Con tu instructor','blue'],
     ['dudas.html','help-circle','Dudas','Preguntas','green'],
     ['tienda.html','shopping-bag','Tienda','Uniformes y más','amber'],
-  ];
-  const tone = { blue:['var(--soft)','var(--primary)'], green:['var(--green-bg)','var(--green-600)'], amber:['var(--amber-bg)','var(--amber-600)'] };
+  ]
+  const tone = { blue:['var(--soft)','var(--primary)'], green:['var(--green-bg)','var(--green-600)'], amber:['var(--amber-bg)','var(--amber-600)'] }
   document.getElementById('menu').innerHTML = MENU.map(([href,ic,t,s,to])=>`
     <a class="card" style="display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--text);padding:16px 14px;" href="${href}">
       <span style="width:42px;height:42px;border-radius:var(--r-md);display:inline-flex;align-items:center;justify-content:center;background:${tone[to][0]};color:${tone[to][1]}"><i data-lucide="${ic}" style="width:21px;height:21px"></i></span>
       <span><span style="display:block;font-size:14px;font-weight:700">${t}</span><span style="display:block;font-size:11.5px;color:var(--muted);margin-top:2px">${s}</span></span>
-    </a>`).join('');
-  lucide.createIcons();
+    </a>`).join('')
+  lucide.createIcons()
+
+  // Logout
+  document.getElementById('btn-logout').addEventListener('click', async (e) => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  // Cargar datos del padre y alumno (todo en try/catch para no romper el menú)
+  async function cargarDatos() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { window.location.href = 'index.html'; return }
+
+      // Buscar padre; si no está por user_id, auto-enlazar por correo (primera vez)
+      let { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).single()
+      if (!padre) {
+        const { data: pe } = await supabase.from('padres').select('id, nombre, alumno_id').eq('correo', user.email).single()
+        if (pe) {
+          await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id)
+          padre = pe
+        }
+      }
+
+      if (!padre) {
+        document.getElementById('alertas').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Sin datos de alumno registrado.</div>'
+        lucide.createIcons()
+        return
+      }
+
+      document.getElementById('nombre-familia').textContent = 'Familia ' + (padre.nombre?.split(' ')[1] || padre.nombre || '')
+
+      if (!padre.alumno_id) return
+
+      const { data: alumno } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).single()
+      if (!alumno) return
+
+      document.getElementById('nombre-alumno').textContent = alumno.nombre || 'Mi hijo/a'
+      document.getElementById('cinta-alumno').textContent = 'Cinta ' + (alumno.cinta || alumno.cinturon || '—')
+      document.getElementById('grupo-alumno').textContent = (alumno.grupo || '') + (alumno.horario ? ' · ' + alumno.horario : '')
+
+      if (alumno.horario) {
+        document.getElementById('horario-card').style.display = 'block'
+        document.getElementById('horario-titulo').textContent = 'Horario de ' + (alumno.nombre?.split(' ')[0] || 'tu hijo/a')
+        document.getElementById('horario-texto').textContent = alumno.horario
+      }
+
+      // Estadísticas
+      const hoy = new Date()
+      const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
+      const { data: checkins } = await supabase.from('checkins').select('id').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+      document.getElementById('stat-clases').textContent = checkins?.length || 0
+
+      const { data: pagos } = await supabase.from('pagos').select('estado, mes, monto').eq('alumno_id', padre.alumno_id).order('creado_en', { ascending: false }).limit(1)
+      const ultimoPago = pagos?.[0]
+      document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : 'Pendiente'
+
+      const pct = checkins?.length ? Math.round((checkins.length / 20) * 100) + '%' : '—'
+      document.getElementById('stat-asistencia').textContent = pct
+
+      // Alertas
+      const alertas = []
+
+      if (ultimoPago?.estado !== 'pagado') {
+        alertas.push(`<a class="row" href="pagos.html"><span class="ic red"><i data-lucide="bell"></i></span>
+          <span class="grow"><span class="t">Pago pendiente — ${ultimoPago?.mes || 'este mes'}</span>
+          <span class="s">$${Number(ultimoPago?.monto || 0).toLocaleString()} MXN</span></span>
+          <span class="trail"><span class="badge red">Pendiente</span></span></a>`)
+      }
+
+      try {
+        const { data: msgs } = await supabase.from('mensajes').select('texto, creado_en').eq('para_admin', false).eq('leido', false).order('creado_en', { ascending: false }).limit(3)
+        msgs?.forEach(m => {
+          alertas.push(`<a class="row" href="mensajes.html"><span class="ic blue"><i data-lucide="message-square"></i></span>
+            <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${(m.texto||'').substring(0,60)}…</span></span></a>`)
+        })
+      } catch(e) {}
+
+      try {
+        const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoy.toISOString().split('T')[0]).order('fecha').limit(1)
+        if (eventos?.length) {
+          alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
+            <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
+        }
+      } catch(e) {}
+
+      try {
+        const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).single()
+        if (frase) {
+          alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
+            <span class="grow"><span class="t">Frase del día</span><span class="s">"${frase.texto}"</span></span></div>`)
+        }
+      } catch(e) {}
+
+      document.getElementById('alertas').innerHTML = alertas.length
+        ? alertas.join('')
+        : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
+      lucide.createIcons()
+
+    } catch(err) {
+      document.getElementById('alertas').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">No se pudieron cargar los datos.</div>'
+      lucide.createIcons()
+    }
+  }
+
+  cargarDatos()
 </script>
 </body>
 </html>
