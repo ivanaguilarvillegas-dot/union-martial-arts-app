@@ -223,7 +223,7 @@
       btn.innerHTML = '<i data-lucide="banknote"></i> Avisar que pagaré en efectivo'
       document.getElementById('comprobante-area').style.display = 'none'
     } else if (metodo === 'transferencia') {
-      btn.innerHTML = '<i data-lucide="building-2"></i> Ya transferí — subir comprobante'
+      btn.style.display = 'none'
       document.getElementById('comprobante-area').style.display = 'block'
     } else if (metodo === 'mercadopago') {
       btn.innerHTML = '<i data-lucide="credit-card"></i> Pagar ' + fmt(total) + ' con Mercado Pago'
