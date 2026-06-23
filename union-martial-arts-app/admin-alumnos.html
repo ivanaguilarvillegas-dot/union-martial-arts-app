@@ -62,18 +62,64 @@
         <option value="Sábado · 10:00 AM">Sábado — 10:00 AM</option>
       </select>
     </div>
-    <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Contacto del padre/tutor</div>
-      <div style="margin-bottom:10px;">
-        <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
-        <input type="tel" id="edit-telefono" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    <!-- Scroll para campos extras -->
+    <div style="max-height:55vh;overflow-y:auto;padding-right:4px;">
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Padre / tutor</div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label>
+          <input type="text" id="edit-padre-nombre" placeholder="Nombre del padre/tutor" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+          <input type="tel" id="edit-telefono" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Correo</label>
+          <input type="email" id="edit-correo" placeholder="correo@ejemplo.com" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
+          <select id="edit-parentesco" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
+            <option value="Madre">Madre</option>
+            <option value="Padre">Padre</option>
+            <option value="Tutor">Tutor/a</option>
+            <option value="Abuelo/a">Abuelo/a</option>
+          </select>
+        </div>
       </div>
-      <div style="margin-bottom:16px;">
-        <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Correo</label>
-        <input type="email" id="edit-correo" placeholder="correo@ejemplo.com" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Contacto de emergencia</div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label>
+          <input type="text" id="edit-emerg-nombre" placeholder="Nombre de emergencia" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+          <input type="tel" id="edit-emerg-tel" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
+          <input type="text" id="edit-emerg-parentesco" placeholder="Ej: Tío, Abuela…" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Persona autorizada a recoger</div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label>
+          <input type="text" id="edit-autoriz-nombre" placeholder="Nombre autorizado" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+          <input type="tel" id="edit-autoriz-tel" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:4px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
+          <input type="text" id="edit-autoriz-parentesco" placeholder="Ej: Hermana, Tío…" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
       </div>
     </div>
-    <div style="display:flex;gap:10px;">
+    <div style="display:flex;gap:10px;margin-top:14px;">
       <button class="btn secondary" style="flex:1;" id="modal-cancelar">Cancelar</button>
       <button class="btn primary" style="flex:1;" id="modal-guardar"><i data-lucide="save"></i> Guardar</button>
     </div>
@@ -149,9 +195,17 @@
       document.getElementById('edit-grupo').value = a.grupo || ''
       document.getElementById('edit-horario').value = a.horario || ''
       // Cargar datos del padre vinculado
-      const { data: p } = await supabase.from('padres').select('telefono, correo').eq('alumno_id', a.id).maybeSingle()
+      const { data: p } = await supabase.from('padres').select('nombre, telefono, correo, parentesco, contacto_emergencia_nombre, contacto_emergencia_tel, contacto_emergencia_parentesco, autorizado_nombre, autorizado_tel, autorizado_parentesco').eq('alumno_id', a.id).maybeSingle()
+      document.getElementById('edit-padre-nombre').value = p?.nombre || ''
       document.getElementById('edit-telefono').value = p?.telefono || ''
       document.getElementById('edit-correo').value = p?.correo || ''
+      document.getElementById('edit-parentesco').value = p?.parentesco || 'Madre'
+      document.getElementById('edit-emerg-nombre').value = p?.contacto_emergencia_nombre || ''
+      document.getElementById('edit-emerg-tel').value = p?.contacto_emergencia_tel || ''
+      document.getElementById('edit-emerg-parentesco').value = p?.contacto_emergencia_parentesco || ''
+      document.getElementById('edit-autoriz-nombre').value = p?.autorizado_nombre || ''
+      document.getElementById('edit-autoriz-tel').value = p?.autorizado_tel || ''
+      document.getElementById('edit-autoriz-parentesco').value = p?.autorizado_parentesco || ''
       document.getElementById('modal').style.display = 'flex'
       lucide.createIcons()
       return
@@ -175,20 +229,29 @@
     const cinta = document.getElementById('edit-cinta').value
     const grupo = document.getElementById('edit-grupo').value
     const horario = document.getElementById('edit-horario').value
-    const telefono = document.getElementById('edit-telefono').value.trim()
-    const correo = document.getElementById('edit-correo').value.trim()
     if (!nombre) { alert('El nombre es obligatorio'); return }
     const btn = document.getElementById('modal-guardar')
     btn.disabled = true; btn.textContent = 'Guardando…'
+
     const { error } = await supabase.from('alumnos').update({
       nombre, cinta: cinta || null, grupo: grupo || null, horario: horario || null
     }).eq('id', id)
-    if (!error && (telefono || correo)) {
+
+    if (!error) {
       await supabase.from('padres').update({
-        ...(telefono && { telefono }),
-        ...(correo && { correo })
+        nombre: document.getElementById('edit-padre-nombre').value.trim() || null,
+        telefono: document.getElementById('edit-telefono').value.trim() || null,
+        correo: document.getElementById('edit-correo').value.trim() || null,
+        parentesco: document.getElementById('edit-parentesco').value || null,
+        contacto_emergencia_nombre: document.getElementById('edit-emerg-nombre').value.trim() || null,
+        contacto_emergencia_tel: document.getElementById('edit-emerg-tel').value.trim() || null,
+        contacto_emergencia_parentesco: document.getElementById('edit-emerg-parentesco').value.trim() || null,
+        autorizado_nombre: document.getElementById('edit-autoriz-nombre').value.trim() || null,
+        autorizado_tel: document.getElementById('edit-autoriz-tel').value.trim() || null,
+        autorizado_parentesco: document.getElementById('edit-autoriz-parentesco').value.trim() || null,
       }).eq('alumno_id', id)
     }
+
     btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar'; lucide.createIcons()
     if (error) { alert('❌ Error: ' + error.message); return }
     document.getElementById('modal').style.display = 'none'
