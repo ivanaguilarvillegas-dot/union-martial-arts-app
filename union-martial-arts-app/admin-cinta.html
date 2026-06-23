@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Subir de cinta</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Subir de cinta</title><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <style>
-  .belt-strip { position:relative; height:20px; border-radius:4px; flex-shrink:0;
-    box-shadow:inset 0 -2px 0 rgba(0,0,0,.18); display:flex; align-items:center; justify-content:center; }
-  .belt-strip .knot { width:16px; height:16px; border-radius:3px; border:1.5px solid rgba(255,255,255,.45);
-    background:rgba(255,255,255,.22); position:relative; z-index:1; }
-  .belt-strip .stripe { position:absolute; top:0; bottom:0; width:5px; background:rgba(255,255,255,.7); border-radius:1px; }
-
   .belt-option { display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer;
     border-bottom:1px solid var(--ink-100); transition:background .12s; }
   .belt-option:last-child { border-bottom:none; }
@@ -108,15 +108,53 @@
   ]
 
   function beltHtml(b, ancho = 62) {
-    if (!b) return `<div class="belt-strip" style="width:${ancho}px;background:#ccc;"><div class="knot"></div></div>`
-    let bgStyle = `background:${b.color};`
-    if (b.split) bgStyle = `background:linear-gradient(to right, ${b.color} 50%, ${b.split} 50%);`
-    const sc = b.stripeColor || 'rgba(255,255,255,.7)'
-    const stripes = b.stripes > 0
-      ? Array.from({length: b.stripes}, (_, i) =>
-          `<div class="stripe" style="right:${6 + i * 7}px;background:${sc};"></div>`).join('')
+    const uid = Math.random().toString(36).slice(2, 7)
+    const h = Math.round(ancho * 26 / 72)
+    if (!b) {
+      return `<svg width="${ancho}" height="${h}" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="8" width="72" height="10" rx="5" fill="#d1d5db"/>
+        <rect x="28" y="6" width="16" height="14" rx="3" fill="#9ca3af"/>
+      </svg>`
+    }
+    const sc = b.stripeColor || '#ffffff'
+    // Stripes: posiciones de derecha a izquierda
+    const stripeXs = [62, 57, 52, 47, 42]
+    const stripeSvg = b.stripes > 0
+      ? Array.from({length: Math.min(b.stripes, 5)}, (_, i) =>
+          `<line x1="${stripeXs[i]}" y1="9" x2="${stripeXs[i]}" y2="17" stroke="${sc}" stroke-width="1.5" stroke-linecap="round"/>`
+        ).join('')
       : ''
-    return `<div class="belt-strip" style="width:${ancho}px;${bgStyle}"><div class="knot"></div>${stripes}</div>`
+    // Para cinta bicolor (Roja-Negra)
+    const bodyFill = b.split
+      ? `<defs><clipPath id="cp${uid}"><rect x="0" y="8" width="72" height="10" rx="5"/></clipPath></defs>
+         <rect x="0" y="8" width="36" height="10" fill="${b.color}" clip-path="url(#cp${uid})"/>
+         <rect x="36" y="8" width="36" height="10" fill="${b.split}" clip-path="url(#cp${uid})"/>
+         <rect x="0" y="8" width="72" height="10" rx="5" fill="none" stroke="rgba(0,0,0,.08)" stroke-width=".5"/>`
+      : `<rect x="0" y="8" width="72" height="10" rx="5" fill="${b.color}"/>`
+    // Nudo: mismo color que lado izquierdo
+    const nudoColor = b.color
+
+    return `<svg width="${ancho}" height="${h}" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cg${uid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(255,255,255,.22)"/>
+          <stop offset="50%" stop-color="rgba(255,255,255,.0)"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,.2)"/>
+        </linearGradient>
+        <linearGradient id="ng${uid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(255,255,255,.18)"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,.24)"/>
+        </linearGradient>
+      </defs>
+      ${bodyFill}
+      <rect x="0" y="8" width="72" height="10" rx="5" fill="url(#cg${uid})"/>
+      <rect x="1" y="8.8" width="70" height="1" rx=".5" fill="rgba(255,255,255,.15)"/>
+      <rect x="28" y="6" width="16" height="14" rx="3" fill="${nudoColor}"/>
+      <rect x="28" y="6" width="16" height="14" rx="3" fill="url(#ng${uid})"/>
+      <rect x="29" y="6.8" width="14" height="1" rx=".5" fill="rgba(255,255,255,.18)"/>
+      <line x1="36" y1="7" x2="36" y2="19" stroke="rgba(0,0,0,.1)" stroke-width="1"/>
+      ${stripeSvg}
+    </svg>`
   }
 
   function beltByName(nombre) {
@@ -201,4 +239,10 @@
 
   lucide.createIcons()
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
 </body></html>
+
