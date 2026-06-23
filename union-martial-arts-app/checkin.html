@@ -13,28 +13,52 @@
     <div class="grow"><div class="title">Check-in</div></div>
   </div>
   <div class="body">
-    <div class="label">Registrar llegada de hoy</div>
-    <div class="card mb18">
-      <div class="stack">
-        <div>
-          <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo de asistencia</div>
-          <div style="display:flex;gap:8px;" id="tipos">
-            <button class="chip on" data-tipo="clase">Clase</button>
-            <button class="chip" data-tipo="torneo">Torneo</button>
-            <button class="chip" data-tipo="actividad">Actividad extra</button>
+    <!-- Selector asiste / no asiste -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;" id="modo-tabs">
+      <button class="chip on" data-modo="asiste" style="flex:1;justify-content:center;">✅ Sí va a clase</button>
+      <button class="chip" data-modo="ausente" style="flex:1;justify-content:center;">❌ No va a ir</button>
+    </div>
+
+    <!-- Panel: asiste -->
+    <div id="panel-asiste">
+      <div class="card mb18">
+        <div class="stack">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo de asistencia</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="tipos">
+              <button class="chip on" data-tipo="clase">Clase</button>
+              <button class="chip" data-tipo="torneo">Torneo</button>
+              <button class="chip" data-tipo="actividad">Actividad extra</button>
+            </div>
           </div>
+          <div class="notice green" id="msg-asiste" style="display:none;flex-direction:column;align-items:flex-start;">
+            <span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="shield-check"></i> ¡Llegada registrada!</span>
+            <span style="font-weight:500;margin-top:4px;">El instructor fue notificado. 🥋</span>
+          </div>
+          <button class="btn primary block" id="btn-asiste"><i data-lucide="check"></i> Confirmar llegada</button>
         </div>
-        <label class="field"><span class="lab">Día</span>
-          <select><option>Hoy — Lunes 23 jun</option><option>Domingo 22 jun</option><option>Sábado 21 jun</option></select></label>
-        <div id="horaWrap">
-          <label class="field" id="horaClase"><span class="lab">Hora de entrada (horario de Mateo)</span>
-            <select><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option><option>6:15 PM (Mar)</option><option>11:00 AM (Sáb)</option></select></label>
+      </div>
+    </div>
+
+    <!-- Panel: ausente -->
+    <div id="panel-ausente" style="display:none;">
+      <div class="card mb18">
+        <div class="stack">
+          <div style="font-size:12px;font-weight:500;color:var(--muted);">Motivo de ausencia</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="motivos">
+            <button class="chip on" data-motivo="Enfermedad">🤒 Enfermedad</button>
+            <button class="chip" data-motivo="Escuela">📚 Escuela</button>
+            <button class="chip" data-motivo="Viaje">✈️ Viaje</button>
+            <button class="chip" data-motivo="Otro">💬 Otro</button>
+          </div>
+          <label class="field"><span class="lab">Mensaje al instructor (opcional)</span>
+            <textarea id="nota-ausencia" rows="2" placeholder="Ej. Tiene fiebre, regresa el jueves…"></textarea></label>
+          <div class="notice red" id="msg-ausente" style="display:none;flex-direction:column;align-items:flex-start;">
+            <span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="bell"></i> Ausencia registrada</span>
+            <span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>
+          </div>
+          <button class="btn danger block" id="btn-ausente"><i data-lucide="x"></i> Reportar ausencia</button>
         </div>
-        <div class="notice green" id="msg" style="display:none;flex-direction:column;align-items:flex-start;">
-          <span style="display:inline-flex;align-items:center;gap:6px;margin-bottom:4px;"><i data-lucide="shield-check"></i> ¡Llegada registrada!</span>
-          <span style="font-weight:500;">Gracias, tu hijo está en buenas manos. 🥋 El instructor confirmará su asistencia.</span>
-        </div>
-        <button class="btn primary block" id="confirm"><i data-lucide="check"></i> Confirmar llegada</button>
       </div>
     </div>
 
@@ -57,48 +81,109 @@
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) { window.location.href = 'index.html' }
+  if (!user) { window.location.href = 'index.html'; }
 
-  const { data: padre } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).single()
-  const alumnoId = padre?.alumno_id
+  let padre = null, alumnoId = null, alumnoNombre = ''
+  try {
+    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+    if (!p) {
+      const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).single()
+      if (pe) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id); padre = pe }
+    } else { padre = p }
+    alumnoId = padre?.alumno_id
+    if (alumnoId) {
+      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).single()
+      alumnoNombre = al?.nombre || 'tu hijo/a'
+    }
+  } catch(e) {}
+
+  // Tabs modo
+  document.getElementById('modo-tabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-modo]'); if (!b) return
+    ;[...document.getElementById('modo-tabs').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+    const asiste = b.dataset.modo === 'asiste'
+    document.getElementById('panel-asiste').style.display = asiste ? 'block' : 'none'
+    document.getElementById('panel-ausente').style.display = asiste ? 'none' : 'block'
+  })
 
   // Tipo de asistencia
-  const tipos = document.getElementById('tipos')
-  tipos.addEventListener('click', e => {
-    const b = e.target.closest('[data-tipo]'); if(!b) return
-    ;[...tipos.children].forEach(c=>c.classList.remove('on')); b.classList.add('on')
+  document.getElementById('tipos').addEventListener('click', e => {
+    const b = e.target.closest('[data-tipo]'); if (!b) return
+    ;[...document.getElementById('tipos').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+  })
+
+  // Motivo de ausencia
+  document.getElementById('motivos').addEventListener('click', e => {
+    const b = e.target.closest('[data-motivo]'); if (!b) return
+    ;[...document.getElementById('motivos').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
   })
 
   // Confirmar llegada
-  document.getElementById('confirm').addEventListener('click', async () => {
+  document.getElementById('btn-asiste').addEventListener('click', async () => {
     if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
     const hoy = new Date().toISOString().split('T')[0]
     const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'clase'
 
-    // Verificar si ya hay checkin hoy
-    const { data: existe } = await supabase.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).single()
+    const { data: existe } = await supabase.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).maybeSingle()
     if (existe) {
-      document.getElementById('msg').style.display = 'flex'
-      document.getElementById('msg').innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste la llegada de hoy.</span>'
+      const m = document.getElementById('msg-asiste')
+      m.style.display = 'flex'
+      m.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste la llegada de hoy.</span>'
       lucide.createIcons(); return
     }
 
     await supabase.from('checkins').insert({ alumno_id: alumnoId, fecha: hoy, tipo })
-    document.getElementById('msg').style.display = 'flex'
+
+    // Notificar al instructor
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: `✅ Check-in: ${alumnoNombre} llegó a ${tipo} el ${hoy}`,
+      para_admin: true
+    })
+
+    document.getElementById('msg-asiste').style.display = 'flex'
+    document.getElementById('btn-asiste').disabled = true
     lucide.createIcons()
     cargarHistorial()
   })
 
-  // Historial
+  // Reportar ausencia
+  document.getElementById('btn-ausente').addEventListener('click', async () => {
+    if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
+    const hoy = new Date().toISOString().split('T')[0]
+    const motivo = document.querySelector('#motivos .on')?.dataset.motivo || 'Otro'
+    const nota = document.getElementById('nota-ausencia').value.trim()
+
+    await supabase.from('checkins').upsert({
+      alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
+    }, { onConflict: 'alumno_id,fecha' })
+
+    // Notificar al instructor
+    const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? '\n"' + nota + '"' : ''}`
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+
+    document.getElementById('msg-ausente').style.display = 'flex'
+    document.getElementById('btn-ausente').disabled = true
+    lucide.createIcons()
+    cargarHistorial()
+  })
+
   async function cargarHistorial() {
     if (!alumnoId) return
     const { data } = await supabase.from('checkins').select('*').eq('alumno_id', alumnoId).order('fecha', { ascending: false }).limit(10)
     const cont = document.getElementById('hist')
-    if (!data || !data.length) { cont.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Sin registros aún.</div>'; return }
-    cont.innerHTML = data.map(c => `
-      <div class="row"><span class="ic green"><i data-lucide="calendar-check"></i></span>
-        <span class="grow"><span class="t">${c.fecha}</span><span class="s">${c.tipo || 'Clase'}</span></span>
-        <span class="trail"><span class="badge green">Registrado</span></span></div>`).join('')
+    if (!data?.length) { cont.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Sin registros aún.</div>'; return }
+    cont.innerHTML = data.map(c => {
+      const ausencia = c.tipo === 'ausencia'
+      return `<div class="row">
+        <span class="ic ${ausencia ? 'red' : 'green'}"><i data-lucide="${ausencia ? 'x-circle' : 'calendar-check'}"></i></span>
+        <span class="grow">
+          <span class="t">${c.fecha}</span>
+          <span class="s">${ausencia ? 'Ausencia — ' + (c.ausencia_motivo || '') : (c.tipo || 'Clase')}</span>
+        </span>
+        <span class="trail"><span class="badge ${ausencia ? 'red' : 'green'}">${ausencia ? 'Ausente' : 'Asistió'}</span></span>
+      </div>`
+    }).join('')
     lucide.createIcons()
   }
 

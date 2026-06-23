@@ -39,6 +39,9 @@
     <button id="btn-entrar" class="btn primary lg block mt16">Entrar</button>
     <div class="spacer"></div>
     <div class="foot">
+      <div class="q" style="margin-bottom:10px;">¿Eres instructor?
+        <a href="#" id="btn-instructor" style="color:var(--primary);font-weight:700;text-decoration:none;margin-left:4px;">Entrar como instructor →</a>
+      </div>
       <div class="q">¿Necesitas acceso? Contáctanos</div>
       <a href="https://wa.me/526566379191" target="_blank" rel="noopener"><i data-lucide="phone"></i> WhatsApp · (656) 637.9191</a>
       <a href="mailto:unionmartialarts.jrz@gmail.com"><i data-lucide="mail"></i> unionmartialarts.jrz@gmail.com</a>
@@ -90,6 +93,19 @@
   })
 
   document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-entrar').click() })
+
+  // Botón entrar como instructor: fuerza ir a admin.html sin validar rol
+  document.getElementById('btn-instructor').addEventListener('click', async (e) => {
+    e.preventDefault()
+    const correo = document.getElementById('correo').value.trim()
+    const pass = document.getElementById('password').value.trim()
+    const err = document.getElementById('error-msg')
+    err.style.display = 'none'
+    if (!correo || !pass) { err.textContent = 'Escribe tu correo y contraseña.'; err.style.display = 'block'; return }
+    const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: pass })
+    if (error) { err.textContent = 'Correo o contraseña incorrectos.'; err.style.display = 'block'; return }
+    window.location.href = 'admin.html'
+  })
   lucide.createIcons()
 </script>
 </body>

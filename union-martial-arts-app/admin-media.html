@@ -29,39 +29,52 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const mediaRow = (t, ic, url) => `
+  const mediaRow = (nombre, ic, url, carpeta) => `
     <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
       <span style="color:var(--primary);flex-shrink:0;"><i data-lucide="${ic}" style="width:16px;height:16px"></i></span>
-      <span style="flex:1;font-size:13.5px;">${t}</span>
-      ${url ? `<a href="${url}" target="_blank" style="font-size:11px;color:var(--green-text);font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i data-lucide="external-link" style="width:12px;height:12px"></i> Ver</a>` : ''}
+      <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nombre.replace(/^\d+_/, '')}</span>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        ${url ? `<a href="${url}" target="_blank" style="font-size:11px;color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:3px;text-decoration:none;padding:5px 8px;background:var(--soft);border-radius:var(--r-sm);"><i data-lucide="external-link" style="width:12px;height:12px"></i> Ver</a>` : ''}
+        <button data-borrar="${carpeta}/${nombre}" style="font-size:11px;color:var(--red-text);font-weight:600;display:inline-flex;align-items:center;gap:3px;padding:5px 8px;background:var(--red-bg);border:none;border-radius:var(--r-sm);cursor:pointer;"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Borrar</button>
+      </div>
     </div>`
 
   async function cargar() {
     // Listar videos
-    const { data: vids } = await supabase.storage.from('media').list('videos', { limit: 20 })
+    const { data: vids } = await supabase.storage.from('media').list('videos', { limit: 50 })
     const vidEl = document.getElementById('vids')
-    if (vids?.length) {
-      vidEl.innerHTML = vids.map(v => {
+    if (vids?.filter(v => v.name !== '.emptyFolderPlaceholder').length) {
+      vidEl.innerHTML = vids.filter(v => v.name !== '.emptyFolderPlaceholder').map(v => {
         const url = supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
-        return mediaRow(v.name, 'video', url)
+        return mediaRow(v.name, 'video', url, 'videos')
       }).join('')
     } else {
       vidEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;">Sin videos subidos aún.</div>'
     }
 
     // Listar audios
-    const { data: auds } = await supabase.storage.from('media').list('audios', { limit: 20 })
+    const { data: auds } = await supabase.storage.from('media').list('audios', { limit: 50 })
     const audEl = document.getElementById('auds')
-    if (auds?.length) {
-      audEl.innerHTML = auds.map(a => {
+    if (auds?.filter(a => a.name !== '.emptyFolderPlaceholder').length) {
+      audEl.innerHTML = auds.filter(a => a.name !== '.emptyFolderPlaceholder').map(a => {
         const url = supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
-        return mediaRow(a.name, 'headphones', url)
+        return mediaRow(a.name, 'headphones', url, 'audios')
       }).join('')
     } else {
       audEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;">Sin audios subidos aún.</div>'
     }
     lucide.createIcons()
   }
+
+  // Borrar archivo
+  document.querySelector('.body').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-borrar]'); if (!btn) return
+    const path = btn.dataset.borrar
+    if (!confirm('¿Borrar ' + path.split('/').pop().replace(/^\d+_/, '') + '?')) return
+    const { error } = await supabase.storage.from('media').remove([path])
+    if (error) { alert('Error al borrar: ' + error.message); return }
+    cargar()
+  })
 
   // Subir archivos
   document.querySelectorAll('input[data-up]').forEach(input => {

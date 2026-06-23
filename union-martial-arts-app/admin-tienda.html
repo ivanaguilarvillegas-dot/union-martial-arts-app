@@ -31,7 +31,8 @@
     </div>
     <div class="stack-10" id="list"></div>
     <button class="btn secondary block mt14" id="add"><i data-lucide="plus"></i> Agregar producto</button>
-    <button class="btn primary block mt12" onclick="location.href='admin.html'"><i data-lucide="save"></i> Guardar tienda</button>
+    <div id="save-msg" class="notice green" style="display:none;margin-top:12px;"><i data-lucide="check"></i> Tienda guardada</div>
+    <button class="btn primary block mt12" id="btn-guardar"><i data-lucide="save"></i> Guardar cambios</button>
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
@@ -59,7 +60,7 @@
   }
 
   function card(x, i) {
-    return `<div class="ed" data-id="${x.id||''}">
+    return `<div class="ed" data-id="${x.id||''}" data-i="${i}">
       <div class="top">
         <label class="ph">
           ${x.imagen_url ? `<img src="${x.imagen_url}" alt="" />` : `<i data-lucide="image-plus" class="big"></i>`}
@@ -72,6 +73,7 @@
           <input class="f-precio" value="${x.precio||''}" placeholder="Precio (MXN)" inputmode="numeric" />
         </div>
       </div>
+      <button class="btn danger sm" data-del="${i}" style="width:100%;margin-top:8px;"><i data-lucide="trash-2"></i> Eliminar producto</button>
     </div>`
   }
 
@@ -100,25 +102,43 @@
     render()
   })
 
+  // Eliminar producto
+  document.getElementById('list').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-del]'); if (!btn) return
+    if (!confirm('¿Eliminar este producto?')) return
+    const i = parseInt(btn.dataset.del)
+    const prod = PROD[i]
+    if (prod?.id) {
+      await supabase.from('productos').delete().eq('id', prod.id)
+    }
+    PROD.splice(i, 1)
+    render()
+  })
+
   // Guardar tienda
-  document.querySelector('[onclick]').removeAttribute('onclick')
-  document.querySelector('.btn.primary').addEventListener('click', async () => {
+  document.getElementById('btn-guardar').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-guardar')
+    btn.disabled = true; btn.textContent = 'Guardando…'
     const cards = document.querySelectorAll('.ed')
     for (let i = 0; i < cards.length; i++) {
-      const card = cards[i]
-      const id = card.dataset.id
-      const nombre = card.querySelector('.f-nombre').value.trim()
-      const descripcion = card.querySelector('.f-desc').value.trim()
-      const precio = parseFloat(card.querySelector('.f-precio').value) || 0
+      const c = cards[i]
+      const id = c.dataset.id
+      const nombre = c.querySelector('.f-nombre').value.trim()
+      const descripcion = c.querySelector('.f-desc').value.trim()
+      const precio = parseFloat(c.querySelector('.f-precio').value) || 0
       const imagen_url = PROD[i]?.imagen_url || null
       if (!nombre) continue
       if (id) {
         await supabase.from('productos').update({ nombre, descripcion, precio, imagen_url }).eq('id', id)
       } else {
-        await supabase.from('productos').insert({ nombre, descripcion, precio, imagen_url })
+        const { data: nuevo } = await supabase.from('productos').insert({ nombre, descripcion, precio, imagen_url }).select().single()
+        if (nuevo) PROD[i] = nuevo
       }
     }
-    alert('✅ Tienda guardada correctamente')
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar cambios'
+    document.getElementById('save-msg').style.display = 'flex'
+    lucide.createIcons()
+    setTimeout(() => { document.getElementById('save-msg').style.display = 'none' }, 3000)
     cargar()
   })
 

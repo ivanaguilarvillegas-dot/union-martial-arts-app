@@ -6,13 +6,46 @@
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="sub">Evaluación del día</div><div class="title">Registrar evaluación</div></div></div>
   <div class="body">
-    <div class="notice green" id="ok" style="display:none;"><i data-lucide="check-circle"></i> Evaluación guardada</div>
-    <div class="card mb14"><label class="field"><span class="lab">Alumno</span>
-      <select><option>Mateo Reyes — Cinta Azul</option><option>Sofía Luna — Cinta Verde</option><option>Diego Ortiz — Cinta Amarilla</option></select></label></div>
-    <div class="label row"><span>Áreas del día</span><span class="badge" id="cnt">0/9</span></div>
-    <div class="card flush mb14" style="padding:6px;" id="list"></div>
-    <label class="field mb14"><span class="lab">Nota del día (opcional)</span><textarea rows="3" placeholder="Comentario para los padres…"></textarea></label>
-    <button class="btn primary block" id="save"><i data-lucide="save"></i> Guardar evaluación</button>
+    <div id="form">
+      <div class="card mb14"><div class="stack">
+        <label class="field"><span class="lab">Alumno</span>
+          <select id="al-sel"><option value="">Cargando...</option></select></label>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="chip on" data-tipo="diaria">Evaluación del día</button>
+          <button class="chip" data-tipo="mensual">Evaluación mensual</button>
+        </div>
+      </div></div>
+
+      <!-- Evaluación diaria: checklist -->
+      <div id="panel-diaria">
+        <div class="label row"><span>Áreas del día</span><span class="badge" id="cnt">0/9</span></div>
+        <div class="card flush mb14" id="list"></div>
+        <label class="field mb14"><span class="lab">Nota del día (opcional)</span>
+          <textarea id="nota-diaria" rows="3" placeholder="Comentario para los padres…"></textarea></label>
+      </div>
+
+      <!-- Evaluación mensual: calificaciones 1-10 -->
+      <div id="panel-mensual" style="display:none;">
+        <div class="card mb14"><div class="stack">
+          <div style="font-size:12px;font-weight:500;color:var(--muted);">Califica del 1 al 10</div>
+          <div id="sliders"></div>
+          <label class="field"><span class="lab">Comentario para los padres</span>
+            <textarea id="nota-mensual" rows="3" placeholder="Resumen del mes…"></textarea></label>
+        </div></div>
+      </div>
+
+      <div id="err" class="notice red" style="display:none;"></div>
+      <button class="btn primary block" id="save"><i data-lucide="save"></i> Guardar evaluación</button>
+    </div>
+
+    <div id="ok" style="display:none;">
+      <div class="card green center">
+        <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="check-circle" style="width:26px;height:26px"></i></div>
+        <div style="font-size:15px;font-weight:700;color:var(--green-text);">Evaluación guardada</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Se notificó a la familia del alumno.</div>
+      </div>
+      <button class="btn secondary block mt14" onclick="location.reload()"><i data-lucide="plus"></i> Nueva evaluación</button>
+    </div>
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
@@ -31,51 +64,119 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  // Cargar alumnos reales en el select
+  // Cargar alumnos
   const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta').order('nombre')
-  const sel = document.querySelector('select')
+  const alSel = document.getElementById('al-sel')
   if (alumnos?.length) {
-    sel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
+    alSel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
   }
 
-  const D = ['Actitud','Esfuerzo','Técnica','Participación','Trabajo en equipo','Uniforme completo','Higiene y limpieza','Respeto','Llegó a tiempo']
+  // Tabs tipo
+  let tipo = 'diaria'
+  document.querySelectorAll('[data-tipo]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-tipo]').forEach(c => c.classList.remove('on')); b.classList.add('on')
+    tipo = b.dataset.tipo
+    document.getElementById('panel-diaria').style.display = tipo === 'diaria' ? 'block' : 'none'
+    document.getElementById('panel-mensual').style.display = tipo === 'mensual' ? 'block' : 'none'
+  }))
+
+  // === DIARIA ===
+  const ITEMS = ['Actitud','Esfuerzo','Técnica','Participación','Trabajo en equipo','Uniforme completo','Higiene y limpieza','Respeto','Llegó a tiempo']
   const st = {}
 
   function render() {
-    document.getElementById('list').innerHTML = D.map((d,i) =>
-      `<button class="checkitem ${st[i]?'done':''}" data-i="${i}"><span class="box"><i data-lucide="check"></i></span><span class="txt">${d}</span></button>`
-    ).join('')
+    document.getElementById('list').innerHTML = ITEMS.map((d, i) =>
+      `<button class="checkitem ${st[i]?'done':''}" data-i="${i}">
+        <span class="box"><i data-lucide="check"></i></span>
+        <span class="txt">${d}</span>
+      </button>`).join('')
     const n = Object.values(st).filter(Boolean).length
-    document.getElementById('cnt').textContent = n + '/' + D.length
-    document.getElementById('cnt').className = 'badge ' + (n ? 'green' : '')
+    document.getElementById('cnt').textContent = n + '/' + ITEMS.length
+    document.getElementById('cnt').className = 'badge ' + (n === ITEMS.length ? 'green' : n > 0 ? 'blue' : '')
     lucide.createIcons()
   }
-
   document.getElementById('list').addEventListener('click', e => {
     const b = e.target.closest('[data-i]'); if (!b) return
     st[b.dataset.i] = !st[b.dataset.i]; render()
   })
+  render()
 
-  document.getElementById('save').addEventListener('click', async () => {
-    const alumno_id = sel.value
-    const nota = document.querySelector('textarea').value.trim()
-    const areas = D.filter((_, i) => st[i])
-    const puntuacion = Math.round((areas.length / D.length) * 100)
-    const fecha = new Date().toISOString().split('T')[0]
+  // === MENSUAL ===
+  const AREAS = [
+    { k: 'tecnica_golpe', label: 'Técnica de golpe' },
+    { k: 'patadas',       label: 'Patadas' },
+    { k: 'defensa',       label: 'Defensa' },
+    { k: 'condicion_fisica', label: 'Condición física' },
+    { k: 'disciplina',    label: 'Disciplina' },
+    { k: 'coordinacion',  label: 'Coordinación' },
+  ]
+  const vals = {}
+  AREAS.forEach(a => { vals[a.k] = 7 })
 
-    const { error } = await supabase.from('evaluaciones').insert({
-      alumno_id, fecha, puntuacion,
-      actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2],
-      participacion: !!st[3], nota
+  function renderSliders() {
+    document.getElementById('sliders').innerHTML = AREAS.map(a => `
+      <div class="prog" style="margin-bottom:16px;">
+        <div class="head" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:13px;">
+          <span>${a.label}</span><b style="color:var(--primary);">${vals[a.k]} / 10</b>
+        </div>
+        <input type="range" min="1" max="10" value="${vals[a.k]}" data-k="${a.k}"
+          style="width:100%;accent-color:var(--primary);" />
+      </div>`).join('')
+    document.querySelectorAll('#sliders input[type=range]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        vals[inp.dataset.k] = parseInt(inp.value)
+        renderSliders()
+      })
     })
+  }
+  renderSliders()
 
-    if (error) { alert('Error al guardar: ' + error.message); return }
+  // === GUARDAR ===
+  document.getElementById('save').addEventListener('click', async () => {
+    const alumno_id = alSel.value
+    const errEl = document.getElementById('err')
+    if (!alumno_id) { errEl.textContent = 'Selecciona un alumno.'; errEl.style.display='flex'; return }
+    errEl.style.display = 'none'
 
-    document.getElementById('ok').style.display = 'flex'
+    const btn = document.getElementById('save')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+
+    const fecha = new Date().toISOString().split('T')[0]
+    const alumno = alumnos?.find(a => a.id === alumno_id)
+    let payload = { alumno_id, fecha }
+    let notifTexto = ''
+
+    if (tipo === 'diaria') {
+      const nota = document.getElementById('nota-diaria').value.trim()
+      const areas = ITEMS.filter((_, i) => st[i])
+      const puntuacion = Math.round((areas.length / ITEMS.length) * 100)
+      payload = { ...payload, puntuacion,
+        actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2],
+        participacion: !!st[3], nota }
+      notifTexto = `📋 Evaluación del día ${fecha} — ${alumno?.nombre}: ${areas.length}/${ITEMS.length} áreas${nota ? '\n"' + nota + '"' : ''}`
+    } else {
+      const nota = document.getElementById('nota-mensual').value.trim()
+      const prom = (Object.values(vals).reduce((s,v)=>s+v,0)/AREAS.length).toFixed(1)
+      payload = { ...payload, ...vals, comentarios: nota, puntuacion: Math.round(parseFloat(prom)*10) }
+      notifTexto = `📊 Evaluación mensual — ${alumno?.nombre}: Promedio ${prom}/10${nota ? '\n"' + nota + '"' : ''}`
+    }
+
+    const { error } = await supabase.from('evaluaciones').insert(payload)
+    if (error) {
+      errEl.textContent = 'Error al guardar: ' + error.message
+      errEl.style.display = 'flex'
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar evaluación'
+      lucide.createIcons(); return
+    }
+
+    // Notificar a los padres
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto: notifTexto, para_admin: false })
+
+    document.getElementById('form').style.display = 'none'
+    document.getElementById('ok').style.display = 'block'
     lucide.createIcons()
-    document.querySelector('.body').scrollTo(0, 0)
   })
 
-  render()
+  lucide.createIcons()
 </script>
 </body></html>

@@ -17,9 +17,20 @@
       <div class="card">
         <div class="stack">
           <label class="field"><span class="lab">Motivo de la cita</span>
-            <select><option>Hablar del progreso de mi hijo/a</option><option>Dudas sobre pagos / programas</option><option>Cambio de horario</option><option>Otro</option></select></label>
-          <label class="field"><span class="lab">Día deseado</span><input type="date" /></label>
-          <label class="field"><span class="lab">Hora deseada</span><input type="time" /></label>
+            <select id="motivo">
+              <option>Hablar del progreso de mi hijo/a</option>
+              <option>Dudas sobre pagos / programas</option>
+              <option>Cambio de horario</option>
+              <option>Problema o situación especial</option>
+              <option>Otro</option>
+            </select></label>
+          <label class="field"><span class="lab">Día deseado</span>
+            <input type="date" id="fecha" /></label>
+          <label class="field"><span class="lab">Hora deseada</span>
+            <input type="time" id="hora" /></label>
+          <label class="field"><span class="lab">Mensaje adicional (opcional)</span>
+            <textarea id="nota" rows="2" placeholder="Información extra para el instructor…"></textarea></label>
+          <div id="err" class="notice red" style="display:none;"></div>
           <button class="btn primary block" id="solicitar"><i data-lucide="calendar-clock"></i> Solicitar cita</button>
         </div>
       </div>
@@ -27,9 +38,12 @@
     <div id="ok" style="display:none;">
       <div class="card green center">
         <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="calendar-check" style="width:26px;height:26px"></i></div>
-        <div style="font-size:15px;font-weight:700;color:var(--green-text);">Cita solicitada · por confirmar</div>
-        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">El instructor revisará tu solicitud y te enviará la confirmación por notificación.</div>
+        <div style="font-size:15px;font-weight:700;color:var(--green-text);">Cita solicitada</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">El instructor recibió tu solicitud y te confirmará pronto por mensajes.</div>
       </div>
+      <button class="btn secondary block mt14" onclick="location.reload()">
+        <i data-lucide="plus"></i> Agendar otra cita
+      </button>
     </div>
     <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
   </div>
@@ -50,15 +64,51 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  // Fecha mínima: hoy
+  document.getElementById('fecha').min = new Date().toISOString().split('T')[0]
+
+  const { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).maybeSingle()
+  let alumnoNombre = ''
+  if (padre?.alumno_id) {
+    const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', padre.alumno_id).single()
+    alumnoNombre = al?.nombre || ''
+  }
+
   document.getElementById('solicitar').addEventListener('click', async () => {
-    const motivo = document.querySelector('select').value
-    const fecha = document.querySelectorAll('input')[0].value
-    const hora = document.querySelectorAll('input')[1].value
-    await supabase.from('citas').insert({ padre_user_id: user.id, motivo, fecha_preferida: fecha || null, hora_preferida: hora || null })
-    document.getElementById('form').style.display='none'
-    document.getElementById('ok').style.display='block'
+    const motivo = document.getElementById('motivo').value
+    const fecha = document.getElementById('fecha').value
+    const hora = document.getElementById('hora').value
+    const nota = document.getElementById('nota').value.trim()
+    const errEl = document.getElementById('err')
+
+    if (!fecha) { errEl.textContent = 'Por favor selecciona el día deseado.'; errEl.style.display='flex'; return }
+    errEl.style.display = 'none'
+
+    const btn = document.getElementById('solicitar')
+    btn.disabled = true; btn.textContent = 'Enviando…'
+
+    // Guardar cita
+    await supabase.from('citas').insert({
+      padre_user_id: user.id,
+      motivo,
+      fecha_preferida: fecha,
+      hora_preferida: hora || null,
+      estado: 'pendiente'
+    })
+
+    // Notificar al instructor
+    const textoMsg = `📅 Solicitud de cita — ${padre?.nombre || user.email}${alumnoNombre ? ' (alumno: ' + alumnoNombre + ')' : ''}\nMotivo: ${motivo}\nFecha: ${fecha}${hora ? ' a las ' + hora : ''}${nota ? '\n"' + nota + '"' : ''}`
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: textoMsg,
+      para_admin: true
+    })
+
+    document.getElementById('form').style.display = 'none'
+    document.getElementById('ok').style.display = 'block'
     lucide.createIcons()
   })
+
   lucide.createIcons()
 </script>
 </body>
