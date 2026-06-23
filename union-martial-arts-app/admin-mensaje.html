@@ -59,16 +59,51 @@
 
       if (msgs?.length) {
         lista.innerHTML = '<div class="label" style="margin-bottom:10px">Mensajes de padres</div>' +
-          msgs.map(m => {
+          msgs.map((m, idx) => {
             const nombre = padreMap[m.de_user_id] || 'Padre'
             const fecha = m.creado_en ? new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '—'
-            return `<div class="card mb12">
+            return `<div class="card mb12" id="msg-${idx}">
               <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;">
                 <span style="font-weight:600;color:var(--text);">${nombre}</span><span>${fecha}</span>
               </div>
-              <div style="font-size:13.5px;line-height:1.5;">${m.texto}</div>
+              <div style="font-size:13.5px;line-height:1.5;margin-bottom:10px;">${m.texto}</div>
+              <div id="resp-${idx}" style="display:none;">
+                <textarea rows="2" placeholder="Escribe tu respuesta…" style="width:100%;border:1px solid var(--border-input);border-radius:var(--r-sm);padding:8px;font-size:13px;font-family:var(--font);resize:none;" id="txt-${idx}"></textarea>
+                <div style="display:flex;gap:8px;margin-top:6px;">
+                  <button class="btn primary sm" data-send="${idx}" data-uid="${m.de_user_id}"><i data-lucide="send"></i> Enviar</button>
+                  <button class="btn secondary sm" data-cancel="${idx}">Cancelar</button>
+                </div>
+              </div>
+              <button class="btn secondary sm" data-reply="${idx}" style="margin-top:0;"><i data-lucide="reply"></i> Responder</button>
             </div>`
           }).join('')
+
+        lista.addEventListener('click', async e => {
+          const rBtn = e.target.closest('[data-reply]')
+          const cBtn = e.target.closest('[data-cancel]')
+          const sBtn = e.target.closest('[data-send]')
+          if (rBtn) {
+            const i = rBtn.dataset.reply
+            document.getElementById('resp-' + i).style.display = 'block'
+            rBtn.style.display = 'none'
+          }
+          if (cBtn) {
+            const i = cBtn.dataset.cancel
+            document.getElementById('resp-' + i).style.display = 'none'
+            document.querySelector(`[data-reply="${i}"]`).style.display = 'inline-flex'
+          }
+          if (sBtn) {
+            const i = sBtn.dataset.send
+            const uid = sBtn.dataset.uid
+            const texto = document.getElementById('txt-' + i).value.trim()
+            if (!texto) return
+            sBtn.disabled = true; sBtn.textContent = 'Enviando…'
+            await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false })
+            document.getElementById('msg-' + i).innerHTML += `<div style="margin-top:8px;padding:8px;background:var(--soft);border-radius:var(--r-sm);font-size:12.5px;color:var(--primary);"><b>Tu respuesta:</b> ${texto}</div>`
+            document.getElementById('resp-' + i).style.display = 'none'
+            lucide.createIcons()
+          }
+        })
       } else {
         lista.innerHTML = '<div class="label" style="margin-bottom:10px">Mensajes de padres</div><div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin mensajes aún.</div>'
       }
@@ -83,16 +118,85 @@
     try {
       const { data } = await supabase.from('citas').select('*').eq('estado', 'pendiente').order('fecha_preferida', { ascending: true })
       if (!data?.length) return
-      const lista = document.createElement('div')
-      lista.style.marginTop = '16px'
-      lista.innerHTML = '<div class="label" style="margin-bottom:10px">Citas pendientes</div>' +
+      const wrap = document.createElement('div')
+      wrap.id = 'citas-wrap'
+      wrap.style.marginTop = '16px'
+      wrap.innerHTML = '<div class="label" style="margin-bottom:10px">Citas pendientes</div>' +
         data.map(c => `
-          <div class="card mb12">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${c.fecha_preferida || '—'}${c.hora_preferida ? ' · ' + c.hora_preferida : ''}</div>
-            <div style="font-size:13.5px;font-weight:600;">${c.motivo || 'Sin motivo'}</div>
-            <span class="badge amber" style="margin-top:8px;display:inline-block;">Pendiente</span>
+          <div class="card mb12" id="cita-${c.id}">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">📅 ${c.fecha_preferida || '—'}${c.hora_preferida ? ' · ' + c.hora_preferida : ''}</div>
+            <div style="font-size:13.5px;font-weight:600;margin-bottom:10px;">${c.motivo || 'Sin motivo'}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn primary sm" data-aceptar="${c.id}" data-uid="${c.padre_user_id}" data-fecha="${c.fecha_preferida||''}" data-hora="${c.hora_preferida||''}">
+                <i data-lucide="check"></i> Aceptar
+              </button>
+              <button class="btn secondary sm" data-cambiar="${c.id}">
+                <i data-lucide="calendar-clock"></i> Cambiar fecha
+              </button>
+              <button class="btn danger sm" data-rechazar="${c.id}" data-uid="${c.padre_user_id}">
+                <i data-lucide="x"></i> Rechazar
+              </button>
+            </div>
+            <div id="cambio-${c.id}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--ink-100);">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;">PROPONER NUEVA FECHA</div>
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <input type="date" id="nfecha-${c.id}" style="flex:1;height:36px;border:1px solid var(--border-input);border-radius:var(--r-sm);padding:0 8px;font-size:13px;" />
+                <input type="time" id="nhora-${c.id}" style="width:100px;height:36px;border:1px solid var(--border-input);border-radius:var(--r-sm);padding:0 8px;font-size:13px;" />
+              </div>
+              <button class="btn primary sm" data-proponer="${c.id}" data-uid="${c.padre_user_id}"><i data-lucide="send"></i> Enviar propuesta</button>
+            </div>
           </div>`).join('')
-      document.querySelector('.body').appendChild(lista)
+      document.querySelector('.body').appendChild(wrap)
+      lucide.createIcons()
+
+      wrap.addEventListener('click', async e => {
+        const btnA = e.target.closest('[data-aceptar]')
+        const btnR = e.target.closest('[data-rechazar]')
+        const btnC = e.target.closest('[data-cambiar]')
+        const btnP = e.target.closest('[data-proponer]')
+
+        if (btnC) {
+          const id = btnC.dataset.cambiar
+          const panel = document.getElementById('cambio-' + id)
+          panel.style.display = panel.style.display === 'none' ? 'block' : 'none'
+          lucide.createIcons()
+          return
+        }
+
+        if (btnP) {
+          const id = btnP.dataset.proponer
+          const uid = btnP.dataset.uid
+          const fecha = document.getElementById('nfecha-' + id).value
+          const hora = document.getElementById('nhora-' + id).value
+          if (!fecha) { alert('Selecciona una fecha'); return }
+          btnP.disabled = true; btnP.textContent = 'Enviando…'
+          await supabase.from('citas').update({ fecha_preferida: fecha, hora_preferida: hora || null }).eq('id', id)
+          const texto = `📅 El instructor propone nueva fecha para tu cita: ${fecha}${hora ? ' a las ' + hora : ''}. Confirma respondiendo este mensaje.`
+          await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false })
+          document.getElementById('cambio-' + id).innerHTML = '<div style="color:var(--green-text);font-size:13px;font-weight:600;">✅ Propuesta enviada al padre.</div>'
+          return
+        }
+
+        if (btnA) {
+          const id = btnA.dataset.aceptar
+          const uid = btnA.dataset.uid
+          btnA.disabled = true; btnA.textContent = 'Aceptando…'
+          await supabase.from('citas').update({ estado: 'aceptada' }).eq('id', id)
+          const texto = `✅ Tu cita fue confirmada — ${btnA.dataset.fecha}${btnA.dataset.hora ? ' a las ' + btnA.dataset.hora : ''}. ¡Te esperamos! 🥋`
+          await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false })
+          document.getElementById('cita-' + id).innerHTML = `<div style="color:var(--green-text);font-size:13px;font-weight:600;">✅ Cita aceptada y padre notificado.</div>`
+          return
+        }
+
+        if (btnR) {
+          const id = btnR.dataset.rechazar
+          const uid = btnR.dataset.uid
+          if (!confirm('¿Rechazar esta cita?')) return
+          await supabase.from('citas').update({ estado: 'rechazada' }).eq('id', id)
+          await supabase.from('mensajes').insert({ de_user_id: user.id, texto: '❌ Tu solicitud de cita no pudo confirmarse. Por favor agenda otra fecha o contáctanos.', para_admin: false })
+          document.getElementById('cita-' + id).innerHTML = `<div style="color:var(--red-text,#c00);font-size:13px;font-weight:600;">❌ Cita rechazada.</div>`
+        }
+      })
     } catch(e) {}
   }
 
