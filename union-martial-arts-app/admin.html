@@ -1,10 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Panel</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
 <div class="phone"><div class="screen">
@@ -81,6 +87,7 @@
     ['clipboard-list','Registrar evaluación','Calificar alumno del día/mes','admin-evaluacion.html'],
     ['message-square','Mensajes de padres',(msgNuevos||0)+' sin leer','admin-mensaje.html'],
     ['sliders-horizontal','Editar contenido y precios','Nutrición, rutinas, horarios, reglamento','admin-editar.html'],
+    ['salad','Menú del mes','Recetas y sugerencias de nutrición','admin-menu.html'],
     ['award','Subir de cinta','Promover alumno de rango','admin-cinta.html'],
     ['calendar-plus','Crear torneo o actividad','Evento, clase especial, aviso','admin-evento.html'],
     ['upload','Subir videos y media','Rutinas, audios de meditación','admin-media.html'],
@@ -109,5 +116,11 @@
 
   lucide.createIcons()
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
 </body>
 </html>
+

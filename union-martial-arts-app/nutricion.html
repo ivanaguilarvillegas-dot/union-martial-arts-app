@@ -15,12 +15,30 @@
 /* Toast */
 .toast {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
-  background: #16a34a; color: #fff; border-radius: 12px; padding: 10px 18px;
-  font-size: 13px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,.18);
-  opacity: 0; transition: all .3s; z-index: 999; white-space: nowrap;
-  display: flex; align-items: center; gap: 7px;
+  background: #16a34a; color: #fff; border-radius: 12px; padding: 10px 16px;
+  font-size: 12.5px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  opacity: 0; transition: all .3s; z-index: 999;
+  width: max-content; max-width: 80vw; text-align: center; line-height: 1.4;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Modal receta */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 900;
+  display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: #fff; border-radius: 20px 20px 0 0; padding: 20px 18px 32px;
+  width: 100%; max-height: 70vh; overflow-y: auto;
+  transform: translateY(40px); transition: transform .25s;
+}
+.modal-overlay.show .modal-sheet { transform: translateY(0); }
+.modal-handle { width: 36px; height: 4px; background: #e5e7eb; border-radius: 99px; margin: 0 auto 16px; }
+.modal-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+.modal-receta { font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
+.modal-nota { background: #f0fdf4; border-left: 3px solid #16a34a; border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: #166534; margin-top: 12px; line-height: 1.5; }
 
 /* Sección headers */
 .sec-head {
@@ -336,11 +354,38 @@
     <div class="card mb14">
       <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Lo ideal es repartir la energía entre 3 comidas principales y 1 o 2 colaciones, según su horario de escuela y entrenamiento.</p>
       <div class="comidas-grid">
-        <div class="comida-item"><span class="comida-emoji">🌅</span><span class="comida-label">Desayuno</span></div>
-        <div class="comida-item"><span class="comida-emoji">🍽️</span><span class="comida-label">Comida</span></div>
-        <div class="comida-item"><span class="comida-emoji">🌙</span><span class="comida-label">Cena</span></div>
-        <div class="comida-item"><span class="comida-emoji">⚡</span><span class="comida-label">Colación pre-clase</span></div>
-        <div class="comida-item"><span class="comida-emoji">💪</span><span class="comida-label">Colación post-clase</span></div>
+        <div class="comida-item" data-comida="desayuno" style="cursor:pointer;">
+          <span class="comida-emoji">🌅</span><span class="comida-label">Desayuno</span>
+          <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
+        </div>
+        <div class="comida-item" data-comida="comida" style="cursor:pointer;">
+          <span class="comida-emoji">🍽️</span><span class="comida-label">Comida</span>
+          <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
+        </div>
+        <div class="comida-item" data-comida="cena" style="cursor:pointer;">
+          <span class="comida-emoji">🌙</span><span class="comida-label">Cena</span>
+          <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
+        </div>
+        <div class="comida-item" data-comida="colacion_pre" style="cursor:pointer;">
+          <span class="comida-emoji">⚡</span><span class="comida-label">Colación pre-clase</span>
+          <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
+        </div>
+        <div class="comida-item" data-comida="colacion_post" style="cursor:pointer;">
+          <span class="comida-emoji">💪</span><span class="comida-label">Colación post-clase</span>
+          <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL RECETA -->
+    <div class="modal-overlay" id="modal-overlay" onclick="cerrarModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-sub" id="modal-sub"></div>
+        <div class="modal-receta" id="modal-receta"></div>
+        <div class="modal-nota" id="modal-nota" style="display:none;"></div>
+        <button class="btn secondary block" style="margin-top:16px;" onclick="cerrarModal()">Cerrar</button>
       </div>
     </div>
 
@@ -417,14 +462,63 @@
     { txt: 'Evité refresco y frituras', emoji: '🚫' },
   ]
 
-  // Cargar configuración del instructor
+  // Recetas por defecto
+  const RECETAS = {
+    desayuno: {
+      titulo: '🌅 Desayuno',
+      sub: 'Sugerencia del instructor para este mes',
+      receta: '• Avena con leche + plátano rebanado\n• 2 huevos revueltos o cocidos\n• 1 vaso de agua o leche\n\nOpción rápida:\n• Tortilla integral con huevo y frijoles\n• Jugo de naranja natural',
+      nota: '💡 Un buen desayuno da energía para la escuela y el entrenamiento.'
+    },
+    comida: {
+      titulo: '🍽️ Comida',
+      sub: 'Sugerencia del instructor para este mes',
+      receta: '• Pollo a la plancha o pescado\n• Arroz integral o papa\n• Ensalada o verduras al vapor\n• Agua de fruta natural o agua simple',
+      nota: '💡 Es la comida más importante del día — procura incluir proteína, cereal y verdura.'
+    },
+    cena: {
+      titulo: '🌙 Cena',
+      sub: 'Sugerencia del instructor para este mes',
+      receta: '• Sopa de verduras o caldo\n• Huevo con frijoles y tortilla\n• Quesadilla con queso y espinacas\n• Atún con galletas integrales',
+      nota: '💡 La cena puede ser ligera — lo importante es no irse a dormir con hambre.'
+    },
+    colacion_pre: {
+      titulo: '⚡ Colación antes de clase',
+      sub: 'Sugerencia del instructor para este mes',
+      receta: '• 1 plátano + agua\n• Yogurt natural con granola\n• Pan integral con crema de cacahuate\n• Fruta de temporada',
+      nota: '💡 Come al menos 1 hora antes de entrenar para tener energía sin sentirse pesado.'
+    },
+    colacion_post: {
+      titulo: '💪 Colación después de clase',
+      sub: 'Sugerencia del instructor para este mes',
+      receta: '• Licuado de plátano con leche y avena\n• Hot cakes de plátano con avena\n• Huevo cocido + fruta\n• Yogurt griego con miel',
+      nota: '💡 Después de entrenar el cuerpo necesita proteína para recuperarse — comer en los siguientes 30-60 min es ideal.'
+    }
+  }
+
+  // Cargar configuración del instructor (hábitos y recetas)
   try {
     const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
-      .in('clave', ['nutricion_habito_1','nutricion_habito_2','nutricion_habito_3','nutricion_habito_4'])
+      .in('clave', [
+        'nutricion_habito_1','nutricion_habito_2','nutricion_habito_3','nutricion_habito_4',
+        'menu_desayuno','menu_comida','menu_cena','menu_colacion_pre','menu_colacion_post',
+        'menu_nota_desayuno','menu_nota_comida','menu_nota_cena','menu_nota_colacion_pre','menu_nota_colacion_post'
+      ])
     if (cfgRows?.length) {
       const m = {}; cfgRows.forEach(c => { m[c.clave] = c.valor })
       const h = [m.nutricion_habito_1, m.nutricion_habito_2, m.nutricion_habito_3, m.nutricion_habito_4].filter(Boolean)
       if (h.length) habitos = h.map(txt => ({ txt, emoji: '✅' }))
+      // Sobrescribir recetas con las del instructor
+      if (m.menu_desayuno)      RECETAS.desayuno.receta      = m.menu_desayuno
+      if (m.menu_comida)        RECETAS.comida.receta        = m.menu_comida
+      if (m.menu_cena)          RECETAS.cena.receta          = m.menu_cena
+      if (m.menu_colacion_pre)  RECETAS.colacion_pre.receta  = m.menu_colacion_pre
+      if (m.menu_colacion_post) RECETAS.colacion_post.receta = m.menu_colacion_post
+      if (m.menu_nota_desayuno)      RECETAS.desayuno.nota      = m.menu_nota_desayuno
+      if (m.menu_nota_comida)        RECETAS.comida.nota        = m.menu_nota_comida
+      if (m.menu_nota_cena)          RECETAS.cena.nota          = m.menu_nota_cena
+      if (m.menu_nota_colacion_pre)  RECETAS.colacion_pre.nota  = m.menu_nota_colacion_pre
+      if (m.menu_nota_colacion_post) RECETAS.colacion_post.nota = m.menu_nota_colacion_post
     }
   } catch(e) {}
 
@@ -513,6 +607,23 @@
       </div>`
     }).join('')
   } catch(e) {}
+
+  // Modal recetas
+  window.cerrarModal = () => document.getElementById('modal-overlay').classList.remove('show')
+
+  document.querySelectorAll('[data-comida]').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.comida
+      const r = RECETAS[key]; if (!r) return
+      document.getElementById('modal-title').textContent = r.titulo
+      document.getElementById('modal-sub').textContent = r.sub
+      document.getElementById('modal-receta').textContent = r.receta
+      const notaEl = document.getElementById('modal-nota')
+      if (r.nota) { notaEl.textContent = r.nota; notaEl.style.display = 'block' }
+      else { notaEl.style.display = 'none' }
+      document.getElementById('modal-overlay').classList.add('show')
+    })
+  })
 
   lucide.createIcons()
 </script>

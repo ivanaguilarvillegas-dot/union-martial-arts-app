@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menú mensual — Admin</title>
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
+<style>
+  .comida-sec { margin-bottom: 18px; }
+  .comida-label { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .comida-emoji { font-size:20px; }
+  textarea { width:100%; min-height:90px; resize:vertical; font-size:12.5px; line-height:1.6; }
+  .saved-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:#16a34a; color:#fff; border-radius:12px; padding:10px 20px;
+    font-size:13px; font-weight:600; opacity:0; transition:all .3s; z-index:99; }
+  .saved-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Menú del mes</div></div>
+  </div>
+  <div class="body">
+    <p style="font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.5;">
+      Escribe aquí las sugerencias de comida para cada momento del día. Los papás verán esto al tocar cada opción en la pantalla de Nutrición.
+    </p>
+
+    <div class="card">
+      <div class="stack">
+
+        <div class="comida-sec">
+          <div class="comida-label"><span class="comida-emoji">🌅</span> Desayuno</div>
+          <label class="field"><span class="lab">Receta / sugerencia</span>
+            <textarea id="menu_desayuno" placeholder="Ej. Avena con plátano + 2 huevos revueltos + vaso de leche"></textarea></label>
+          <label class="field" style="margin-top:6px;"><span class="lab">Nota para papás (opcional)</span>
+            <input type="text" id="menu_nota_desayuno" placeholder="Ej. Comer al menos 1 hora antes de entrenar" /></label>
+        </div>
+
+        <div class="comida-sec">
+          <div class="comida-label"><span class="comida-emoji">🍽️</span> Comida</div>
+          <label class="field"><span class="lab">Receta / sugerencia</span>
+            <textarea id="menu_comida" placeholder="Ej. Pollo a la plancha + arroz + ensalada + agua"></textarea></label>
+          <label class="field" style="margin-top:6px;"><span class="lab">Nota para papás (opcional)</span>
+            <input type="text" id="menu_nota_comida" placeholder="Ej. Incluir verdura en cada comida principal" /></label>
+        </div>
+
+        <div class="comida-sec">
+          <div class="comida-label"><span class="comida-emoji">🌙</span> Cena</div>
+          <label class="field"><span class="lab">Receta / sugerencia</span>
+            <textarea id="menu_cena" placeholder="Ej. Sopa de verduras + quesadilla + vaso de leche"></textarea></label>
+          <label class="field" style="margin-top:6px;"><span class="lab">Nota para papás (opcional)</span>
+            <input type="text" id="menu_nota_cena" placeholder="Ej. La cena puede ser ligera" /></label>
+        </div>
+
+        <div class="comida-sec">
+          <div class="comida-label"><span class="comida-emoji">⚡</span> Colación antes de clase</div>
+          <label class="field"><span class="lab">Receta / sugerencia</span>
+            <textarea id="menu_colacion_pre" placeholder="Ej. Plátano + agua o yogurt con granola"></textarea></label>
+          <label class="field" style="margin-top:6px;"><span class="lab">Nota para papás (opcional)</span>
+            <input type="text" id="menu_nota_colacion_pre" placeholder="Ej. Comer 1 hora antes para no entrenar con el estómago lleno" /></label>
+        </div>
+
+        <div class="comida-sec">
+          <div class="comida-label"><span class="comida-emoji">💪</span> Colación después de clase</div>
+          <label class="field"><span class="lab">Receta / sugerencia</span>
+            <textarea id="menu_colacion_post" placeholder="Ej. Licuado de plátano con leche y avena"></textarea></label>
+          <label class="field" style="margin-top:6px;"><span class="lab">Nota para papás (opcional)</span>
+            <input type="text" id="menu_nota_colacion_post" placeholder="Ej. Comer en los primeros 30-60 min después de entrenar" /></label>
+        </div>
+
+        <button class="btn primary block" id="btn-save"><i data-lucide="save"></i> Guardar menú del mes</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+
+<div class="saved-toast" id="saved-toast">✅ Menú guardado correctamente</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const CAMPOS = [
+    'menu_desayuno','menu_comida','menu_cena','menu_colacion_pre','menu_colacion_post',
+    'menu_nota_desayuno','menu_nota_comida','menu_nota_cena','menu_nota_colacion_pre','menu_nota_colacion_post'
+  ]
+
+  // Cargar valores actuales
+  try {
+    const { data: rows } = await supabase.from('configuracion').select('clave, valor').in('clave', CAMPOS)
+    if (rows?.length) {
+      rows.forEach(r => {
+        const el = document.getElementById(r.clave)
+        if (el) el.value = r.valor || ''
+      })
+    }
+  } catch(e) {}
+
+  // Guardar
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-save')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+
+    try {
+      for (const campo of CAMPOS) {
+        const el = document.getElementById(campo)
+        const valor = el?.value?.trim() || ''
+        await supabase.from('configuracion').upsert({ clave: campo, valor }, { onConflict: 'clave' })
+      }
+      const t = document.getElementById('saved-toast')
+      t.classList.add('show')
+      setTimeout(() => t.classList.remove('show'), 2500)
+    } catch(e) { alert('Error al guardar: ' + e.message) }
+
+    btn.disabled = false
+    btn.innerHTML = '<i data-lucide="save"></i> Guardar menú del mes'
+    lucide.createIcons()
+  })
+
+  lucide.createIcons()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body>
+</html>
