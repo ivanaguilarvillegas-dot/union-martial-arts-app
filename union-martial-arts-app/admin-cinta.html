@@ -2,22 +2,72 @@
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Subir de cinta</title><link rel="stylesheet" href="css/uma.css" /></head>
 <body>
+<style>
+  .belt-strip { position:relative; height:20px; border-radius:4px; flex-shrink:0;
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.18); display:flex; align-items:center; justify-content:center; }
+  .belt-strip .knot { width:16px; height:16px; border-radius:3px; border:1.5px solid rgba(255,255,255,.45);
+    background:rgba(255,255,255,.22); position:relative; z-index:1; }
+  .belt-strip .stripe { position:absolute; top:0; bottom:0; width:5px; background:rgba(255,255,255,.7); border-radius:1px; }
+
+  .belt-option { display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer;
+    border-bottom:1px solid var(--ink-100); transition:background .12s; }
+  .belt-option:last-child { border-bottom:none; }
+  .belt-option:active { background:var(--soft); }
+  .belt-option.selected { background:var(--soft); }
+  .belt-option .belt-name { font-size:13.5px; font-weight:600; flex:1; }
+  .belt-option .chk { width:20px; height:20px; border-radius:50%; border:2px solid var(--border-input);
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; color:#fff; }
+  .belt-option.selected .chk { background:var(--primary); border-color:var(--primary); }
+
+  .preview-wrap { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--soft);
+    border-radius:var(--r-md); margin-bottom:14px; }
+  .preview-label { font-size:12px; color:var(--muted); font-weight:500; }
+  .preview-name { font-size:15px; font-weight:700; }
+</style>
 <div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Subir de cinta</div></div></div>
   <div class="body">
-    <div id="form"><div class="card"><div class="stack">
-      <label class="field"><span class="lab">Alumno</span>
-        <select id="al"><option>Mateo Reyes — Cinta Azul</option><option>Sofía Luna — Cinta Verde</option><option>Diego Ortiz — Cinta Amarilla</option></select></label>
-      <label class="field"><span class="lab">Nueva cinta / grado</span>
-        <select id="nv"></select></label>
-      <label class="field"><span class="lab">Fecha del examen</span><input type="date" /></label>
-      <button class="btn primary block" id="save"><i data-lucide="award"></i> Confirmar ascenso</button>
-    </div></div></div>
-    <div id="ok" style="display:none;"><div class="card green center">
-      <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="award" style="width:26px;height:26px"></i></div>
-      <div style="font-size:15px;font-weight:700;color:var(--green-text);">¡Ascenso registrado!</div>
-      <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Se notificó a la familia del nuevo rango.</div></div></div>
+    <div id="form">
+      <!-- Selector de alumno -->
+      <div class="card mb14"><div class="stack">
+        <label class="field"><span class="lab">Alumno</span>
+          <select id="al-sel"><option value="">Cargando...</option></select></label>
+        <div id="cinta-actual" style="display:flex;align-items:center;gap:10px;padding:10px 0;">
+          <span class="preview-label" style="min-width:80px;">Cinta actual</span>
+          <div id="strip-actual" class="belt-strip" style="width:62px;background:#ccc;"><div class="knot"></div></div>
+          <span id="nombre-cinta-actual" style="font-size:13px;font-weight:600;color:var(--muted);">—</span>
+        </div>
+      </div></div>
+
+      <!-- Seleccionar nueva cinta -->
+      <div class="label">Nueva cinta</div>
+      <div class="card flush mb14" id="belt-list"></div>
+
+      <!-- Preview de a dónde promoverá -->
+      <div class="preview-wrap" id="preview" style="display:none;">
+        <div style="flex:1;">
+          <div class="preview-label">Promoverá a</div>
+          <div class="preview-name" id="preview-nombre">—</div>
+        </div>
+        <div id="strip-nueva" class="belt-strip" style="width:62px;background:#ccc;"><div class="knot"></div></div>
+      </div>
+
+      <label class="field mb14"><span class="lab">Fecha del examen</span>
+        <input type="date" id="fecha-examen" /></label>
+
+      <button class="btn primary block" id="save"><i data-lucide="award"></i> Confirmar cambio de cinta</button>
+    </div>
+
+    <div id="ok" style="display:none;">
+      <div class="card green center">
+        <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="award" style="width:28px;height:28px"></i></div>
+        <div style="font-size:16px;font-weight:700;color:var(--green-text);" id="ok-msg">¡Ascenso registrado!</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Se notificó a la familia del nuevo rango.</div>
+      </div>
+      <button class="btn secondary block mt14" onclick="location.reload()"><i data-lucide="refresh-cw"></i> Registrar otro</button>
+      <a class="btn primary block mt10" href="admin-alumnos.html"><i data-lucide="users"></i> Ver alumnos</a>
+    </div>
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
@@ -36,37 +86,116 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const BELTS = ['Blanca','Amarilla','Anaranjada','Morada','Azul','Verde','Café I','Café II','Café III','Roja','Roja-Negra','Negra','Negra I grado','Negra II grado','Negra III grado','Negra IV grado','Negra V grado']
-  document.getElementById('nv').innerHTML = BELTS.map(b => `<option value="${b}">Cinta ${b}</option>`).join('')
+  // Definición de cintas con colores
+  const BELTS = [
+    { nombre: 'Blanca',         color: '#E8EDF5', stripes: 0 },
+    { nombre: 'Amarilla',       color: '#F5C518', stripes: 0 },
+    { nombre: 'Anaranjada',     color: '#F2872E', stripes: 0 },
+    { nombre: 'Morada',         color: '#7C3AED', stripes: 0 },
+    { nombre: 'Azul',           color: '#1B3FE0', stripes: 0 },
+    { nombre: 'Verde',          color: '#2F9E62', stripes: 0 },
+    { nombre: 'Café I',         color: '#7A4A24', stripes: 1 },
+    { nombre: 'Café II',        color: '#7A4A24', stripes: 2 },
+    { nombre: 'Café III',       color: '#7A4A24', stripes: 3 },
+    { nombre: 'Roja',           color: '#D64545', stripes: 0 },
+    { nombre: 'Roja-Negra',     color: '#D64545', stripes: 0, split: '#14172B' },
+    { nombre: 'Negra',          color: '#14172B', stripes: 0 },
+    { nombre: 'Negra I grado',  color: '#14172B', stripes: 1, stripeColor: '#F5C518' },
+    { nombre: 'Negra II grado', color: '#14172B', stripes: 2, stripeColor: '#F5C518' },
+    { nombre: 'Negra III grado',color: '#14172B', stripes: 3, stripeColor: '#F5C518' },
+    { nombre: 'Negra IV grado', color: '#14172B', stripes: 4, stripeColor: '#F5C518' },
+    { nombre: 'Negra V grado',  color: '#14172B', stripes: 5, stripeColor: '#F5C518' },
+  ]
 
-  // Cargar alumnos reales
-  const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta').order('nombre')
-  const sel = document.getElementById('al')
-  if (alumnos?.length) {
-    sel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
+  function beltHtml(b, ancho = 62) {
+    if (!b) return `<div class="belt-strip" style="width:${ancho}px;background:#ccc;"><div class="knot"></div></div>`
+    let bgStyle = `background:${b.color};`
+    if (b.split) bgStyle = `background:linear-gradient(to right, ${b.color} 50%, ${b.split} 50%);`
+    const sc = b.stripeColor || 'rgba(255,255,255,.7)'
+    const stripes = b.stripes > 0
+      ? Array.from({length: b.stripes}, (_, i) =>
+          `<div class="stripe" style="right:${6 + i * 7}px;background:${sc};"></div>`).join('')
+      : ''
+    return `<div class="belt-strip" style="width:${ancho}px;${bgStyle}"><div class="knot"></div>${stripes}</div>`
   }
 
+  function beltByName(nombre) {
+    return BELTS.find(b => b.nombre === nombre) || null
+  }
+
+  // Cargar alumnos
+  let alumnos = []
+  let selCinta = null
+
+  const { data: rows } = await supabase.from('alumnos').select('id, nombre, cinta').order('nombre')
+  alumnos = rows || []
+
+  const alSel = document.getElementById('al-sel')
+  if (alumnos.length) {
+    alSel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
+  } else {
+    alSel.innerHTML = '<option>Sin alumnos registrados</option>'
+  }
+
+  function actualizarActual() {
+    const a = alumnos.find(x => x.id === alSel.value)
+    const belt = a?.cinta ? beltByName(a.cinta) : null
+    document.getElementById('strip-actual').outerHTML = beltHtml(belt, 62)
+      .replace('class="belt-strip"', 'class="belt-strip" id="strip-actual"')
+    document.getElementById('nombre-cinta-actual').textContent = a?.cinta ? 'Cinta ' + a.cinta : '—'
+  }
+  alSel.addEventListener('change', actualizarActual)
+  actualizarActual()
+
+  // Render lista de cintas
+  document.getElementById('belt-list').innerHTML = BELTS.map(b => `
+    <div class="belt-option" data-nombre="${b.nombre}">
+      ${beltHtml(b, 52)}
+      <span class="belt-name">Cinta ${b.nombre}</span>
+      <span class="chk"><i data-lucide="check" style="width:13px;height:13px"></i></span>
+    </div>`).join('')
+
+  document.getElementById('belt-list').addEventListener('click', e => {
+    const opt = e.target.closest('.belt-option')
+    if (!opt) return
+    document.querySelectorAll('.belt-option').forEach(el => el.classList.remove('selected'))
+    opt.classList.add('selected')
+    selCinta = opt.dataset.nombre
+    const belt = beltByName(selCinta)
+    document.getElementById('preview').style.display = 'flex'
+    document.getElementById('preview-nombre').textContent = 'Cinta ' + selCinta
+    const stripNueva = document.getElementById('strip-nueva')
+    if (stripNueva) stripNueva.outerHTML = beltHtml(belt, 62)
+      .replace('class="belt-strip"', 'class="belt-strip" id="strip-nueva"')
+    lucide.createIcons()
+  })
+
+  // Fecha por defecto hoy
+  document.getElementById('fecha-examen').value = new Date().toISOString().split('T')[0]
+
+  // Guardar
   document.getElementById('save').addEventListener('click', async () => {
-    const alumno_id = sel.value
-    const nueva_cinta = document.getElementById('nv').value
-    const fecha = document.querySelector('input[type=date]').value || new Date().toISOString().split('T')[0]
-
+    if (!selCinta) { alert('Selecciona la nueva cinta.'); return }
+    const alumno_id = alSel.value
     if (!alumno_id) { alert('Selecciona un alumno.'); return }
+    const fecha = document.getElementById('fecha-examen').value || new Date().toISOString().split('T')[0]
 
-    // Actualizar cinta del alumno
-    const { error } = await supabase.from('alumnos').update({ cinta: nueva_cinta }).eq('id', alumno_id)
-    if (error) { alert('Error: ' + error.message); return }
+    const btn = document.getElementById('save')
+    btn.disabled = true; btn.textContent = 'Guardando…'
 
-    // Registrar en mensajes para notificar a los padres
+    const { error } = await supabase.from('alumnos').update({ cinta: selCinta }).eq('id', alumno_id)
+    if (error) { alert('Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="award"></i> Confirmar cambio de cinta'; lucide.createIcons(); return }
+
     const alumno = alumnos.find(a => a.id === alumno_id)
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: `¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${nueva_cinta} el ${fecha}. ¡Sigue adelante! 🥋`,
+      texto: `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`,
       para_admin: false
     })
 
     document.getElementById('form').style.display = 'none'
     document.getElementById('ok').style.display = 'block'
+    document.getElementById('ok-msg').textContent = `¡${alumno?.nombre || 'Alumno'} asciende a Cinta ${selCinta}!`
     lucide.createIcons()
   })
 
