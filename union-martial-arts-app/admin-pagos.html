@@ -67,16 +67,24 @@
           </button>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-          ${tieneComp ? `<a href="${p.comprobante_url}" target="_blank" class="btn secondary sm" style="font-size:12px;display:inline-flex;align-items:center;gap:5px;"><i data-lucide="file-image" style="width:13px;height:13px"></i> Ver comprobante</a>` : ''}
-          ${ok ? `<a href="recibo.html?id=${p.id}" class="btn secondary sm" style="font-size:12px;display:inline-flex;align-items:center;gap:5px;"><i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</a>` : ''}
+          ${tieneComp ? `<button class="btn secondary sm" data-comp="${encodeURIComponent(p.comprobante_url)}" style="font-size:12px;"><i data-lucide="file-image" style="width:13px;height:13px"></i> Ver comprobante</button>` : ''}
+          ${ok ? `<button class="btn secondary sm" data-recibo="${p.id}" style="font-size:12px;"><i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</button>` : ''}
         </div>
       </div>`
     }).join('')
     lucide.createIcons()
   }
 
+  document.getElementById('list').addEventListener('click', e => {
+    const comp = e.target.closest('[data-comp]')
+    if (comp) { window.open(decodeURIComponent(comp.dataset.comp), '_blank'); return }
+    const rec = e.target.closest('[data-recibo]')
+    if (rec) { window.open('recibo.html?id=' + rec.dataset.recibo, '_blank'); return }
+  })
+
   // Marcar como pagado / pendiente y generar recibo
   document.getElementById('list').addEventListener('click', async e => {
+    if (e.target.closest('[data-comp]') || e.target.closest('[data-recibo]')) return
     const btn = e.target.closest('[data-id]')
     if (!btn) return
     const id = btn.dataset.id

@@ -102,11 +102,16 @@
       </div>
     </div>
 
-    <div class="label">Programas UNION</div>
-    <div class="stack-8 mb18">
-      <a class="row" href="programas.html"><span class="ic"><i data-lucide="star"></i></span><span class="grow"><span class="t">Programa Básico</span><span class="s">Inscripción $500 · Mensualidad $1,550</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>
-      <a class="row" href="programas.html"><span class="ic"><i data-lucide="calendar"></i></span><span class="grow"><span class="t">Anual UNION</span><span class="s">Contado $12,500 · 3 pagos $14,500</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>
-      <a class="row" href="programas.html"><span class="ic"><i data-lucide="crown"></i></span><span class="grow"><span class="t">Club Cinta Negra</span><span class="s">Anualidad $9,950 · 8 h de entrenamiento</span></span><span class="trail"><i data-lucide="chevron-right"></i></span></a>
+    <div class="label">Pagar por concepto</div>
+    <div class="stack-8 mb14" id="planes-pago"></div>
+
+    <div class="card mb18" id="otra-cantidad-card" style="display:none;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Otra cantidad</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:18px;font-weight:700;color:var(--muted);">$</span>
+        <input type="number" id="input-otra" placeholder="0" min="1" style="flex:1;height:40px;border:1.5px solid var(--border-input);border-radius:var(--r-sm);padding:0 10px;font-size:16px;font-weight:700;font-family:var(--font);outline:none;" />
+        <button class="btn primary" id="btn-otra">Seleccionar</button>
+      </div>
     </div>
 
     <div class="label">Historial de pagos</div>
@@ -136,6 +141,63 @@
   let montoBase = 0
   let pagoId = null
   let metodoPago = ''
+
+  // Cargar planes/precios desde configuracion
+  const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
+    .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra'])
+  const cfg = {}; (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor })
+
+  function extraerMonto(str) {
+    const m = (str || '').match(/[\d,]+/)
+    return m ? parseInt(m[0].replace(/,/g,'')) : 0
+  }
+
+  const planes = [
+    { label: 'Inscripción', monto: extraerMonto(cfg.precio_inscripcion || '500'), ic: 'user-plus' },
+    { label: 'Mensualidad Básico', monto: extraerMonto(cfg.precio_mensual_basico || '1550'), ic: 'star' },
+    { label: 'Anual UNION', monto: extraerMonto(cfg.precio_anual || '12500'), ic: 'calendar' },
+    { label: 'Club Cinta Negra', monto: extraerMonto(cfg.precio_cinta_negra || '9950'), ic: 'crown' },
+    { label: 'Otra cantidad', monto: 0, ic: 'edit-3', otra: true },
+  ]
+
+  document.getElementById('planes-pago').innerHTML = planes.map((p, i) => `
+    <button class="row" data-plan="${i}" style="width:100%;background:none;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;text-align:left;padding:0;">
+      <span class="ic blue"><i data-lucide="${p.ic}"></i></span>
+      <span class="grow"><span class="t">${p.label}</span>${p.otra ? '' : '<span class="s">$' + p.monto.toLocaleString('es-MX') + ' MXN</span>'}</span>
+      <span class="trail"><i data-lucide="chevron-right"></i></span>
+    </button>`).join('')
+  lucide.createIcons()
+
+  function seleccionarMonto(monto, concepto) {
+    montoBase = monto
+    document.getElementById('pago-concepto').textContent = concepto
+    document.getElementById('pago-monto').innerHTML = fmt(monto) + ' <span style="font-size:15px;color:var(--muted);">MXN</span>'
+    document.getElementById('pago-opciones').style.display = 'block'
+    document.getElementById('total-efectivo').textContent = fmt(monto)
+    document.getElementById('total-transferencia').textContent = fmt(monto)
+    document.getElementById('total-mp').textContent = fmt(monto + monto * 0.035)
+    document.getElementById('pago-card').scrollIntoView({ behavior: 'smooth' })
+  }
+
+  document.getElementById('planes-pago').addEventListener('click', e => {
+    const btn = e.target.closest('[data-plan]'); if (!btn) return
+    const p = planes[parseInt(btn.dataset.plan)]
+    if (p.otra) {
+      document.getElementById('otra-cantidad-card').style.display = 'block'
+      document.getElementById('input-otra').focus()
+    } else {
+      document.getElementById('otra-cantidad-card').style.display = 'none'
+      seleccionarMonto(p.monto, p.label)
+    }
+    lucide.createIcons()
+  })
+
+  document.getElementById('btn-otra').addEventListener('click', () => {
+    const val = parseInt(document.getElementById('input-otra').value) || 0
+    if (val < 1) { alert('Ingresa una cantidad válida'); return }
+    seleccionarMonto(val, 'Pago personalizado — $' + val.toLocaleString('es-MX'))
+    document.getElementById('otra-cantidad-card').style.display = 'none'
+  })
 
   const COM = 0.035 // 3.50%
 
