@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Asistencia</title>
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
+<style>
+  .mes-nav { display:flex; align-items:center; justify-content:space-between; padding:10px 0 14px; }
+  .mes-nav button { background:none; border:none; cursor:pointer; padding:6px 10px; border-radius:8px; color:var(--primary); font-size:20px; line-height:1; }
+  .mes-nav button:active { background:var(--soft); }
+  .mes-titulo { font-size:15px; font-weight:700; color:var(--text); text-transform:capitalize; }
+
+  .resumen-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px; }
+  .res-box { background:var(--soft); border-radius:12px; padding:10px 6px; text-align:center; }
+  .res-box .n { font-size:24px; font-weight:800; }
+  .res-box .l { font-size:10px; color:var(--muted); margin-top:2px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .n-green { color:var(--green-text,#16a34a); }
+  .n-red   { color:#dc2626; }
+  .n-amber { color:#b45309; }
+
+  .dia-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--ink-100,#f3f4f6); }
+  .dia-row:last-child { border-bottom:none; }
+  .dia-fecha { min-width:46px; text-align:center; }
+  .dia-fecha .dd { font-size:18px; font-weight:800; line-height:1; color:var(--text); }
+  .dia-fecha .dow { font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:600; }
+  .dia-info { flex:1; }
+  .dia-tipo { font-size:13px; font-weight:600; color:var(--text); }
+  .dia-hora { font-size:11.5px; color:var(--muted); margin-top:1px; }
+  .dia-motivo { font-size:11.5px; color:var(--muted); margin-top:1px; }
+
+  .badge-as { background:var(--green-bg,#dcfce7); color:var(--green-text,#16a34a); font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; }
+  .badge-fa { background:#fee2e2; color:#dc2626; font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; }
+  .badge-tor { background:#fef3c7; color:#b45309; font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; }
+  .badge-ext { background:#ede9fe; color:#6d28d9; font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap; }
+
+  .empty-state { text-align:center; padding:36px 0; color:var(--muted); font-size:13px; }
+  .empty-state i { display:block; margin:0 auto 10px; opacity:.35; }
+
+  .ic-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .ic-green { background:var(--green-bg,#dcfce7); }
+  .ic-red   { background:#fee2e2; }
+  .ic-amber { background:#fef3c7; }
+  .ic-purple { background:#ede9fe; }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Asistencia</div><div class="sub" id="sub-alumno"></div></div>
+  </div>
+
+  <div class="body">
+    <!-- Navegación de mes -->
+    <div class="mes-nav">
+      <button id="btn-prev" aria-label="Mes anterior">&#8249;</button>
+      <span class="mes-titulo" id="mes-titulo">—</span>
+      <button id="btn-next" aria-label="Mes siguiente">&#8250;</button>
+    </div>
+
+    <!-- Resumen -->
+    <div class="resumen-grid" id="resumen">
+      <div class="res-box"><div class="n n-green" id="r-clases">—</div><div class="l">Clases</div></div>
+      <div class="res-box"><div class="n n-amber" id="r-eventos">—</div><div class="l">Eventos</div></div>
+      <div class="res-box"><div class="n n-red" id="r-faltas">—</div><div class="l">Faltas</div></div>
+    </div>
+
+    <!-- Lista de días -->
+    <div class="label">Detalle del mes</div>
+    <div class="card flush">
+      <div id="lista" style="padding:0 14px;"></div>
+    </div>
+  </div>
+
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  let alumnoId = null, alumnoNombre = ''
+  let anio = new Date().getFullYear()
+  let mes  = new Date().getMonth() // 0-based
+
+  // Cargar padre → alumno
+  try {
+    let padre = null
+    const { data: p1 } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+    if (p1) { padre = p1 }
+    else {
+      const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
+      if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
+    }
+    alumnoId = padre?.alumno_id
+    if (alumnoId) {
+      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).maybeSingle()
+      alumnoNombre = al?.nombre || ''
+      document.getElementById('sub-alumno').textContent = alumnoNombre
+    }
+  } catch(e) {}
+
+  const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+  function tipoLabel(tipo) {
+    if (!tipo || tipo === 'clase') return 'Clase'
+    if (tipo === 'torneo') return 'Torneo'
+    if (tipo === 'actividad' || tipo === 'actividad extra') return 'Actividad extra'
+    if (tipo === 'ausencia') return 'Falta'
+    return tipo.charAt(0).toUpperCase() + tipo.slice(1)
+  }
+
+  function badgeClass(tipo) {
+    if (tipo === 'ausencia') return 'badge-fa'
+    if (tipo === 'torneo') return 'badge-tor'
+    if (tipo === 'actividad' || tipo === 'actividad extra') return 'badge-ext'
+    return 'badge-as'
+  }
+
+  function icCircleClass(tipo) {
+    if (tipo === 'ausencia') return 'ic-red'
+    if (tipo === 'torneo') return 'ic-amber'
+    if (tipo === 'actividad' || tipo === 'actividad extra') return 'ic-purple'
+    return 'ic-green'
+  }
+
+  function icName(tipo) {
+    if (tipo === 'ausencia') return 'x-circle'
+    if (tipo === 'torneo') return 'trophy'
+    if (tipo === 'actividad' || tipo === 'actividad extra') return 'star'
+    return 'calendar-check'
+  }
+
+  async function cargar() {
+    if (!alumnoId) {
+      document.getElementById('lista').innerHTML = '<div class="empty-state">Sin alumno vinculado.</div>'
+      return
+    }
+
+    const inicio = `${anio}-${String(mes+1).padStart(2,'0')}-01`
+    const ultimoDia = new Date(anio, mes+1, 0).getDate()
+    const fin = `${anio}-${String(mes+1).padStart(2,'0')}-${String(ultimoDia).padStart(2,'0')}`
+
+    document.getElementById('mes-titulo').textContent = MESES[mes] + ' ' + anio
+    document.getElementById('lista').innerHTML = '<div class="empty-state" style="padding:20px 0;"><i data-lucide="loader" style="width:20px;height:20px;"></i> Cargando…</div>'
+    lucide.createIcons()
+
+    // No mostrar mes futuro
+    const hoy = new Date()
+    const esFuturo = anio > hoy.getFullYear() || (anio === hoy.getFullYear() && mes > hoy.getMonth())
+    document.getElementById('btn-next').style.opacity = esFuturo ? '.3' : '1'
+    document.getElementById('btn-next').disabled = esFuturo
+
+    const { data: checkins } = await supabase
+      .from('checkins')
+      .select('*')
+      .eq('alumno_id', alumnoId)
+      .gte('fecha', inicio)
+      .lte('fecha', fin)
+      .order('fecha', { ascending: true })
+
+    const rows = checkins || []
+    const clases  = rows.filter(c => c.tipo !== 'ausencia' && (!c.tipo || c.tipo === 'clase'))
+    const eventos = rows.filter(c => c.tipo === 'torneo' || c.tipo === 'actividad' || c.tipo === 'actividad extra')
+    const faltas  = rows.filter(c => c.tipo === 'ausencia')
+
+    document.getElementById('r-clases').textContent  = clases.length
+    document.getElementById('r-eventos').textContent = eventos.length
+    document.getElementById('r-faltas').textContent  = faltas.length
+
+    if (!rows.length) {
+      document.getElementById('lista').innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="calendar-off" style="width:32px;height:32px;"></i>
+          Sin registros en este mes.
+        </div>`
+      lucide.createIcons()
+      return
+    }
+
+    document.getElementById('lista').innerHTML = rows.map(c => {
+      const d = new Date(c.fecha + 'T12:00:00')
+      const dd  = d.getDate()
+      const dow = DIAS[d.getDay()]
+      const tipo = c.tipo || 'clase'
+      const esAusencia = tipo === 'ausencia'
+      return `<div class="dia-row">
+        <div class="dia-fecha">
+          <div class="dd">${dd}</div>
+          <div class="dow">${dow}</div>
+        </div>
+        <div class="ic-circle ${icCircleClass(tipo)}">
+          <i data-lucide="${icName(tipo)}" style="width:15px;height:15px;${esAusencia?'color:#dc2626':tipo==='torneo'?'color:#b45309':tipo.includes('actividad')?'color:#6d28d9':'color:#16a34a'}"></i>
+        </div>
+        <div class="dia-info">
+          <div class="dia-tipo">${tipoLabel(tipo)}</div>
+          ${c.hora ? `<div class="dia-hora">${c.hora}</div>` : ''}
+          ${esAusencia && c.ausencia_motivo ? `<div class="dia-motivo">${c.ausencia_motivo}</div>` : ''}
+        </div>
+        <span class="${badgeClass(tipo)}">${esAusencia ? 'Falta' : 'Asistió'}</span>
+      </div>`
+    }).join('')
+
+    lucide.createIcons()
+  }
+
+  document.getElementById('btn-prev').addEventListener('click', () => {
+    mes--
+    if (mes < 0) { mes = 11; anio-- }
+    cargar()
+  })
+
+  document.getElementById('btn-next').addEventListener('click', () => {
+    const hoy = new Date()
+    if (anio > hoy.getFullYear() || (anio === hoy.getFullYear() && mes >= hoy.getMonth())) return
+    mes++
+    if (mes > 11) { mes = 0; anio++ }
+    cargar()
+  })
+
+  cargar()
+  lucide.createIcons()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body>
+</html>
