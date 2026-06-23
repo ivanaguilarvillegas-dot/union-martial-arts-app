@@ -8,17 +8,39 @@
   <div class="body">
     <div class="label">Documento</div>
     <div class="card mb16">
-      <label style="display:flex;align-items:center;gap:11px;padding:11px;background:var(--soft);border-radius:var(--r-md);cursor:pointer;">
+
+      <!-- Reglamento ya cargado -->
+      <div id="doc-actual" style="display:none;padding:11px;background:var(--soft);border-radius:var(--r-md);margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="color:var(--green-600);"><i data-lucide="file-check" style="width:18px;height:18px"></i></span>
+          <span style="flex:1;font-size:13.5px;font-weight:600;color:var(--green-text);">Reglamento cargado</span>
+          <a id="link-ver" href="#" target="_blank" class="btn secondary sm"><i data-lucide="eye" style="width:13px;height:13px"></i> Ver</a>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <label class="btn secondary sm" style="cursor:pointer;flex:1;justify-content:center;">
+            <i data-lucide="replace" style="width:13px;height:13px"></i> Reemplazar PDF
+            <input type="file" accept="application/pdf" hidden id="pdf" />
+          </label>
+          <button class="btn sm" id="btn-borrar-reg" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;">
+            <i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar
+          </button>
+        </div>
+      </div>
+
+      <!-- Sin reglamento -->
+      <label id="doc-subir" style="display:none;align-items:center;gap:11px;padding:11px;background:var(--soft);border-radius:var(--r-md);cursor:pointer;margin-bottom:10px;">
         <span style="color:var(--primary);"><i data-lucide="file-up" style="width:18px;height:18px"></i></span>
         <span style="flex:1;font-size:13.5px;font-weight:600;" id="fname">Subir reglamento (PDF)</span>
         <span style="color:var(--primary);"><i data-lucide="upload" style="width:16px;height:16px"></i></span>
-        <input type="file" accept="application/pdf" hidden id="pdf" />
+        <input type="file" accept="application/pdf" hidden id="pdf2" />
       </label>
-      <label class="checkitem" style="border:none;margin-top:8px;cursor:pointer;" id="req">
+
+      <label class="checkitem" style="border:none;cursor:pointer;" id="req">
         <span class="box" id="reqbox" style="background:var(--green-600);color:#fff;"><i data-lucide="check"></i></span>
         <span class="txt" style="color:var(--text);font-weight:600;">Requerir firma de los padres</span>
       </label>
     </div>
+
     <div class="label">Estado de firmas</div>
     <div class="stack-8" id="list"></div>
   </div>
@@ -39,15 +61,43 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  // Subir PDF del reglamento al bucket media
-  document.getElementById('pdf').addEventListener('change', async e => {
-    const file = e.target.files[0]; if (!file) return
+  async function cargarEstadoDoc() {
+    const { data } = await supabase.from('configuracion').select('valor').eq('clave', 'reglamento_url').maybeSingle()
+    const url = data?.valor
+    if (url) {
+      document.getElementById('doc-actual').style.display = 'block'
+      document.getElementById('doc-subir').style.display = 'none'
+      document.getElementById('link-ver').href = url
+    } else {
+      document.getElementById('doc-actual').style.display = 'none'
+      document.getElementById('doc-subir').style.display = 'flex'
+    }
+    lucide.createIcons()
+  }
+
+  async function subirPDF(file) {
     document.getElementById('fname').textContent = 'Subiendo...'
     const { error } = await supabase.storage.from('media').upload('reglamento.pdf', file, { upsert: true })
-    if (error) { alert('❌ Error al subir: ' + error.message); document.getElementById('fname').textContent = 'Subir reglamento (PDF)'; return }
+    if (error) { alert('❌ Error al subir: ' + error.message); return }
     const url = supabase.storage.from('media').getPublicUrl('reglamento.pdf').data.publicUrl
     await supabase.from('configuracion').upsert({ clave: 'reglamento_url', valor: url }, { onConflict: 'clave' })
-    document.getElementById('fname').textContent = '✅ ' + file.name + ' subido'
+    await cargarEstadoDoc()
+  }
+
+  document.getElementById('pdf').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return
+    await subirPDF(file)
+  })
+  document.getElementById('pdf2').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return
+    await subirPDF(file)
+  })
+
+  document.getElementById('btn-borrar-reg').addEventListener('click', async () => {
+    if (!confirm('¿Borrar el reglamento? Los padres ya no podrán verlo.')) return
+    await supabase.storage.from('media').remove(['reglamento.pdf'])
+    await supabase.from('configuracion').delete().eq('clave', 'reglamento_url')
+    await cargarEstadoDoc()
   })
 
   // Toggle requerir firma
@@ -61,21 +111,17 @@
     lucide.createIcons()
   })
 
-  // Cargar estado de firmas real
   async function cargarFirmas() {
     const { data: padres } = await supabase.from('padres').select('nombre').eq('es_admin', false).order('nombre')
-    const { data: firmas } = await supabase.from('firmas_reglamento').select('padre_user_id, nombre_firma, firmado_en')
-
-    const firmaSet = new Set(firmas?.map(f => f.nombre_firma) || [])
+    const { data: firmas } = await supabase.from('firmas_reglamento').select('nombre_firma')
+    const firmaSet = new Set((firmas || []).map(f => f.nombre_firma))
     const list = document.getElementById('list')
-
     if (!padres?.length) {
       list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin familias registradas.</div>'
       return
     }
-
     list.innerHTML = padres.map(p => {
-      const ok = firmaSet.has(p.nombre) || firmas?.some(f => f.nombre_firma === p.nombre)
+      const ok = firmaSet.has(p.nombre)
       return `<div class="row">
         <span class="ic ${ok?'green':'amber'}"><i data-lucide="${ok?'badge-check':'clock'}"></i></span>
         <span class="grow"><span class="t">${p.nombre}</span><span class="s">${ok?'Firmado de acuerdo':'Pendiente de firma'}</span></span>
@@ -85,6 +131,7 @@
     lucide.createIcons()
   }
 
+  cargarEstadoDoc()
   cargarFirmas()
   lucide.createIcons()
 </script>
