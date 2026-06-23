@@ -13,10 +13,20 @@
   <link rel="stylesheet" href="css/uma.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
 <style>
-  .hor-hero { background:linear-gradient(135deg,#0f2167 0%,#1a3a9e 100%); border-radius:20px; padding:24px 20px; margin-bottom:16px; color:#fff; text-align:center; }
+  .hor-hero {
+    position:relative; border-radius:20px; padding:28px 20px 24px; margin-bottom:16px;
+    color:#fff; text-align:center; overflow:hidden;
+    background:#0047AB;
+  }
+  .hor-hero::before {
+    content:''; position:absolute; inset:0;
+    background:url('/assets/logo-union-white.png') center/contain no-repeat;
+    opacity:.08; border-radius:20px;
+  }
+  .hor-hero > * { position:relative; z-index:1; }
   .hor-hero .alumno-ic { width:60px; height:60px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
   .hor-hero .alumno-nom { font-size:16px; font-weight:700; margin-bottom:4px; }
-  .hor-hero .alumno-cinta { font-size:12px; opacity:.8; }
+  .hor-hero .alumno-cinta { font-size:12px; opacity:.85; }
 
   .seg-card { background:#fff; border-radius:16px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06); }
   .seg-head { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid #f0f2f5; }
