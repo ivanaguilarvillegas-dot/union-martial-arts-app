@@ -55,15 +55,19 @@
   const hoy = new Date().toISOString().split('T')[0]
 
   // Cargar estadísticas reales
-  const [{ count: totalAlumnos }, { count: pagPendientes }, { count: asistHoy }, { count: msgNuevos }] = await Promise.all([
+  const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
+  const [{ count: totalAlumnos }, pagPendRes, { count: asistHoy }, { count: msgNuevos }, cobradoRes] = await Promise.all([
     supabase.from('alumnos').select('*', { count: 'exact', head: true }),
     supabase.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
     supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
     supabase.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
+    supabase.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDiaMes),
   ])
 
+  const totalCobrado = (cobradoRes.data || []).reduce((s, p) => s + (Number(p.monto) || 0), 0)
   document.querySelector('.tile b').textContent = totalAlumnos || 0
-  document.querySelectorAll('.tile b')[2].textContent = pagPendientes || 0
+  document.querySelectorAll('.tile b')[1].textContent = '$' + totalCobrado.toLocaleString('es-MX')
+  document.querySelectorAll('.tile b')[2].textContent = pagPendRes.count || 0
   document.querySelectorAll('.tile b')[3].textContent = asistHoy || 0
 
   const ACC = [
