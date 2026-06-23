@@ -178,14 +178,9 @@
       supabase.from('eventos').select('id').gte('fecha', hoy)
     ])
 
+    // Solo el aviso del instructor cuenta como "no leído" si llegó después de la última visita
     const aviso = a.value?.data
     if (aviso?.valor && aviso.actualizado_en > visto) count += 1
-
-    const frase = f.value?.data
-    if (frase && (!frase.fecha_envio || frase.fecha_envio > visto.split('T')[0])) count += 1
-
-    const numEvs = e.value?.data?.length || 0
-    if (numEvs > 0) count += numEvs
 
     if (count > 0) {
       const link = document.querySelector('a[href="notificaciones.html"]')
