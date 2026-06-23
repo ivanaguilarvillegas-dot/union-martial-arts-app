@@ -35,7 +35,13 @@
             <option value="Café II">Café II</option>
             <option value="Café III">Café III</option>
             <option value="Roja">Roja</option>
+            <option value="Roja-Negra">Roja-Negra</option>
             <option value="Negra">Negra</option>
+            <option value="Negra I grado">Negra I grado</option>
+            <option value="Negra II grado">Negra II grado</option>
+            <option value="Negra III grado">Negra III grado</option>
+            <option value="Negra IV grado">Negra IV grado</option>
+            <option value="Negra V grado">Negra V grado</option>
           </select></label>
 
         <label class="field"><span class="lab">Grupo</span>
@@ -46,13 +52,7 @@
           </select></label>
 
         <label class="field"><span class="lab">Horario</span>
-          <select id="horario">
-            <option value="Lun, Mié y Vie · 5:00 PM">Lun, Mié y Vie — 5:00 PM</option>
-            <option value="Lun, Mié y Vie · 6:00 PM">Lun, Mié y Vie — 6:00 PM</option>
-            <option value="Lun, Mié y Vie · 7:00 PM">Lun, Mié y Vie — 7:00 PM</option>
-            <option value="Mar y Jue · 6:00 PM">Mar y Jue — 6:00 PM</option>
-            <option value="Sábado · 10:00 AM">Sábado — 10:00 AM (Club Cinta Negra)</option>
-          </select></label>
+          <select id="horario"></select></label>
       </div></div>
 
       <div class="card mb14"><div class="stack">
@@ -127,6 +127,32 @@
   )
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
+
+  const HORARIOS = {
+    infantil: [
+      'Lunes, Miércoles y Viernes · 4:00 PM – 5:00 PM',
+      'Lunes, Miércoles y Viernes · 5:00 PM – 6:00 PM',
+      'Lunes, Miércoles y Viernes · 6:00 PM – 7:00 PM',
+      'Martes · 6:15 PM – 7:00 PM',
+      'Sábado · 11:00 AM – 12:00 PM',
+      'Sábado Club Cinta Negra · 10:00 AM – 12:00 PM',
+    ],
+    adultos: [
+      'Lunes, Miércoles, Jueves y Viernes · 7:00 PM – 8:00 PM',
+      'Sábado · 12:00 PM – 1:00 PM',
+      'Sábado Club Cinta Negra · 12:00 PM – 2:00 PM',
+    ]
+  }
+
+  function actualizarHorarios() {
+    const grupo = document.getElementById('grupo').value
+    const esInfantil = grupo.includes('Infantil')
+    const opciones = esInfantil ? HORARIOS.infantil : HORARIOS.adultos
+    document.getElementById('horario').innerHTML = opciones.map(h => `<option value="${h}">${h}</option>`).join('')
+  }
+
+  document.getElementById('grupo').addEventListener('change', actualizarHorarios)
+  actualizarHorarios()
 
   const msg = document.getElementById('msg')
   function error(txt) {
