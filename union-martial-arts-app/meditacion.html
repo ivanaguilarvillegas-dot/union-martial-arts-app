@@ -69,6 +69,7 @@
   ]
   const done = {}
   let audios = []
+  let total = S.length
 
   // Cargar audios del instructor desde Storage
   async function cargar() {
@@ -77,6 +78,7 @@
       nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
       url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
     }))
+    total = S.length + audios.length
     render()
   }
 
