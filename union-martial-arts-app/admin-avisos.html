@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gestión de Avisos — Admin</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+<style>
+.aviso-item { background:#fff; border-radius:14px; margin-bottom:10px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.aviso-head { display:flex; align-items:center; gap:10px; padding:13px 14px; border-bottom:1px solid #f3f4f6; }
+.aviso-head-txt { flex:1; min-width:0; }
+.aviso-head-title { font-size:14px; font-weight:700; color:#111827; }
+.aviso-head-meta { font-size:12px; color:#6b7280; margin-top:1px; }
+.aviso-actions { display:flex; gap:8px; padding:10px 14px; background:#fafafa; border-top:1px solid #f3f4f6; }
+.btn-sm-red { flex:1; display:flex; align-items:center; justify-content:center; gap:5px; background:#fee2e2; color:#dc2626; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:700; cursor:pointer; }
+.btn-sm-blue { flex:1; display:flex; align-items:center; justify-content:center; gap:5px; background:#eff6ff; color:#1d4ed8; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:700; cursor:pointer; }
+
+.confirm-bar { padding:8px 14px 12px; }
+.confirm-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.confirm-label { font-size:12px; color:#6b7280; }
+.confirm-nums { font-size:12px; font-weight:700; color:#111827; }
+.confirm-progress { height:6px; background:#f3f4f6; border-radius:3px; overflow:hidden; }
+.confirm-fill { height:100%; background:#16a34a; border-radius:3px; transition:width .3s; }
+.confirm-pendiente { font-size:11px; color:#dc2626; margin-top:5px; }
+
+.badge-pr { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; }
+.badge-pr.urgente     { background:#fee2e2; color:#dc2626; }
+.badge-pr.importante  { background:#fef3c7; color:#b45309; }
+.badge-pr.informativo { background:#dbeafe; color:#1d4ed8; }
+
+/* Modal / sheet */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; display:none; align-items:flex-end; }
+.modal-overlay.open { display:flex; }
+.modal-sheet { background:#fff; border-radius:20px 20px 0 0; padding:20px 18px 32px; width:100%; max-height:85vh; overflow-y:auto; }
+.modal-handle { width:40px; height:4px; background:#e5e7eb; border-radius:2px; margin:0 auto 16px; }
+.modal-title { font-size:16px; font-weight:700; margin-bottom:16px; color:#111827; }
+.field-lbl { font-size:12px; font-weight:600; color:#374151; margin-bottom:5px; display:block; }
+.field-input { width:100%; border:1.5px solid #e5e7eb; border-radius:10px; padding:10px 12px; font-size:14px; outline:none; font-family:inherit; box-sizing:border-box; }
+.field-input:focus { border-color:#1d4ed8; }
+.field-ta { min-height:80px; resize:vertical; }
+.radio-group { display:flex; gap:8px; flex-wrap:wrap; }
+.radio-opt { flex:1; min-width:80px; }
+.radio-opt input { display:none; }
+.radio-opt label { display:block; text-align:center; padding:8px 6px; border:1.5px solid #e5e7eb; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; color:#6b7280; }
+.radio-opt input:checked + label { border-color:#1d4ed8; background:#eff6ff; color:#1d4ed8; }
+.radio-opt input:checked + label.urgente { border-color:#dc2626; background:#fee2e2; color:#dc2626; }
+.radio-opt input:checked + label.importante { border-color:#b45309; background:#fef3c7; color:#b45309; }
+
+/* Confirmados list */
+.who-wrap { margin-top:8px; }
+.who-row { display:flex; align-items:center; gap:8px; padding:6px 14px; border-bottom:1px solid #f9fafb; }
+.who-row:last-child { border-bottom:none; }
+.who-dot { width:7px; height:7px; border-radius:50%; background:#16a34a; flex-shrink:0; }
+.who-name { font-size:13px; color:#374151; flex:1; }
+.who-time { font-size:11px; color:#9ca3af; }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Gestión de Avisos</div></div>
+    <button id="btn-nuevo" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+      <i data-lucide="plus" style="width:14px;height:14px;"></i> Nuevo
+    </button>
+  </div>
+
+  <div class="body">
+    <div class="label">Avisos activos</div>
+    <div id="avisos-wrap">
+      <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">
+        <i data-lucide="loader" style="width:20px;height:20px;"></i><br>Cargando…
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+
+<!-- Modal nuevo/editar aviso -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Nuevo aviso</div>
+
+    <div style="margin-bottom:14px;">
+      <span class="field-lbl">Título</span>
+      <input class="field-input" id="f-titulo" placeholder="Ej. Examen de cintas" maxlength="80" />
+    </div>
+    <div style="margin-bottom:14px;">
+      <span class="field-lbl">Mensaje</span>
+      <textarea class="field-input field-ta" id="f-mensaje" placeholder="Escribe el detalle del aviso…"></textarea>
+    </div>
+    <div style="margin-bottom:20px;">
+      <span class="field-lbl">Prioridad</span>
+      <div class="radio-group">
+        <div class="radio-opt">
+          <input type="radio" name="prioridad" id="p-info" value="informativo" checked>
+          <label for="p-info">Informativo</label>
+        </div>
+        <div class="radio-opt">
+          <input type="radio" name="prioridad" id="p-imp" value="importante">
+          <label for="p-imp" class="importante">Importante</label>
+        </div>
+        <div class="radio-opt">
+          <input type="radio" name="prioridad" id="p-urg" value="urgente">
+          <label for="p-urg" class="urgente">Urgente</label>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn primary block" id="btn-guardar"><i data-lucide="save"></i> Guardar aviso</button>
+    <button class="btn secondary block" style="margin-top:8px;" id="btn-cancelar">Cancelar</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  let editId = null
+  let totalPadres = 0
+
+  // Total padres para calcular pendientes
+  try {
+    const { count } = await supabase.from('padres').select('*', { count:'exact', head:true }).eq('es_admin', false)
+    totalPadres = count || 0
+  } catch(e) {}
+
+  async function cargar() {
+    const wrap = document.getElementById('avisos-wrap')
+    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;"><i data-lucide="loader" style="width:18px;height:18px;"></i> Cargando…</div>'
+    lucide.createIcons()
+
+    const { data: avisos } = await supabase.from('avisos')
+      .select('id, titulo, mensaje, prioridad, creado_en, activo')
+      .order('creado_en', { ascending: false })
+
+    if (!avisos?.length) {
+      wrap.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">Sin avisos. Crea el primero con el botón "Nuevo".</div>'
+      lucide.createIcons()
+      return
+    }
+
+    // Cargar confirmaciones de todos los avisos
+    const ids = avisos.map(a => a.id)
+    const { data: confs } = await supabase.from('avisos_confirmaciones')
+      .select('aviso_id, padre_nombre, confirmado_en').in('aviso_id', ids)
+
+    const confMap = {}
+    for (const c of (confs||[])) {
+      if (!confMap[c.aviso_id]) confMap[c.aviso_id] = []
+      confMap[c.aviso_id].push(c)
+    }
+
+    wrap.innerHTML = avisos.map(a => {
+      const lista = confMap[a.id] || []
+      const pct = totalPadres > 0 ? Math.round(lista.length / totalPadres * 100) : 0
+      const pendientes = Math.max(0, totalPadres - lista.length)
+      const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+      const pr = a.prioridad || 'informativo'
+      return `<div class="aviso-item" data-id="${a.id}">
+        <div class="aviso-head">
+          <div class="aviso-head-txt">
+            <div style="margin-bottom:4px;"><span class="badge-pr ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>${!a.activo ? ' <span style="font-size:10px;color:#9ca3af;">(inactivo)</span>' : ''}</div>
+            <div class="aviso-head-title">${a.titulo}</div>
+            <div class="aviso-head-meta">${a.mensaje.length > 60 ? a.mensaje.slice(0,60)+'…' : a.mensaje}</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:3px;">${fecha}</div>
+          </div>
+        </div>
+
+        <div class="confirm-bar">
+          <div class="confirm-row">
+            <span class="confirm-label">Confirmaciones</span>
+            <span class="confirm-nums">${lista.length} de ${totalPadres}</span>
+          </div>
+          <div class="confirm-progress"><div class="confirm-fill" style="width:${pct}%;"></div></div>
+          ${pendientes > 0 ? `<div class="confirm-pendiente">${pendientes} padre${pendientes>1?'s':''} sin confirmar</div>` : '<div style="font-size:11px;color:#16a34a;margin-top:5px;">✓ Todos confirmaron</div>'}
+
+          ${lista.length ? `<div class="who-wrap">${lista.slice(0,5).map(c => {
+            const t = new Date(c.confirmado_en).toLocaleDateString('es-MX',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+            return `<div class="who-row"><div class="who-dot"></div><div class="who-name">${c.padre_nombre||'Padre'}</div><div class="who-time">${t}</div></div>`
+          }).join('')}${lista.length>5?`<div style="font-size:11px;color:#9ca3af;padding:4px 14px;">+${lista.length-5} más…</div>`:''}</div>` : ''}
+        </div>
+
+        <div class="aviso-actions">
+          <button class="btn-sm-blue btn-editar" data-id="${a.id}">
+            <i class="ti ti-edit" style="font-size:14px;"></i> Editar
+          </button>
+          <button class="btn-sm-red btn-eliminar" data-id="${a.id}">
+            <i class="ti ti-trash" style="font-size:14px;"></i> Eliminar
+          </button>
+          <button class="btn-sm-blue btn-toggle" data-id="${a.id}" data-activo="${a.activo}">
+            <i class="ti ${a.activo?'ti-eye-off':'ti-eye'}" style="font-size:14px;"></i>
+            ${a.activo ? 'Ocultar' : 'Activar'}
+          </button>
+        </div>
+      </div>`
+    }).join('')
+
+    lucide.createIcons()
+  }
+
+  // Abrir modal nuevo
+  document.getElementById('btn-nuevo').addEventListener('click', () => {
+    editId = null
+    document.getElementById('modal-title').textContent = 'Nuevo aviso'
+    document.getElementById('f-titulo').value = ''
+    document.getElementById('f-mensaje').value = ''
+    document.getElementById('p-info').checked = true
+    document.getElementById('modal').classList.add('open')
+    lucide.createIcons()
+  })
+
+  document.getElementById('btn-cancelar').addEventListener('click', () => {
+    document.getElementById('modal').classList.remove('open')
+  })
+
+  // Guardar aviso
+  document.getElementById('btn-guardar').addEventListener('click', async () => {
+    const titulo  = document.getElementById('f-titulo').value.trim()
+    const mensaje = document.getElementById('f-mensaje').value.trim()
+    const prioridad = document.querySelector('input[name="prioridad"]:checked')?.value || 'informativo'
+
+    if (!titulo || !mensaje) { alert('Completa título y mensaje.'); return }
+
+    const btn = document.getElementById('btn-guardar')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+
+    try {
+      if (editId) {
+        await supabase.from('avisos').update({ titulo, mensaje, prioridad }).eq('id', editId)
+      } else {
+        await supabase.from('avisos').insert({ titulo, mensaje, prioridad, activo: true, creado_por: user.id })
+      }
+      document.getElementById('modal').classList.remove('open')
+      await cargar()
+    } catch(e) { alert('Error: ' + e.message) }
+
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar aviso'; lucide.createIcons()
+  })
+
+  // Acciones en lista
+  document.getElementById('avisos-wrap').addEventListener('click', async e => {
+    const editar   = e.target.closest('.btn-editar')
+    const eliminar = e.target.closest('.btn-eliminar')
+    const toggle   = e.target.closest('.btn-toggle')
+
+    if (editar) {
+      const id = editar.dataset.id
+      const { data: a } = await supabase.from('avisos').select('*').eq('id', id).maybeSingle()
+      if (!a) return
+      editId = id
+      document.getElementById('modal-title').textContent = 'Editar aviso'
+      document.getElementById('f-titulo').value = a.titulo
+      document.getElementById('f-mensaje').value = a.mensaje
+      document.querySelector(`input[name="prioridad"][value="${a.prioridad||'informativo'}"]`).checked = true
+      document.getElementById('modal').classList.add('open')
+      lucide.createIcons()
+    }
+
+    if (eliminar) {
+      if (!confirm('¿Eliminar este aviso? También se borran las confirmaciones.')) return
+      await supabase.from('avisos').delete().eq('id', eliminar.dataset.id)
+      await cargar()
+    }
+
+    if (toggle) {
+      const activo = toggle.dataset.activo === 'true'
+      await supabase.from('avisos').update({ activo: !activo }).eq('id', toggle.dataset.id)
+      await cargar()
+    }
+  })
+
+  await cargar()
+  lucide.createIcons()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body>
+</html>
