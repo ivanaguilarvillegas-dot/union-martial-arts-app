@@ -409,28 +409,44 @@
     return '#e5e7eb'
   }
 
+  function extractDan(cinta) {
+    if (!cinta) return 0
+    // Detecta romanos en el nombre: "Negra II grado", "Café III", etc.
+    const map = [['V',5],['IV',4],['III',3],['II',2],['I',1]]
+    for (const [r, n] of map) {
+      if (cinta.includes(r + ' grado') || cinta.includes(r + ' Grado') || cinta.endsWith(' ' + r)) return n
+    }
+    return 0
+  }
+
   function mostrarCinta(cinta, dan) {
     const color = cintaColor(cinta)
     if (!color) return
     const wrap = document.getElementById('cinta-wrap')
     if (!wrap) return
     wrap.style.display = 'block'
-    // Color del cuerpo y nudo
     document.getElementById('c-base').setAttribute('fill', color)
     document.getElementById('c-nudo').setAttribute('fill', color)
-    // Dan stripes
-    const danes = dan || 0
+
+    // Dan: usar campo dan de BD o extraer del nombre de la cinta
+    const danes = (dan && dan > 0) ? dan : extractDan(cinta)
+
+    // Color de rayas: dorado para cinta negra, oscuro para amarilla/blanca, blanco para el resto
+    const esNegra = color === '#1f2937'
+    const claras = ['#e5e7eb', '#fbbf24']
+    const stripeColor = esNegra ? '#F5C518' : (claras.includes(color) ? '#374151' : '#fff')
+
+    ;['d1','d2','d3'].forEach(id => {
+      document.getElementById(id).style.display = 'none'
+      document.getElementById(id).setAttribute('stroke', stripeColor)
+    })
     if (danes >= 1) document.getElementById('d1').style.display = 'block'
     if (danes >= 2) document.getElementById('d2').style.display = 'block'
     if (danes >= 3) document.getElementById('d3').style.display = 'block'
-    // Color de stripes: blanco en cintas oscuras, negro en amarilla/blanca
-    const claras = ['#e5e7eb', '#fbbf24']
-    const stripeColor = claras.includes(color) ? '#374151' : '#fff'
-    ;['d1','d2','d3'].forEach(id => document.getElementById(id).setAttribute('stroke', stripeColor))
-    // Etiqueta debajo
-    const nombre = cinta ? cinta.charAt(0).toUpperCase() + cinta.slice(1).toLowerCase() : ''
-    const danText = danes > 0 ? ' · ' + danes + '° Dan' : ''
-    document.getElementById('cinta-label').textContent = 'Cinta ' + nombre + danText
+
+    // Etiqueta: preserva mayúsculas del nombre original, quita " grado" si ya tiene el romano
+    const label = cinta ? cinta.charAt(0).toUpperCase() + cinta.slice(1) : ''
+    document.getElementById('cinta-label').textContent = 'Cinta ' + label
   }
 
   // Parsear horario para próxima clase
@@ -485,9 +501,10 @@
     } catch(e) {}
 
     if (padre) {
-      const partes = padre.nombre?.split(' ') || []
-      const apellido = partes.length > 1 ? partes[partes.length - 1] : partes[0] || ''
-      document.getElementById('saludo-nombre').textContent = 'Familia ' + (apellido || padre.nombre || '')
+      const partes = (padre.nombre || '').trim().split(/\s+/).filter(Boolean)
+      // Intenta apellido: primer token si hay más de uno, si no el único
+      const apellido = partes[0] || padre.nombre || ''
+      document.getElementById('saludo-nombre').textContent = 'Familia ' + apellido
     }
 
     if (!padre?.alumno_id) return
