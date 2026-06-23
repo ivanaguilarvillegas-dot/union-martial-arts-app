@@ -104,8 +104,18 @@
       campo('Parentesco', padre.autorizado_parentesco)
   }
 
+  // Cargar URL del reglamento PDF
+  const { data: cfgPdf } = await supabase.from('configuracion').select('valor').eq('clave', 'reglamento_url').maybeSingle()
+  if (cfgPdf?.valor) {
+    const pdfArea = document.querySelector('#regForm').previousElementSibling
+    pdfArea.style.cursor = 'pointer'
+    pdfArea.onclick = () => window.open(cfgPdf.valor, '_blank')
+    pdfArea.querySelector('span:last-child').innerHTML = '<i data-lucide="external-link" style="width:15px;height:15px"></i> Ver PDF'
+    lucide.createIcons()
+  }
+
   // Verificar si ya firmó reglamento
-  const { data: firma } = await supabase.from('firmas_reglamento').select('firmado_en, nombre_firma').eq('padre_user_id', user.id).single()
+  const { data: firma } = await supabase.from('firmas_reglamento').select('firmado_en, nombre_firma').eq('padre_user_id', user.id).maybeSingle()
   if (firma) {
     document.getElementById('regForm').style.display = 'none'
     document.getElementById('firmado').style.display = 'flex'
@@ -126,7 +136,19 @@
 
   document.getElementById('firmar').addEventListener('click', async () => {
     if (!aceptado) return
-    await supabase.from('firmas_reglamento').upsert({ padre_user_id: user.id, nombre_firma: padre?.nombre, firmado_en: new Date().toISOString() }, { onConflict: 'padre_user_id' })
+    const btn = document.getElementById('firmar')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+    const { error } = await supabase.from('firmas_reglamento').upsert(
+      { padre_user_id: user.id, nombre_firma: padre?.nombre, firmado_en: new Date().toISOString() },
+      { onConflict: 'padre_user_id' }
+    )
+    if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="pen-line"></i> Firmar de acuerdo'; lucide.createIcons(); return }
+    // Notificar al instructor
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: '✍️ ' + (padre?.nombre || 'Un padre') + ' firmó el reglamento de la academia · ' + new Date().toLocaleDateString('es-MX'),
+      para_admin: true
+    })
     document.getElementById('regForm').style.display = 'none'
     document.getElementById('firmado').style.display = 'flex'
     document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado · ${padre?.nombre || ''} · ${new Date().toLocaleDateString('es-MX')}`
