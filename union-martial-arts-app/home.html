@@ -39,10 +39,7 @@
     </div>
 
     <div class=”label”>Alertas</div>
-    <div class=”stack-10 mb18” id=”alertas”>
-      <div class=”row”><span class=”ic”><i data-lucide=”loader”></i></span>
-        <span class=”grow”><span class=”t”>Cargando…</span></span></div>
-    </div>
+    <div class=”stack-10 mb18” id=”alertas”></div>
 
     <div class="label">Menú</div>
     <div class="grid2" id="menu"></div>
@@ -94,6 +91,7 @@
   async function cargarDatos() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = 'index.html'; return }
+    cargarAlertas()
 
     const hoy = new Date()
     const hoyStr = hoy.toISOString().split('T')[0]
@@ -184,7 +182,6 @@
   }
 
   cargarDatos()
-  cargarAlertas()
 </script>
 </body>
 </html>
