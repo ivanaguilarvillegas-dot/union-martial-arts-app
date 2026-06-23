@@ -21,6 +21,9 @@
 .notif-btn { position:relative; }
 .notif-btn i { color:#fff; width:22px; height:22px; }
 .notif-badge { position:absolute; top:-11px; right:-12px; background:#dc2626; color:#fff; border-radius:16px; font-size:13px; font-weight:900; padding:4px 8px; min-width:24px; text-align:center; box-shadow:0 2px 8px rgba(220,38,38,.8); line-height:1; }
+.notif-pill { display:inline-flex; align-items:center; gap:5px; background:#dc2626; border-radius:20px; padding:6px 11px; text-decoration:none; box-shadow:0 2px 8px rgba(220,38,38,.5); }
+.notif-pill i { color:#fff; width:18px; height:18px; flex-shrink:0; }
+.notif-pill .np-count { color:#fff; font-size:13px; font-weight:800; line-height:1; display:none; }
 
 .alumno-card { background:#fff; border-radius:14px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
 .alumno-foto { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
@@ -118,8 +121,9 @@
       <div class="greeting" id="saludo-nombre">Bienvenida</div>
     </div>
     <div class="home-header-right">
-      <a class="notif-btn" href="notificaciones.html" id="btn-notif" aria-label="Notificaciones">
+      <a class="notif-pill" href="notificaciones.html" id="btn-notif" aria-label="Notificaciones">
         <i data-lucide="bell"></i>
+        <span class="np-count" id="notif-count"></span>
       </a>
       <a class="notif-btn" id="btn-logout" href="#" aria-label="Cerrar sesión" style="opacity:.75;">
         <i data-lucide="log-out" style="color:#fff;"></i>
@@ -678,10 +682,10 @@
       count += (p.value?.data?.length || 0)
     } catch(e) {}
 
-    if (count > 0) {
-      const btn = document.getElementById('btn-notif')
-      if (btn) btn.insertAdjacentHTML('beforeend',
-        `<span class="notif-badge">${count}</span>`)
+    const countEl = document.getElementById('notif-count')
+    if (countEl && count > 0) {
+      countEl.textContent = count
+      countEl.style.display = 'block'
     }
   }
 

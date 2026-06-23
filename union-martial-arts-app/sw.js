@@ -1,4 +1,4 @@
-const CACHE = 'uma-v6'
+const CACHE = 'uma-v7'
 const SHELL = [
   '/',
   '/home.html',
