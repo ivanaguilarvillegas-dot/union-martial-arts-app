@@ -128,12 +128,8 @@
             document.getElementById('horario-titulo').textContent = 'Horario de ' + (al.nombre?.split(' ')[0] || 'tu hijo/a')
             const horarios = al.horario.split(' | ').filter(Boolean)
             document.getElementById('horario-texto').innerHTML = horarios.map(h =>
-              `<div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted);">
-                <span style="color:var(--primary);flex-shrink:0;margin-top:1px;"><i data-lucide="chevron-right" style="width:13px;height:13px"></i></span>
-                <span>${h}</span>
-              </div>`
+              `<div style="font-size:13px;color:var(--muted);padding:2px 0;">· ${h}</div>`
             ).join('')
-            lucide.createIcons()
           }
         }
       } catch(e) {}
