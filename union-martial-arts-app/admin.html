@@ -9,7 +9,7 @@
 <body>
 <div class="phone"><div class="screen">
   <div class="header-dark">
-    <div class="statusbar dark"><span>9:41</span><span class="right">
+    <div class="statusbar dark"><span id="reloj-admin"></span><span class="right">
       <i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
     <div class="appbar dark">
       <div class="grow"><div class="eyebrow"><i data-lucide="shield" style="width:13px;height:13px"></i> Panel de administrador</div><div class="name">Union Martial Arts</div></div>
@@ -45,6 +45,12 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
+  function actualizarReloj() {
+    const el = document.getElementById('reloj-admin'); if (!el) return
+    el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+  }
+  actualizarReloj(); setInterval(actualizarReloj, 30000)
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 

@@ -26,7 +26,7 @@
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="statusbar"><span>9:41</span><span class="right">
+  <div class="statusbar"><span id="reloj-index"></span><span class="right">
     <i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
   <div class="login">
     <img class="logo" src="assets/logo-union-stacked.png" alt="Union Martial Arts" />
@@ -120,6 +120,11 @@
     window.location.href = 'admin.html'
   })
   lucide.createIcons()
+  function actualizarReloj() {
+    const el = document.getElementById('reloj-index'); if (!el) return
+    el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+  }
+  actualizarReloj(); setInterval(actualizarReloj, 30000)
 </script>
 </body>
 </html>
