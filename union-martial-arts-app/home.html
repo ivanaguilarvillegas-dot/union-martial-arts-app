@@ -30,13 +30,6 @@
       </div>
     </div>
 
-    <div class=”card soft mb18” id=”horario-card” style=”display:none;”>
-      <div style=”display:flex;align-items:center;gap:9px;margin-bottom:10px;”>
-        <span style=”color:var(--primary)”><i data-lucide=”clock” style=”width:16px;height:16px”></i></span>
-        <span style=”font-size:13px;font-weight:700;color:var(--primary);” id=”horario-titulo”>Horario</span>
-      </div>
-      <div id=”horario-texto” style=”display:flex;flex-direction:column;gap:6px;padding-left:25px;”></div>
-    </div>
 
     <div class=”label”>Alertas</div>
     <div class=”stack-10 mb18” id=”alertas”></div>
@@ -61,6 +54,7 @@
 
   // Menú siempre se dibuja primero, sin esperar datos
   const MENU = [
+    ['notificaciones.html','bell','Avisos','Alertas · horario','blue'],
     ['checkin.html','clipboard-check','Check-in','Clase · torneo','blue'],
     ['evaluacion.html','trending-up','Evaluación','Diaria y mensual','green'],
     ['pagos.html','credit-card','Pagos','Mensualidad','blue'],
@@ -123,14 +117,6 @@
           document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
           document.getElementById('cinta-alumno').textContent = 'Cinta ' + (al.cinta || al.cinturon || '—')
           document.getElementById('grupo-alumno').textContent = al.grupo || '—'
-          if (al.horario) {
-            document.getElementById('horario-card').style.display = 'block'
-            document.getElementById('horario-titulo').textContent = 'Horario de ' + (al.nombre?.split(' ')[0] || 'tu hijo/a')
-            const horarios = al.horario.split(' | ').filter(Boolean)
-            document.getElementById('horario-texto').innerHTML = horarios.map(h =>
-              `<div style="font-size:13px;color:var(--muted);padding:2px 0;">· ${h}</div>`
-            ).join('')
-          }
         }
       } catch(e) {}
 
@@ -177,6 +163,16 @@
     el.innerHTML = items.length
       ? items.join('')
       : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
+
+    // Badge con número en tarjeta Avisos
+    if (items.length) {
+      const avisoLink = document.querySelector('a[href="notificaciones.html"]')
+      if (avisoLink) {
+        avisoLink.style.position = 'relative'
+        avisoLink.insertAdjacentHTML('beforeend',
+          `<span style="position:absolute;top:8px;right:8px;min-width:20px;height:20px;padding:0 5px;background:#dc2626;color:#fff;border-radius:10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff;box-sizing:border-box;">${items.length}</span>`)
+      }
+    }
     lucide.createIcons()
   }
 
