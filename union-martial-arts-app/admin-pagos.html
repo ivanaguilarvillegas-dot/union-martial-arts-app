@@ -17,6 +17,29 @@
   </nav>
 </div></div>
 
+<!-- Modal nuevo pago -->
+<div id="modal-nuevo-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Nuevo pago</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;" id="nuevo-pago-alumno-nombre">Alumno</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Mes / Concepto</label>
+      <input type="text" id="nuevo-pago-mes" placeholder="Ej: Julio 2026" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Monto (MXN)</label>
+      <div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;height:46px;">
+        <span style="font-size:18px;font-weight:700;color:var(--muted);">$</span>
+        <input type="number" id="nuevo-pago-monto" min="1" style="flex:1;border:none;outline:none;font-size:18px;font-weight:700;font-family:inherit;" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn secondary" style="flex:1;" id="nuevo-pago-cancelar">Cancelar</button>
+      <button class="btn primary" style="flex:1;" id="nuevo-pago-crear"><i data-lucide="plus"></i> Crear</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal confirmar pago con monto editable -->
 <div id="modal-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
@@ -99,6 +122,7 @@
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
           ${tieneComp ? `<button class="btn secondary sm" data-comp="${encodeURIComponent(p.comprobante_url)}" style="font-size:12px;"><i data-lucide="file-image" style="width:13px;height:13px"></i> Ver comprobante</button>` : ''}
           ${ok ? `<button class="btn secondary sm" data-recibo="${p.id}" style="font-size:12px;"><i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</button>` : ''}
+          ${ok ? `<button class="btn secondary sm" data-nuevo-pago="${p.alumno_id}" data-nuevo-nombre="${nombre}" style="font-size:12px;"><i data-lucide="plus" style="width:13px;height:13px"></i> Nuevo pago</button>` : ''}
         </div>
       </div>`
     }).join('')
@@ -134,6 +158,46 @@
     document.getElementById('modal-forma').value = btn.dataset.forma || 'efectivo'
     document.getElementById('modal-pago').style.display = 'flex'
     lucide.createIcons()
+  })
+
+  // Nuevo pago
+  let nuevoPagoAlumnoId = null
+  document.getElementById('list').addEventListener('click', e => {
+    const np = e.target.closest('[data-nuevo-pago]')
+    if (!np) return
+    nuevoPagoAlumnoId = np.dataset.nuevoPago
+    const mesActual = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' })
+    document.getElementById('nuevo-pago-alumno-nombre').textContent = np.dataset.nuevoNombre
+    document.getElementById('nuevo-pago-mes').value = mesActual.charAt(0).toUpperCase() + mesActual.slice(1)
+    document.getElementById('nuevo-pago-monto').value = ''
+    document.getElementById('modal-nuevo-pago').style.display = 'flex'
+    lucide.createIcons()
+  }, true)
+
+  document.getElementById('nuevo-pago-cancelar').addEventListener('click', () => {
+    document.getElementById('modal-nuevo-pago').style.display = 'none'
+    nuevoPagoAlumnoId = null
+  })
+
+  document.getElementById('nuevo-pago-crear').addEventListener('click', async () => {
+    if (!nuevoPagoAlumnoId) return
+    const mes = document.getElementById('nuevo-pago-mes').value.trim()
+    const monto = parseInt(document.getElementById('nuevo-pago-monto').value) || 0
+    if (!mes) { alert('Escribe el mes'); return }
+    if (monto < 1) { alert('Escribe el monto'); return }
+    const btn = document.getElementById('nuevo-pago-crear')
+    btn.disabled = true; btn.textContent = 'Creando…'
+    const { error } = await supabase.from('pagos').insert({
+      alumno_id: nuevoPagoAlumnoId,
+      mes,
+      monto,
+      estado: 'pendiente'
+    })
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Crear'; lucide.createIcons()
+    if (error) { alert('❌ Error: ' + error.message); return }
+    document.getElementById('modal-nuevo-pago').style.display = 'none'
+    nuevoPagoAlumnoId = null
+    await cargar()
   })
 
   document.getElementById('modal-cancelar').addEventListener('click', () => {
