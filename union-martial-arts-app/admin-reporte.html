@@ -119,14 +119,23 @@
       supabase.from('citas').select('*').eq('padre_user_id', user.id).gte('fecha_preferida', inicio).lte('fecha_preferida', fin).order('fecha_preferida'),
     ])
 
-    // Cargar padre del alumno para citas
-    const { data: padre } = await supabase.from('padres').select('nombre, correo').eq('alumno_id', alumnoId).maybeSingle()
+    // Cargar padre del alumno
+    const { data: padre } = await supabase.from('padres').select('nombre, correo, user_id').eq('alumno_id', alumnoId).maybeSingle()
 
-    // Cargar medios disponibles ese mes (referencia)
-    const { data: vids } = await supabase.storage.from('media').list('videos', { limit: 50 })
-    const { data: auds } = await supabase.storage.from('media').list('audios', { limit: 50 })
+    // Cargar mensajes de actividades en casa enviados por este padre
+    let msgsActividad = []
+    if (padre?.user_id) {
+      const { data: mAct } = await supabase.from('mensajes')
+        .select('texto, creado_en').eq('de_user_id', padre.user_id).eq('para_admin', true)
+        .gte('creado_en', inicio + 'T00:00:00').lte('creado_en', fin + 'T23:59:59')
+        .order('creado_en')
+      msgsActividad = (mAct || []).filter(m => m.texto && (m.texto.includes('🏋️') || m.texto.includes('🧘') || m.texto.includes('🥗')))
+    }
 
     // Estadísticas asistencia
+    const clases = (checkins || []).filter(c => c.tipo === 'clase' || (!c.tipo && c.tipo !== 'ausencia'))
+    const torneos = (checkins || []).filter(c => c.tipo === 'torneo')
+    const extras = (checkins || []).filter(c => c.tipo === 'actividad extra' || c.tipo === 'extra')
     const asistencias = (checkins || []).filter(c => c.tipo !== 'ausencia')
     const ausencias = (checkins || []).filter(c => c.tipo === 'ausencia')
 
@@ -146,36 +155,64 @@
         <div class="periodo">${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)}${alumno?.cinta ? ' · Cinta ' + alumno.cinta : ''}${alumno?.grupo ? ' · ' + alumno.grupo : ''}</div>
       </div>
 
-      <!-- Asistencia -->
+      <!-- Asistencia resumen -->
       <div class="rep-section">
         <div class="sec-title">Asistencia</div>
         <div class="stat-grid">
-          <div class="stat-box"><div class="n" style="color:var(--green-text)">${asistencias.length}</div><div class="l">Asistencias</div></div>
+          <div class="stat-box"><div class="n" style="color:var(--green-text)">${clases.length}</div><div class="l">Clases</div></div>
+          <div class="stat-box"><div class="n" style="color:var(--amber-600,#b45309)">${torneos.length}</div><div class="l">Torneos</div></div>
           <div class="stat-box"><div class="n" style="color:var(--red-text,#c00)">${ausencias.length}</div><div class="l">Ausencias</div></div>
-          <div class="stat-box"><div class="n">${checkins?.length || 0}</div><div class="l">Total días</div></div>
         </div>
-        ${asistencias.length ? asistencias.map(c => `
+        ${asistencias.map(c => `
           <div class="rep-row">
             <span class="label">${fmt(c.fecha)}</span>
             <span class="val">${c.tipo || 'Clase'}${c.hora ? ' · ' + c.hora : ''}</span>
             <span class="badge-green">Asistió</span>
-          </div>`).join('') : '<div class="empty">Sin asistencias registradas.</div>'}
-        ${ausencias.length ? ausencias.map(c => `
+          </div>`).join('') || '<div class="empty">Sin asistencias registradas.</div>'}
+        ${ausencias.map(c => `
           <div class="rep-row">
             <span class="label">${fmt(c.fecha)}</span>
             <span class="val">${c.ausencia_motivo || 'Ausencia'}</span>
             <span class="badge-red">Faltó</span>
-          </div>`).join('') : ''}
+          </div>`).join('')}
       </div>
 
-      <!-- Evaluaciones -->
+      <!-- Actividades en casa -->
       <div class="rep-section">
-        <div class="sec-title">Evaluaciones del día (${evalDiarias.length})</div>
-        ${evalDiarias.length ? evalDiarias.map(e => `
+        <div class="sec-title">Actividades en casa</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="n">${msgsActividad.filter(m=>m.texto.includes('🏋️')).length}</div><div class="l">Rutinas</div></div>
+          <div class="stat-box"><div class="n">${msgsActividad.filter(m=>m.texto.includes('🧘')).length}</div><div class="l">Meditación</div></div>
+          <div class="stat-box"><div class="n">${msgsActividad.filter(m=>m.texto.includes('🥗')).length}</div><div class="l">Nutrición</div></div>
+        </div>
+        ${msgsActividad.length ? msgsActividad.map(m => `
+          <div class="rep-row">
+            <span class="label">${new Date(m.creado_en).toLocaleDateString('es-MX',{day:'numeric',month:'short'})}</span>
+            <span class="val">${m.texto}</span>
+          </div>`).join('') : '<div class="empty">Sin actividades en casa registradas.</div>'}
+      </div>
+
+      <!-- Evaluaciones conducta -->
+      <div class="rep-section">
+        <div class="sec-title">Conducta y evaluaciones diarias (${evalDiarias.length})</div>
+        ${evalDiarias.length ? (() => {
+          const tot = evalDiarias.length
+          const actOk = evalDiarias.filter(e=>e.actitud).length
+          const esf = evalDiarias.filter(e=>e.esfuerzo).length
+          const tec = evalDiarias.filter(e=>e.tecnica).length
+          const par = evalDiarias.filter(e=>e.participacion).length
+          return `<div class="stat-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="stat-box"><div class="n" style="font-size:16px;">${actOk}/${tot}</div><div class="l">Buena actitud</div></div>
+            <div class="stat-box"><div class="n" style="font-size:16px;">${esf}/${tot}</div><div class="l">Esfuerzo</div></div>
+            <div class="stat-box"><div class="n" style="font-size:16px;">${tec}/${tot}</div><div class="l">Técnica</div></div>
+            <div class="stat-box"><div class="n" style="font-size:16px;">${par}/${tot}</div><div class="l">Participación</div></div>
+          </div>` +
+          evalDiarias.map(e => `
           <div class="rep-row">
             <span class="label">${fmt(e.fecha)}</span>
-            <span class="val">${e.puntuacion != null ? e.puntuacion + '% completado' : '—'}${e.nota ? '<br><span style="font-weight:400;color:var(--muted);font-size:12px;">"' + e.nota + '"</span>' : ''}</span>
-          </div>`).join('') : '<div class="empty">Sin evaluaciones diarias.</div>'}
+            <span class="val">${e.puntuacion != null ? e.puntuacion + '%' : '—'}${e.nota ? ' · <span style="color:var(--muted);font-size:12px;">"' + e.nota + '"</span>' : ''}</span>
+          </div>`).join('')
+        })() : '<div class="empty">Sin evaluaciones diarias.</div>'}
       </div>
 
       ${ultimaMensual ? `
@@ -224,15 +261,6 @@
           </div>`).join('') : '<div class="empty">Sin citas este mes.</div>'}
       </div>
 
-      <!-- Rutinas y meditación disponibles -->
-      <div class="rep-section">
-        <div class="sec-title">Rutinas disponibles (${vids?.filter(v=>v.name!=='.emptyFolderPlaceholder').length || 0} videos · ${auds?.filter(a=>a.name!=='.emptyFolderPlaceholder').length || 0} audios)</div>
-        ${(vids||[]).filter(v=>v.name!=='.emptyFolderPlaceholder').map(v=>`
-          <div class="rep-row"><span class="label">Video</span><span class="val">${v.name.replace(/^\d+_/,'')}</span></div>`).join('')}
-        ${(auds||[]).filter(a=>a.name!=='.emptyFolderPlaceholder').map(a=>`
-          <div class="rep-row"><span class="label">Audio</span><span class="val">${a.name.replace(/^\d+_/,'')}</span></div>`).join('')}
-        ${(!vids?.filter(v=>v.name!=='.emptyFolderPlaceholder').length && !auds?.filter(a=>a.name!=='.emptyFolderPlaceholder').length) ? '<div class="empty">Sin rutinas subidas.</div>' : ''}
-      </div>
 
       <div style="text-align:center;font-size:11px;color:var(--muted);padding:12px 0 4px;">
         Generado el ${new Date().toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' })} · Union Martial Arts
