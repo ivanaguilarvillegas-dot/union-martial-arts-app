@@ -152,13 +152,9 @@
     const wrap = document.getElementById('segs-wrap')
 
     if (!al.horario || !al.horario.trim()) {
-      wrap.innerHTML = `<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">
-        <i class="ti ti-calendar-off" style="font-size:28px;display:block;margin:0 auto 8px;opacity:.3;"></i>
-        Sin horario asignado aún.
-      </div>`
+      wrap.innerHTML = `<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin:0 auto 8px;opacity:.3;"></i>Sin horario asignado. (valor: "${JSON.stringify(al.horario)}")</div>`
       lucide.createIcons(); return
     }
-
     // Parsear horario
     // Soporta: "Lunes·6pm | Miércoles·6pm" o "Lunes 6pm, Miércoles 6pm" o "Lunes - 6pm"
     const segmentos = al.horario.split(/\s*[|,;]\s*/).map(s => s.trim()).filter(Boolean)

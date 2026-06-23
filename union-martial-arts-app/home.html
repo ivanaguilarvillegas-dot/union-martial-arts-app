@@ -346,15 +346,6 @@
         <div class="menu-label">Tienda</div>
       </a>
     </div>
-    <div class="menu-grid-3" style="margin-top:2px;">
-      <div></div>
-      <a class="menu-item" href="perfil.html">
-        <div class="menu-ic blue"><i class="ti ti-user-circle" style="font-size:19px;color:#1d4ed8;"></i></div>
-        <div class="menu-label">Perfil</div>
-      </a>
-      <div></div>
-    </div>
-
   </div>
 
 </div><!-- /home-wrap -->
@@ -610,21 +601,20 @@
     // Evaluación — última puntuación del mes
     try {
       const { data: evals } = await supabase.from('evaluaciones')
-        .select('nivel').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+        .select('puntuacion').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
         .order('fecha', { ascending: false }).limit(1)
-      const niv = evals?.[0]?.nivel
-      const etiquetas = { excelente:'Excelente', bueno:'Bueno', regular:'Regular', mejorar:'Por mejorar' }
-      document.getElementById('stat-eval').textContent = etiquetas[niv?.toLowerCase()] || (niv || '—')
+      const pts = evals?.[0]?.puntuacion
+      document.getElementById('stat-eval').textContent = pts != null ? pts + '%' : '—'
     } catch(e) {
       document.getElementById('stat-eval').textContent = '—'
     }
 
     // Hábitos del mes
     try {
-      const { data: habitos } = await supabase.from('habitos')
-        .select('completados').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
-      const total = (habitos || []).reduce((s, h) => s + (h.completados || 0), 0)
-      document.getElementById('stat-habitos').textContent = total || '—'
+      const { data: msgs } = await supabase.from('mensajes')
+        .select('texto').eq('de_user_id', user.id).eq('para_admin', true).gte('creado_en', primerDia + 'T00:00:00')
+      const total = (msgs || []).filter(m => m.texto && m.texto.indexOf("🥗 Hábito") >= 0).length
+      document.getElementById('stat-habitos').textContent = total > 0 ? total : '—'
     } catch(e) {
       document.getElementById('stat-habitos').textContent = '—'
     }
@@ -659,11 +649,11 @@
 
   async function cargarAlerta() {
     try {
-      const { data: aviso } = await supabase.from('configuracion').select('valor').eq('clave', 'aviso_general').maybeSingle()
-      if (aviso?.valor) {
+      const { data: avs } = await supabase.from('avisos').select('titulo,mensaje').eq('activo', true).eq('prioridad', 'urgente').limit(1)
+      if (avs?.length) {
         document.getElementById('alerta-wrap').style.display = 'block'
-        document.getElementById('alerta-t').textContent = 'Aviso del instructor'
-        document.getElementById('alerta-s').textContent = aviso.valor.substring(0, 80)
+        document.getElementById('alerta-t').textContent = avs[0].titulo || 'Aviso urgente'
+        document.getElementById('alerta-s').textContent = (avs[0].mensaje || '').substring(0, 80)
         lucide.createIcons()
       }
     } catch(e) {}
@@ -674,11 +664,11 @@
     let count = 0
     try {
       const [a, p] = await Promise.allSettled([
-        supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle(),
+        supabase.from('avisos').select('id').eq('activo', true).gt('creado_en', visto),
         supabase.from('mensajes').select('id').eq('para_admin', false).eq('destinatario_id', user.id).gt('creado_en', visto)
       ])
-      const aviso = a.value?.data
-      if (aviso?.valor && aviso.actualizado_en > visto) count++
+      const avsCnt = a.value?.data?.length || 0
+      count += avsCnt
       count += (p.value?.data?.length || 0)
     } catch(e) {}
 
