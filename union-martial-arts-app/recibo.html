@@ -136,7 +136,7 @@
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead blue no-print">
-    <a class="navback" href="pagos.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <a class="navback" id="btn-volver" href="pagos.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Recibo de pago</div></div>
     <button class="iconbtn-dark" id="btn-guardar" aria-label="Guardar"><i data-lucide="download"></i></button>
   </div>
@@ -194,12 +194,12 @@
     <button class="btn primary block" id="btn-imprimir">
       <i data-lucide="printer"></i> Guardar / Imprimir recibo
     </button>
-    <a class="btn secondary block mt10" href="pagos.html">
-      <i data-lucide="arrow-left"></i> Volver a pagos
+    <a class="btn secondary block mt10" id="btn-volver-pago" href="pagos.html">
+      <i data-lucide="arrow-left"></i> Volver
     </a>
   </div>
 
-  <nav class="bottomnav no-print">
+  <nav class="bottomnav no-print" id="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
     <a class="on" href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
@@ -218,24 +218,36 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  // Detectar si es admin para ajustar links de vuelta
+  const { data: meAdmin } = await supabase.from('padres').select('es_admin, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+  const esAdmin = !!meAdmin?.es_admin
+  const volverUrl = esAdmin ? 'admin-pagos.html' : 'pagos.html'
+  document.getElementById('btn-volver').href = volverUrl
+  document.getElementById('btn-volver-pago').href = volverUrl
+  if (esAdmin) {
+    document.getElementById('bottomnav').innerHTML = `
+      <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+      <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+      <a class="on" href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+      <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>`
+  }
+
   // Leer pagoId desde URL ?id=xxx  o cargar el último pago
   const params = new URLSearchParams(location.search)
   const pagoId = params.get('id')
 
-  const { data: padre } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
-
   let pago = null
   if (pagoId) {
-    const { data } = await supabase.from('pagos').select('*, alumnos(nombre)').eq('id', pagoId).single()
+    const { data } = await supabase.from('pagos').select('*, alumnos(nombre)').eq('id', pagoId).maybeSingle()
     pago = data
   } else {
-    // Último pago pagado del alumno
+    // Último pago pagado del alumno (solo para padres)
     const { data } = await supabase.from('pagos').select('*, alumnos(nombre)')
-      .eq('alumno_id', padre?.alumno_id)
+      .eq('alumno_id', meAdmin?.alumno_id)
       .eq('estado', 'pagado')
       .order('fecha_pago', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
     pago = data
   }
 
