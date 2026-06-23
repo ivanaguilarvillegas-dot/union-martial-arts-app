@@ -91,138 +91,99 @@
     window.location.href = 'index.html'
   })
 
-  // Cargar datos del padre y alumno (todo en try/catch para no romper el menú)
   async function cargarDatos() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = 'index.html'; return }
+
+    const hoy = new Date()
+    const hoyStr = hoy.toISOString().split('T')[0]
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
+
+    // Buscar padre — primero por user_id, luego por correo
+    let padre = null
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = 'index.html'; return }
-
-      // Buscar padre; si no está por user_id, auto-enlazar por correo (primera vez)
-      let { data: padre } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).single()
-      if (!padre) {
-        const { data: pe } = await supabase.from('padres').select('id, nombre, alumno_id').eq('correo', user.email).single()
-        if (pe) {
-          await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id)
-          padre = pe
+      const { data: p1 } = await supabase.from('padres').select('id, nombre, alumno_id').eq('user_id', user.id).maybeSingle()
+      if (p1) { padre = p1 }
+      else {
+        const { data: p2 } = await supabase.from('padres').select('id, nombre, alumno_id').eq('correo', user.email).maybeSingle()
+        if (p2) {
+          await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
+          padre = p2
         }
       }
+    } catch(e) {}
 
-      if (!padre) {
-        document.getElementById('alertas').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Sin datos de alumno registrado.</div>'
-        lucide.createIcons()
-        return
-      }
-
+    if (padre) {
       document.getElementById('nombre-familia').textContent = 'Familia ' + (padre.nombre?.split(' ')[1] || padre.nombre || '')
-
-      const hoy = new Date()
-      const hoyStr = hoy.toISOString().split('T')[0]
-      const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
-      const alertas = []
-
-      // Cargar alumno si hay alumno_id
-      let alumno = null
-      if (padre.alumno_id) {
-        try {
-          const { data: al } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
-          alumno = al
-        } catch(e) {}
-      }
-
-      if (alumno) {
-        document.getElementById('nombre-alumno').textContent = alumno.nombre || 'Mi hijo/a'
-        document.getElementById('cinta-alumno').textContent = 'Cinta ' + (alumno.cinta || alumno.cinturon || '—')
-        document.getElementById('grupo-alumno').textContent = (alumno.grupo || '') + (alumno.horario ? ' · ' + alumno.horario : '')
-        if (alumno.horario) {
-          document.getElementById('horario-card').style.display = 'block'
-          document.getElementById('horario-titulo').textContent = 'Horario de ' + (alumno.nombre?.split(' ')[0] || 'tu hijo/a')
-          document.getElementById('horario-texto').textContent = alumno.horario
-        }
-      }
-
-      // DEBUG
-      alert('DEBUG v2 — alumno_id: ' + (padre.alumno_id || 'NULL') + ' | primerDia: ' + primerDia)
-
-      // Stats — solo si hay alumno vinculado
-      if (padre.alumno_id) {
-        try {
-          const { data: checkins, error: errC } = await supabase.from('checkins')
-            .select('id, tipo').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
-          document.getElementById('alertas').innerHTML += `<div style="font-size:11px;padding:8px;background:#fffbea;border-radius:8px;color:#555;margin-top:4px;">
-            checkins: ${JSON.stringify(checkins)} | error: ${errC?.message || 'ninguno'}</div>`
-          const asistencias = (checkins || []).filter(c => c.tipo !== 'ausencia')
-          const n = asistencias.length
-          document.getElementById('stat-clases').textContent = n
-          document.getElementById('stat-asistencia').textContent = n ? Math.round((n / 20) * 100) + '%' : '0%'
-        } catch(e) {
-          document.getElementById('alertas').innerHTML += `<div style="font-size:11px;color:red;">catch checkins: ${e.message}</div>`
-        }
-
-        try {
-          const { data: p1, error: e1 } = await supabase.from('pagos')
-            .select('estado, mes, monto').eq('alumno_id', padre.alumno_id)
-            .order('creado_en', { ascending: false }).limit(1)
-          document.getElementById('alertas').innerHTML += `<div style="font-size:11px;padding:8px;background:#fffbea;border-radius:8px;color:#555;margin-top:4px;">
-            pagos: ${JSON.stringify(p1)} | error: ${e1?.message || 'ninguno'}</div>`
-          const ultimoPago = p1?.[0] || null
-          document.getElementById('stat-pago').textContent = ultimoPago?.estado === 'pagado' ? 'Al día' : (ultimoPago ? 'Pendiente' : '—')
-        } catch(e) {}
-
-        try {
-          const { data: msgs, error: errM } = await supabase.from('mensajes')
-            .select('texto').eq('para_admin', false).limit(3)
-          document.getElementById('alertas').innerHTML += `<div style="font-size:11px;padding:8px;background:#fffbea;border-radius:8px;color:#555;margin-top:4px;">
-            mensajes: ${JSON.stringify(msgs)} | error: ${errM?.message || 'ninguno'}</div>`
-        } catch(e) {}
-      }
-
-      // Mensajes del instructor a padres
-      try {
-        const { data: msgs } = await supabase.from('mensajes')
-          .select('texto, creado_en')
-          .eq('para_admin', false)
-          .order('creado_en', { ascending: false })
-          .limit(3)
-        msgs?.forEach(m => {
-          const preview = (m.texto || '').substring(0, 65)
-          alertas.push(`<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span>
-            <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${preview}${m.texto?.length > 65 ? '…' : ''}</span></span></div>`)
-        })
-      } catch(e) {}
-
-      // Frase del día — busca en tabla frases o en configuracion
-      try {
-        let textoFrase = null
-        const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
-        if (frase?.texto) { textoFrase = frase.texto }
-        else {
-          const { data: cfg } = await supabase.from('configuracion').select('valor').eq('clave', 'frase_dia').maybeSingle()
-          if (cfg?.valor) textoFrase = cfg.valor
-        }
-        if (textoFrase) {
-          alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
-            <span class="grow"><span class="t">Frase del día</span><span class="s">"${textoFrase}"</span></span></div>`)
-        }
-      } catch(e) {}
-
-      // Próximos eventos
-      try {
-        const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(1)
-        if (eventos?.length) {
-          alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
-            <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
-        }
-      } catch(e) {}
-
-      document.getElementById('alertas').innerHTML = alertas.length
-        ? alertas.join('')
-        : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
-      lucide.createIcons()
-
-    } catch(err) {
-      document.getElementById('alertas').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Sin alertas por ahora.</div>'
-      lucide.createIcons()
     }
+
+    // Alumno y stats — solo si hay alumno_id
+    if (padre?.alumno_id) {
+      try {
+        const { data: al } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
+        if (al) {
+          document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
+          document.getElementById('cinta-alumno').textContent = 'Cinta ' + (al.cinta || al.cinturon || '—')
+          document.getElementById('grupo-alumno').textContent = (al.grupo || '') + (al.horario ? ' · ' + al.horario : '')
+          if (al.horario) {
+            document.getElementById('horario-card').style.display = 'block'
+            document.getElementById('horario-titulo').textContent = 'Horario de ' + (al.nombre?.split(' ')[0] || 'tu hijo/a')
+            document.getElementById('horario-texto').textContent = al.horario
+          }
+        }
+      } catch(e) {}
+
+      try {
+        const { data: checkins } = await supabase.from('checkins')
+          .select('id, tipo').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+        const n = (checkins || []).filter(c => c.tipo !== 'ausencia').length
+        document.getElementById('stat-clases').textContent = n
+        document.getElementById('stat-asistencia').textContent = n ? Math.round((n / 20) * 100) + '%' : '0%'
+      } catch(e) {}
+
+      try {
+        const { data: pagos } = await supabase.from('pagos')
+          .select('estado').eq('alumno_id', padre.alumno_id)
+          .order('creado_en', { ascending: false }).limit(1)
+        const p = pagos?.[0]
+        document.getElementById('stat-pago').textContent = p?.estado === 'pagado' ? 'Al día' : (p ? 'Pendiente' : '—')
+      } catch(e) {}
+    }
+
+    // Alertas — se cargan SIEMPRE, sin importar si hay padre o alumno
+    const alertas = []
+
+    try {
+      const { data: msgs } = await supabase.from('mensajes')
+        .select('texto, creado_en').eq('para_admin', false)
+        .order('creado_en', { ascending: false }).limit(5)
+      msgs?.forEach(m => {
+        const preview = (m.texto || '').substring(0, 70)
+        alertas.push(`<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span>
+          <span class="grow"><span class="t">Mensaje del instructor</span><span class="s">${preview}${(m.texto||'').length > 70 ? '…' : ''}</span></span></div>`)
+      })
+    } catch(e) {}
+
+    try {
+      const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
+      if (frase?.texto) {
+        alertas.push(`<div class="row"><span class="ic"><i data-lucide="quote"></i></span>
+          <span class="grow"><span class="t">Frase del día</span><span class="s">"${frase.texto}"</span></span></div>`)
+      }
+    } catch(e) {}
+
+    try {
+      const { data: eventos } = await supabase.from('eventos').select('titulo, fecha, lugar').gte('fecha', hoyStr).order('fecha').limit(1)
+      if (eventos?.length) {
+        alertas.push(`<a class="row" href="torneos.html"><span class="ic amber"><i data-lucide="trophy"></i></span>
+          <span class="grow"><span class="t">${eventos[0].titulo}</span><span class="s">${eventos[0].fecha}${eventos[0].lugar ? ' · ' + eventos[0].lugar : ''}</span></span></a>`)
+      }
+    } catch(e) {}
+
+    document.getElementById('alertas').innerHTML = alertas.length
+      ? alertas.join('')
+      : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px;">Todo al día. ¡Sigue adelante! 🥋</div>'
+    lucide.createIcons()
   }
 
   cargarDatos()
