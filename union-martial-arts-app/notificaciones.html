@@ -1,18 +1,19 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Avisos y horario</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Avisos</title><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead blue">
     <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Avisos y horario</div></div>
+    <div class="grow"><div class="title">Avisos</div></div>
   </div>
   <div class="body">
-    <div id="horario-wrap" style="display:none;">
-      <div class="label">Horario</div>
-      <div class="card soft mb18" id="horario-card"></div>
-    </div>
-
     <div id="privados-wrap" style="display:none;">
       <div class="label">Mensajes para ti</div>
       <div id="privados-list" class="mb18"></div>
@@ -52,19 +53,6 @@
 
   // Marcar como visto
   localStorage.setItem('notif_visto', new Date().toISOString())
-
-  // Horario del alumno
-  const { data: padre } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
-  if (padre?.alumno_id) {
-    const { data: al } = await supabase.from('alumnos').select('nombre, horario').eq('id', padre.alumno_id).maybeSingle()
-    if (al?.horario) {
-      const hs = al.horario.split(' | ').filter(Boolean)
-      document.getElementById('horario-card').innerHTML =
-        `<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:10px;">${al.nombre}</div>` +
-        hs.map(h => `<div style="font-size:13px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--ink-100);">· ${h}</div>`).join('')
-      document.getElementById('horario-wrap').style.display = 'block'
-    }
-  }
 
   // Mensajes privados dirigidos a este padre
   const { data: privados } = await supabase.from('mensajes')
@@ -161,4 +149,10 @@
 
   lucide.createIcons()
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
 </body></html>
+
