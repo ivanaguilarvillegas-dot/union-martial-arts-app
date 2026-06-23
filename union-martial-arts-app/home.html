@@ -140,9 +140,8 @@
         }
       }
 
-      // DEBUG temporal — mostrar alumno_id y primerDia
-      document.getElementById('alertas').innerHTML = `<div style="font-size:11px;padding:8px;background:#fffbea;border-radius:8px;color:#555;">
-        DEBUG: alumno_id=${padre.alumno_id || 'NULL'} | primerDia=${primerDia}</div>`
+      // DEBUG
+      alert('DEBUG v2 — alumno_id: ' + (padre.alumno_id || 'NULL') + ' | primerDia: ' + primerDia)
 
       // Stats — solo si hay alumno vinculado
       if (padre.alumno_id) {
