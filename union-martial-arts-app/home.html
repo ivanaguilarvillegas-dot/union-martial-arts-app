@@ -167,7 +167,7 @@
         }
       }
 
-      // Mensajes del instructor a padres (sin filtro leido para mayor compatibilidad)
+      // Mensajes del instructor a padres
       try {
         const { data: msgs } = await supabase.from('mensajes')
           .select('texto, creado_en')
