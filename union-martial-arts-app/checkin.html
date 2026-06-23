@@ -161,8 +161,9 @@
     }, { onConflict: 'alumno_id,fecha' })
 
     // Notificar al instructor
-    const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? '\n"' + nota + '"' : ''}`
-    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
+    const { error: errMsg } = await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    if (errMsg) alert('No se pudo notificar al instructor: ' + errMsg.message)
 
     document.getElementById('msg-ausente').style.display = 'flex'
     document.getElementById('btn-ausente').disabled = true
@@ -181,7 +182,7 @@
         <span class="ic ${ausencia ? 'red' : 'green'}"><i data-lucide="${ausencia ? 'x-circle' : 'calendar-check'}"></i></span>
         <span class="grow">
           <span class="t">${c.fecha}</span>
-          <span class="s">${ausencia ? 'Ausencia — ' + (c.ausencia_motivo || '') : (c.tipo || 'Clase')}</span>
+          <span class="s">${ausencia ? 'Ausencia — ' + (c.ausencia_motivo || '') : (c.tipo || 'Clase') + (c.hora ? ' · ' + c.hora : '')}</span>
         </span>
         <span class="trail"><span class="badge ${ausencia ? 'red' : 'green'}">${ausencia ? 'Ausente' : 'Asistió'}</span></span>
       </div>`

@@ -47,7 +47,7 @@
     try {
       // Cargamos mensajes sin join (no hay FK directa entre mensajes y padres)
       const { data: msgs } = await supabase.from('mensajes')
-        .select('de_user_id, texto, creado_en')
+        .select('id, de_user_id, texto, creado_en')
         .eq('para_admin', true)
         .order('creado_en', { ascending: false })
         .limit(20)
@@ -62,8 +62,8 @@
           msgs.map((m, idx) => {
             const nombre = padreMap[m.de_user_id] || 'Padre'
             const fecha = m.creado_en ? new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '—'
-            return `<div class="card mb12" id="msg-${idx}">
-              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;">
+            return `<div class="card mb12" id="msg-${idx}" data-msgid="${m.id || ''}">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-weight:600;color:var(--text);">${nombre}</span><span>${fecha}</span>
               </div>
               <div style="font-size:13.5px;line-height:1.5;margin-bottom:10px;">${m.texto}</div>
@@ -74,7 +74,10 @@
                   <button class="btn secondary sm" data-cancel="${idx}">Cancelar</button>
                 </div>
               </div>
-              <button class="btn secondary sm" data-reply="${idx}" style="margin-top:0;"><i data-lucide="reply"></i> Responder</button>
+              <div style="display:flex;gap:8px;margin-top:0;">
+                <button class="btn secondary sm" data-reply="${idx}"><i data-lucide="reply"></i> Responder</button>
+                <button class="btn danger sm" data-borrar="${idx}" data-msgid="${m.id || ''}"><i data-lucide="trash-2"></i> Resuelto</button>
+              </div>
             </div>`
           }).join('')
 
@@ -102,6 +105,15 @@
             document.getElementById('msg-' + i).innerHTML += `<div style="margin-top:8px;padding:8px;background:var(--soft);border-radius:var(--r-sm);font-size:12.5px;color:var(--primary);"><b>Tu respuesta:</b> ${texto}</div>`
             document.getElementById('resp-' + i).style.display = 'none'
             lucide.createIcons()
+          }
+
+          const dBtn = e.target.closest('[data-borrar]')
+          if (dBtn) {
+            const msgId = dBtn.dataset.msgid
+            if (!msgId) { dBtn.closest('.card')?.remove(); return }
+            if (!confirm('¿Marcar como resuelto y eliminar este mensaje?')) return
+            await supabase.from('mensajes').delete().eq('id', msgId)
+            dBtn.closest('.card')?.remove()
           }
         })
       } else {
