@@ -132,12 +132,14 @@
       lucide.createIcons(); return
     }
 
-    await supabase.from('checkins').insert({ alumno_id: alumnoId, fecha: hoy, tipo })
+    const ahora = new Date()
+    const hora = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
+    await supabase.from('checkins').insert({ alumno_id: alumnoId, fecha: hoy, tipo, hora })
 
     // Notificar al instructor
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: `✅ Check-in: ${alumnoNombre} llegó a ${tipo} el ${hoy}`,
+      texto: `✅ Check-in: ${alumnoNombre} llegó a ${tipo} el ${hoy} a las ${hora}`,
       para_admin: true
     })
 
