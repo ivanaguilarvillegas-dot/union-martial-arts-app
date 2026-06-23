@@ -1,4 +1,4 @@
-const CACHE = 'uma-v8'
+const CACHE = 'uma-v9'
 const SHELL = [
   '/',
   '/home.html',
@@ -27,14 +27,26 @@ self.addEventListener('activate', e => {
   )
 })
 
-// Network first, cache fallback
+// HTML: siempre red, nunca cache. Assets: network first, cache fallback.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return
   const url = new URL(e.request.url)
 
-  // No cachear llamadas a Supabase ni a esm.sh
-  if (url.hostname.includes('supabase') || url.hostname.includes('esm.sh') || url.hostname.includes('unpkg')) return
+  // No interceptar Supabase / CDNs externos
+  if (url.hostname.includes('supabase') || url.hostname.includes('esm.sh') ||
+      url.hostname.includes('unpkg') || url.hostname.includes('jsdelivr') ||
+      url.hostname.includes('cdn.')) return
 
+  // HTML — siempre desde red, sin guardar en caché
+  if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname === '') {
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' })
+        .catch(() => caches.match(e.request).then(r => r || caches.match('/home.html')))
+    )
+    return
+  }
+
+  // Assets (CSS, JS, imágenes) — network first, cache fallback
   e.respondWith(
     fetch(e.request)
       .then(res => {
