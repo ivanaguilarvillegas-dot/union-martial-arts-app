@@ -60,8 +60,14 @@
         'nutricion_desayuno','nutricion_comida','nutricion_pre','nutricion_post','nutricion_cena'])
     if (cfgRows?.length) {
       const m = {}; cfgRows.forEach(c => { m[c.clave] = c.valor })
-      if (m.nutricion_recomendados) good = m.nutricion_recomendados.split(',').map(s => s.trim()).filter(Boolean)
-      if (m.nutricion_evitar) bad = m.nutricion_evitar.split(',').map(s => s.trim()).filter(Boolean)
+      if (m.nutricion_recomendados) {
+        const raw = m.nutricion_recomendados.includes(':') ? m.nutricion_recomendados.split(':').slice(1).join(':') : m.nutricion_recomendados
+        good = raw.split(',').map(s => s.trim()).filter(Boolean)
+      }
+      if (m.nutricion_evitar) {
+        const raw = m.nutricion_evitar.includes(':') ? m.nutricion_evitar.split(':').slice(1).join(':') : m.nutricion_evitar
+        bad = raw.split(',').map(s => s.trim()).filter(Boolean)
+      }
       const h = [m.nutricion_habito_1, m.nutricion_habito_2, m.nutricion_habito_3, m.nutricion_habito_4].filter(Boolean)
       if (h.length) habitos = h
       if (m.nutricion_desayuno) dia[0][2] = m.nutricion_desayuno
