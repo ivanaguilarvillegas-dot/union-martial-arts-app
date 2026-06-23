@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Reglamento</title>
+<link rel="stylesheet" href="css/uma.css" />
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Reglamento</div></div>
+  </div>
+  <div class="body">
+
+    <div id="ya-firmado" style="display:none;" class="notice green mb14">
+      <i data-lucide="badge-check"></i> Ya firmaste el reglamento. ¡Gracias!
+    </div>
+
+    <div class="card mb14" id="pdf-card">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <span style="width:42px;height:42px;border-radius:var(--r-md);background:var(--soft);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="file-text" style="width:21px;height:21px"></i>
+        </span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;">Reglamento Union Martial Arts</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Lee el documento antes de firmar</div>
+        </div>
+      </div>
+      <a id="pdf-link" href="#" target="_blank" class="btn secondary block mt12" style="display:none;">
+        <i data-lucide="external-link"></i> Ver reglamento (PDF)
+      </a>
+      <div id="sin-pdf" style="display:none;font-size:13px;color:var(--muted);margin-top:10px;text-align:center;">
+        El instructor aún no ha subido el reglamento.
+      </div>
+    </div>
+
+    <div id="firma-section" style="display:none;">
+      <div class="label">Firma electrónica</div>
+      <div class="card mb14">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+          Al escribir tu nombre completo confirmas que leíste y aceptas el reglamento de la academia.
+        </div>
+        <input type="text" id="nombre-firma" placeholder="Escribe tu nombre completo"
+          style="width:100%;height:44px;border:1.5px solid var(--border-input);border-radius:var(--r-sm);padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        <button class="btn primary block mt12" id="btn-firmar">
+          <i data-lucide="pen-line"></i> Firmar y enviar
+        </button>
+        <div id="firma-error" style="display:none;color:var(--red-600);font-size:13px;margin-top:8px;"></div>
+      </div>
+    </div>
+
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  const { data: padre } = await supabase.from('padres').select('nombre').eq('user_id', user.id).maybeSingle()
+
+  // Cargar URL del reglamento
+  const { data: cfg } = await supabase.from('configuracion').select('valor').eq('clave', 'reglamento_url').maybeSingle()
+  if (cfg?.valor) {
+    const link = document.getElementById('pdf-link')
+    link.href = cfg.valor
+    link.style.display = 'flex'
+  } else {
+    document.getElementById('sin-pdf').style.display = 'block'
+  }
+
+  // Verificar si ya firmó
+  const { data: firmaExiste } = await supabase.from('firmas_reglamento')
+    .select('id').eq('padre_user_id', user.id).maybeSingle()
+
+  if (firmaExiste) {
+    document.getElementById('ya-firmado').style.display = 'flex'
+  } else {
+    document.getElementById('firma-section').style.display = 'block'
+    if (padre?.nombre) {
+      document.getElementById('nombre-firma').value = padre.nombre
+    }
+  }
+
+  document.getElementById('btn-firmar').addEventListener('click', async () => {
+    const nombre = document.getElementById('nombre-firma').value.trim()
+    if (!nombre) {
+      document.getElementById('firma-error').textContent = 'Escribe tu nombre completo para firmar.'
+      document.getElementById('firma-error').style.display = 'block'
+      return
+    }
+    document.getElementById('btn-firmar').disabled = true
+    document.getElementById('btn-firmar').textContent = 'Enviando...'
+
+    const { error } = await supabase.from('firmas_reglamento').insert({
+      padre_user_id: user.id,
+      nombre_firma: nombre,
+      firmado_en: new Date().toISOString()
+    })
+
+    if (error) {
+      document.getElementById('firma-error').textContent = '❌ Error: ' + error.message
+      document.getElementById('firma-error').style.display = 'block'
+      document.getElementById('btn-firmar').disabled = false
+      document.getElementById('btn-firmar').innerHTML = '<i data-lucide="pen-line"></i> Firmar y enviar'
+      lucide.createIcons()
+      return
+    }
+
+    // Notificar al instructor
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: '✍️ ' + nombre + ' firmó el reglamento de la academia · ' + new Date().toLocaleDateString('es-MX'),
+      para_admin: true
+    })
+
+    document.getElementById('firma-section').style.display = 'none'
+    document.getElementById('ya-firmado').style.display = 'flex'
+    lucide.createIcons()
+  })
+
+  lucide.createIcons()
+</script>
+</body>
+</html>

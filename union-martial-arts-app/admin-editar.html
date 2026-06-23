@@ -54,9 +54,17 @@
       { clave: 'horario_jueves_sabado', default: 'Jueves 6:30 a 7:30 pm · Sábado 12:00 a 1:00 pm' },
     ]},
     { titulo: 'Nutrición', ic: 'salad', items: [
-      { clave: 'nutricion_recomendados', default: 'Alimentos recomendados: pollo, arroz integral, verduras, fruta, agua' },
-      { clave: 'nutricion_evitar',       default: 'Alimentos a evitar: frituras, refresco, comida chatarra, azúcar' },
-      { clave: 'nutricion_entrenamiento',default: 'Día de entrenamiento: come 2 horas antes, hidratación constante' },
+      { clave: 'nutricion_recomendados', default: 'Pollo a la plancha, Arroz integral, Plátano, Huevo, Atún, Avena, Fruta fresca, Agua natural, Verduras, Frijoles' },
+      { clave: 'nutricion_evitar',       default: 'Refresco, Comida rápida, Frituras, Dulces, Jugos de caja, Carnes procesadas, Exceso de sal' },
+      { clave: 'nutricion_habito_1',     default: 'Tomé 8 vasos de agua' },
+      { clave: 'nutricion_habito_2',     default: 'Desayuné antes de entrenar' },
+      { clave: 'nutricion_habito_3',     default: 'Comí fruta o verdura' },
+      { clave: 'nutricion_habito_4',     default: 'Evité refresco y frituras' },
+      { clave: 'nutricion_desayuno',     default: 'Avena con plátano + 2 huevos + agua' },
+      { clave: 'nutricion_comida',       default: 'Pollo a la plancha + arroz + ensalada' },
+      { clave: 'nutricion_pre',          default: 'Fruta + hidratación abundante' },
+      { clave: 'nutricion_post',         default: 'Huevo + tortilla + agua o leche' },
+      { clave: 'nutricion_cena',         default: 'Atún + verduras + agua' },
     ]},
     { titulo: 'Tienda en línea', ic: 'shopping-bag', items: [
       { clave: null, default: 'Productos, precios y fotos', href: 'admin-tienda.html' },
@@ -120,7 +128,13 @@
     btn.disabled = true
     btn.textContent = 'Guardando…'
 
-    await supabase.from('configuracion').upsert({ clave: claveActual, valor, actualizado_en: new Date().toISOString() }, { onConflict: 'clave' })
+    const { error } = await supabase.from('configuracion').upsert({ clave: claveActual, valor }, { onConflict: 'clave' })
+    if (error) {
+      alert('❌ Error al guardar: ' + error.message)
+      btn.disabled = false
+      btn.innerHTML = '<i data-lucide="save"></i> Guardar'
+      return
+    }
 
     cfg[claveActual] = valor
     document.getElementById('modal').style.display = 'none'
@@ -128,6 +142,12 @@
     btn.disabled = false
     btn.innerHTML = '<i data-lucide="save"></i> Guardar'
     render()
+    // Confirmación visual
+    const toast = document.createElement('div')
+    toast.textContent = '✅ Guardado'
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:10px 20px;border-radius:100px;font-size:14px;font-weight:700;z-index:9999;'
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 2500)
   })
 </script>
 </body></html>

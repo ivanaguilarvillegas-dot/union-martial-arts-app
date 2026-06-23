@@ -39,12 +39,14 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  // Subir PDF del reglamento a Storage
+  // Subir PDF del reglamento al bucket media
   document.getElementById('pdf').addEventListener('change', async e => {
     const file = e.target.files[0]; if (!file) return
     document.getElementById('fname').textContent = 'Subiendo...'
-    const { error } = await supabase.storage.from('documentos').upload('reglamento.pdf', file, { upsert: true })
-    if (error) { alert('Error: ' + error.message); return }
+    const { error } = await supabase.storage.from('media').upload('reglamento.pdf', file, { upsert: true })
+    if (error) { alert('❌ Error al subir: ' + error.message); document.getElementById('fname').textContent = 'Subir reglamento (PDF)'; return }
+    const url = supabase.storage.from('media').getPublicUrl('reglamento.pdf').data.publicUrl
+    await supabase.from('configuracion').upsert({ clave: 'reglamento_url', valor: url }, { onConflict: 'clave' })
     document.getElementById('fname').textContent = '✅ ' + file.name + ' subido'
   })
 
