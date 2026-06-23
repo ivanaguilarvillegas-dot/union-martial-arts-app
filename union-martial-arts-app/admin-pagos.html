@@ -16,6 +16,34 @@
     <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
   </nav>
 </div></div>
+
+<!-- Modal confirmar pago con monto editable -->
+<div id="modal-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Confirmar pago</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;" id="modal-alumno-nombre">Alumno</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Monto recibido (MXN)</label>
+      <div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;height:46px;">
+        <span style="font-size:18px;font-weight:700;color:var(--muted);">$</span>
+        <input type="number" id="modal-monto" min="1" style="flex:1;border:none;outline:none;font-size:18px;font-weight:700;font-family:inherit;" />
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Forma de pago</label>
+      <select id="modal-forma" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;background:#fff;outline:none;">
+        <option value="efectivo">Efectivo</option>
+        <option value="transferencia">Transferencia bancaria</option>
+        <option value="mercadopago">Mercado Pago</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn secondary" style="flex:1;" id="modal-cancelar">Cancelar</button>
+      <button class="btn primary" style="flex:1;" id="modal-confirmar"><i data-lucide="check"></i> Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -30,6 +58,7 @@
   document.querySelector('.sub').textContent = mes.charAt(0).toUpperCase() + mes.slice(1)
 
   let pagos = []
+  let pagoSeleccionado = null
 
   function iniciales(nombre) {
     return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
@@ -60,9 +89,10 @@
           <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
           <span class="grow">
             <span class="t" style="font-size:13.5px;font-weight:600;">${nombre}</span>
-            <span class="s">$${Number(p.monto).toLocaleString()} MXN · ${p.mes||'—'}${p.forma_pago ? ' · '+p.forma_pago : ''}</span>
+            <span class="s">$${Number(p.monto).toLocaleString('es-MX')} MXN · ${p.mes||'—'}${p.forma_pago ? ' · '+p.forma_pago : ''}</span>
           </span>
-          <button data-id="${p.id}" data-ok="${ok}" style="display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${ok?'var(--green-bg)':'var(--red-bg)'};color:${ok?'var(--green-text)':'var(--red-text)'};flex-shrink:0;">
+          <button data-id="${p.id}" data-ok="${ok}" data-monto="${p.monto||0}" data-forma="${p.forma_pago||'efectivo'}" data-nombre="${nombre}"
+            style="display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${ok?'var(--green-bg)':'var(--red-bg)'};color:${ok?'var(--green-text)':'var(--red-text)'};flex-shrink:0;">
             <i data-lucide="${ok?'check':'clock'}" style="width:13px;height:13px"></i> ${ok?'Pagado':'Pendiente'}
           </button>
         </div>
@@ -80,34 +110,63 @@
     if (comp) { window.open(decodeURIComponent(comp.dataset.comp), '_blank'); return }
     const rec = e.target.closest('[data-recibo]')
     if (rec) { window.open('recibo.html?id=' + rec.dataset.recibo, '_blank'); return }
-  })
 
-  // Marcar como pagado / pendiente y generar recibo
-  document.getElementById('list').addEventListener('click', async e => {
-    if (e.target.closest('[data-comp]') || e.target.closest('[data-recibo]')) return
     const btn = e.target.closest('[data-id]')
     if (!btn) return
-    const id = btn.dataset.id
+
     const yaOk = btn.dataset.ok === 'true'
-    const nuevoEstado = yaOk ? 'pendiente' : 'pagado'
-    const hoy = new Date().toISOString().split('T')[0]
 
-    await supabase.from('pagos').update({
-      estado: nuevoEstado,
-      fecha_pago: nuevoEstado === 'pagado' ? hoy : null
-    }).eq('id', id)
-
-    // Si se marcó como pagado, notificar al padre con recibo
-    if (nuevoEstado === 'pagado') {
-      const pago = pagos.find(p => p.id === id)
-      const nombre = pago?.alumnos?.nombre || 'tu hijo/a'
-      await supabase.from('mensajes').insert({
-        de_user_id: user.id,
-        texto: `✅ Pago confirmado · ${nombre} · Mensualidad ${pago?.mes||''} · $${Number(pago?.monto||0).toLocaleString()} MXN · ${pago?.forma_pago||'Efectivo'} · Fecha: ${hoy}`,
-        para_admin: false
-      })
+    if (yaOk) {
+      // Desmarcar como pendiente directamente
+      if (!confirm('¿Marcar este pago como pendiente?')) return
+      supabase.from('pagos').update({ estado: 'pendiente', fecha_pago: null }).eq('id', btn.dataset.id).then(() => cargar())
+      return
     }
 
+    // Abrir modal para confirmar con monto editable
+    pagoSeleccionado = { id: btn.dataset.id, nombre: btn.dataset.nombre }
+    document.getElementById('modal-alumno-nombre').textContent = btn.dataset.nombre + ' · ' + (pagos.find(p=>p.id===btn.dataset.id)?.mes||'')
+    document.getElementById('modal-monto').value = btn.dataset.monto || ''
+    document.getElementById('modal-forma').value = btn.dataset.forma || 'efectivo'
+    document.getElementById('modal-pago').style.display = 'flex'
+    lucide.createIcons()
+  })
+
+  document.getElementById('modal-cancelar').addEventListener('click', () => {
+    document.getElementById('modal-pago').style.display = 'none'
+    pagoSeleccionado = null
+  })
+
+  document.getElementById('modal-confirmar').addEventListener('click', async () => {
+    if (!pagoSeleccionado) return
+    const monto = parseInt(document.getElementById('modal-monto').value) || 0
+    const forma = document.getElementById('modal-forma').value
+    if (monto < 1) { alert('Ingresa el monto recibido'); return }
+
+    const btn = document.getElementById('modal-confirmar')
+    btn.disabled = true; btn.textContent = 'Guardando…'
+
+    const hoy = new Date().toISOString().split('T')[0]
+    const { error } = await supabase.from('pagos').update({
+      estado: 'pagado',
+      monto,
+      forma_pago: forma,
+      fecha_pago: hoy
+    }).eq('id', pagoSeleccionado.id)
+
+    if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons(); return }
+
+    // Notificar al padre
+    const pago = pagos.find(p => p.id === pagoSeleccionado.id)
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: `✅ Pago confirmado · ${pago?.alumnos?.nombre||'tu hijo/a'} · ${pago?.mes||''} · $${monto.toLocaleString('es-MX')} MXN · ${forma} · Fecha: ${hoy}`,
+      para_admin: false
+    })
+
+    document.getElementById('modal-pago').style.display = 'none'
+    pagoSeleccionado = null
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons()
     await cargar()
   })
 
