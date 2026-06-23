@@ -243,10 +243,13 @@
     if (tipo === 'frase') {
       await supabase.from('frases').update({ activa: false }).eq('activa', true)
       await supabase.from('frases').insert({ texto, activa: true, fecha_envio: new Date().toISOString().split('T')[0] })
+    } else if (tipo === 'aviso') {
+      // Guardar aviso en configuracion (sin RLS, visible para todos los padres)
+      await supabase.from('configuracion').upsert({ clave: 'aviso_general', valor: texto }, { onConflict: 'clave' })
     } else {
-      const para_admin = false
+      // Mensaje privado
       const dest = document.getElementById('dest-select')?.value || null
-      await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin, destinatario_id: dest })
+      await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: dest })
     }
 
     document.getElementById('form').style.display = 'none'

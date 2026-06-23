@@ -158,21 +158,12 @@
     const items = []
     const hoyStr = new Date().toISOString().split('T')[0]
 
-    const { data: msgs, error: errMsg } = await supabase
-      .from('mensajes').select('texto, para_admin')
-      .order('creado_en', { ascending: false }).limit(10)
-
-    if (errMsg) {
-      el.innerHTML = '<div class="row"><span class="ic red"><i data-lucide="alert-circle"></i></span><span class="grow"><span class="t">Error: ' + errMsg.message + '</span></span></div>'
-      lucide.createIcons(); return
-    }
-
-    const msgsParaPadres = (msgs || []).filter(m => m.para_admin === false)
-
-    ;(msgsParaPadres || []).forEach(m => {
-      const t = (m.texto || '').substring(0, 80)
-      items.push('<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span><span class="grow"><span class="t">Aviso del instructor</span><span class="s">' + t + '</span></span></div>')
-    })
+    try {
+      const { data: aviso } = await supabase.from('configuracion').select('valor').eq('clave', 'aviso_general').maybeSingle()
+      if (aviso?.valor) {
+        items.push('<div class="row"><span class="ic blue"><i data-lucide="message-square"></i></span><span class="grow"><span class="t">Aviso del instructor</span><span class="s">' + aviso.valor.substring(0, 100) + '</span></span></div>')
+      }
+    } catch(e) {}
 
     try {
       const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
