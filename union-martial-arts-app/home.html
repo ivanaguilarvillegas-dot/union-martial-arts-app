@@ -20,7 +20,7 @@
 .home-header-right { display:flex; gap:12px; align-items:center; }
 .notif-btn { position:relative; }
 .notif-btn i { color:#fff; width:22px; height:22px; }
-.notif-badge { position:absolute; top:-7px; right:-8px; background:#dc2626; color:#fff; border-radius:12px; font-size:11px; font-weight:800; padding:2px 6px; min-width:20px; text-align:center; border:2px solid var(--primary,#1d4ed8); box-shadow:0 1px 4px rgba(220,38,38,.5); }
+.notif-badge { position:absolute; top:-9px; right:-10px; background:#dc2626; color:#fff; border-radius:14px; font-size:12px; font-weight:900; padding:3px 7px; min-width:22px; text-align:center; box-shadow:0 2px 6px rgba(220,38,38,.7); }
 
 .alumno-card { background:#fff; border-radius:14px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
 .alumno-foto { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
@@ -468,7 +468,7 @@
         return { dia: 'Hoy', detalle: seg }
       }
     }
-    return { dia: segmentos[0].split(':')[0].trim(), detalle: segmentos[0] }
+    return { dia: segmentos[0].split('·')[0].trim(), detalle: segmentos[0] }
   }
 
   // Logout
@@ -506,8 +506,8 @@
 
     if (padre) {
       const partes = (padre.nombre || '').trim().split(/\s+/).filter(Boolean)
-      // Formato "Nombre Apellido" → toma la última palabra como apellido
-      const apellido = partes.length > 1 ? partes[partes.length - 1] : partes[0] || ''
+      // Formato "Nombre ApellidoPaterno ApellidoMaterno" → toma el penúltimo (primer apellido)
+      const apellido = partes.length >= 3 ? partes[partes.length - 2] : partes.length === 2 ? partes[1] : partes[0] || ''
       document.getElementById('saludo-nombre').textContent = 'Familia ' + apellido
     }
 
@@ -559,13 +559,13 @@
         // Próxima clase desde horario
         const pc = proximaClase(al.horario)
         if (pc) {
-          document.getElementById('clase-dia').textContent = pc.dia
-          const partes = pc.detalle.split(':')
-          if (partes.length > 1) {
-            const horasParte = partes.slice(1).join(':').trim()
-            document.getElementById('clase-hora').textContent = horasParte
-            document.getElementById('clase-dias').textContent = partes[0]
+          const segPartes = pc.detalle.split('·')
+          if (segPartes.length > 1) {
+            document.getElementById('clase-dia').textContent = pc.dia
+            document.getElementById('clase-hora').textContent = segPartes[1].trim()
+            document.getElementById('clase-dias').textContent = segPartes[0].trim()
           } else {
+            document.getElementById('clase-dia').textContent = pc.dia
             document.getElementById('clase-dias').textContent = pc.detalle
           }
         } else {
