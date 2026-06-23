@@ -159,7 +159,7 @@
     const hoyStr = new Date().toISOString().split('T')[0]
 
     const { data: msgs, error: errMsg } = await supabase
-      .from('mensajes').select('texto').eq('para_admin', false)
+      .from('mensajes').select('texto').neq('para_admin', true)
       .order('creado_en', { ascending: false }).limit(5)
 
     if (errMsg) {
