@@ -145,28 +145,28 @@
 
     <!-- Ruta de progreso -->
     <div class="prog-ruta">
-      <div class="ruta-step">
+      <div class="ruta-step" onclick="document.getElementById('card-basico').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
         <div class="ruta-num">01</div>
         <div class="ruta-ic active"><i class="ti ti-star"></i></div>
         <div class="ruta-lbl">Básico</div>
         <div class="ruta-sub">Empiezas aquí</div>
       </div>
       <div class="ruta-arrow">›</div>
-      <div class="ruta-step">
+      <div class="ruta-step" onclick="document.getElementById('card-anual').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
         <div class="ruta-num">02</div>
         <div class="ruta-ic"><i class="ti ti-calendar"></i></div>
         <div class="ruta-lbl">Anual UNION</div>
         <div class="ruta-sub">Paso requerido</div>
       </div>
       <div class="ruta-arrow">›</div>
-      <div class="ruta-step">
+      <div class="ruta-step" onclick="document.getElementById('card-club').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
         <div class="ruta-num">03</div>
         <div class="ruta-ic"><i class="ti ti-crown"></i></div>
         <div class="ruta-lbl">Club Cinta</div>
         <div class="ruta-sub">Más beneficios</div>
       </div>
       <div class="ruta-arrow">›</div>
-      <div class="ruta-step">
+      <div class="ruta-step" onclick="document.getElementById('card-uacj').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
         <div class="ruta-num">04</div>
         <div class="ruta-ic"><i class="ti ti-trophy"></i></div>
         <div class="ruta-lbl">Camino UACJ</div>
@@ -178,7 +178,7 @@
   <div class="prog-body">
 
     <!-- ── BÁSICO ── -->
-    <div class="prog-card">
+    <div class="prog-card" id="card-basico">
       <div class="prog-card-top">
         <div class="prog-card-head">
           <div class="prog-card-ic blue"><i class="ti ti-star"></i></div>
@@ -233,7 +233,7 @@
     </div>
 
     <!-- ── ANUAL UNION ── -->
-    <div class="prog-card card-required">
+    <div class="prog-card card-required" id="card-anual">
       <div class="prog-card-top">
         <div class="prog-card-head">
           <div class="prog-card-ic blue"><i class="ti ti-calendar-check"></i></div>
@@ -283,7 +283,7 @@
     </div>
 
     <!-- ── CLUB CINTA NEGRA ── -->
-    <div class="prog-card card-premium">
+    <div class="prog-card card-premium" id="card-club">
       <div class="prog-card-top">
         <div class="prog-card-head">
           <div class="prog-card-ic green"><i class="ti ti-crown"></i></div>
@@ -335,7 +335,7 @@
     </div>
 
     <!-- ── CAMINO UACJ ── -->
-    <div class="prog-card card-elite">
+    <div class="prog-card card-elite" id="card-uacj">
       <div class="prog-card-top">
         <div class="prog-card-head">
           <div class="prog-card-ic amber"><i class="ti ti-trophy"></i></div>
