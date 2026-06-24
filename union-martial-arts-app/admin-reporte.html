@@ -77,6 +77,24 @@
   </nav>
 </div></div>
 
+<script>
+// Script independiente — carga alumnos sin depender de supabase.min.js
+(async function loadAlumnos() {
+  try {
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+    const r = await fetch('https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre,cinturon,grupo', { headers: { 'apikey': KEY } })
+    const data = await r.json()
+    const sel = document.getElementById('al-sel')
+    if (Array.isArray(data) && data.length) {
+      sel.innerHTML = '<option value="">Selecciona alumno…</option>' + data.map(a => `<option value="${a.id}">${a.nombre||a.id}</option>`).join('')
+    } else {
+      sel.innerHTML = '<option value="">Sin alumnos: ' + JSON.stringify(data).slice(0,60) + '</option>'
+    }
+  } catch(e) {
+    document.getElementById('al-sel').innerHTML = '<option value="">Error: ' + e.message + '</option>'
+  }
+})();
+</script>
 <script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
@@ -85,23 +103,6 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-
-  document.querySelector('.body').insertAdjacentHTML('afterbegin','<div id="ver" style="background:#0047AB;color:#fff;font-size:11px;padding:4px 8px;border-radius:6px;margin-bottom:8px;">v8 cargando...</div>')
-  // Cargar alumnos primero — no depende de sesión porque RLS está desactivado
-  const alumnosRes = await fetch(
-    'https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre,cinturon,grupo',
-    { headers: { 'apikey': ANON_KEY } }
-  )
-  const alumnos = await alumnosRes.json()
-  if (Array.isArray(alumnos) && alumnos.length) {
-    document.getElementById('al-sel').innerHTML =
-      '<option value="">Selecciona alumno…</option>' +
-      alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
-  } else {
-    document.getElementById('al-sel').innerHTML = '<option value="">⚠ ' + JSON.stringify(alumnos).slice(0,100) + '</option>'
-  }
-
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
   if (!user) { window.location.href = 'index.html'; return }
