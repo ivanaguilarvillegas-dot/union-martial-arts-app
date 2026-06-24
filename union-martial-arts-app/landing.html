@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="Union Martial Arts — Disciplina, confianza y crecimiento dentro y fuera del tatami. Kickboxing y artes marciales en Juárez."/>
+<title>Union Martial Arts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#0047AB;
+  --blue-dark:#003a8c;
+  --blue-mid:#1a5cc8;
+  --blue-light:#e8f0fe;
+  --white:#ffffff;
+  --gray-50:#f8faff;
+  --gray-100:#f1f5f9;
+  --gray-200:#e5e7eb;
+  --gray-400:#9ca3af;
+  --gray-600:#4b5563;
+  --gray-900:#111827;
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:24px;
+  --shadow-sm:0 2px 8px rgba(0,71,171,.08);
+  --shadow-md:0 4px 24px rgba(0,71,171,.12);
+  --shadow-lg:0 8px 40px rgba(0,71,171,.16);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--gray-900);background:#fff;-webkit-font-smoothing:antialiased;}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);padding:0 20px;}
+.nav-inner{max-width:680px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo img{width:32px;height:32px;object-fit:contain;}
+.nav-logo-text{font-size:15px;font-weight:800;color:var(--blue);letter-spacing:-.2px;}
+.nav-cta{background:var(--blue);color:#fff;font-size:13px;font-weight:700;padding:8px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;transition:background .15s;}
+.nav-cta:hover{background:var(--blue-dark);}
+
+/* ── CONTAINER ── */
+.container{max-width:680px;margin:0 auto;padding:0 20px;}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(160deg,var(--blue-dark) 0%,var(--blue) 50%,var(--blue-mid) 100%);padding:60px 20px 56px;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+.hero-inner{position:relative;z-index:1;max-width:480px;margin:0 auto;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.9);font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px;}
+.hero-logo{width:80px;height:80px;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 32px rgba(0,0,0,.2);}
+.hero-logo img{width:60px;height:60px;object-fit:contain;}
+.hero-title{font-size:32px;font-weight:900;color:#fff;line-height:1.15;letter-spacing:-.5px;margin-bottom:14px;}
+.hero-title span{color:rgba(255,255,255,.7);}
+.hero-sub{font-size:16px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:32px;font-weight:400;}
+.hero-btns{display:flex;flex-direction:column;gap:10px;align-items:center;}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--blue);font-size:15px;font-weight:700;padding:14px 28px;border-radius:99px;text-decoration:none;width:100%;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .15s,box-shadow .15s;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.25);}
+.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.35);color:#fff;font-size:14px;font-weight:600;padding:13px 28px;border-radius:99px;text-decoration:none;width:100%;max-width:300px;transition:background .15s;}
+.btn-secondary:hover{background:rgba(255,255,255,.2);}
+.hero-trust{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:28px;flex-wrap:wrap;}
+.hero-trust-item{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;}
+
+/* ── SECTION BASE ── */
+section{padding:56px 20px;}
+.section-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;}
+.section-title{font-size:26px;font-weight:900;color:var(--gray-900);line-height:1.2;letter-spacing:-.3px;margin-bottom:10px;}
+.section-sub{font-size:15px;color:var(--gray-600);line-height:1.6;}
+
+/* ── CAMINO ── */
+.camino{background:var(--gray-50);}
+.camino-steps{margin-top:32px;display:flex;flex-direction:column;gap:0;}
+.camino-step{display:flex;gap:16px;position:relative;}
+.camino-step:not(:last-child)::after{content:'';position:absolute;left:20px;top:44px;bottom:-8px;width:2px;background:var(--gray-200);}
+.step-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0;z-index:1;margin-top:2px;}
+.step-dot-1{background:var(--blue-light);color:var(--blue);}
+.step-dot-2{background:var(--blue);color:#fff;}
+.step-dot-3{background:#1e1b4b;color:#c4b5fd;}
+.step-dot-4{background:#7c3aed;color:#fff;}
+.step-body{padding-bottom:28px;flex:1;}
+.step-tag{font-size:10px;font-weight:800;color:var(--blue);letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px;}
+.step-tag-req{color:#7c3aed;}
+.step-name{font-size:18px;font-weight:800;color:var(--gray-900);margin-bottom:4px;}
+.step-desc{font-size:13px;color:var(--gray-600);line-height:1.55;}
+.step-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-top:6px;}
+.step-badge-entry{background:#dcfce7;color:#15803d;}
+.step-badge-req{background:#ede9fe;color:#6d28d9;}
+.step-badge-plus{background:#fef3c7;color:#92400e;}
+.step-badge-comp{background:#fce7f3;color:#9d174d;}
+
+/* ── PROGRAMAS ── */
+.programas-grid{margin-top:32px;display:flex;flex-direction:column;gap:20px;}
+.prog-card{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);overflow:hidden;border:1px solid var(--gray-200);}
+.prog-header{padding:20px 22px 16px;}
+.prog-tag{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.prog-name{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px;}
+.prog-sub{font-size:13px;line-height:1.5;font-weight:500;}
+.prog-price{display:flex;align-items:baseline;gap:4px;margin-top:12px;}
+.prog-price-amt{font-size:24px;font-weight:900;}
+.prog-price-label{font-size:12px;font-weight:500;color:var(--gray-400);}
+.prog-price-alt{font-size:12px;color:var(--gray-400);margin-top:2px;}
+.prog-divider{height:1px;background:var(--gray-200);margin:0;}
+.prog-body{padding:16px 22px 20px;}
+.prog-section-title{font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.prog-perks{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+.prog-perks li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--gray-600);line-height:1.4;}
+.prog-perks li::before{content:'✓';font-weight:800;flex-shrink:0;margin-top:0px;}
+.prog-horarios{background:var(--gray-50);border-radius:12px;padding:12px 14px;margin-bottom:16px;}
+.prog-horario-group{font-size:12px;margin-bottom:8px;}
+.prog-horario-group:last-child{margin-bottom:0;}
+.prog-horario-label{font-weight:700;color:var(--gray-900);margin-bottom:3px;}
+.prog-horario-item{color:var(--gray-600);line-height:1.6;}
+.prog-nota{background:var(--blue-light);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--blue-dark);font-weight:500;line-height:1.5;margin-bottom:16px;}
+.prog-nota strong{font-weight:800;}
+.prog-btn{display:block;text-align:center;padding:13px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .15s;}
+.prog-btn:hover{opacity:.88;}
+
+/* Card accent colors */
+.card-basico .prog-tag{color:#0047AB;}
+.card-basico .prog-name{color:#0047AB;}
+.card-basico .prog-sub{color:var(--gray-600);}
+.card-basico .prog-price-amt{color:#0047AB;}
+.card-basico .prog-perks li::before{color:#0047AB;}
+.card-basico .prog-btn{background:#0047AB;color:#fff;}
+
+.card-anual{border-color:#0047AB;border-width:2px;}
+.card-anual .prog-header{background:linear-gradient(135deg,#0047AB,#1a5cc8);}
+.card-anual .prog-tag{color:rgba(255,255,255,.7);}
+.card-anual .prog-name{color:#fff;}
+.card-anual .prog-sub{color:rgba(255,255,255,.8);}
+.card-anual .prog-price-amt{color:#fff;}
+.card-anual .prog-price-label{color:rgba(255,255,255,.6);}
+.card-anual .prog-price-alt{color:rgba(255,255,255,.55);}
+.card-anual .prog-perks li::before{color:#0047AB;}
+.card-anual .prog-btn{background:#0047AB;color:#fff;}
+.card-anual .prog-nota{background:#ede9fe;color:#4c1d95;}
+.card-anual .prog-nota strong{font-weight:800;}
+
+.card-club .prog-tag{color:#7c3aed;}
+.card-club .prog-name{color:#1e1b4b;}
+.card-club .prog-price-amt{color:#7c3aed;}
+.card-club .prog-perks li::before{color:#7c3aed;}
+.card-club .prog-btn{background:#7c3aed;color:#fff;}
+.card-club .prog-nota{background:#ede9fe;color:#4c1d95;}
+
+.card-uacj .prog-tag{color:#9d174d;}
+.card-uacj .prog-name{color:#1e1b4b;}
+.card-uacj .prog-perks li::before{color:#9d174d;}
+.card-uacj .prog-btn{background:linear-gradient(135deg,#7c3aed,#9d174d);color:#fff;}
+.card-uacj .prog-nota{background:#fce7f3;color:#831843;}
+
+/* ── BEST VALUE BADGE ── */
+.best-value-wrap{position:relative;}
+.best-value-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#0047AB;color:#fff;font-size:11px;font-weight:800;padding:4px 16px;border-radius:99px;white-space:nowrap;letter-spacing:.04em;z-index:2;}
+
+/* ── APP BENEFITS ── */
+.app-section{background:var(--gray-50);}
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px;}
+.app-item{background:#fff;border-radius:var(--radius-md);padding:16px 14px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);}
+.app-item-icon{width:40px;height:40px;background:var(--blue-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.app-item-title{font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:3px;}
+.app-item-desc{font-size:12px;color:var(--gray-400);line-height:1.4;}
+.app-download{background:#fff;border-radius:var(--radius-md);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);padding:18px 20px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.app-download-text{font-size:13px;color:var(--gray-600);line-height:1.4;}
+.app-download-text strong{display:block;font-size:15px;font-weight:800;color:var(--gray-900);margin-bottom:2px;}
+.app-download-badge{background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:6px 14px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+
+/* ── SOCIAL PROOF ── */
+.valores-section{padding:48px 20px;}
+.valores-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:24px;}
+.valor-pill{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:99px;padding:10px 16px;text-align:center;font-size:13px;font-weight:600;color:var(--gray-600);}
+
+/* ── CTA FINAL ── */
+.cta-section{background:linear-gradient(160deg,var(--blue-dark) 0%,var(--blue) 100%);padding:56px 20px;text-align:center;}
+.cta-title{font-size:28px;font-weight:900;color:#fff;letter-spacing:-.4px;margin-bottom:12px;line-height:1.2;}
+.cta-sub{font-size:15px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:32px;}
+.cta-btns{display:flex;flex-direction:column;gap:10px;align-items:center;}
+.btn-wa{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;font-size:15px;font-weight:700;padding:15px 28px;border-radius:99px;text-decoration:none;width:100%;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.btn-wa svg{width:20px;height:20px;fill:#fff;flex-shrink:0;}
+
+/* ── SOCIAL LINKS ── */
+.social-section{padding:32px 20px;border-top:1px solid var(--gray-200);}
+.social-inner{max-width:680px;margin:0 auto;text-align:center;}
+.social-title{font-size:13px;color:var(--gray-400);font-weight:500;margin-bottom:16px;}
+.social-links{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;}
+.social-link{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:transform .15s,opacity .15s;}
+.social-link:hover{transform:translateY(-2px);opacity:.88;}
+.social-link svg{width:22px;height:22px;}
+
+/* ── FOOTER ── */
+footer{background:var(--gray-900);padding:24px 20px;text-align:center;}
+.footer-inner{max-width:680px;margin:0 auto;}
+.footer-logo{font-size:16px;font-weight:900;color:#fff;letter-spacing:.02em;margin-bottom:6px;}
+.footer-copy{font-size:12px;color:var(--gray-400);}
+
+/* ── RESPONSIVE ── */
+@media(min-width:540px){
+  .hero-btns{flex-direction:row;justify-content:center;}
+  .btn-primary,.btn-secondary{width:auto;}
+  .hero-title{font-size:38px;}
+}
+@media(min-width:680px){
+  section{padding:72px 20px;}
+  .section-title{font-size:32px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <img src="/assets/logo-union-stacked.png" alt="Union Martial Arts" onerror="this.style.display='none'"/>
+      <span class="nav-logo-text">UNION MARTIAL ARTS</span>
+    </a>
+    <a class="nav-cta" href="#contacto">Inscribirme</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🥋 Kickboxing · Point Fighting · Artes Marciales</div>
+    <div class="hero-logo">
+      <img src="/assets/logo-union-stacked.png" alt="UNION" onerror="this.outerHTML='<span style=\'font-size:28px;font-weight:900;color:#0047AB;\'>U</span>'"/>
+    </div>
+    <h1 class="hero-title">Disciplina, confianza y crecimiento<br/><span>dentro y fuera del tatami.</span></h1>
+    <p class="hero-sub">Union Martial Arts forma campeones en valores, técnica y carácter. Un programa estructurado con seguimiento real para el alumno y la familia.</p>
+    <div class="hero-btns">
+      <!-- Reemplaza el número de WhatsApp -->
+      <a class="btn-primary" href="https://wa.me/526561234567?text=Hola%2C+quiero+informaci%C3%B3n+sobre+Union+Martial+Arts" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Solicitar información
+      </a>
+      <a class="btn-secondary" href="#programas">Ver programas ↓</a>
+    </div>
+    <div class="hero-trust">
+      <div class="hero-trust-item">✓ App para padres incluida</div>
+      <div class="hero-trust-item">✓ Evaluaciones diarias</div>
+      <div class="hero-trust-item">✓ Seguimiento real</div>
+    </div>
+  </div>
+</section>
+
+<!-- TU CAMINO EN UNION -->
+<section class="camino" id="camino">
+  <div class="container">
+    <div class="section-label">Estructura del programa</div>
+    <h2 class="section-title">Tu camino en UNION</h2>
+    <p class="section-sub">Un proceso claro y estructurado, diseñado para que el alumno avance con propósito.</p>
+
+    <div class="camino-steps">
+      <div class="camino-step">
+        <div class="step-dot step-dot-1">1</div>
+        <div class="step-body">
+          <div class="step-tag">Empiezas aquí</div>
+          <div class="step-name">Programa Básico</div>
+          <div class="step-desc">Clases base, combate por grupo y evaluaciones diarias. Después de 3 meses pasas al siguiente nivel.</div>
+          <span class="step-badge step-badge-entry">Entrada</span>
+        </div>
+      </div>
+      <div class="camino-step">
+        <div class="step-dot step-dot-2">2</div>
+        <div class="step-body">
+          <div class="step-tag">Paso requerido</div>
+          <div class="step-name">Anual UNION</div>
+          <div class="step-desc">Continuidad del alumno, mismos horarios, más beneficios y acceso a la app para padres.</div>
+          <span class="step-badge step-badge-req">Requerido</span>
+        </div>
+      </div>
+      <div class="camino-step">
+        <div class="step-dot step-dot-3">3</div>
+        <div class="step-body">
+          <div class="step-tag">Adicional a Anual</div>
+          <div class="step-name">Club Cinta Negra</div>
+          <div class="step-desc">Kobudo, liderazgo, federación y más horas de formación. Se agrega al Anual UNION.</div>
+          <span class="step-badge step-badge-plus">+ Beneficios</span>
+        </div>
+      </div>
+      <div class="camino-step">
+        <div class="step-dot step-dot-4">4</div>
+        <div class="step-body">
+          <div class="step-tag">Ruta competitiva</div>
+          <div class="step-name">Camino UACJ</div>
+          <div class="step-desc">Formación competitiva, torneos y proyección deportiva. Requiere Anual UNION + Club Cinta Negra.</div>
+          <span class="step-badge step-badge-comp">Competitivo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMAS -->
+<section id="programas" style="padding:56px 20px;background:#fff;">
+  <div class="container">
+    <div class="section-label">Programas</div>
+    <h2 class="section-title">Elige tu programa</h2>
+    <p class="section-sub">Diseñados para crecer paso a paso, con estructura clara y seguimiento real.</p>
+
+    <div class="programas-grid">
+
+      <!-- BÁSICO -->
+      <div class="prog-card card-basico">
+        <div class="prog-header">
+          <div class="prog-tag">Empiezas aquí</div>
+          <div class="prog-name">Programa Básico</div>
+          <div class="prog-sub" style="color:#6b7280;">El punto de entrada a UNION. Aquí inicia todo.</div>
+          <div class="prog-price">
+            <span class="prog-price-amt">$1,550</span>
+            <span class="prog-price-label">/ mes</span>
+          </div>
+          <div class="prog-price-alt">+ Inscripción: $500</div>
+        </div>
+        <div class="prog-divider"></div>
+        <div class="prog-body">
+          <div class="prog-section-title">Incluye</div>
+          <ul class="prog-perks">
+            <li>Clases base de la semana</li>
+            <li>Combate por grupo</li>
+            <li>Sábado de entrenamiento</li>
+            <li>Evaluaciones diarias</li>
+          </ul>
+          <div class="prog-section-title">Horarios</div>
+          <div class="prog-horarios">
+            <div class="prog-horario-group">
+              <div class="prog-horario-label">👦 Niños</div>
+              <div class="prog-horario-item">L, M y V — 4 pm / 5 pm / 6 pm</div>
+              <div class="prog-horario-item">Combate: martes 6:15 pm</div>
+              <div class="prog-horario-item">Sábado: 11 am</div>
+            </div>
+            <div class="prog-horario-group">
+              <div class="prog-horario-label">🧑 Jóvenes y adultos</div>
+              <div class="prog-horario-item">L, M y V — 7 pm</div>
+              <div class="prog-horario-item">Combate: jueves 6 pm</div>
+              <div class="prog-horario-item">Sábado: 12 pm</div>
+            </div>
+          </div>
+          <div class="prog-nota"><strong>Después de 3 meses en Básico</strong>, el alumno pasa a Anual UNION para seguir avanzando.</div>
+          <a class="prog-btn" href="https://wa.me/526561234567?text=Hola%2C+quiero+inscribirme+al+Programa+B%C3%A1sico" target="_blank" rel="noopener">Inscribirme →</a>
+        </div>
+      </div>
+
+      <!-- ANUAL -->
+      <div class="best-value-wrap">
+        <div class="best-value-badge">⭐ Paso requerido</div>
+        <div class="prog-card card-anual">
+          <div class="prog-header">
+            <div class="prog-tag">Continuidad del alumno</div>
+            <div class="prog-name">Anual UNION</div>
+            <div class="prog-sub">Paso requerido después del Básico. No es opcional.</div>
+            <div class="prog-price">
+              <span class="prog-price-amt">$12,500</span>
+              <span class="prog-price-label">contado</span>
+            </div>
+            <div class="prog-price-alt">o en 3 pagos cómodos</div>
+          </div>
+          <div class="prog-divider"></div>
+          <div class="prog-body">
+            <div class="prog-section-title">Beneficios de entrenamiento</div>
+            <ul class="prog-perks">
+              <li>Mismos horarios del Programa Básico</li>
+              <li>Seguimiento personalizado del alumno</li>
+              <li>Mejor costo por clase</li>
+            </ul>
+            <div class="prog-section-title">Beneficios en la app</div>
+            <ul class="prog-perks">
+              <li>Acceso completo a la app para padres</li>
+              <li>Planes de nutrición</li>
+              <li>Entrenamiento en casa</li>
+              <li>Meditación y visualización</li>
+            </ul>
+            <div class="prog-nota" style="background:#ede9fe;color:#4c1d95;"><strong>Anual UNION es el paso requerido</strong> después de Básico para seguir avanzando en UNION.</div>
+            <a class="prog-btn" href="https://wa.me/526561234567?text=Hola%2C+quiero+informaci%C3%B3n+sobre+Anual+UNION" target="_blank" rel="noopener">Continuar en UNION →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLUB CINTA NEGRA -->
+      <div class="prog-card card-club">
+        <div class="prog-header">
+          <div class="prog-tag">Adicional a Anual UNION</div>
+          <div class="prog-name" style="color:#1e1b4b;">Club Cinta Negra</div>
+          <div class="prog-sub" style="color:#6b7280;">Más formación, más beneficios, más proyección.</div>
+          <div class="prog-price">
+            <span class="prog-price-amt" style="color:#7c3aed;">$9,950</span>
+            <span class="prog-price-label">anualidad</span>
+          </div>
+        </div>
+        <div class="prog-divider"></div>
+        <div class="prog-body">
+          <div class="prog-section-title">Incluye</div>
+          <ul class="prog-perks">
+            <li>Kobudo</li>
+            <li>Liderazgo</li>
+            <li>Competencias de federación</li>
+            <li>Más horas de entrenamiento</li>
+            <li>Evaluaciones mensuales</li>
+          </ul>
+          <div class="prog-section-title">Horario adicional</div>
+          <div class="prog-horarios">
+            <div class="prog-horario-group">
+              <div class="prog-horario-item">👦 Niños: sábado 10 am – 12 pm</div>
+              <div class="prog-horario-item">🧑 Jóvenes: sábado 12 pm – 2 pm</div>
+            </div>
+          </div>
+          <div class="prog-nota"><strong>Club Cinta Negra se agrega a Anual UNION</strong> y fortalece la formación del alumno.</div>
+          <a class="prog-btn" href="https://wa.me/526561234567?text=Hola%2C+quiero+informaci%C3%B3n+sobre+el+Club+Cinta+Negra" target="_blank" rel="noopener">Agregar al plan →</a>
+        </div>
+      </div>
+
+      <!-- UACJ -->
+      <div class="prog-card card-uacj">
+        <div class="prog-header">
+          <div class="prog-tag" style="color:#9d174d;">Ruta competitiva</div>
+          <div class="prog-name" style="color:#1e1b4b;">Camino UACJ</div>
+          <div class="prog-sub" style="color:#6b7280;">Para alumnos con visión deportiva y proyección competitiva.</div>
+        </div>
+        <div class="prog-divider"></div>
+        <div class="prog-body">
+          <div class="prog-section-title">Incluye</div>
+          <ul class="prog-perks">
+            <li>Formación competitiva desde etapas tempranas</li>
+            <li>Participación en torneos del circuito</li>
+            <li>Seguimiento deportivo personalizado</li>
+            <li>Proyección rumbo a UACJ</li>
+          </ul>
+          <div class="prog-nota" style="background:#fce7f3;color:#831843;"><strong>Requiere Anual UNION + Club Cinta Negra</strong> para poder acceder.</div>
+          <a class="prog-btn" href="https://wa.me/526561234567?text=Hola%2C+quiero+informaci%C3%B3n+sobre+el+Camino+UACJ" target="_blank" rel="noopener">Solicitar información →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- APP BENEFICIOS -->
+<section class="app-section" id="app">
+  <div class="container">
+    <div class="section-label">App para padres</div>
+    <h2 class="section-title">Seguimiento real desde tu celular</h2>
+    <p class="section-sub">Los alumnos de Anual UNION tienen acceso a la app móvil. Los papás pueden dar seguimiento a todo desde su teléfono.</p>
+
+    <div class="app-grid">
+      <div class="app-item">
+        <div class="app-item-icon">✅</div>
+        <div class="app-item-title">Check-in</div>
+        <div class="app-item-desc">Confirma o reporta asistencia desde casa.</div>
+      </div>
+      <div class="app-item">
+        <div class="app-item-icon">📋</div>
+        <div class="app-item-title">Evaluaciones</div>
+        <div class="app-item-desc">Ve el avance diario y mensual de tu hijo.</div>
+      </div>
+      <div class="app-item">
+        <div class="app-item-icon">💳</div>
+        <div class="app-item-title">Pagos</div>
+        <div class="app-item-desc">Historial de pagos y seguimiento claro.</div>
+      </div>
+      <div class="app-item">
+        <div class="app-item-icon">🥗</div>
+        <div class="app-item-title">Nutrición</div>
+        <div class="app-item-desc">Planes alimenticios para el alumno.</div>
+      </div>
+      <div class="app-item">
+        <div class="app-item-icon">🏋️</div>
+        <div class="app-item-title">Rutinas en casa</div>
+        <div class="app-item-desc">Ejercicios para practicar fuera del tatami.</div>
+      </div>
+      <div class="app-item">
+        <div class="app-item-icon">🧘</div>
+        <div class="app-item-title">Meditación</div>
+        <div class="app-item-desc">Sesiones de enfoque y visualización.</div>
+      </div>
+    </div>
+
+    <div class="app-download">
+      <div class="app-download-text">
+        <strong>📱 App exclusiva UNION</strong>
+        Incluida con Anual UNION. Disponible para padres y alumnos.
+      </div>
+      <span class="app-download-badge">Incluida</span>
+    </div>
+  </div>
+</section>
+
+<!-- VALORES -->
+<section class="valores-section">
+  <div class="container">
+    <div class="section-label">Lo que formamos</div>
+    <h2 class="section-title">Valores que construimos juntos</h2>
+    <div class="valores-grid">
+      <div class="valor-pill">🙏 Respeto</div>
+      <div class="valor-pill">🥋 Disciplina</div>
+      <div class="valor-pill">💎 Honestidad</div>
+      <div class="valor-pill">⚡ Responsabilidad</div>
+      <div class="valor-pill">🔥 Constancia</div>
+      <div class="valor-pill">🌱 Humildad</div>
+      <div class="valor-pill">💛 Gratitud</div>
+      <div class="valor-pill">🎯 Enfoque</div>
+      <div class="valor-pill">🧘 Control</div>
+      <div class="valor-pill">💪 Esfuerzo</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section" id="contacto">
+  <div class="container">
+    <h2 class="cta-title">¿Listo para iniciar en UNION?</h2>
+    <p class="cta-sub">Agenda información, solicita inscripción o escríbenos por WhatsApp. Con gusto te orientamos sobre el programa ideal para tu hijo.</p>
+    <div class="cta-btns">
+      <!-- Reemplaza el número: 526561234567 → tu número real con código de país -->
+      <a class="btn-wa" href="https://wa.me/526561234567?text=Hola%2C+quiero+informaci%C3%B3n+sobre+Union+Martial+Arts" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar WhatsApp
+      </a>
+      <a class="btn-secondary" href="#programas">Ver programas</a>
+    </div>
+  </div>
+</section>
+
+<!-- REDES SOCIALES -->
+<div class="social-section">
+  <div class="social-inner">
+    <div class="social-title">Síguenos en redes sociales</div>
+    <div class="social-links">
+      <!-- Instagram -->
+      <a class="social-link" href="https://www.instagram.com/union_martial_arts/" target="_blank" rel="noopener" aria-label="Instagram" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fd5949 45%,#d6249f 60%,#285AEB 90%);">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <!-- Facebook -->
+      <a class="social-link" href="https://www.facebook.com/unionmartialartsmex/" target="_blank" rel="noopener" aria-label="Facebook" style="background:#1877F2;">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+      <!-- TikTok -->
+      <a class="social-link" href="https://www.tiktok.com/@unionmartialarts" target="_blank" rel="noopener" aria-label="TikTok" style="background:#000;">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg>
+      </a>
+      <!-- WhatsApp -->
+      <a class="social-link" href="https://wa.me/526561234567" target="_blank" rel="noopener" aria-label="WhatsApp" style="background:#25D366;">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">UNION MARTIAL ARTS</div>
+    <div class="footer-copy">© 2026 Union Martial Arts · Todos los derechos reservados</div>
+  </div>
+</footer>
+
+</body>
+</html>
