@@ -117,9 +117,9 @@
 
   try {
     upd('Paso 1: verificando sesión…')
-    const { data: authData, error: authErr } = await supabase.auth.getUser()
-    const user = authData?.user
-    upd('Paso 1 OK — user: ' + (user ? user.email : 'null') + (authErr ? ' | error: '+authErr.message : ''))
+    const { data: sessionData } = await supabase.auth.getSession()
+    const user = sessionData?.session?.user
+    upd('Paso 1 OK — user: ' + (user ? user.email : 'null (no sesión)'))
     if (!user) { window.location.href = 'index.html'; return }
 
     // Cargar padre — intenta por user_id primero, luego por correo
