@@ -245,30 +245,28 @@
     extra(b.dataset.t)
   })
 
-  document.getElementById('send').addEventListener('click', async () => { try {
-    const texto = document.getElementById('msg-texto').value.trim()
-    const tipo = document.querySelector('#tipos .on')?.dataset.t || 'aviso'
-    if (!texto) return
+  document.getElementById('send').addEventListener('click', async () => {
+    try {
+      const texto = document.getElementById('msg-texto').value.trim()
+      const tipo = document.querySelector('#tipos .on')?.dataset.t || 'aviso'
+      if (!texto) return
 
-    if (tipo === 'frase') {
-      await supabase.from('frases').update({ activa: false }).eq('activa', true)
-      await supabase.from('frases').insert({ texto, activa: true, fecha_envio: new Date().toISOString().split('T')[0] })
-    } else if (tipo === 'aviso') {
-      // Insertar en avisos para que aparezca en notificaciones
-      const { error: avErr } = await supabase.from('avisos').insert({ titulo: 'Aviso general', mensaje: texto, prioridad: 'informativo', activo: true, creado_por: user.id })
-      if (avErr) { alert('Error al guardar aviso: ' + avErr.message); return }
-    } else {
-      // Mensaje privado
-      const dest = document.getElementById('dest-select')?.value || null
-      await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: dest })
-    }
+      if (tipo === 'frase') {
+        await supabase.from('frases').update({ activa: false }).eq('activa', true)
+        await supabase.from('frases').insert({ texto, activa: true, fecha_envio: new Date().toISOString().split('T')[0] })
+      } else if (tipo === 'aviso') {
+        const { error: avErr } = await supabase.from('avisos').insert({ titulo: 'Aviso general', mensaje: texto, prioridad: 'informativo', activo: true, creado_por: user.id })
+        if (avErr) { alert('Error al guardar aviso: ' + avErr.message); return }
+      } else {
+        const dest = document.getElementById('dest-select')?.value || null
+        await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: dest })
+      }
 
-    document.getElementById('form').style.display = 'none'
-    document.getElementById('ok').style.display = 'block'
-    lucide.createIcons()
+      document.getElementById('form').style.display = 'none'
+      document.getElementById('ok').style.display = 'block'
+      lucide.createIcons()
+    } catch(e) { alert('Error al enviar: ' + e.message) }
   })
-
-  } catch(e) { alert('Error al enviar: ' + e.message) }
   async function cargarEnviados() {
     const { data: msgs } = await supabase.from('mensajes')
       .select('id, texto, creado_en, destinatario_id').eq('para_admin', false).eq('de_user_id', user.id)
