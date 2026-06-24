@@ -95,7 +95,11 @@
   // Cargar alumnos
   const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
   if (errAl) {
-    document.getElementById('al-sel').innerHTML = `<option value="">Error: ${errAl.message}</option>`
+    document.getElementById('al-sel').innerHTML = `<option value="">Error al cargar</option>`
+    const errDiv = document.createElement('div')
+    errDiv.style.cssText = 'background:#fee;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-bottom:12px;'
+    errDiv.textContent = '⚠️ No se pudieron cargar los alumnos: ' + errAl.message + '. Ejecuta en Supabase → SQL Editor: CREATE POLICY "admin lee alumnos" ON alumnos FOR SELECT TO authenticated USING (true);'
+    document.getElementById('selector').prepend(errDiv)
   } else if (alumnos?.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +

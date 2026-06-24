@@ -73,26 +73,53 @@
   let audios = []
   let total = S.length
 
-  // Cargar audios del instructor desde Storage
+  function clave(nombre) {
+    return nombre.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]/g, '_')
+      .substring(0, 30)
+  }
+
+  // Cargar audios del instructor desde Storage + links desde configuracion
   async function cargar() {
-    const { data } = await supabase.storage.from('media').list('audios', { limit: 20 })
-    audios = (data || []).map(a => ({
+    const [storageRes, linksRes] = await Promise.allSettled([
+      supabase.storage.from('media').list('audios', { limit: 20 }),
+      supabase.from('configuracion').select('clave,valor').like('clave', 'media_link_%')
+    ])
+
+    // Archivos subidos a Storage
+    const storageFiles = (storageRes.value?.data || []).map(a => ({
       nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
       url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
     }))
+
+    // Links pegados desde admin (en configuracion)
+    const links = {}
+    ;(linksRes.value?.data || []).forEach(r => { links[r.clave] = r.valor })
+
+    // Mezclar: para cada sesión base, ver si hay link en configuracion primero, luego storage
+    audios = storageFiles.filter(f => !S.some(([t]) => f.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase())))
+
+    // Guardar links por sesión base (para usar en render)
+    window._sesLinks = links
+
     total = S.length + audios.length
     render()
   }
 
   function render() {
     const total = S.length + audios.length
+    const links = window._sesLinks || {}
     document.getElementById('list').innerHTML = S.map(([t, s], i) => {
       const on = !!done['s' + i]
-      const aud = audios.find(a => a.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase()))
+      // Buscar link en configuracion primero, luego en storage
+      const linkUrl = links['media_link_' + clave(t)] || ''
+      const storageAud = audios.find(a => a.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase()))
+      const playUrl = linkUrl || storageAud?.url || ''
       return `<div class="row"><span class="ic"><i data-lucide="headphones"></i></span>
         <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
         <span class="trail" style="gap:8px;">
-          ${aud ? `<a class="iconbtn solid" href="${aud.url}" target="_blank" aria-label="Reproducir"><i data-lucide="play"></i></a>` : `<button class="iconbtn solid" disabled style="opacity:.3;"><i data-lucide="play"></i></button>`}
+          ${playUrl ? `<a class="iconbtn solid" href="${playUrl}" target="_blank" aria-label="Reproducir"><i data-lucide="play"></i></a>` : `<button class="iconbtn solid" disabled style="opacity:.3;"><i data-lucide="play"></i></button>`}
           <button class="iconbtn" data-k="s${i}" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
             <i data-lucide="check"></i></button>
         </span></div>`
