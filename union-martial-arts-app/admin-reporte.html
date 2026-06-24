@@ -60,7 +60,7 @@
           <select id="al-sel"><option value="">Selecciona alumno…</option></select></label>
         <label class="field"><span class="lab">Mes</span>
           <input type="month" id="mes" value="2026-06" /></label>
-        <button class="btn primary block gen-btn" id="btn-gen"><i data-lucide="file-text"></i> Generar reporte</button>
+        <button class="btn primary block gen-btn" id="btn-gen" onclick="generarReporte()"><i data-lucide="file-text"></i> Generar reporte</button>
       </div>
     </div>
 
@@ -98,21 +98,19 @@
 <script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
+// Sesión: solo redirige si no hay usuario
 (async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) { window.location.href = 'index.html'; return }
+  try {
+    const sb = window.supabase.createClient('https://gdajgennlsuvndanpxiz.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI')
+    const { data: { session } } = await sb.auth.getSession()
+    if (!session?.user) { window.location.href = 'index.html'; return }
+    document.getElementById('mes').value = new Date().toISOString().slice(0,7)
+    lucide.createIcons()
+  } catch(e) { lucide.createIcons() }
+})();
 
-  // Mes actual por defecto
-  const hoy = new Date()
-  document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
-
-  // Generar
-  document.getElementById('btn-gen').addEventListener('click', async () => {
+// Función global — no depende del IIFE de sesión
+window.generarReporte = async function() {
     const alumnoId = document.getElementById('al-sel').value
     const mes = document.getElementById('mes').value
     if (!alumnoId || !mes) { alert('Selecciona alumno y mes.'); return }
@@ -121,6 +119,9 @@
     btn.disabled = true; btn.textContent = 'Cargando…'
 
     try {
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+    const supabase = window.supabase.createClient('https://gdajgennlsuvndanpxiz.supabase.co', KEY)
+
     const alumno = (window._alumnos || []).find(a => a.id === alumnoId) || { nombre: '—', cinta: '', grupo: '' }
     const [anio, mesNum] = mes.split('-')
     const inicio = `${mes}-01`
@@ -137,7 +138,7 @@
       supabase.from('checkins').select('*').eq('alumno_id', alumnoId).gte('fecha', inicio).lte('fecha', fin).order('fecha'),
       supabase.from('evaluaciones').select('*').eq('alumno_id', alumnoId).gte('fecha', inicio).lte('fecha', fin).order('fecha'),
       supabase.from('pagos').select('*').eq('alumno_id', alumnoId).gte('fecha', inicio).lte('fecha', fin).order('fecha'),
-      supabase.from('citas').select('*').eq('padre_user_id', user.id).gte('fecha_preferida', inicio).lte('fecha_preferida', fin).order('fecha_preferida'),
+      supabase.from('citas').select('*').gte('fecha_preferida', inicio).lte('fecha_preferida', fin).order('fecha_preferida'),
     ])
 
     // Cargar padre del alumno
@@ -312,11 +313,7 @@
       btn.disabled = false; btn.innerHTML = '<i data-lucide="file-text"></i> Generar reporte'
       alert('Error al generar reporte: ' + (err?.message || JSON.stringify(err)))
     }
-  })
-
-  document.getElementById('btn-print').addEventListener('click', () => window.print())
-
-  lucide.createIcons()
+}
 </script>
 </body>
 </html>
