@@ -310,11 +310,7 @@
     lucide.createIcons()
     } catch(err) {
       btn.disabled = false; btn.innerHTML = '<i data-lucide="file-text"></i> Generar reporte'
-      const errDiv = document.createElement('div')
-      errDiv.style.cssText = 'background:#fee;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-top:10px;'
-      errDiv.textContent = '❌ Error al generar reporte: ' + (err?.message || err)
-      document.getElementById('selector').appendChild(errDiv)
-      lucide.createIcons()
+      alert('Error al generar reporte: ' + (err?.message || JSON.stringify(err)))
     }
   })
 
