@@ -163,16 +163,16 @@
     const asiste = modo === 'asiste'
     const tabA = document.getElementById('tab-asiste')
     const tabB = document.getElementById('tab-ausente')
-    // Tab activo: fondo azul, icono blanco
     tabA.style.background = asiste ? 'var(--primary,#1d4ed8)' : '#fff'
     tabA.style.borderColor = asiste ? 'var(--primary,#1d4ed8)' : '#e5e7eb'
     tabA.style.color = asiste ? '#fff' : '#374151'
-    tabA.querySelector('i').style.color = asiste ? '#fff' : '#6b7280'
-    // Tab ausente: fondo rojo si activo
+    const iA = tabA.querySelector('i') || tabA.querySelector('svg')
+    if (iA) iA.style.color = asiste ? '#fff' : '#6b7280'
     tabB.style.background = !asiste ? '#fef2f2' : '#fff'
     tabB.style.borderColor = !asiste ? '#fca5a5' : '#e5e7eb'
     tabB.style.color = !asiste ? '#991b1b' : '#374151'
-    tabB.querySelector('i').style.color = !asiste ? '#dc2626' : '#6b7280'
+    const iB = tabB.querySelector('i') || tabB.querySelector('svg')
+    if (iB) iB.style.color = !asiste ? '#dc2626' : '#6b7280'
     document.getElementById('panel-asiste').style.display = asiste ? 'block' : 'none'
     document.getElementById('panel-ausente').style.display = asiste ? 'none' : 'block'
   }
