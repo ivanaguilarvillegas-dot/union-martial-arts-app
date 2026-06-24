@@ -154,7 +154,7 @@
     lucide.createIcons()
 
     const { data: avisos } = await supabase.from('avisos')
-      .select('id, titulo, mensaje, prioridad, creado_en, activo')
+      .select('id, titulo, texto, prioridad, creado_en, activo')
       .order('creado_en', { ascending: false })
 
     if (!avisos?.length) {
@@ -185,7 +185,7 @@
           <div class="aviso-head-txt">
             <div style="margin-bottom:4px;"><span class="badge-pr ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>${!a.activo ? ' <span style="font-size:10px;color:#9ca3af;">(inactivo)</span>' : ''}</div>
             <div class="aviso-head-title">${a.titulo}</div>
-            <div class="aviso-head-meta">${a.mensaje.length > 60 ? a.mensaje.slice(0,60)+'…' : a.mensaje}</div>
+            <div class="aviso-head-meta">${a.texto.length > 60 ? a.texto.slice(0,60)+'…' : a.texto}</div>
             <div style="font-size:11px;color:#9ca3af;margin-top:3px;">${fecha}</div>
           </div>
         </div>
@@ -250,9 +250,9 @@
 
     try {
       if (editId) {
-        await supabase.from('avisos').update({ titulo, mensaje, prioridad }).eq('id', editId)
+        await supabase.from('avisos').update({ titulo, texto: mensaje, prioridad }).eq('id', editId)
       } else {
-        await supabase.from('avisos').insert({ titulo, mensaje, prioridad, activo: true, creado_por: user.id })
+        await supabase.from('avisos').insert({ titulo, texto: mensaje, prioridad, activo: true, creado_por: user.id })
       }
       document.getElementById('modal').classList.remove('open')
       await cargar()
@@ -274,7 +274,7 @@
       editId = id
       document.getElementById('modal-title').textContent = 'Editar aviso'
       document.getElementById('f-titulo').value = a.titulo
-      document.getElementById('f-mensaje').value = a.mensaje
+      document.getElementById('f-mensaje').value = a.texto
       document.querySelector(`input[name="prioridad"][value="${a.prioridad||'informativo'}"]`).checked = true
       document.getElementById('modal').classList.add('open')
       lucide.createIcons()

@@ -651,11 +651,11 @@
 
   async function cargarAlerta() {
     try {
-      const { data: avs } = await supabase.from('avisos').select('titulo,mensaje').eq('activo', true).eq('prioridad', 'urgente').limit(1)
+      const { data: avs } = await supabase.from('avisos').select('titulo,texto').eq('activo', true).eq('prioridad', 'urgente').limit(1)
       if (avs?.length) {
         document.getElementById('alerta-wrap').style.display = 'block'
         document.getElementById('alerta-t').textContent = avs[0].titulo || 'Aviso urgente'
-        document.getElementById('alerta-s').textContent = (avs[0].mensaje || '').substring(0, 80)
+        document.getElementById('alerta-s').textContent = (avs[0].texto || '').substring(0, 80)
         lucide.createIcons()
       }
     } catch(e) {}

@@ -252,7 +252,7 @@
 
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {
-      const { data: avisos, error: avisosErr } = await supabase.from('avisos').select('id,titulo,mensaje,prioridad,creado_en')
+      const { data: avisos, error: avisosErr } = await supabase.from('avisos').select('id,titulo,texto,prioridad,creado_en')
         .eq('activo', true).order('creado_en', { ascending: false }).limit(5)
       if(document.getElementById('debug-avisos')){document.getElementById('debug-avisos').innerHTML='avisos: '+(avisos?.length??0)+' | error: '+(avisosErr?.message||'ninguno');document.getElementById('debug-avisos').style.display='block'}
       let confirmados = []
@@ -287,7 +287,7 @@
               <div style="flex:1;min-width:0;">
                 <span class="badge-imp ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>
                 <div class="aviso-title">${a.titulo}</div>
-                <div class="aviso-msg">${a.mensaje}</div>
+                <div class="aviso-msg">${a.texto}</div>
                 <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
               </div>
             </div>
