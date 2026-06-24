@@ -257,9 +257,8 @@
     <div style="display:flex;align-items:center;gap:14px;">
       <div class="checkin-btn-ic"><i class="ti ti-shield-check" style="font-size:30px;color:#fff;"></i></div>
       <div class="checkin-btn-text">
-        <div class="t">CHECK-IN</div>
-        <div class="big" id="checkin-fecha">de hoy</div>
-        <div class="s">Registra tu asistencia</div>
+        <div class="big">CHECK-IN DE HOY</div>
+        <div class="s" id="checkin-fecha">Registra tu asistencia</div>
       </div>
     </div>
     <div class="checkin-btn-arr"><i data-lucide="chevron-right"></i></div>
@@ -493,7 +492,7 @@
     cargarAlerta()
     const hoyLabel = new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'})
     const el = document.getElementById('checkin-fecha')
-    if (el) el.textContent = hoyLabel.charAt(0).toUpperCase() + hoyLabel.slice(1)
+    if (el) el.textContent = hoyLabel.toUpperCase()
 
     const hoy = new Date()
     const hoyStr = hoy.toISOString().split('T')[0]
