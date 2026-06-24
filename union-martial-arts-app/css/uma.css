@@ -68,10 +68,11 @@ body {
 .body { flex:1; overflow-y:auto; padding:16px; background:var(--page); }
 
 /* ——— Bottom nav ——— */
-.bottomnav { display:flex; background:#fff; border-top:1px solid var(--border); padding:8px 0 10px; flex-shrink:0; }
-.bottomnav a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
-  text-decoration:none; color:var(--faint); font-size:10px; font-weight:500; }
-.bottomnav a.on { color:var(--primary); font-weight:700; }
+.bottomnav { display:flex; background:#0047AB; border-top:none; padding:10px 0 14px; flex-shrink:0; box-shadow:0 -2px 12px rgba(0,0,0,.15); }
+.bottomnav a { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  text-decoration:none; color:rgba(255,255,255,.55); font-size:10px; font-weight:500; }
+.bottomnav a.on { color:#fff; font-weight:700; }
+.bottomnav a.on svg, .bottomnav a.on i { opacity:1; }
 .bottomnav svg { width:22px; height:22px; }
 
 /* ——— Section label ——— */
