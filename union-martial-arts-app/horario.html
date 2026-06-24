@@ -92,6 +92,7 @@
 </div></div>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>document.addEventListener("DOMContentLoaded",()=>{const b=document.getElementById("debug-box");if(b){b.innerHTML="JS cargó OK — versión v11";b.style.display="block"}})</script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
   const supabase = createClient(
@@ -232,4 +233,5 @@
 </script>
 </body>
 </html>
+
 

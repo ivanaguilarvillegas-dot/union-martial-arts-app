@@ -1,4 +1,4 @@
-const CACHE = 'uma-v10'
+﻿const CACHE = 'uma-v11'
 const SHELL = [
   '/',
   '/home.html',
@@ -59,3 +59,4 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(e.request).then(r => r || caches.match('/home.html')))
   )
 })
+
