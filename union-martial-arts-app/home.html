@@ -25,16 +25,16 @@
 .notif-pill i { color:#fff; width:18px; height:18px; flex-shrink:0; }
 .notif-pill .np-count { color:#fff; font-size:13px; font-weight:800; line-height:1; display:none; }
 
-.alumno-card { background:#fff; border-radius:14px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.alumno-card { background:#fff; border-radius:16px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:flex-start; box-shadow:0 2px 8px rgba(0,0,0,.08); }
 .alumno-foto { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
-.foto-circle { width:62px; height:62px; border-radius:50%; background:#e6f0ff; border:2.5px solid #b5d0f5; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.foto-circle { width:82px; height:82px; border-radius:50%; background:#e6f0ff; border:3px solid #0047AB; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .foto-circle img { width:100%; height:100%; object-fit:cover; }
-.foto-circle i { width:28px; height:28px; color:#4a7fcb; }
-.alumno-info { flex:1; min-width:0; }
-.alumno-nombre { font-size:15px; font-weight:700; color:var(--text,#1a1a2e); line-height:1.2; }
-.alumno-grupo { font-size:12px; color:var(--muted,#6b7280); margin-top:3px; }
-.alumno-badges { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
-.badge-activo { background:#ecfdf5; color:#065f46; border-radius:20px; font-size:11px; padding:3px 10px; display:flex; align-items:center; gap:4px; font-weight:600; }
+.foto-circle i { width:34px; height:34px; color:#4a7fcb; }
+.alumno-info { flex:1; min-width:0; padding-top:2px; }
+.alumno-nombre { font-size:17px; font-weight:800; color:#111827; line-height:1.2; }
+.alumno-grupo { font-size:12px; color:#6b7280; margin-top:3px; font-weight:500; }
+.alumno-badges { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+.badge-activo { background:#ecfdf5; color:#065f46; border-radius:20px; font-size:11px; padding:4px 11px; display:flex; align-items:center; gap:4px; font-weight:700; border:1px solid #bbf7d0; }
 .badge-activo i { width:12px; height:12px; color:#059669; }
 
 .clase-card { background:#0047AB; border-radius:14px; padding:14px 16px; margin-bottom:10px; }
@@ -90,7 +90,6 @@
 .checkin-btn { background:linear-gradient(135deg,#003d94 0%,#0047AB 60%,#0055c8 100%); border-radius:18px; padding:18px 20px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; text-decoration:none; box-shadow:0 4px 18px rgba(0,71,171,.4); }
 .checkin-btn-ic { width:58px; height:58px; border-radius:16px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid rgba(255,255,255,.25); }
 .checkin-btn-ic i { width:32px; height:32px; color:#fff; }
-.checkin-btn-text .t { font-size:13px; font-weight:900; color:rgba(255,255,255,.8); letter-spacing:.12em; text-transform:uppercase; }
 .checkin-btn-text .big { font-size:20px; font-weight:900; color:#fff; letter-spacing:-.01em; line-height:1.1; }
 .checkin-btn-text .s { font-size:11.5px; color:rgba(255,255,255,.65); margin-top:4px; }
 .checkin-btn-arr i { width:22px; height:22px; color:rgba(255,255,255,.6); }
@@ -142,8 +141,8 @@
     <div class="alumno-foto">
       <div class="foto-circle" id="foto-wrap" style="position:relative;cursor:pointer;" onclick="document.getElementById('foto-input').click()" title="Cambiar foto">
         <i data-lucide="user"></i>
-        <div id="foto-cam" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
-          <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+        <div id="foto-cam" style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:#0047AB;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);">
+          <i class="ti ti-camera" style="font-size:13px;color:#fff;"></i>
         </div>
       </div>
       <input type="file" id="foto-input" accept="image/*" style="display:none">
@@ -186,6 +185,7 @@
       <div class="alumno-badges">
         <span class="badge-activo"><i data-lucide="check-circle"></i> Activo</span>
       </div>
+      <div id="hijo-chips" style="display:none;margin-top:10px;"></div>
     </div>
   </div>
 
@@ -503,14 +503,17 @@
     // Selector de hijo si hay más de uno
     if (todosLosHijos.length > 1) {
       const { data: nombresAlumnos } = await supabase.from('alumnos').select('id, nombre').in('id', todosLosHijos.map(p => p.alumno_id))
-      const selectorHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">` +
-        todosLosHijos.map(p => {
+      const chipsEl = document.getElementById('hijo-chips')
+      if (chipsEl) {
+        chipsEl.style.display = 'flex'
+        chipsEl.style.gap = '8px'
+        chipsEl.style.flexWrap = 'wrap'
+        chipsEl.innerHTML = todosLosHijos.map(p => {
           const al = nombresAlumnos?.find(a => a.id === p.alumno_id)
           const activo = p.id === padre?.id
-          return `<button onclick="cambiarHijo('${p.id}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid ${activo?'#1d4ed8':'#d1d5db'};background:${activo?'#1d4ed8':'#fff'};color:${activo?'#fff':'#374151'};cursor:pointer;">${al?.nombre?.split(' ')[0] || 'Hijo'}</button>`
-        }).join('') + `</div>`
-      const hdr = document.querySelector('.home-header')
-      hdr.insertAdjacentHTML('afterend', `<div style="padding:0 2px 2px;">${selectorHtml}</div>`)
+          return `<button onclick="cambiarHijo('${p.id}')" style="padding:7px 18px;border-radius:22px;font-size:13px;font-weight:700;border:2px solid ${activo?'#0047AB':'#d1d5db'};background:${activo?'#0047AB':'#f9fafb'};color:${activo?'#fff':'#374151'};cursor:pointer;transition:all .15s;">${al?.nombre?.split(' ')[0] || 'Hijo'}</button>`
+        }).join('')
+      }
       window.cambiarHijo = function(padreId) {
         localStorage.setItem('uma_padre_id', padreId)
         location.reload()
