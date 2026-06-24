@@ -79,9 +79,13 @@
             <div style="font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;"><i data-lucide="calendar" style="width:12px;height:12px"></i> ${e.fecha}${e.hora ? ' · '+e.hora : ''}</div>
             ${e.lugar ? `<div style="font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px;"><i data-lucide="map-pin" style="width:12px;height:12px"></i> ${e.lugar}</div>` : ''}
             ${e.descripcion ? `<div style="font-size:12.5px;color:var(--muted);margin-top:4px;">${e.descripcion}</div>` : ''}
-            <div style="margin-top:8px;"><span class="badge amber">${tipo}</span></div>
+            <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+              <span class="badge amber">${tipo}</span>
+              ${e.convocatoria_url ? `<a href="${e.convocatoria_url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:#0047AB;text-decoration:none;background:#eff6ff;border-radius:20px;padding:3px 10px;"><i data-lucide="file-text" style="width:12px;height:12px;"></i> Convocatoria</a>` : ''}
+            </div>
           </div>
         </div>
+        ${(e.fotos_urls?.length) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">${e.fotos_urls.map(u=>`<img src="${u}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" />`).join('')}</div>` : e.foto_url ? `<img src="${e.foto_url}" style="width:100%;border-radius:8px;margin-top:10px;object-fit:cover;max-height:160px;" />` : ''}
         <div style="margin-top:12px;">${conf
           ? `<div class="notice green" style="margin:0;"><i data-lucide="check-circle"></i> Asistencia confirmada · se notificó al instructor</div>`
           : `<button class="btn secondary block" data-id="${e.id}"><i data-lucide="calendar-check"></i> Confirmar asistencia</button>`}

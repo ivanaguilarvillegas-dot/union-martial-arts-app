@@ -56,6 +56,16 @@
       <label class="field mb14"><span class="lab">Fecha del examen</span>
         <input type="date" id="fecha-examen" /></label>
 
+      <!-- Diploma -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Diploma (foto o PDF, opcional)</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
+          <i data-lucide="file-badge" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
+          <span id="diploma-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir diploma</span>
+          <input type="file" id="diploma-file" accept="image/*,.pdf" hidden />
+        </label>
+      </div>
+
       <button class="btn primary block" id="save"><i data-lucide="award"></i> Confirmar cambio de cinta</button>
     </div>
 
@@ -213,6 +223,12 @@
   // Fecha por defecto hoy
   document.getElementById('fecha-examen').value = new Date().toISOString().split('T')[0]
 
+  // Preview diploma
+  document.getElementById('diploma-file').addEventListener('change', e => {
+    const f = e.target.files[0]
+    document.getElementById('diploma-label').textContent = f ? f.name : 'Subir diploma'
+  })
+
   // Guardar
   document.getElementById('save').addEventListener('click', async () => {
     if (!selCinta) { alert('Selecciona la nueva cinta.'); return }
@@ -223,13 +239,26 @@
     const btn = document.getElementById('save')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
+    // Subir diploma si hay
+    let diploma_url = null
+    const diplomaFile = document.getElementById('diploma-file').files[0]
+    if (diplomaFile) {
+      const ext = diplomaFile.name.split('.').pop()
+      const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
+      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile)
+      if (!de) diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+    }
+
     const { error } = await supabase.from('alumnos').update({ cinta: selCinta }).eq('id', alumno_id)
     if (error) { alert('Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="award"></i> Confirmar cambio de cinta'; lucide.createIcons(); return }
 
     const alumno = alumnos.find(a => a.id === alumno_id)
+    const textoMsg = diploma_url
+      ? `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante! 📜 Diploma: ${diploma_url}`
+      : `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`,
+      texto: textoMsg,
       para_admin: false
     })
 

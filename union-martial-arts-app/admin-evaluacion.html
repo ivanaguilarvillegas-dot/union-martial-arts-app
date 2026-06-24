@@ -67,6 +67,16 @@
         </div></div>
       </div>
 
+      <!-- Diploma -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Diploma del examen (foto o PDF, opcional)</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
+          <i data-lucide="file-badge" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
+          <span id="diploma-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir diploma</span>
+          <input type="file" id="diploma-file" accept="image/*,.pdf" hidden />
+        </label>
+      </div>
+
       <div id="err" class="notice red" style="display:none;"></div>
       <button class="btn primary block" id="save"><i data-lucide="save"></i> Guardar evaluación</button>
     </div>
@@ -274,6 +284,16 @@
     const btn = document.getElementById('save')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
+    // Subir diploma si hay
+    let diploma_url = null
+    const diplomaFile = document.getElementById('diploma-file').files[0]
+    if (diplomaFile) {
+      const ext = diplomaFile.name.split('.').pop()
+      const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
+      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile)
+      if (!de) diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+    }
+
     const fecha = new Date().toISOString().split('T')[0]
     const alumno = alumnos?.find(a => a.id === alumno_id)
     let payload = {}
@@ -314,8 +334,13 @@
 
     // Notificar padres solo en evaluaciones nuevas (no en ediciones silenciosas)
     if (!isEdit) {
-      await supabase.from('mensajes').insert({ de_user_id: user.id, texto: notifTexto, para_admin: false })
+      const textoFinal = diploma_url ? notifTexto + `\n📜 Diploma: ${diploma_url}` : notifTexto
+      await supabase.from('mensajes').insert({ de_user_id: user.id, texto: textoFinal, para_admin: false })
     }
+
+    // Preview diploma label reset
+    document.getElementById('diploma-label').textContent = 'Subir diploma'
+    document.getElementById('diploma-file').value = ''
 
     document.getElementById('ok-msg').textContent = isEdit ? 'Evaluación actualizada' : 'Evaluación guardada'
     document.getElementById('ok-sub').textContent = isEdit ? 'Los cambios se guardaron correctamente.' : 'Se notificó a la familia del alumno.'
