@@ -92,14 +92,21 @@
   const hoy = new Date()
   document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
-  // Cargar alumnos via RPC (bypassa RLS y row limits)
-  const { data: alumnos } = await supabase.rpc('get_alumnos_lista')
-  if (alumnos?.length) {
+  // Cargar alumnos via fetch directo (bypassa cliente JS)
+  const SUPA_URL = 'https://gdajgennlsuvndanpxiz.supabase.co'
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  const token = session?.access_token || ANON_KEY
+  const alumnosRes = await fetch(`${SUPA_URL}/rest/v1/alumnos?select=id,nombre,cinta,grupo&order=nombre`, {
+    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}` }
+  })
+  const alumnos = await alumnosRes.json()
+  if (Array.isArray(alumnos) && alumnos.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
   } else {
     document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
+    console.error('alumnos fetch result:', alumnos)
   }
 
   // Generar

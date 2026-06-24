@@ -33,9 +33,16 @@
   let alumnos = []
   let marcados = new Set()
 
+  const SUPA_URL = 'https://gdajgennlsuvndanpxiz.supabase.co'
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  const token = session?.access_token || ANON_KEY
+
   async function cargar() {
-    const { data: rpcData } = await supabase.rpc('get_alumnos_lista')
-    alumnos = rpcData || []
+    const r = await fetch(`${SUPA_URL}/rest/v1/alumnos?select=id,nombre&order=nombre`, {
+      headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}` }
+    })
+    alumnos = await r.json()
+    if (!Array.isArray(alumnos)) alumnos = []
 
     // Checkins de hoy registrados por padres
     const { data: checks } = await supabase.from('checkins').select('alumno_id').eq('fecha', hoy)
