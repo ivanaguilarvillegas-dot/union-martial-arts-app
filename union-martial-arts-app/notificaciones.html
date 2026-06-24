@@ -305,7 +305,7 @@
       const { data: msgs } = await supabase.from('mensajes')
         .select('id, texto, creado_en, leido')
         .eq('para_admin', false)
-        .eq('destinatario_id', padre?.id)
+        .or('destinatario_id.eq.' + (padre?.id||'null') + ',destinatario_id.eq.' + user.id)
         .order('creado_en', { ascending: false })
         .limit(3)
 
