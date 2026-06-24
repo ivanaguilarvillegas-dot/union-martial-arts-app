@@ -425,7 +425,7 @@
     </div>
 
     <!-- Próximo evento -->
-    <div id="evento-wrap" style="display:none;">
+    <div id="evento-wrap">
       <div class="evento-card">
         <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.07;" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -518,7 +518,7 @@
     "Un campeón no es quien nunca cae, sino quien siempre se levanta."
   ]
   const fraseEl = document.getElementById('frase-txt')
-  if (fraseEl) fraseEl.textContent = frases[new Date().getDay()]
+  if (fraseEl) fraseEl.textContent = frases[Math.floor(Math.random() * frases.length)]
 
   lucide.createIcons()
 
@@ -780,7 +780,6 @@
       const { data: ev } = await supabase.from('eventos')
         .select('titulo, fecha, lugar, foto_url').gte('fecha', hoyStr).order('fecha').limit(1).maybeSingle()
       if (ev) {
-        document.getElementById('evento-wrap').style.display = 'block'
         document.getElementById('evento-titulo').textContent = ev.titulo
         document.getElementById('evento-fecha').innerHTML = `<i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-1px;"></i> ${ev.fecha}`
         if (ev.lugar) {
@@ -788,9 +787,15 @@
           l.style.display = 'flex'
           l.innerHTML = `<i data-lucide="map-pin" style="width:11px;height:11px;vertical-align:-1px;"></i> ${ev.lugar}`
         }
-        lucide.createIcons()
+      } else {
+        document.getElementById('evento-titulo').textContent = 'Torneos y eventos'
+        document.getElementById('evento-fecha').innerHTML = 'Consulta los próximos eventos de la academia'
       }
-    } catch(e) {}
+      lucide.createIcons()
+    } catch(e) {
+      document.getElementById('evento-titulo').textContent = 'Torneos y eventos'
+      document.getElementById('evento-fecha').innerHTML = 'Consulta los próximos eventos de la academia'
+    }
   }
 
   async function cargarAlerta() {
