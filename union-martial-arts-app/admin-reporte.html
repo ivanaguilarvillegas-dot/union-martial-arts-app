@@ -84,19 +84,12 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) { window.location.href = 'index.html'; return }
-
-  // Mes actual por defecto
-  const hoy = new Date()
-  document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
-
-  // Cargar alumnos — fetch directo igual a la URL que funciona en el navegador
   const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+
+  // Cargar alumnos primero — no depende de sesión porque RLS está desactivado
   const alumnosRes = await fetch(
     'https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre,cinturon,grupo',
-    { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + (session.access_token || ANON_KEY) } }
+    { headers: { 'apikey': ANON_KEY } }
   )
   const alumnos = await alumnosRes.json()
   if (Array.isArray(alumnos) && alumnos.length) {
@@ -104,8 +97,16 @@
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
   } else {
-    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos — error: ' + JSON.stringify(alumnos).slice(0,80) + '</option>'
+    document.getElementById('al-sel').innerHTML = '<option value="">⚠ ' + JSON.stringify(alumnos).slice(0,100) + '</option>'
   }
+
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
+  if (!user) { window.location.href = 'index.html'; return }
+
+  // Mes actual por defecto
+  const hoy = new Date()
+  document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
   // Generar
   document.getElementById('btn-gen').addEventListener('click', async () => {
