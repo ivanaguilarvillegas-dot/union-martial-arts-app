@@ -46,7 +46,6 @@
   )
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
-  dbg('Paso 1 OK — user: ' + (user ? user.email : 'null (sin sesión)'))
   if (!user) { window.location.href = 'index.html'; return }
 
   // Cargar mensajes recibidos de padres

@@ -112,19 +112,15 @@
   try {
     const { data: sessionData } = await supabase.auth.getSession()
     const user = sessionData?.session?.user
-    upd('Paso 1 OK — user: ' + (user ? user.email : 'null (no sesión)'))
     if (!user) { window.location.href = 'index.html'; return }
 
     // Cargar padre — intenta por user_id primero, luego por correo
-    upd('Paso 2: buscando padre (user_id=' + user.id + ')…')
     let padre = null
     const { data: p1, error: p1err } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
-    upd('Paso 2a: p1=' + JSON.stringify(p1) + (p1err?' err:'+p1err.message:''))
     if (p1?.alumno_id) {
       padre = p1
     } else {
       const { data: p2, error: p2err } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
-      upd('Paso 2b: p2=' + JSON.stringify(p2) + (p2err?' err:'+p2err.message:''))
       if (p2) {
         await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
         padre = p2
