@@ -45,7 +45,8 @@
     <a href="admin-frase.html" class="bnav-item active"><span class="bnav-icon">💬</span>Mensajes</a>
   </div>
 </div>
-<script type="module">
+<script>
+(async () => {
   import { supabase } from './js/supabase.js'
 
   window.actualizarPreview = function() {
@@ -106,6 +107,7 @@
   }
 
   cargarFrases()
+})();
 </script>
 </body>
 </html>
