@@ -27,19 +27,21 @@
   )
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
-  if (!user) { window.location.href = 'index.html' }
-
   const hoy = new Date().toISOString().split('T')[0]
   let alumnos = []
   let marcados = new Set()
 
-  const SUPA_URL = 'https://gdajgennlsuvndanpxiz.supabase.co'
+  if (!user) { window.location.href = 'index.html'; return }
+
   const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  const token = session?.access_token || ANON_KEY
 
   async function cargar() {
-    const { data: al } = await supabase.from('alumnos').select('id, nombre').not('id', 'is', null).order('nombre')
-    alumnos = al || []
+    const r = await fetch(
+      'https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre',
+      { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + (session?.access_token || ANON_KEY) } }
+    )
+    const data = await r.json()
+    alumnos = Array.isArray(data) ? data : []
 
     // Checkins de hoy registrados por padres
     const { data: checks } = await supabase.from('checkins').select('alumno_id').eq('fecha', hoy)
