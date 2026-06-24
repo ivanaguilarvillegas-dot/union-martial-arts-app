@@ -78,10 +78,13 @@
 .prog-precio-label { font-size:10px;color:#9ca3af;font-weight:600; }
 .prog-precio-val { font-size:15px;font-weight:800;color:#374151; }
 
-/* Bullets */
-.prog-bullets { display:flex;flex-direction:column;gap:8px;margin-bottom:14px; }
-.prog-bullet { display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#374151;line-height:1.4; }
-.prog-bullet i { font-size:14px;color:#059669;flex-shrink:0;margin-top:1px; }
+/* Icon grid */
+.prog-icons { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px; }
+.prog-icon-tile { display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;background:#f8faff;border-radius:12px;border:1px solid #e8eef8; }
+.prog-icon-tile i { font-size:22px;color:#0047AB; }
+.prog-icon-tile.green i { color:#059669; }
+.prog-icon-tile.amber i { color:#d97706; }
+.prog-icon-tile span { font-size:9.5px;font-weight:700;color:#374151;text-align:center;line-height:1.3; }
 
 /* Horario compact */
 .prog-horario { background:#f8faff;border-radius:12px;padding:12px 14px;margin-bottom:14px;border:1px solid #e8eef8; }
@@ -200,11 +203,11 @@
           </div>
         </div>
 
-        <div class="prog-bullets">
-          <div class="prog-bullet"><i class="ti ti-check"></i>Clases base de la semana</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Combate por grupo</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Sábado de entrenamiento</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Evaluaciones diarias</div>
+        <div class="prog-icons">
+          <div class="prog-icon-tile"><i class="ti ti-sword"></i><span>Clases base</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-shield"></i><span>Combate por grupo</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-calendar-week"></i><span>Sábado</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-clipboard-check"></i><span>Evaluaciones diarias</span></div>
         </div>
 
         <div class="prog-horario">
@@ -252,23 +255,15 @@
           </div>
         </div>
 
-        <div class="prog-section">
-          <div class="prog-section-hdr"><i class="ti ti-barbell"></i> Entrenamiento</div>
-          <div class="prog-bullets">
-            <div class="prog-bullet"><i class="ti ti-check"></i>Mismos horarios del Programa Básico</div>
-            <div class="prog-bullet"><i class="ti ti-check"></i>Mejor costo por clase</div>
-            <div class="prog-bullet"><i class="ti ti-check"></i>Seguimiento continuo del alumno</div>
-          </div>
-        </div>
-
-        <div class="prog-section">
-          <div class="prog-section-hdr"><i class="ti ti-device-mobile"></i> Beneficios en la app</div>
-          <div class="prog-bullets">
-            <div class="prog-bullet"><i class="ti ti-check"></i>Nutrición personalizada</div>
-            <div class="prog-bullet"><i class="ti ti-check"></i>Entrenamiento en casa</div>
-            <div class="prog-bullet"><i class="ti ti-check"></i>Meditación y visualización</div>
-            <div class="prog-bullet"><i class="ti ti-check"></i>Acceso completo a la app móvil</div>
-          </div>
+        <div class="prog-icons">
+          <div class="prog-icon-tile"><i class="ti ti-clock"></i><span>Mismos horarios</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-coin"></i><span>Mejor precio por clase</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-chart-line"></i><span>Seguimiento del alumno</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-salad"></i><span>Nutrición</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-run"></i><span>Entrena en casa</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-moon-stars"></i><span>Meditación</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-device-mobile"></i><span>App móvil</span></div>
+          <div class="prog-icon-tile"><i class="ti ti-calendar-stats"></i><span>Cobertura anual</span></div>
         </div>
 
         <div class="prog-nota azul">
@@ -301,12 +296,12 @@
           </div>
         </div>
 
-        <div class="prog-bullets">
-          <div class="prog-bullet"><i class="ti ti-check"></i>Kobudo</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Liderazgo</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Competencias de federación</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Más horas de entrenamiento</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Evaluaciones mensuales</div>
+        <div class="prog-icons">
+          <div class="prog-icon-tile green"><i class="ti ti-swords"></i><span>Kobudo</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-users"></i><span>Liderazgo</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-trophy"></i><span>Competencias</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-clock-plus"></i><span>Más horas</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-clipboard-list"></i><span>Evaluaciones mensuales</span></div>
         </div>
 
         <div class="prog-horario">
@@ -351,11 +346,11 @@
           <span>Requiere Anual UNION + Club Cinta Negra</span>
         </div>
 
-        <div class="prog-bullets">
-          <div class="prog-bullet"><i class="ti ti-check"></i>Formación competitiva desde etapas tempranas</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Participación en torneos del circuito</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Seguimiento deportivo y desarrollo del alumno</div>
-          <div class="prog-bullet"><i class="ti ti-check"></i>Preparación con visión rumbo a UACJ</div>
+        <div class="prog-icons">
+          <div class="prog-icon-tile amber"><i class="ti ti-target"></i><span>Formación competitiva</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-medal"></i><span>Torneos del circuito</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-chart-bar"></i><span>Seguimiento deportivo</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-school"></i><span>Visión UACJ</span></div>
         </div>
 
         <div class="prog-nota">
