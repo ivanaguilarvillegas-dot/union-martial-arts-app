@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nutrición — Admin</title>
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+.sec-hdr { display:flex; align-items:center; gap:8px; padding:14px 16px 6px; }
+.sec-hdr-ic { font-size:20px; }
+.sec-hdr-txt { font-size:14px; font-weight:800; color:#111827; }
+.saved-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:#16a34a; color:#fff; border-radius:12px; padding:10px 20px;
+  font-size:13px; font-weight:600; opacity:0; transition:all .3s; z-index:99; }
+.saved-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Admin</div><div class="title">Nutrición</div></div>
+    <button class="btn primary" id="btn-save" style="height:34px;font-size:13px;padding:0 14px;"><i data-lucide="save"></i> Guardar</button>
+  </div>
+  <div class="body">
+
+    <!-- Hábitos diarios -->
+    <div class="label" style="margin-top:0;">Hábitos diarios</div>
+    <div class="card mb14"><div class="stack">
+      <div style="font-size:12px;color:var(--muted);">Los padres marcan estos hábitos cada día en la app.</div>
+      <label class="field"><span class="lab">Hábito 1</span><input id="nutricion_habito_1" placeholder="Ej. Tomé 8 vasos de agua" /></label>
+      <label class="field"><span class="lab">Hábito 2</span><input id="nutricion_habito_2" placeholder="Ej. Desayuné antes de entrenar" /></label>
+      <label class="field"><span class="lab">Hábito 3</span><input id="nutricion_habito_3" placeholder="Ej. Comí fruta o verdura" /></label>
+      <label class="field"><span class="lab">Hábito 4</span><input id="nutricion_habito_4" placeholder="Ej. Evité refresco y frituras" /></label>
+    </div></div>
+
+    <!-- Menú del mes -->
+    <div class="label">Menú del mes</div>
+
+    <div class="card mb12">
+      <div class="sec-hdr"><span class="sec-hdr-ic">🌅</span><span class="sec-hdr-txt">Desayuno</span></div>
+      <div style="padding:0 16px 14px;" class="stack">
+        <label class="field"><span class="lab">Sugerencia / receta</span>
+          <textarea id="menu_desayuno" rows="3" placeholder="Ej. Avena con plátano + 2 huevos + agua"></textarea></label>
+        <label class="field"><span class="lab">Nota para papás</span>
+          <input id="menu_nota_desayuno" placeholder="Ej. Comer al menos 1 hora antes de entrenar" /></label>
+      </div>
+    </div>
+
+    <div class="card mb12">
+      <div class="sec-hdr"><span class="sec-hdr-ic">🍽️</span><span class="sec-hdr-txt">Comida</span></div>
+      <div style="padding:0 16px 14px;" class="stack">
+        <label class="field"><span class="lab">Sugerencia / receta</span>
+          <textarea id="menu_comida" rows="3" placeholder="Ej. Pollo a la plancha + arroz + ensalada"></textarea></label>
+        <label class="field"><span class="lab">Nota para papás</span>
+          <input id="menu_nota_comida" placeholder="Ej. Incluir verdura en cada comida" /></label>
+      </div>
+    </div>
+
+    <div class="card mb12">
+      <div class="sec-hdr"><span class="sec-hdr-ic">⚡</span><span class="sec-hdr-txt">Colación antes de clase</span></div>
+      <div style="padding:0 16px 14px;" class="stack">
+        <label class="field"><span class="lab">Sugerencia / receta</span>
+          <textarea id="menu_colacion_pre" rows="2" placeholder="Ej. Plátano + agua o yogurt con granola"></textarea></label>
+        <label class="field"><span class="lab">Nota para papás</span>
+          <input id="menu_nota_colacion_pre" placeholder="Ej. Comer 1 hora antes de clase" /></label>
+      </div>
+    </div>
+
+    <div class="card mb12">
+      <div class="sec-hdr"><span class="sec-hdr-ic">💪</span><span class="sec-hdr-txt">Colación después de clase</span></div>
+      <div style="padding:0 16px 14px;" class="stack">
+        <label class="field"><span class="lab">Sugerencia / receta</span>
+          <textarea id="menu_colacion_post" rows="2" placeholder="Ej. Licuado de plátano con leche y avena"></textarea></label>
+        <label class="field"><span class="lab">Nota para papás</span>
+          <input id="menu_nota_colacion_post" placeholder="Ej. Comer en los primeros 30-60 min después" /></label>
+      </div>
+    </div>
+
+    <div class="card mb12">
+      <div class="sec-hdr"><span class="sec-hdr-ic">🌙</span><span class="sec-hdr-txt">Cena</span></div>
+      <div style="padding:0 16px 14px;" class="stack">
+        <label class="field"><span class="lab">Sugerencia / receta</span>
+          <textarea id="menu_cena" rows="2" placeholder="Ej. Sopa de verduras + quesadilla"></textarea></label>
+        <label class="field"><span class="lab">Nota para papás</span>
+          <input id="menu_nota_cena" placeholder="Ej. La cena puede ser ligera" /></label>
+      </div>
+    </div>
+
+    <!-- Recomendados y evitar -->
+    <div class="label">Alimentos</div>
+    <div class="card mb14"><div class="stack">
+      <label class="field"><span class="lab">✅ Recomendados</span>
+        <textarea id="nutricion_recomendados" rows="3" placeholder="Ej. Pollo, arroz integral, plátano, avena…"></textarea></label>
+      <label class="field"><span class="lab">❌ Evitar</span>
+        <textarea id="nutricion_evitar" rows="3" placeholder="Ej. Refresco, frituras, dulces…"></textarea></label>
+    </div></div>
+
+    <div id="err-box" class="notice red" style="display:none;"></div>
+    <button class="btn primary block mb14" id="btn-save2"><i data-lucide="save"></i> Guardar todo</button>
+
+  </div>
+  <nav class="bottomnav">
+    <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+
+<div class="saved-toast" id="saved-toast">✅ Nutrición guardada correctamente</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html'; return }
+
+  const CAMPOS = [
+    'nutricion_habito_1','nutricion_habito_2','nutricion_habito_3','nutricion_habito_4',
+    'menu_desayuno','menu_nota_desayuno',
+    'menu_comida','menu_nota_comida',
+    'menu_cena','menu_nota_cena',
+    'menu_colacion_pre','menu_nota_colacion_pre',
+    'menu_colacion_post','menu_nota_colacion_post',
+    'nutricion_recomendados','nutricion_evitar'
+  ]
+
+  // Cargar valores actuales
+  try {
+    const { data: rows } = await supabase.from('configuracion').select('clave, valor').in('clave', CAMPOS)
+    rows?.forEach(r => {
+      const el = document.getElementById(r.clave)
+      if (el) el.value = r.valor || ''
+    })
+  } catch(e) {}
+
+  async function guardar() {
+    const btns = [document.getElementById('btn-save'), document.getElementById('btn-save2')]
+    btns.forEach(b => { if(b) { b.disabled = true; b.textContent = 'Guardando…' } })
+    document.getElementById('err-box').style.display = 'none'
+    try {
+      for (const campo of CAMPOS) {
+        const el = document.getElementById(campo)
+        const valor = el?.value?.trim() || ''
+        const { error } = await supabase.from('configuracion').upsert({ clave: campo, valor }, { onConflict: 'clave' })
+        if (error) throw new Error('Error en ' + campo + ': ' + error.message)
+      }
+      const t = document.getElementById('saved-toast')
+      t.classList.add('show')
+      setTimeout(() => t.classList.remove('show'), 2500)
+    } catch(e) {
+      document.getElementById('err-box').textContent = e.message
+      document.getElementById('err-box').style.display = 'flex'
+    }
+    btns.forEach(b => { if(b) { b.disabled = false; b.innerHTML = '<i data-lucide="save"></i> Guardar todo' } })
+    lucide.createIcons()
+  }
+
+  document.getElementById('btn-save').addEventListener('click', guardar)
+  document.getElementById('btn-save2').addEventListener('click', guardar)
+  lucide.createIcons()
+</script>
+</body>
+</html>
