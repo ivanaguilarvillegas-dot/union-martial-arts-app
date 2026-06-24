@@ -18,53 +18,86 @@
 
 /* ── HERO ── */
 .hero {
-  background: linear-gradient(150deg, #002f8a 0%, #0047AB 55%, #1259c4 100%);
-  border-radius: 0 0 32px 32px;
-  padding: 52px 18px 26px;
-  margin-bottom: 14px;
+  background: linear-gradient(160deg, #003490 0%, #0047AB 50%, #0055cc 100%);
+  border-radius: 0 0 36px 36px;
+  padding: 52px 20px 28px;
+  margin-bottom: 16px;
   position: relative;
   overflow: hidden;
 }
 .hero::before {
   content: '';
   position: absolute;
-  top: -60px; right: -60px;
-  width: 220px; height: 220px;
-  background: rgba(255,255,255,.055);
+  top: -70px; right: -70px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 65%);
   border-radius: 50%;
 }
 .hero::after {
   content: '';
   position: absolute;
-  bottom: -30px; left: -40px;
-  width: 160px; height: 160px;
-  background: rgba(255,255,255,.035);
+  bottom: -50px; left: -50px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(0,30,100,.5) 0%, transparent 70%);
   border-radius: 50%;
 }
 
+/* Topbar */
 .hero-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   position: relative;
   z-index: 1;
 }
-.hero-brand { display: flex; align-items: center; gap: 9px; }
+.hero-brand { display: flex; align-items: center; gap: 11px; }
 .hero-logo-c {
-  width: 34px; height: 34px;
-  background: rgba(255,255,255,.18);
+  width: 42px; height: 42px;
+  background: #fff;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  border: 1.5px solid rgba(255,255,255,.3);
+  border: 2.5px solid rgba(255,255,255,.6);
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
 }
-.hero-logo-c img { width: 21px; height: 21px; object-fit: contain; }
-.hero-brand-txt { font-size: 10px; font-weight: 800; color: rgba(255,255,255,.85); letter-spacing: .07em; line-height: 1.3; }
+.hero-logo-c img { width: 27px; height: 27px; object-fit: contain; image-rendering:crisp-edges; }
+.hero-brand-txt {
+  font-size: 9px; font-weight: 900;
+  color: rgba(255,255,255,.95);
+  letter-spacing: .1em;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+.hero-brand-txt span { display: block; color: rgba(255,255,255,.55); font-weight: 600; letter-spacing: .04em; text-transform: none; font-size: 11px; }
 
-.notif-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.3); border-radius:20px; padding:7px 12px; text-decoration:none; }
-.notif-pill i { color:#fff; width:17px; height:17px; flex-shrink:0; }
-.np-count { color:#fff; font-size:12px; font-weight:800; line-height:1; display:none; }
+/* Frase motivacional */
+.hero-frase {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.08);
+  border-radius: 12px;
+  border-left: 3px solid rgba(255,255,255,.5);
+}
+.hero-frase-txt {
+  font-size: 12.5px;
+  font-style: italic;
+  color: rgba(255,255,255,.85);
+  line-height: 1.55;
+  font-weight: 500;
+}
+.hero-frase-autor {
+  font-size: 9.5px;
+  color: rgba(255,255,255,.5);
+  font-weight: 700;
+  margin-top: 5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
 
+/* Alumno */
 .hero-body {
   display: flex;
   gap: 16px;
@@ -75,8 +108,8 @@
 .foto-circle {
   width: 80px; height: 80px;
   border-radius: 50%;
-  background: rgba(255,255,255,.15);
-  border: 3px solid rgba(255,255,255,.45);
+  background: rgba(255,255,255,.12);
+  border: 3px solid rgba(255,255,255,.5);
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -84,15 +117,28 @@
   position: relative;
 }
 .foto-circle img { width:100%; height:100%; object-fit:cover; }
-.foto-circle i { width:32px; height:32px; color:rgba(255,255,255,.7); }
+.foto-circle i { width:32px; height:32px; color:rgba(255,255,255,.6); }
 
 .hero-info { flex: 1; min-width: 0; padding-top: 4px; }
-.hero-saludo { font-size: 11px; color: rgba(255,255,255,.6); font-weight: 600; letter-spacing: .03em; margin-bottom: 4px; }
-.hero-nombre { font-size: 21px; font-weight: 800; color: #fff; line-height: 1.15; }
-.hero-grupo { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 5px; }
+.hero-nombre { font-size: 22px; font-weight: 900; color: #fff; line-height: 1.1; }
+.hero-grupo { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 5px; }
 .hero-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .badge-activo { background: rgba(255,255,255,.15); color: #fff; border-radius: 20px; font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; border: 1px solid rgba(255,255,255,.25); }
-.badge-activo i { width: 12px; height: 12px; color: #6ee7b7; }
+.badge-activo i { width: 12px; height: 12px; color: #86efac; }
+
+/* Divisor sutil */
+.hero-divider {
+  height: 1px;
+  background: linear-gradient(to right, rgba(255,255,255,.2), transparent);
+  margin: 22px 0 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Notif pill */
+.notif-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.25); border-radius:20px; padding:7px 12px; text-decoration:none; }
+.notif-pill i { color:#fff; width:17px; height:17px; flex-shrink:0; }
+.np-count { color:#fff; font-size:12px; font-weight:800; line-height:1; display:none; }
 
 /* ── CONTENT BODY ── */
 .home-body { padding: 0 12px; }
@@ -229,19 +275,28 @@
     <div class="hero-topbar">
       <div class="hero-brand">
         <div class="hero-logo-c">
-          <img src="/assets/logo-union-white.png" alt="UMA">
+          <img src="/assets/logo-union-blue.png" alt="Union Martial Arts">
         </div>
-        <span class="hero-brand-txt">UNION<br>MARTIAL ARTS</span>
+        <div class="hero-brand-txt">
+          UNION MARTIAL ARTS
+          <span id="saludo-nombre">Bienvenida</span>
+        </div>
       </div>
       <div style="display:flex;gap:10px;align-items:center;">
         <a class="notif-pill" href="notificaciones.html" id="btn-notif" aria-label="Notificaciones">
           <i data-lucide="bell"></i>
           <span class="np-count" id="notif-count"></span>
         </a>
-        <a id="btn-logout" href="#" aria-label="Cerrar sesión" style="opacity:.7;text-decoration:none;">
-          <i data-lucide="log-out" style="color:#fff;width:20px;height:20px;"></i>
+        <a id="btn-logout" href="#" aria-label="Cerrar sesión" style="opacity:.6;text-decoration:none;">
+          <i data-lucide="log-out" style="color:#fff;width:19px;height:19px;"></i>
         </a>
       </div>
+    </div>
+
+    <!-- Frase motivacional del día -->
+    <div class="hero-frase">
+      <div class="hero-frase-txt" id="frase-txt">La disciplina construye campeones.</div>
+      <div class="hero-frase-autor">Union Martial Arts</div>
     </div>
 
     <div class="hero-body">
@@ -282,7 +337,6 @@
       </div>
 
       <div class="hero-info">
-        <div class="hero-saludo" id="saludo-nombre">Bienvenida</div>
         <div class="hero-nombre" id="nombre-alumno">Mi hijo/a</div>
         <div class="hero-grupo" id="grupo-alumno">—</div>
         <div class="hero-badges">
@@ -291,6 +345,7 @@
         <div id="hijo-chips" style="display:none;margin-top:10px;"></div>
       </div>
     </div>
+    <div class="hero-divider"></div>
   </div>
 
   <!-- ── CONTENIDO ── -->
@@ -451,6 +506,19 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
+
+  // Frase motivacional del día
+  const frases = [
+    "El éxito pertenece al que trabaja cuando nadie lo ve.",
+    "La disciplina construye campeones.",
+    "Cada clase es un paso hacia tu mejor versión.",
+    "La fuerza no viene del cuerpo. Viene de la voluntad.",
+    "Respeto, disciplina y honor — los pilares de un artista marcial.",
+    "No entrenes hasta hacerlo bien. Entrena hasta no poder hacerlo mal.",
+    "Un campeón no es quien nunca cae, sino quien siempre se levanta."
+  ]
+  const fraseEl = document.getElementById('frase-txt')
+  if (fraseEl) fraseEl.textContent = frases[new Date().getDay()]
 
   lucide.createIcons()
 
