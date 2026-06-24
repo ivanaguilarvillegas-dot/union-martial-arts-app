@@ -43,6 +43,20 @@
 
   // Grupos de contenido con claves para guardar en Supabase
   const G = [
+    { titulo: 'Precios', ic: 'dollar-sign', items: [
+      { clave: 'precio_inscripcion',    default: 'Inscripción — $500' },
+      { clave: 'precio_mensual_basico', default: 'Mensualidad Básico — $1,550' },
+      { clave: 'precio_anual',          default: 'Anual UNION — $12,500' },
+      { clave: 'precio_cinta_negra',    default: 'Club Cinta Negra — $9,950' },
+      { clave: 'precio_examen',         default: 'Examen (Cambio de Cinta) — $350' },
+      { clave: 'precio_torneo',         default: 'Torneo (Categorías) — $250' },
+    ]},
+    { titulo: 'Horarios', ic: 'clock', items: [
+      { clave: 'horario_basico_ninos',  default: 'Básico niños: L, M y V de 4:00 a 5:00 / 5:00 a 6:00 / 6:00 a 7:00 pm' },
+      { clave: 'horario_martes_jueves', default: 'Martes 6:15 a 7:00 pm · Sábado 11:00 am a 12:00 pm' },
+      { clave: 'horario_jovenes',       default: 'Jóvenes/adultos: L, M y V 7:00 a 8:00 pm' },
+      { clave: 'horario_jueves_sabado', default: 'Jueves 6:30 a 7:30 pm · Sábado 12:00 a 1:00 pm' },
+    ]},
     { titulo: 'Tienda en línea', ic: 'shopping-bag', items: [
       { clave: null, default: 'Productos, precios y fotos', href: 'admin-tienda.html' },
     ]},
