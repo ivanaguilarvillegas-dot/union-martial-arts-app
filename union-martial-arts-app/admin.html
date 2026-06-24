@@ -115,9 +115,10 @@
     homeEl.innerHTML = checks.map(c => {
       const nom = c.alumnos?.nombre || 'Alumno'
       const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
+      const esAusencia = c.tipo === 'ausencia'
       return `<div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-        <span class="grow"><span class="t">${nom}</span><span class="s">Asistencia · ${c.tipo||'Clase'}${c.hora ? ' · ' + c.hora : ''}</span></span>
-        <span class="trail"><span class="badge green"><i data-lucide="check"></i> Asistió</span></span></div>`
+        <span class="grow"><span class="t">${nom}</span><span class="s">${esAusencia ? 'No asistirá' : 'Asistencia · ' + (c.tipo||'Clase')}${c.hora ? ' · ' + c.hora : ''}</span></span>
+        <span class="trail"><span class="badge ${esAusencia ? 'red' : 'green'}" style="${esAusencia ? 'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;' : ''}"><i data-lucide="${esAusencia ? 'x' : 'check'}"></i> ${esAusencia ? 'Ausente' : 'Asistió'}</span></span></div>`
     }).join('')
   } else {
     homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin asistencias registradas hoy.</div>'

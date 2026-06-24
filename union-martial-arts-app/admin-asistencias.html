@@ -30,6 +30,7 @@
   const hoy = new Date().toISOString().split('T')[0]
   let alumnos = []
   let marcados = new Set()
+  let ausentes = new Set()
 
   if (!user) { window.location.href = 'index.html'; return }
 
@@ -44,8 +45,9 @@
     alumnos = Array.isArray(data) ? data : []
 
     // Checkins de hoy registrados por padres
-    const { data: checks } = await supabase.from('checkins').select('alumno_id').eq('fecha', hoy)
-    marcados = new Set(checks?.map(c => c.alumno_id) || [])
+    const { data: checks } = await supabase.from('checkins').select('alumno_id,tipo').eq('fecha', hoy)
+    marcados = new Set(checks?.filter(c => c.tipo !== 'ausencia').map(c => c.alumno_id) || [])
+    ausentes = new Set(checks?.filter(c => c.tipo === 'ausencia').map(c => c.alumno_id) || [])
     render()
   }
 
@@ -54,8 +56,18 @@
   }
 
   function render() {
-    document.getElementById('list').innerHTML = alumnos.map((a, i) => {
+    document.getElementById('list').innerHTML = alumnos.map((a) => {
       const ok = marcados.has(a.id)
+      const ausente = ausentes.has(a.id)
+      if (ausente) {
+        return `<div class="row">
+          <span class="avatar" style="width:34px;height:34px;font-size:12px;background:#fee2e2;color:#991b1b;">${iniciales(a.nombre)}</span>
+          <span class="grow"><span class="t">${a.nombre}</span><span class="s" style="color:#dc2626;">No asistirá hoy</span></span>
+          <span class="trail"><span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:var(--r-full);background:#fee2e2;color:#991b1b;font-weight:600;font-size:12px;border:1px solid #fca5a5;">
+            <i data-lucide="x" style="width:14px;height:14px"></i> Ausente
+          </span></span>
+        </div>`
+      }
       return `<div class="row">
         <span class="avatar" style="width:34px;height:34px;font-size:12px;">${iniciales(a.nombre)}</span>
         <span class="grow"><span class="t">${a.nombre}</span><span class="s">Clase de hoy</span></span>
