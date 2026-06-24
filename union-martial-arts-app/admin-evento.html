@@ -26,6 +26,29 @@
         <input id="lugar" placeholder="Ej. Gimnasio Municipal" /></label>
       <label class="field"><span class="lab">Descripción</span>
         <textarea id="desc" rows="3" placeholder="Detalles del evento…"></textarea></label>
+
+      <!-- Convocatoria -->
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Convocatoria (PDF o imagen, opcional)</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
+          <i data-lucide="file-text" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
+          <span id="conv-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir convocatoria</span>
+          <input type="file" id="conv-file" accept=".pdf,image/*" hidden />
+        </label>
+      </div>
+
+      <!-- Fotos -->
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Fotos del evento (opcional, máx. 5)</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
+          <i data-lucide="image" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
+          <span id="fotos-label" style="font-size:13px;color:var(--primary);font-weight:600;">Seleccionar fotos</span>
+          <input type="file" id="fotos-files" accept="image/*" multiple hidden />
+        </label>
+        <div id="fotos-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+      </div>
+
+      <div id="upload-progress" style="display:none;font-size:12px;color:var(--muted);text-align:center;">Subiendo archivos…</div>
       <div id="err-msg" class="notice red" style="display:none;"></div>
       <button class="btn primary block" id="save"><i data-lucide="plus"></i> Publicar evento</button>
     </div></div></div>
@@ -60,6 +83,26 @@
   // Fecha por defecto hoy
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
 
+  // Preview convocatoria
+  document.getElementById('conv-file').addEventListener('change', e => {
+    const f = e.target.files[0]
+    document.getElementById('conv-label').textContent = f ? f.name : 'Subir convocatoria'
+  })
+
+  // Preview fotos
+  document.getElementById('fotos-files').addEventListener('change', e => {
+    const files = [...e.target.files].slice(0, 5)
+    document.getElementById('fotos-label').textContent = files.length ? files.length + ' foto(s) seleccionada(s)' : 'Seleccionar fotos'
+    const prev = document.getElementById('fotos-preview')
+    prev.innerHTML = ''
+    files.forEach(f => {
+      const img = document.createElement('img')
+      img.src = URL.createObjectURL(f)
+      img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);'
+      prev.appendChild(img)
+    })
+  })
+
   const tipos = document.getElementById('tipos')
   tipos.addEventListener('click', e => {
     const b = e.target.closest('.chip'); if (!b) return
@@ -82,7 +125,37 @@
     const btn = document.getElementById('save')
     btn.disabled = true; btn.textContent = 'Publicando…'
 
-    const { error } = await supabase.from('eventos').insert({ tipo, titulo, fecha, hora, lugar, descripcion })
+    // Subir convocatoria
+    let convocatoria_url = null
+    const convFile = document.getElementById('conv-file').files[0]
+    if (convFile) {
+      document.getElementById('upload-progress').style.display = 'block'
+      const ext = convFile.name.split('.').pop()
+      const path = `convocatorias/${Date.now()}.${ext}`
+      const { error: ce } = await supabase.storage.from('eventos').upload(path, convFile)
+      if (!ce) convocatoria_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+    }
+
+    // Subir fotos
+    let fotos_urls = []
+    const fotosFiles = [...(document.getElementById('fotos-files').files || [])].slice(0, 5)
+    if (fotosFiles.length) {
+      document.getElementById('upload-progress').style.display = 'block'
+      for (const f of fotosFiles) {
+        const ext = f.name.split('.').pop()
+        const path = `fotos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: fe } = await supabase.storage.from('eventos').upload(path, f)
+        if (!fe) fotos_urls.push(supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl)
+      }
+    }
+    document.getElementById('upload-progress').style.display = 'none'
+
+    const { error } = await supabase.from('eventos').insert({
+      tipo, titulo, fecha, hora, lugar, descripcion,
+      foto_url: fotos_urls[0] || null,
+      convocatoria_url: convocatoria_url || null,
+      fotos_urls: fotos_urls.length ? fotos_urls : null
+    })
     if (error) {
       errEl.textContent = 'Error: ' + error.message
       errEl.style.display = 'flex'
