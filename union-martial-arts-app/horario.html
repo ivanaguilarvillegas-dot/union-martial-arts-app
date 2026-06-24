@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -54,7 +54,7 @@
     <div class="hero-sub" id="hero-alumno">Cargando…</div>
   </div>
 
-  <div class="body">
+  <div class="body"><div id="debug-box" style="display:none;background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:12px;line-height:1.8;"></div>
 
     <!-- Clases asignadas -->
     <div class="label">Clases asignadas</div>
@@ -151,6 +151,9 @@
 
     const wrap = document.getElementById('segs-wrap')
 
+    document.getElementById('debug-box').innerHTML = '<b>alumno:</b> ' + al.nombre + ' | <b>horario raw:</b> ' + JSON.stringify(al.horario)
+    document.getElementById('debug-box').style.display = 'block'
+
     if (!al.horario || !al.horario.trim()) {
       wrap.innerHTML = `<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin:0 auto 8px;opacity:.3;"></i>Sin horario asignado. (valor: "${JSON.stringify(al.horario)}")</div>`
       lucide.createIcons(); return
@@ -229,3 +232,4 @@
 </script>
 </body>
 </html>
+

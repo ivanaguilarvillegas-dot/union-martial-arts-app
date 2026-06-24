@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -132,7 +132,7 @@
           <div class="sec-hdr-sub">Información importante para todos los alumnos.</div>
         </div>
       </div>
-      <div id="avisos-list">
+      <div id="debug-avisos" style="display:none;background:#fef3c7;border:1.5px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:8px;"></div><div id="avisos-list">
         <div class="empty-sec">
           <i class="ti ti-speakerphone" style="font-size:28px;display:block;margin:0 auto;opacity:.3;"></i>
           <p>No hay avisos generales por el momento.</p>
@@ -251,8 +251,9 @@
 
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {
-      const { data: avisos } = await supabase.from('avisos').select('id,titulo,mensaje,prioridad,creado_en')
+      const { data: avisos, error: avisosErr } = await supabase.from('avisos').select('id,titulo,mensaje,prioridad,creado_en')
         .eq('activo', true).order('creado_en', { ascending: false }).limit(5)
+      if(document.getElementById('debug-avisos')){document.getElementById('debug-avisos').innerHTML='avisos: '+(avisos?.length??0)+' | error: '+(avisosErr?.message||'ninguno');document.getElementById('debug-avisos').style.display='block'}
       let confirmados = []
       try {
         const { data: cd } = await supabase.from('avisos_confirmaciones').select('aviso_id').eq('user_id', user.id)
@@ -339,6 +340,7 @@
       const { data: evs } = await supabase.from('eventos')
         .select('id,titulo,fecha,lugar,descripcion,foto_url,tipo,hora')
         .gte('fecha', hoy).order('fecha').limit(5)
+      if(document.getElementById('debug-avisos')){document.getElementById('debug-avisos').innerHTML='avisos: '+(avisos?.length??0)+' | error: '+(avisosErr?.message||'ninguno');document.getElementById('debug-avisos').style.display='block'}
 
       if (evs?.length) {
         const TIPO_ICON = { torneo:'ti-trophy', examen:'ti-award', actividad:'ti-star', seminario:'ti-school' }
@@ -413,3 +415,4 @@
 </script>
 </body>
 </html>
+
