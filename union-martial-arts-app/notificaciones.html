@@ -262,7 +262,6 @@
       padre = await cargarPadre(supabase, user)
     } catch(e) {}
 
-    if (padre?.nombre) document.getElementById('hero-initials').textContent = initials(padre.nombre)
 
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {

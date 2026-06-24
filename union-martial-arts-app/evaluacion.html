@@ -164,7 +164,6 @@
       const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).maybeSingle()
       alumnoNombre = al?.nombre || ''
     }
-    if (padre?.nombre) document.getElementById('hero-initials').textContent = initials(padre.nombre)
     document.getElementById('hero-alumno').textContent = alumnoNombre || 'Sin alumno vinculado'
   } catch(e) {}
 
