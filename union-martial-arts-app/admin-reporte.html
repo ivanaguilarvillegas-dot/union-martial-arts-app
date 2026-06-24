@@ -100,13 +100,17 @@
     headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}` }
   })
   const alumnos = await alumnosRes.json()
+  const dbg2 = document.createElement('div')
+  dbg2.style.cssText = 'background:#fef9c3;border:1px solid #ca8a04;border-radius:8px;padding:8px 10px;font-size:11px;margin-bottom:8px;word-break:break-all;'
+  dbg2.textContent = 'Respuesta: ' + JSON.stringify(alumnos).slice(0, 300)
+  document.getElementById('selector').prepend(dbg2)
+
   if (Array.isArray(alumnos) && alumnos.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
   } else {
     document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
-    console.error('alumnos fetch result:', alumnos)
   }
 
   // Generar
