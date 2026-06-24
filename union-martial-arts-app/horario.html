@@ -54,8 +54,7 @@
     <div class="hero-sub" id="hero-alumno">Cargando…</div>
   </div>
 
-  <div class="body"><div id="debug-box" style="display:none;background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:12px;line-height:1.8;"></div>
-
+  <div class="body">
     <!-- Clases asignadas -->
     <div class="label">Clases asignadas</div>
     <div id="segs-wrap">
@@ -99,11 +98,8 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const upd = t => { const b=document.getElementById('debug-box'); b.innerHTML=t; b.style.display='block' }
-  upd('ESM listo')
 
   function showErr(msg) {
-    upd('ERROR: ' + msg)
     document.getElementById('segs-wrap').innerHTML =
       `<div class="seg-card" style="padding:16px;color:#dc2626;font-size:13px;text-align:center;">${msg}</div>`
   }
@@ -114,7 +110,6 @@
   }
 
   try {
-    upd('Paso 1: verificando sesión…')
     const { data: sessionData } = await supabase.auth.getSession()
     const user = sessionData?.session?.user
     upd('Paso 1 OK — user: ' + (user ? user.email : 'null (no sesión)'))
@@ -128,7 +123,6 @@
     if (p1?.alumno_id) {
       padre = p1
     } else {
-      upd('Paso 2b: buscando por correo=' + user.email)
       const { data: p2, error: p2err } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
       upd('Paso 2b: p2=' + JSON.stringify(p2) + (p2err?' err:'+p2err.message:''))
       if (p2) {
@@ -160,9 +154,6 @@
       al.nombre + (al.cinta ? '  ·  Cinta ' + al.cinta : '')
 
     const wrap = document.getElementById('segs-wrap')
-
-    document.getElementById('debug-box').innerHTML = '<b>alumno:</b> ' + al.nombre + ' | <b>horario raw:</b> ' + JSON.stringify(al.horario)
-    document.getElementById('debug-box').style.display = 'block'
 
     if (!al.horario || !al.horario.trim()) {
       wrap.innerHTML = `<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin:0 auto 8px;opacity:.3;"></i>Sin horario asignado. (valor: "${JSON.stringify(al.horario)}")</div>`
@@ -231,7 +222,6 @@
 
     lucide.createIcons()
   } catch(e) {
-    upd('CATCH: ' + e.message)
     document.getElementById('segs-wrap').innerHTML =
       `<div class="seg-card" style="padding:16px;color:#dc2626;font-size:13px;text-align:center;">${e.message}</div>`
     lucide.createIcons()
