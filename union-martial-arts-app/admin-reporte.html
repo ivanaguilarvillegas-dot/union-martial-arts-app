@@ -86,6 +86,7 @@
   )
   const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
 
+  document.querySelector('.body').insertAdjacentHTML('afterbegin','<div id="ver" style="background:#0047AB;color:#fff;font-size:11px;padding:4px 8px;border-radius:6px;margin-bottom:8px;">v8 cargando...</div>')
   // Cargar alumnos primero — no depende de sesión porque RLS está desactivado
   const alumnosRes = await fetch(
     'https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre,cinturon,grupo',
