@@ -192,6 +192,11 @@ function collision(piece,px,py){
 function placePiece(){
   for(let r=0;r<cur.length;r++) for(let c=0;c<cur[r].length;c++)
     if(cur[r][c]) board[curY+r][curX+c]=curColor
+  // Small points for every piece placed
+  const pieceBonus = 5 * beltLevel
+  score += pieceBonus
+  scoreFloats.push({x:curX*CELL+cur[0].length*CELL/2, y:curY*CELL+10, text:'+'+pieceBonus, alpha:1, dy:-1.2, size:13, color:'rgba(255,255,255,.7)'})
+  document.getElementById('hud-score').textContent=score.toLocaleString()
   clearLines()
 }
 
@@ -227,8 +232,12 @@ function clearLines(){
     const belt=BELTS[beltLevel-1]
     if(beltLines>=belt.lines && beltLevel<BELTS.length){
       beltLines=0;beltLevel++
-      showLevelUp()
       applyBeltTheme()
+      if(beltLevel===8){
+        showLevelUp(true) // special black belt win
+      } else {
+        showLevelUp(false)
+      }
     }
   }
 }
@@ -252,28 +261,43 @@ function updateBeltBar(){
   document.getElementById('lines-to-next').textContent=remaining
 }
 
-function showLevelUp(){
+function showLevelUp(isWin){
   const b=BELTS[beltLevel-1]
   paused=true;clearInterval(dropTimer)
   const root=document.getElementById('lvlup-root')
   root.innerHTML=`
     <div class="lvlup-overlay">
       <div class="lvlup-card" style="border-color:${b.color};">
-        <div style="font-size:44px;margin-bottom:6px;">${b.emoji}</div>
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:${b.color};margin-bottom:4px;">¡Subiste de nivel!</div>
-        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;">Cinturón ${b.name}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.55);">Nivel ${b.num} de 8 ${b.num===8?'· ¡CINTA NEGRA! 🏆':''}</div>
+        <div style="font-size:44px;margin-bottom:6px;">${isWin?'🏆':b.emoji}</div>
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:${b.color};margin-bottom:4px;">${isWin?'¡LO LOGRASTE!':'¡Subiste de nivel!'}</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;">${isWin?'¡Cinta Negra!':'Cinturón '+b.name}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);">Nivel ${b.num} de 8${isWin?' · ¡Maestro del Tatami! 🥋':''}</div>
       </div>
     </div>`
   setTimeout(()=>{
     root.innerHTML=''
-    paused=false
-    setDropSpeed()
-    if(b.num===8){
-      // Black belt celebration then continue
-      scoreFloats.push({x:100,y:120,text:'🏆 ¡CINTA NEGRA!',alpha:1,dy:-1,size:18,color:'#FFD700'})
+    if(isWin){
+      showVictory()
+    } else {
+      paused=false
+      setDropSpeed()
     }
-  }, b.num===8?3200:2200)
+  }, isWin?2800:2000)
+}
+
+function showVictory(){
+  gameRunning=false;clearInterval(dropTimer)
+  const v=VALORES[valCount%VALORES.length]
+  document.getElementById('go-icon').textContent='🏆'
+  document.getElementById('go-title').textContent='¡Cinta Negra! ¡Ganaste!'
+  document.getElementById('final-score').textContent=score.toLocaleString()
+  document.getElementById('final-belt').textContent='⬛ Cinta Negra — Maestro'
+  document.getElementById('go-vlabel').textContent=valCount>=VALORES.length?'¡Todos los valores desbloqueados!':'Valor final'
+  document.getElementById('go-vicon').textContent=valCount>=VALORES.length?'🌟':v.icon
+  document.getElementById('go-vname').textContent=valCount>=VALORES.length?'¡Todos los valores!':v.nombre
+  document.getElementById('go-vfrase').textContent=valCount>=VALORES.length?'"Has demostrado disciplina, constancia y esfuerzo. Eso es lo que hace un campeón."':v.frase
+  document.getElementById('go-vreto').textContent=valCount>=VALORES.length?'🎯 Comparte tu logro con tus compañeros de UNION.':'🎯 Reto: '+v.reto
+  document.getElementById('gameover').style.display='flex'
 }
 
 function unlockValor(){
