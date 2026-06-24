@@ -92,20 +92,18 @@
 </div></div>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-  document.getElementById('debug-box').innerHTML = 'Cargando supabase…'
-  document.getElementById('debug-box').style.display = 'block'
-  if (!window.supabase) { document.getElementById('debug-box').innerHTML = 'Error: supabase no cargó'; }
-  const { createClient } = window.supabase
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
   const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-
-  ;(async () => {
+  const dbg = document.getElementById('debug-box')
+  const upd = t => { dbg.innerHTML = t; dbg.style.display = 'block' }
+  upd('Módulo iniciado')
 
   function showErr(msg) {
+    upd('ERROR: ' + msg)
     document.getElementById('segs-wrap').innerHTML =
       `<div class="seg-card" style="padding:16px;color:#dc2626;font-size:13px;text-align:center;">${msg}</div>`
   }
@@ -114,9 +112,6 @@
     if (!name) return '?'
     return name.trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase()
   }
-
-  const dbg = document.getElementById('debug-box')
-  const upd = t => { dbg.innerHTML = t; dbg.style.display = 'block' }
 
   try {
     upd('Paso 1: verificando sesión…')
@@ -239,7 +234,6 @@
     showErr('Error: ' + e.message)
     lucide.createIcons()
   }
-  })()
 </script>
 <script>
   if ('serviceWorker' in navigator) {
