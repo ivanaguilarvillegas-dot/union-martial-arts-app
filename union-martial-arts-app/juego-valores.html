@@ -55,7 +55,7 @@ body,html{background:#0d0d1a;overflow:hidden;}
     </div>
 
     <div class="arena">
-      <canvas id="gc" width="200" height="400" style="border:1.5px solid rgba(255,255,255,.1);"></canvas>
+      <canvas id="gc" width="170" height="340" style="border:1.5px solid rgba(255,255,255,.1);"></canvas>
       <div class="side">
         <!-- Next piece -->
         <div class="side-box">
@@ -157,7 +157,7 @@ const PIECES = [
   [[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]],[[1,0],[1,0],[1,1]],[[0,1],[0,1],[1,1]],
 ]
 
-const COLS=10,ROWS=20,CELL=20
+const COLS=10,ROWS=20,CELL=17
 const canvas=document.getElementById('gc')
 const ctx=canvas.getContext('2d')
 const nctx=document.getElementById('nc').getContext('2d')
@@ -216,8 +216,8 @@ function clearLines(){
     score+=total;totalLines+=cleared;beltLines+=cleared
 
     const label=cleared>=4?'¡TETRIS! +'+total:cleared>=2?['','','+'+total+' ¡Doble!','+'+total+' ¡Triple!'][cleared]:'+'+total
-    scoreFloats.push({x:100,y:180,text:label,alpha:1,dy:-1.8,size:cleared>=2?22:18,color:cleared>=4?'#FFD700':cleared>=2?'#4ade80':'#fff'})
-    if(comboCount>1) scoreFloats.push({x:100,y:215,text:'COMBO x'+comboCount+'!',alpha:1,dy:-1.3,size:14,color:'#f97316'})
+    scoreFloats.push({x:COLS*CELL/2,y:160,text:label,alpha:1,dy:-1.8,size:cleared>=2?22:18,color:cleared>=4?'#FFD700':cleared>=2?'#4ade80':'#fff'})
+    if(comboCount>1) scoreFloats.push({x:COLS*CELL/2,y:192,text:'COMBO x'+comboCount+'!',alpha:1,dy:-1.3,size:14,color:'#f97316'})
     flashTimer=12
 
     document.getElementById('hud-score').textContent=score.toLocaleString()
@@ -395,7 +395,7 @@ function drawNext(){
 
 function draw(){
   const b=BELTS[beltLevel-1]
-  ctx.fillStyle=b.arena;ctx.fillRect(0,0,200,400)
+  ctx.fillStyle=b.arena;ctx.fillRect(0,0,COLS*CELL,ROWS*CELL)
 
   // Flash
   if(flashTimer>0){ctx.fillStyle=`rgba(255,255,255,${flashTimer/12*.22})`;ctx.fillRect(0,0,200,400);flashTimer--}

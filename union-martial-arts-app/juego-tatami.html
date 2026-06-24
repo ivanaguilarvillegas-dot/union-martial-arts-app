@@ -23,6 +23,8 @@ canvas{display:block;width:100%;}
 .move-btn .ico{font-size:17px;line-height:1;}
 .move-btn .pts{font-size:9px;color:#60a5fa;font-weight:700;}
 .move-btn.disabled{opacity:.32;pointer-events:none;}
+.move-btn.firing{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.5);transform:scale(.95);box-shadow:0 0 10px rgba(255,255,255,.3);}
+.tooltip-box{background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px 10px;font-size:10px;color:#cbd5e1;line-height:1.5;margin-bottom:6px;}
 .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .btn-def{background:rgba(0,71,171,.2);border-color:#0047AB;color:#93c5fd;}
 .btn-def.active{background:#0047AB;color:#fff;}
@@ -71,9 +73,10 @@ canvas{display:block;width:100%;}
       <button class="move-btn" id="btn-salto"   onclick="playerMove('salto')"  ><span class="ico">🚀</span>P.Salto<span class="pts">+3 · 4⚡</span></button>
       <button class="move-btn" id="btn-contra"  onclick="playerMove('contra')" style="display:none;"><span class="ico">⚡</span>Contra<span class="pts">+2 · 2⚡</span></button>
     </div>
+    <div class="tooltip-box" id="def-tip">🛡️ <b>Defensa</b> — bloquea el próximo ataque del rival y te deja contraatacar ⚡ al instante. Cuesta 2 energía.</div>
     <div class="bottom-row">
-      <button class="move-btn btn-def"   id="btn-def"   onclick="activarDefensa()"><span class="ico">🛡️</span>Defensa<span class="pts">2⚡</span></button>
-      <button class="move-btn btn-combo" id="btn-combo" onclick="activarCombo()" style="display:none;"><span class="ico">🔥</span>COMBO<span class="pts">x2 daño</span></button>
+      <button class="move-btn btn-def"   id="btn-def"   onclick="activarDefensa()"><span class="ico">🛡️</span>Defensa<span class="pts">2⚡ · bloquea rival</span></button>
+      <button class="move-btn btn-combo" id="btn-combo" onclick="activarCombo()" style="display:none;"><span class="ico">🔥</span>COMBO<span class="pts">x2 daño · ¡úsalo!</span></button>
     </div>
   </div>
 
@@ -146,6 +149,19 @@ function drawTatami(){
   const bg=ctx.createLinearGradient(0,0,0,H)
   bg.addColorStop(0,'#06060f');bg.addColorStop(.6,'#0a0a18');bg.addColorStop(1,'#080810')
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H)
+  // UNION logo on the back wall — white logo watermark
+  if(logoOk){
+    ctx.save()
+    ctx.globalAlpha=.11
+    const lw=160,lh=100
+    ctx.drawImage(logoImg,W/2-lw/2,18,lw,lh)
+    ctx.restore()
+  } else {
+    // Fallback text logo
+    ctx.save();ctx.globalAlpha=.07
+    ctx.font='bold 38px Inter,sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center'
+    ctx.fillText('UNION',W/2,90);ctx.restore()
+  }
   // Blue glow from top center
   const glow=ctx.createRadialGradient(W/2,40,10,W/2,60,180)
   glow.addColorStop(0,'rgba(0,71,171,.15)');glow.addColorStop(1,'rgba(0,0,0,0)')
@@ -323,43 +339,64 @@ function drawFighter(cx, dir, anim, gi, oppX, jumpY){
   // ── NECK ──
   ctx.fillStyle=SKIN;ctx.fillRect(cx+dir*2,neckY,dir>0?6:-6,10)
 
-  // ── HEAD — profile facing dir ──
+  // ── HEAD base (no eyes yet — they go AFTER helmet) ──
   ctx.fillStyle=SKIN
   ctx.beginPath();ctx.ellipse(cx+dir*4,headY,13,15,0,0,Math.PI*2);ctx.fill()
 
-  if(isHit){
-    ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('😵',cx+dir*4,headY+5)
-  } else {
-    // Eye visible on facing side
-    ctx.fillStyle='#222'
-    ctx.beginPath();ctx.ellipse(cx+dir*10,headY-2,2.2,2.8,0,0,Math.PI*2);ctx.fill()
-    ctx.fillStyle='rgba(255,255,255,.55)'
-    ctx.beginPath();ctx.ellipse(cx+dir*11,headY-3,1,1,0,0,Math.PI*2);ctx.fill()
-    // Nose
-    ctx.fillStyle=SKIN;ctx.strokeStyle='#c8906a';ctx.lineWidth=1.2
-    ctx.beginPath();ctx.moveTo(cx+dir*12,headY+2);ctx.lineTo(cx+dir*14,headY+6);ctx.lineTo(cx+dir*11,headY+8);ctx.stroke()
-  }
-
-  // ── HELMET (Top Ten) ──
+  // ── HELMET shell (Top Ten) — drawn over head ──
   ctx.fillStyle=RED
-  ctx.beginPath();ctx.ellipse(cx+dir*4,headY-2,17,18,0,0,Math.PI*2);ctx.fill()
-  // Face opening (cutout toward facing direction)
-  const faceOpen = dir>0 ? 0 : Math.PI
-  ctx.fillStyle=gi==='black'?'#151518':'rgba(238,238,232,.95)'
+  ctx.beginPath();ctx.ellipse(cx+dir*3,headY-3,19,21,0,0,Math.PI*2);ctx.fill()
+  // Side ear guards
+  ctx.beginPath();ctx.ellipse(cx-dir*6,headY,5,10,0,0,Math.PI*2);ctx.fill()
+
+  // ── FACE OPENING — wide cutout toward opponent ──
+  const faceAngle = dir>0 ? 0 : Math.PI
+  // Dark panel behind face
+  ctx.fillStyle=gi==='black'?'#0e0e10':'rgba(230,230,220,.95)'
   ctx.beginPath()
-  ctx.arc(cx+dir*4,headY+1,12,faceOpen-1.0,faceOpen+1.0)
+  ctx.ellipse(cx+dir*4,headY,12,14,0,faceAngle-1.25,faceAngle+1.25)
   ctx.closePath();ctx.fill()
-  // Skin showing in face opening
+  // Skin visible through opening
   ctx.fillStyle=SKIN
   ctx.beginPath()
-  ctx.arc(cx+dir*4,headY+1,9,faceOpen-.85,faceOpen+.85)
+  ctx.ellipse(cx+dir*4,headY,10,12,0,faceAngle-1.1,faceAngle+1.1)
   ctx.closePath();ctx.fill()
-  // Helmet shine
-  ctx.fillStyle='rgba(255,255,255,.15)'
-  ctx.beginPath();ctx.ellipse(cx+dir*1,headY-12,6,4,dir*.3,0,Math.PI*2);ctx.fill()
-  // Chin guard
+
+  // ── FACE FEATURES drawn LAST so visible through opening ──
+  if(isHit){
+    ctx.font='12px sans-serif';ctx.textAlign='center'
+    ctx.fillText('😵',cx+dir*7,headY+5)
+  } else {
+    // Eye — large and clear
+    ctx.fillStyle='#1a1a1a'
+    ctx.beginPath();ctx.ellipse(cx+dir*9,headY-1,3,3.5,0,0,Math.PI*2);ctx.fill()
+    // White of eye
+    ctx.fillStyle='rgba(255,255,255,.7)'
+    ctx.beginPath();ctx.ellipse(cx+dir*10,headY-2,1.4,1.4,0,0,Math.PI*2);ctx.fill()
+    // Eyebrow
+    ctx.strokeStyle='#5a3a1a';ctx.lineWidth=1.8
+    ctx.beginPath();ctx.moveTo(cx+dir*5,headY-8);ctx.lineTo(cx+dir*13,headY-6);ctx.stroke()
+    // Nose tip
+    ctx.strokeStyle='#b07050';ctx.lineWidth=1.2
+    ctx.beginPath();ctx.moveTo(cx+dir*13,headY+3);ctx.lineTo(cx+dir*15,headY+8);ctx.lineTo(cx+dir*11,headY+10);ctx.stroke()
+    // Mouth line
+    ctx.strokeStyle='#c07858';ctx.lineWidth=1.2
+    ctx.beginPath();ctx.arc(cx+dir*8,headY+12,3,-.4,.4);ctx.stroke()
+  }
+
+  // ── HELMET finishing touches ──
+  // Top shine
+  ctx.fillStyle='rgba(255,255,255,.18)'
+  ctx.beginPath();ctx.ellipse(cx-dir*1,headY-14,7,4,dir*.2,0,Math.PI*2);ctx.fill()
+  // Helmet band / stripe
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=2
+  ctx.beginPath();ctx.arc(cx+dir*3,headY-3,17,Math.PI*.25,Math.PI*.75);ctx.stroke()
+  // Chin guard (below helmet, covers jaw)
   ctx.fillStyle=RED
-  ctx.beginPath();ctx.roundRect(cx+dir*4-11,headY+10,22,9,4);ctx.fill()
+  ctx.beginPath();ctx.roundRect(cx+dir*3-13,headY+11,26,10,5);ctx.fill()
+  // Chin strap hint
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.5
+  ctx.beginPath();ctx.moveTo(cx+dir*3-13,headY+16);ctx.lineTo(cx+dir*3+13,headY+16);ctx.stroke()
 
   ctx.restore();ctx.globalAlpha=1
 }
@@ -446,10 +483,17 @@ function checkCombo(){
   }
 }
 
+function fireBtn(key){
+  const b=document.getElementById('btn-'+key);if(!b) return
+  b.classList.add('firing')
+  setTimeout(()=>b.classList.remove('firing'),500)
+}
+
 function playerMove(key){
   if(gameOver) return
   const m=MOVES[key];if(!m) return
   if(pStamina<m.stamina){setLog(`<span class="warn">⚡ Sin energía para ${m.name}. ¡Espera!</span>`);return}
+  fireBtn(key)
   pStamina-=m.stamina;updateStamina()
 
   // Play attack animation on player
