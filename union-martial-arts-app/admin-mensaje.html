@@ -233,13 +233,21 @@
         <div style="font-size:10px;font-weight:700;color:#0047AB;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Frase activa actual</div>
         ${fraseActiva
           ? `<div style="font-size:13px;font-style:italic;color:#1e3a8a;line-height:1.5;margin-bottom:8px;">"${fraseActiva.texto}"</div>
-             <button id="btn-editar-frase" style="font-size:11px;font-weight:700;color:#0047AB;background:none;border:1px solid #93c5fd;border-radius:8px;padding:4px 10px;cursor:pointer;">✏️ Cargar para editar</button>`
-          : `<div style="font-size:12px;color:#6b7280;">Sin frase activa aún.</div>`}
+             <div style="display:flex;gap:8px;">
+               <button id="btn-editar-frase" style="font-size:11px;font-weight:700;color:#0047AB;background:none;border:1px solid #93c5fd;border-radius:8px;padding:4px 10px;cursor:pointer;">✏️ Cargar para editar</button>
+               <button id="btn-borrar-frase" style="font-size:11px;font-weight:700;color:#dc2626;background:none;border:1px solid #fca5a5;border-radius:8px;padding:4px 10px;cursor:pointer;">🗑 Borrar frase</button>
+             </div>`
+          : `<div style="font-size:12px;color:#6b7280;">Sin frase activa — se muestran frases automáticas.</div>`}
       </div>`
       if (fraseActiva) {
         document.getElementById('btn-editar-frase').addEventListener('click', () => {
           document.getElementById('msg-texto').value = fraseActiva.texto
           document.getElementById('msg-texto').focus()
+        })
+        document.getElementById('btn-borrar-frase').addEventListener('click', async () => {
+          if (!confirm('¿Borrar la frase activa? La app mostrará frases automáticas.')) return
+          await supabase.from('frases').update({ activa: false }).eq('id', fraseActiva.id)
+          await extra('frase')
         })
       }
     } else if (t === 'privado') {
