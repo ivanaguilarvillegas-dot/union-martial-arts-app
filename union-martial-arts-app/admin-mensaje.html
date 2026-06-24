@@ -12,6 +12,7 @@
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Enviar mensaje</div></div></div>
   <div class="body">
+    <div id="dbg" style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:12px;line-height:1.8;">Cargando script…</div>
     <div id="form"><div class="card"><div class="stack">
       <div>
         <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo de mensaje</div>
@@ -43,9 +44,13 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
+  const dbg = t => { document.getElementById('dbg').innerHTML = t }
+  dbg('Paso 1: obteniendo sesión…')
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
+  dbg('Paso 1 OK — user: ' + (user ? user.email : 'null (sin sesión)'))
   if (!user) { window.location.href = 'index.html'; return }
+  dbg('Paso 2: registrando listeners…')
 
   // Cargar mensajes recibidos de padres
   async function cargarMensajes() {
@@ -336,6 +341,7 @@
     })
   }
 
+  dbg('✅ Script listo — botón Enviar activo')
   cargarMensajes()
   cargarCitas()
   cargarEnviados()
