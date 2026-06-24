@@ -476,7 +476,6 @@
   const user = session?.user
     if (!user) { window.location.href = 'index.html'; return }
 
-    mostrarBadge(user)
     cargarEvento()
     cargarAlerta()
 
@@ -503,6 +502,7 @@
       padre = todosLosHijos.find(p => p.id === savedId) || todosLosHijos[0] || lista?.[0] || null
       if (padre) localStorage.setItem('uma_padre_id', padre.id)
     } catch(e) {}
+    mostrarBadge(user, padre)
 
     if (padre) {
       const partes = (padre.nombre || '').trim().split(/\s+/).filter(Boolean)
@@ -680,16 +680,18 @@
     } catch(e) {}
   }
 
-  async function mostrarBadge(user) {
+  async function mostrarBadge(user, padre) {
     const visto = localStorage.getItem('notif_visto') || '2000-01-01'
     let count = 0
     try {
+      const padreId = padre?.id || '00000000-0000-0000-0000-000000000000'
       const [a, p] = await Promise.allSettled([
         supabase.from('avisos').select('id').eq('activo', true).gt('creado_en', visto),
-        supabase.from('mensajes').select('id').eq('para_admin', false).eq('destinatario_id', user.id).gt('creado_en', visto)
+        supabase.from('mensajes').select('id').eq('para_admin', false)
+          .or('destinatario_id.is.null,destinatario_id.eq.' + padreId)
+          .gt('creado_en', visto)
       ])
-      const avsCnt = a.value?.data?.length || 0
-      count += avsCnt
+      count += (a.value?.data?.length || 0)
       count += (p.value?.data?.length || 0)
     } catch(e) {}
 
