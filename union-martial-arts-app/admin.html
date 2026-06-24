@@ -57,7 +57,8 @@
   }
   actualizarReloj(); setInterval(actualizarReloj, 30000)
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
   if (!user) { window.location.href = 'index.html' }
 
   // Verificar que sea admin
@@ -124,4 +125,5 @@
 </script>
 </body>
 </html>
+
 

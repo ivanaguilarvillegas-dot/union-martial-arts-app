@@ -43,7 +43,8 @@
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
   if (!user) { window.location.href = 'index.html'; return }
 
   // Cargar mensajes recibidos de padres
@@ -255,7 +256,7 @@
         await supabase.from('frases').update({ activa: false }).eq('activa', true)
         await supabase.from('frases').insert({ texto, activa: true, fecha_envio: new Date().toISOString().split('T')[0] })
       } else if (tipo === 'aviso') {
-        const { error: avErr } = await supabase.from('avisos').insert({ titulo: 'Aviso general', mensaje: texto, prioridad: 'informativo', activo: true, creado_por: user.id })
+        const { error: avErr } = await supabase.from('avisos').insert({ titulo: 'Aviso general', mensaje: texto, prioridad: 'informativo', activo: true })
         if (avErr) { alert('Error al guardar aviso: ' + avErr.message); return }
       } else {
         const dest = document.getElementById('dest-select')?.value || null
