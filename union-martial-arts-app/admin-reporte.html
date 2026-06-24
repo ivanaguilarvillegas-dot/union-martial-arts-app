@@ -106,6 +106,10 @@
       alumnos.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('')
   } else {
     document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
+    const errDiv = document.createElement('div')
+    errDiv.style.cssText = 'background:#fff7ed;border:1px solid #fed7aa;color:#92400e;padding:12px;border-radius:10px;font-size:12px;margin-bottom:12px;line-height:1.6;'
+    errDiv.innerHTML = '⚠️ <strong>Sin acceso a alumnos.</strong> Ejecuta este SQL en Supabase → SQL Editor:<br><code style="display:block;background:#fff;border-radius:6px;padding:6px 8px;margin-top:6px;font-size:11px;color:#1e40af;">CREATE POLICY "admin lee alumnos" ON alumnos FOR SELECT TO authenticated USING (true);</code>'
+    document.getElementById('selector').prepend(errDiv)
   }
 
   // Generar
