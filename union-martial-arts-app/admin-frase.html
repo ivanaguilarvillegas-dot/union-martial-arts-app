@@ -50,9 +50,13 @@
     <a href="admin-frase.html" class="bnav-item active"><span class="bnav-icon">💬</span>Mensajes</a>
   </div>
 </div>
+<script src="/js/supabase.min.js"></script>
 <script>
 (async () => {
-  import { supabase } from './js/supabase.js'
+  const supabase = window.supabase.createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
 
   window.actualizarPreview = function() {
     const texto = document.getElementById('texto').value.trim()
