@@ -92,9 +92,8 @@
 </div></div>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-  onerror="document.getElementById('debug-box').innerHTML='Error: no cargó supabase';document.getElementById('debug-box').style.display='block'"
-  onload="initHorario()"></script>
+<script src="/js/supabase.min.js" onload="initHorario()"
+  onerror="document.getElementById('debug-box').innerHTML='Error: no cargó supabase local';document.getElementById('debug-box').style.display='block'"></script>
 <script>
   function dbgShow(t){var b=document.getElementById('debug-box');b.innerHTML=t;b.style.display='block'}
   dbgShow('Cargando supabase…')
