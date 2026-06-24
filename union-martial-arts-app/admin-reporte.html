@@ -86,11 +86,15 @@
   document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
   // Cargar alumnos
-  const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
-  if (alumnos?.length) {
+  const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
+  if (errAl) {
+    document.getElementById('al-sel').innerHTML = `<option value="">Error: ${errAl.message}</option>`
+  } else if (alumnos?.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('')
+  } else {
+    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
   }
 
   // Generar
