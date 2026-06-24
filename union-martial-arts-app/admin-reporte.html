@@ -92,26 +92,27 @@
   const hoy = new Date()
   document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
-  // Cargar alumnos — sin order para evitar fallo si columna nombre no existe
-  const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('*')
-  // Debug temporal
-  alert('alumnos: ' + JSON.stringify(alumnos?.length) + ' | error: ' + (errAl?.message || 'none'))
-  if (errAl) {
-    document.getElementById('al-sel').innerHTML = `<option value="">Error al cargar</option>`
-    const errDiv = document.createElement('div')
-    errDiv.style.cssText = 'background:#fee;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-bottom:12px;'
-    errDiv.textContent = '⚠️ Error al cargar alumnos: ' + errAl.message
-    document.getElementById('selector').prepend(errDiv)
-  } else if (alumnos?.length) {
+  // Cargar alumnos via padres→alumnos join (más confiable que query directa)
+  const { data: padresRows } = await supabase.from('padres').select('alumno_id, alumnos(id, nombre, cinta, grupo)').not('alumno_id', 'is', null)
+  let alumnos = padresRows?.map(p => p.alumnos).filter(Boolean) || []
+  // Deduplicar por id
+  alumnos = [...new Map(alumnos.map(a => [a.id, a])).values()].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''))
+
+  if (alumnos.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
   } else {
-    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos en la base de datos</option>'
-    const errDiv = document.createElement('div')
-    errDiv.style.cssText = 'background:#fff7ed;border:1px solid #fed7aa;color:#92400e;padding:12px;border-radius:10px;font-size:12px;margin-bottom:12px;line-height:1.6;'
-    errDiv.innerHTML = '⚠️ La tabla <code>alumnos</code> existe pero no tiene registros. Agrega alumnos desde <a href="admin-alumnos.html" style="color:#1e40af;font-weight:700;">Alumnos</a>.'
-    document.getElementById('selector').prepend(errDiv)
+    // Fallback: query directa
+    const { data: direct } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
+    if (direct?.length) {
+      alumnos = direct
+      document.getElementById('al-sel').innerHTML =
+        '<option value="">Selecciona alumno…</option>' +
+        alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
+    } else {
+      document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
+    }
   }
 
   // Generar
