@@ -76,25 +76,39 @@
   position: relative;
   z-index: 1;
   margin-bottom: 22px;
-  padding: 10px 14px;
+  padding: 14px 16px 12px 18px;
   background: rgba(255,255,255,.08);
-  border-radius: 12px;
-  border-left: 3px solid rgba(255,255,255,.5);
+  border-radius: 14px;
+  border-left: 3px solid rgba(255,255,255,.4);
+}
+.hero-frase::before {
+  content: '\201C';
+  position: absolute;
+  top: -2px;
+  left: 10px;
+  font-size: 52px;
+  line-height: 1;
+  color: rgba(255,255,255,.25);
+  font-family: Georgia, serif;
+  font-style: italic;
 }
 .hero-frase-txt {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-style: italic;
-  color: rgba(255,255,255,.85);
-  line-height: 1.55;
-  font-weight: 500;
+  color: rgba(255,255,255,.92);
+  line-height: 1.6;
+  font-weight: 600;
+  font-family: Georgia, 'Times New Roman', serif;
+  padding-left: 6px;
 }
 .hero-frase-autor {
   font-size: 9.5px;
   color: rgba(255,255,255,.5);
   font-weight: 700;
-  margin-top: 5px;
+  margin-top: 7px;
   letter-spacing: .06em;
   text-transform: uppercase;
+  padding-left: 6px;
 }
 
 /* Alumno */
@@ -562,8 +576,12 @@
   const fraseEl = document.getElementById('frase-txt')
   if (fraseEl) {
     fraseEl.textContent = frasesFallback[Math.floor(Math.random() * frasesFallback.length)]
-    supabase.from('frases').select('texto').eq('activa', true).limit(1).maybeSingle()
-      .then(({ data }) => { if (data?.texto && fraseEl) fraseEl.textContent = data.texto })
+    supabase.from('frases').select('texto,autor').eq('activa', true).limit(1).maybeSingle()
+      .then(({ data }) => {
+        if (data?.texto && fraseEl) fraseEl.textContent = data.texto
+        const autorEl = document.querySelector('.hero-frase-autor')
+        if (data?.autor && autorEl) autorEl.textContent = '— ' + data.autor
+      })
       .catch(() => {})
   }
 
