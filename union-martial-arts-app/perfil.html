@@ -96,7 +96,13 @@
 
   if (alumno) {
     const ini = alumno.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
-    document.getElementById('av').textContent = ini
+    const avEl = document.getElementById('av')
+    if (alumno.foto_url) {
+      avEl.innerHTML = `<img src="${alumno.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+      avEl.style.padding = '0'
+    } else {
+      avEl.textContent = ini
+    }
     document.getElementById('av-nombre').textContent = alumno.nombre || '—'
     document.getElementById('av-sub').textContent = (alumno.grupo || 'Alumno') + (alumno.cinta ? ' · Cinta ' + alumno.cinta : '')
 
