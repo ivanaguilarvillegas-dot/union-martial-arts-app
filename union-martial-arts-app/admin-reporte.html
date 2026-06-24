@@ -121,7 +121,8 @@
     const btn = document.getElementById('btn-gen')
     btn.disabled = true; btn.textContent = 'Cargando…'
 
-    const alumno = alumnos.find(a => a.id === alumnoId)
+    try {
+    const alumno = (alumnos || []).find(a => a.id === alumnoId) || { nombre: '—', cinta: '', grupo: '' }
     const [anio, mesNum] = mes.split('-')
     const inicio = `${mes}-01`
     const fin = new Date(parseInt(anio), parseInt(mesNum), 0).toISOString().split('T')[0]
@@ -308,6 +309,14 @@
     document.getElementById('btn-print').style.display = 'flex'
     btn.disabled = false; btn.innerHTML = '<i data-lucide="file-text"></i> Generar reporte'
     lucide.createIcons()
+    } catch(err) {
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="file-text"></i> Generar reporte'
+      const errDiv = document.createElement('div')
+      errDiv.style.cssText = 'background:#fee;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-top:10px;'
+      errDiv.textContent = '❌ Error al generar reporte: ' + (err?.message || err)
+      document.getElementById('selector').appendChild(errDiv)
+      lucide.createIcons()
+    }
   })
 
   document.getElementById('btn-print').addEventListener('click', () => window.print())
