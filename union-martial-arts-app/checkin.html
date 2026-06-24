@@ -110,7 +110,7 @@
 
   let padre = null, alumnoId = null, alumnoNombre = ''
   try {
-    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+    const { data: p } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).single()
     if (!p) {
       const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).single()
       if (pe) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id); padre = pe }
@@ -194,7 +194,7 @@
       de_user_id: null,
       texto: respuesta,
       para_admin: false,
-      destinatario_id: user.id
+      destinatario_id: padre?.id
     })
 
     document.getElementById('msg-asiste').style.display = 'flex'
