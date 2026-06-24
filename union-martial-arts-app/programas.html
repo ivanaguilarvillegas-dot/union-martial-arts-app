@@ -78,19 +78,40 @@
 .prog-precio-label { font-size:10px;color:#9ca3af;font-weight:600; }
 .prog-precio-val { font-size:15px;font-weight:800;color:#374151; }
 
-/* Icon grid */
+/* Icon grid — Club Cinta Negra y UACJ */
 .prog-icons { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px; }
+.prog-icons.five { grid-template-columns:repeat(5,1fr); }
 .prog-icon-tile { display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;background:#f8faff;border-radius:12px;border:1px solid #e8eef8; }
 .prog-icon-tile i { font-size:22px;color:#0047AB; }
 .prog-icon-tile.green i { color:#059669; }
 .prog-icon-tile.amber i { color:#d97706; }
-.prog-icon-tile span { font-size:9.5px;font-weight:700;color:#374151;text-align:center;line-height:1.3; }
+.prog-icon-tile span { font-size:9px;font-weight:700;color:#374151;text-align:center;line-height:1.3; }
 
-/* Horario compact */
-.prog-horario { background:#f8faff;border-radius:12px;padding:12px 14px;margin-bottom:14px;border:1px solid #e8eef8; }
-.prog-horario-lbl { font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px; }
+/* Checkmarks inline — Básico */
+.prog-checks { display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px; }
+.prog-check { display:flex;align-items:flex-start;gap:5px;font-size:12px;color:#374151;line-height:1.4; }
+.prog-check i { font-size:14px;color:#0047AB;flex-shrink:0;margin-top:1px; }
+
+/* 2 columnas Anual UNION */
+.anual-cols { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
+.anual-col { background:#f8faff;border-radius:12px;padding:10px 12px;border:1px solid #e8eef8; }
+.anual-col-hdr { display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#0047AB;margin-bottom:8px;letter-spacing:.02em; }
+.anual-col-hdr i { font-size:15px; }
+.anual-col-item { display:flex;align-items:flex-start;gap:5px;font-size:11.5px;color:#374151;margin-bottom:5px;line-height:1.4; }
+.anual-col-item:last-child { margin-bottom:0; }
+.anual-col-item i { font-size:13px;color:#0047AB;flex-shrink:0;margin-top:1px; }
+
+/* Horario inline */
+.prog-horario-inline { display:flex;align-items:flex-start;gap:8px;background:#f8faff;border-radius:12px;padding:10px 12px;margin-bottom:14px;border:1px solid #e8eef8; }
+.prog-horario-inline i { font-size:16px;color:#0047AB;flex-shrink:0;margin-top:2px; }
+.prog-horario-inline .ht { font-size:11.5px;color:#374151;line-height:1.7; }
+.prog-horario-inline .ht b { color:#0047AB;font-weight:700; }
+
+/* Horario compact (Club) */
+.prog-horario { background:#f8faff;border-radius:12px;padding:10px 12px;margin-bottom:14px;border:1px solid #e8eef8; }
+.prog-horario-lbl { font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px; }
 .prog-horario-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
-.prog-horario-col .col-hdr { font-size:10px;font-weight:800;color:#0047AB;margin-bottom:4px; }
+.prog-horario-col .col-hdr { font-size:10px;font-weight:800;color:#0047AB;margin-bottom:3px; }
 .prog-horario-col .col-row { font-size:11px;color:#374151;line-height:1.5; }
 
 /* Secciones beneficios (Anual) */
@@ -203,24 +224,19 @@
           </div>
         </div>
 
-        <div class="prog-icons">
-          <div class="prog-icon-tile"><i class="ti ti-sword"></i><span>Clases base</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-shield"></i><span>Combate por grupo</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-calendar-week"></i><span>Sábado</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-clipboard-check"></i><span>Evaluaciones diarias</span></div>
+        <div class="prog-checks">
+          <div class="prog-check"><i class="ti ti-check"></i><span>Clases base de la semana</span></div>
+          <div class="prog-check"><i class="ti ti-check"></i><span>Combate por grupo</span></div>
+          <div class="prog-check"><i class="ti ti-check"></i><span>Sábado de entrenamiento</span></div>
+          <div class="prog-check"><i class="ti ti-check"></i><span>Evaluaciones diarias</span></div>
         </div>
 
-        <div class="prog-horario">
-          <div class="prog-horario-lbl">Horarios</div>
-          <div class="prog-horario-grid">
-            <div class="prog-horario-col">
-              <div class="col-hdr">Niños</div>
-              <div class="col-row" id="h-basico-ninos">L, M y V: 4, 5 o 6 pm<br>Martes combate: 6:15 pm<br>Sábado: 11 am</div>
-            </div>
-            <div class="prog-horario-col">
-              <div class="col-hdr">Jóvenes y adultos</div>
-              <div class="col-row" id="h-basico-jovenes">L, M y V: 7 pm<br>Jueves combate: 6 pm<br>Sábado: 12 pm</div>
-            </div>
+        <div class="prog-horario-inline">
+          <i class="ti ti-clock"></i>
+          <div class="ht" id="h-basico-bloque">
+            <b>Niños:</b> L, M y V (4, 5 o 6 pm) &nbsp;·&nbsp; <b>Jóvenes y adultos:</b> L, M y V (7 pm)<br>
+            <b>Combate:</b> Niños martes 6:15 pm &nbsp;·&nbsp; Jóvenes jueves 6:00 pm<br>
+            <b>Sábado:</b> Niños 11 am &nbsp;·&nbsp; Jóvenes 12 pm
           </div>
         </div>
 
@@ -255,15 +271,21 @@
           </div>
         </div>
 
-        <div class="prog-icons">
-          <div class="prog-icon-tile"><i class="ti ti-clock"></i><span>Mismos horarios</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-coin"></i><span>Mejor precio por clase</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-chart-line"></i><span>Seguimiento del alumno</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-salad"></i><span>Nutrición</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-run"></i><span>Entrena en casa</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-moon-stars"></i><span>Meditación</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-device-mobile"></i><span>App móvil</span></div>
-          <div class="prog-icon-tile"><i class="ti ti-calendar-stats"></i><span>Cobertura anual</span></div>
+        <div class="anual-cols">
+          <div class="anual-col">
+            <div class="anual-col-hdr"><i class="ti ti-barbell"></i> Entrenamiento</div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Los mismos horarios del Básico</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Seguimiento continuo del alumno</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Mejor costo por clase</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Cobertura anual del programa</span></div>
+          </div>
+          <div class="anual-col">
+            <div class="anual-col-hdr"><i class="ti ti-device-mobile"></i> Beneficios en la app</div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Acceso a la app móvil</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Nutrición</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Entrenamiento en casa</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Meditación y visualización</span></div>
+          </div>
         </div>
 
         <div class="prog-nota azul">
@@ -296,25 +318,19 @@
           </div>
         </div>
 
-        <div class="prog-icons">
+        <div class="prog-icons five">
           <div class="prog-icon-tile green"><i class="ti ti-swords"></i><span>Kobudo</span></div>
           <div class="prog-icon-tile green"><i class="ti ti-users"></i><span>Liderazgo</span></div>
-          <div class="prog-icon-tile green"><i class="ti ti-trophy"></i><span>Competencias</span></div>
-          <div class="prog-icon-tile green"><i class="ti ti-clock-plus"></i><span>Más horas</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-trophy"></i><span>Competencias de federación</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-clock-plus"></i><span>Más horas de entrenamiento</span></div>
           <div class="prog-icon-tile green"><i class="ti ti-clipboard-list"></i><span>Evaluaciones mensuales</span></div>
         </div>
 
-        <div class="prog-horario">
-          <div class="prog-horario-lbl">Horario adicional del Club</div>
-          <div class="prog-horario-grid">
-            <div class="prog-horario-col">
-              <div class="col-hdr">Niños</div>
-              <div class="col-row" id="h-club-ninos">Sábado 10 am a 12 pm</div>
-            </div>
-            <div class="prog-horario-col">
-              <div class="col-hdr">Jóvenes</div>
-              <div class="col-row" id="h-club-jovenes">Sábado 12 pm a 2 pm</div>
-            </div>
+        <div class="prog-horario-inline" style="border-color:#bbf7d0;background:#ecfdf5;">
+          <i class="ti ti-clock" style="color:#059669;"></i>
+          <div class="ht">
+            <b style="color:#059669;">Horario adicional del Club</b><br>
+            <b>Niños:</b> Sábado 10 am a 12 pm &nbsp;·&nbsp; <b>Jóvenes:</b> Sábado 12 pm a 2 pm
           </div>
         </div>
 
@@ -347,10 +363,10 @@
         </div>
 
         <div class="prog-icons">
-          <div class="prog-icon-tile amber"><i class="ti ti-target"></i><span>Formación competitiva</span></div>
-          <div class="prog-icon-tile amber"><i class="ti ti-medal"></i><span>Torneos del circuito</span></div>
-          <div class="prog-icon-tile amber"><i class="ti ti-chart-bar"></i><span>Seguimiento deportivo</span></div>
-          <div class="prog-icon-tile amber"><i class="ti ti-school"></i><span>Visión UACJ</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-target"></i><span>Formación competitiva desde etapas tempranas</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-medal"></i><span>Participación en torneos del circuito</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-chart-bar"></i><span>Seguimiento deportivo y desarrollo del alumno</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-school"></i><span>Preparación con visión a UACJ</span></div>
         </div>
 
         <div class="prog-nota">
