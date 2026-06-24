@@ -66,35 +66,51 @@
     document.getElementById('preview-autor').textContent = '— ' + (autor || 'Union Martial Arts')
   }
 
+  // Mapa de frases cargadas — evita pasar texto por onclick (se rompe con comillas)
+  const frasesMap = {}
+  let editandoId = null
+
   async function cargarFrases() {
-    const { data } = await supabase.from('frases').select('*').order('creado_en', { ascending: false }).limit(5)
+    const { data, error: errLoad } = await supabase.from('frases').select('*').order('creado_en', { ascending: false }).limit(10)
     const cont = document.getElementById('lista-frases')
+    if (errLoad) {
+      cont.innerHTML = `<div style="color:#c00;font-size:13px;padding:12px;">Error al cargar: ${errLoad.message}</div>`
+      return
+    }
     if (!data || data.length === 0) {
       cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:16px;">Sin frases publicadas aún.</div>'
       return
     }
+    data.forEach(f => { frasesMap[f.id] = f })
     cont.innerHTML = data.map(f => `
       <div class="card" style="margin-bottom:10px;">
         <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;">${f.fecha_envio || ''}</div>
-        <div style="font-size:13px; font-style:italic; color:var(--text-primary); line-height:1.5;">"${f.texto}"</div>
+        <div style="font-size:13px; font-style:italic; color:var(--text-primary); line-height:1.5;">"${f.texto.replace(/</g,'&lt;')}"</div>
         ${f.autor ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">— ${f.autor}</div>` : ''}
         <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
           <span class="badge ${f.activa ? 'green' : 'gray'}">${f.activa ? 'Activa' : 'Inactiva'}</span>
-          <button onclick="editarFrase('${f.id}','${f.texto.replace(/'/g,"\\'")}','${(f.autor||'').replace(/'/g,"\\'")}',${f.activa})" style="background:none;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;margin-left:auto;">Editar</button>
-          <button onclick="borrarFrase('${f.id}')" style="background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">Borrar</button>
+          <button data-editar="${f.id}" style="background:none;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;margin-left:auto;">Editar</button>
+          <button data-borrar="${f.id}" style="background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">Borrar</button>
         </div>
       </div>`).join('')
   }
 
-  let editandoId = null
+  document.getElementById('lista-frases').addEventListener('click', e => {
+    const btnEdit = e.target.closest('[data-editar]')
+    const btnDel  = e.target.closest('[data-borrar]')
+    if (btnEdit) editarFrase(btnEdit.dataset.editar)
+    if (btnDel)  borrarFrase(btnDel.dataset.borrar)
+  })
 
-  window.editarFrase = function(id, texto, autor, activa) {
+  function editarFrase(id) {
+    const f = frasesMap[id]; if (!f) return
     editandoId = id
-    document.getElementById('texto').value = texto
-    document.getElementById('autor').value = autor
+    document.getElementById('texto').value = f.texto
+    document.getElementById('autor').value = f.autor || ''
     actualizarPreview()
     document.getElementById('editing-banner').style.display = 'block'
     document.getElementById('btn-publicar').textContent = 'Guardar cambios'
+    document.getElementById('msg-frase').style.display = 'none'
     document.getElementById('texto').scrollIntoView({ behavior: 'smooth', block: 'center' })
     document.getElementById('texto').focus()
   }
@@ -121,11 +137,10 @@
     }
 
     let error
-    if (editandoId) {
-      // Actualizar frase existente
+    const isEditing = !!editandoId
+    if (isEditing) {
       ;({ error } = await supabase.from('frases').update({ texto, autor }).eq('id', editandoId))
     } else {
-      // Nueva frase: desactivar las activas e insertar
       await supabase.from('frases').update({ activa: false }).eq('activa', true)
       ;({ error } = await supabase.from('frases').insert({
         texto, autor, activa: true,
@@ -134,20 +149,22 @@
     }
 
     if (error) {
-      msg.textContent = 'Error al guardar. Intenta de nuevo.'
+      msg.textContent = '❌ Error: ' + error.message
       msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-    } else {
-      msg.textContent = editandoId ? '✅ Frase actualizada.' : '✅ Frase publicada. Ya aparece en la app de los padres.'
-      msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
-      cancelarEdicion()
-      cargarFrases()
+      msg.style.display = 'block'; return
     }
+
+    msg.textContent = isEditing ? '✅ Frase actualizada.' : '✅ Frase publicada. Ya aparece en la app de los padres.'
+    msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
     msg.style.display = 'block'
+    cancelarEdicion()
+    cargarFrases()
   }
 
-  window.borrarFrase = async function(id) {
+  async function borrarFrase(id) {
     if (!confirm('¿Borrar esta frase? Si era la activa, la app mostrará una frase automática.')) return
-    await supabase.from('frases').delete().eq('id', id)
+    const { error } = await supabase.from('frases').delete().eq('id', id)
+    if (error) { alert('Error al borrar: ' + error.message); return }
     cargarFrases()
   }
 
