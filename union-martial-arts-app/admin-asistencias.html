@@ -77,15 +77,12 @@
       if (error) { errEl.textContent = 'Error al quitar: ' + error.message; errEl.style.display = 'flex'; return }
       marcados.delete(id)
     } else {
-      const { error } = await supabase.from('checkins').insert({ alumno_id: id, fecha: hoy, tipo: 'presencial', usuario_id: user.id })
-      if (error && error.code === '23505') {
-        // Ya existe, solo marcar como presente
-        marcados.add(id)
-      } else if (error) {
-        errEl.textContent = 'Error al guardar: ' + error.message; errEl.style.display = 'flex'; return
-      } else {
-        marcados.add(id)
-      }
+      const { error } = await supabase.from('checkins').upsert(
+        { alumno_id: id, fecha: hoy, tipo: 'presencial', usuario_id: user.id },
+        { onConflict: 'alumno_id,fecha', ignoreDuplicates: true }
+      )
+      if (error) { errEl.textContent = 'Error al guardar: ' + error.message; errEl.style.display = 'flex'; return }
+      marcados.add(id)
     }
     render()
   })
