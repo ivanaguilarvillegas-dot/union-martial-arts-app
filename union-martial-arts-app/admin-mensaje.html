@@ -334,7 +334,6 @@
       await supabase.from('avisos').update({ activo: false }).eq('id', btn.dataset.delAv)
       document.getElementById('av-' + btn.dataset.delAv)?.remove()
     })
-  })
   }
 
   cargarMensajes()
