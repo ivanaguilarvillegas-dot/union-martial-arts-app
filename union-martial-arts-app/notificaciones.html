@@ -273,11 +273,15 @@
       }
 
       if (avisos?.length) {
-        document.getElementById('avisos-list').innerHTML = avisos.map(a => {
+        const avisosNoConfirmados = avisos.filter(a => !confirmSet.has(a.id))
+        if (!avisosNoConfirmados.length) {
+          document.getElementById('avisos-list').innerHTML = '<div class="empty-sec"><p>Todo al día ✓</p></div>'
+        }
+        document.getElementById('avisos-list').innerHTML = avisosNoConfirmados.map(a => {
           const p = PMAP[a.prioridad] || PMAP.informativo
           const pr = a.prioridad || 'informativo'
           const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
-          const yaConfirmo = confirmSet.has(a.id)
+
           return `<div class="aviso-row">
             <div class="aviso-top">
               <div class="aviso-ic ${p.cls}">
@@ -290,9 +294,8 @@
                 <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
               </div>
             </div>
-            <button class="btn-enterado${yaConfirmo?' confirmado':''}" data-id="${a.id}"${yaConfirmo?' disabled':''}>
-              <i class="ti ${yaConfirmo?'ti-circle-check-filled':'ti-circle-check'}" style="font-size:16px;"></i>
-              ${yaConfirmo ? '✓ Ya me enteré' : 'Me enteré'}
+            <button class="btn-enterado" data-id="${a.id}">
+              <i class="ti ti-circle-check" style="font-size:16px;"></i> Me enteré
             </button>
           </div>`
         }).join('')
@@ -411,11 +414,12 @@
           padre_nombre: padre?.nombre || ''
         })
         if (error) throw error
-        btn.classList.add('confirmado')
-        btn.innerHTML = '<i class="ti ti-circle-check-filled" style="font-size:16px;"></i> ✓ Ya me enteré'
+        // Ocultar la tarjeta del aviso
+        const card = btn.closest('.aviso-row')
+        if (card) { card.style.transition='opacity .3s'; card.style.opacity='0'; setTimeout(()=>card.remove(),300) }
         // Actualizar contador
         const countEl = document.getElementById('bell-count')
-        const cur = parseInt(countEl.textContent) - 1
+        const cur = parseInt(countEl.textContent||'1') - 1
         if (cur <= 0) countEl.style.display = 'none'
         else countEl.textContent = cur
       } catch(err) {
