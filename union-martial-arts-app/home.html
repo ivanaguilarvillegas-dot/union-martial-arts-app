@@ -1,336 +1,438 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Inicio</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f2167">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Union MA">
-  <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css?v=13" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<meta name="theme-color" content="#0047AB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css?v=14" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
 <style>
-.home-wrap { background:#f0f2f5; flex:1; overflow-y:auto; padding:12px 12px 24px; }
-.home-header { background:#0047AB; border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
-.home-header-left .eyebrow { font-size:10px; color:rgba(255,255,255,.55); letter-spacing:.06em; font-weight:600; }
-.home-header-left .greeting { font-size:16px; color:#fff; font-weight:700; margin-top:2px; }
-.home-header-right { display:flex; gap:12px; align-items:center; }
-.notif-btn { position:relative; }
-.notif-btn i { color:#fff; width:22px; height:22px; }
-.notif-badge { position:absolute; top:-11px; right:-12px; background:#dc2626; color:#fff; border-radius:16px; font-size:13px; font-weight:900; padding:4px 8px; min-width:24px; text-align:center; box-shadow:0 2px 8px rgba(220,38,38,.8); line-height:1; }
-.notif-pill { display:inline-flex; align-items:center; gap:5px; background:#dc2626; border-radius:20px; padding:6px 11px; text-decoration:none; box-shadow:0 2px 8px rgba(220,38,38,.5); }
-.notif-pill i { color:#fff; width:18px; height:18px; flex-shrink:0; }
-.notif-pill .np-count { color:#fff; font-size:13px; font-weight:800; line-height:1; display:none; }
+/* ── LAYOUT ── */
+.home-wrap { background:#f0f4f8; flex:1; overflow-y:auto; padding-bottom:24px; }
 
-.alumno-card { background:#fff; border-radius:16px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:flex-start; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-.alumno-foto { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
-.foto-circle { width:82px; height:82px; border-radius:50%; background:#e6f0ff; border:3px solid #0047AB; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(150deg, #002f8a 0%, #0047AB 55%, #1259c4 100%);
+  border-radius: 0 0 32px 32px;
+  padding: 52px 18px 26px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: rgba(255,255,255,.055);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -40px;
+  width: 160px; height: 160px;
+  background: rgba(255,255,255,.035);
+  border-radius: 50%;
+}
+
+.hero-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  position: relative;
+  z-index: 1;
+}
+.hero-brand { display: flex; align-items: center; gap: 9px; }
+.hero-logo-c {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,.18);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid rgba(255,255,255,.3);
+}
+.hero-logo-c img { width: 21px; height: 21px; object-fit: contain; }
+.hero-brand-txt { font-size: 10px; font-weight: 800; color: rgba(255,255,255,.85); letter-spacing: .07em; line-height: 1.3; }
+
+.notif-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.3); border-radius:20px; padding:7px 12px; text-decoration:none; }
+.notif-pill i { color:#fff; width:17px; height:17px; flex-shrink:0; }
+.np-count { color:#fff; font-size:12px; font-weight:800; line-height:1; display:none; }
+
+.hero-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+.foto-circle {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 3px solid rgba(255,255,255,.45);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+}
 .foto-circle img { width:100%; height:100%; object-fit:cover; }
-.foto-circle i { width:34px; height:34px; color:#4a7fcb; }
-.alumno-info { flex:1; min-width:0; padding-top:2px; }
-.alumno-nombre { font-size:17px; font-weight:800; color:#111827; line-height:1.2; }
-.alumno-grupo { font-size:12px; color:#6b7280; margin-top:3px; font-weight:500; }
-.alumno-badges { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
-.badge-activo { background:#ecfdf5; color:#065f46; border-radius:20px; font-size:11px; padding:4px 11px; display:flex; align-items:center; gap:4px; font-weight:700; border:1px solid #bbf7d0; }
-.badge-activo i { width:12px; height:12px; color:#059669; }
+.foto-circle i { width:32px; height:32px; color:rgba(255,255,255,.7); }
 
-.clase-card { background:#0047AB; border-radius:14px; padding:14px 16px; margin-bottom:10px; }
-.clase-label { font-size:10px; color:rgba(255,255,255,.55); font-weight:600; letter-spacing:.06em; margin-bottom:8px; }
-.clase-body { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.clase-info .clase-dia { font-size:19px; font-weight:700; color:#fff; }
-.clase-info .clase-hora { font-size:13px; color:rgba(255,255,255,.9); margin-top:3px; }
-.clase-info .clase-dias { font-size:12px; color:rgba(255,255,255,.65); margin-top:3px; }
-.clase-info .clase-lugar { font-size:11px; color:rgba(255,255,255,.55); margin-top:3px; display:flex; align-items:center; gap:3px; }
-.clase-info .clase-lugar i { width:11px; height:11px; }
-.ver-horario { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.28); color:#fff; border-radius:20px; font-size:11px; padding:7px 14px; text-decoration:none; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:4px; font-weight:600; }
-.ver-horario i { width:12px; height:12px; }
+.hero-info { flex: 1; min-width: 0; padding-top: 4px; }
+.hero-saludo { font-size: 11px; color: rgba(255,255,255,.6); font-weight: 600; letter-spacing: .03em; margin-bottom: 4px; }
+.hero-nombre { font-size: 21px; font-weight: 800; color: #fff; line-height: 1.15; }
+.hero-grupo { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 5px; }
+.hero-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.badge-activo { background: rgba(255,255,255,.15); color: #fff; border-radius: 20px; font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; border: 1px solid rgba(255,255,255,.25); }
+.badge-activo i { width: 12px; height: 12px; color: #6ee7b7; }
 
-.resumen-card { background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-.resumen-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.resumen-header span:first-child { font-size:13px; font-weight:700; color:var(--text,#1a1a2e); }
-.resumen-header a { font-size:12px; color:var(--primary,#1d4ed8); text-decoration:none; font-weight:600; }
-.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.stat-tile { border-radius:10px; padding:12px; text-align:center; }
-.stat-tile i { width:20px; height:20px; }
-.stat-tile .stat-label { font-size:11px; margin-top:5px; }
-.stat-tile .stat-val { font-size:19px; font-weight:700; margin-top:3px; }
-.stat-tile .stat-sub { font-size:11px; margin-top:2px; }
-.stat-blue { background:#eef2ff; }
-.stat-blue i,.stat-blue .stat-val { color:#1d4ed8; }
-.stat-blue .stat-label,.stat-blue .stat-sub { color:#4a5fa0; }
-.stat-amber { background:#fffbeb; }
-.stat-amber i,.stat-amber .stat-val { color:#d97706; }
-.stat-amber .stat-label,.stat-amber .stat-sub { color:#92400e; }
-.stat-green { background:#f0fdf4; }
-.stat-green i,.stat-green .stat-val { color:#16a34a; }
-.stat-green .stat-label,.stat-green .stat-sub { color:#166534; }
+/* ── CONTENT BODY ── */
+.home-body { padding: 0 12px; }
 
-.evento-card { background:#0d1a5e; border-radius:14px; overflow:hidden; margin-bottom:10px; position:relative; min-height:88px; display:flex; align-items:center; }
-.evento-foto { position:absolute; inset:0; object-fit:cover; width:100%; height:100%; opacity:.35; }
-.evento-overlay { position:absolute; inset:0; background:linear-gradient(to right,rgba(13,26,94,.15),rgba(13,26,94,.82)); }
-.evento-content { position:relative; z-index:1; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; gap:10px; }
-.evento-tag { font-size:10px; font-weight:700; color:#fbbf24; letter-spacing:.05em; margin-bottom:3px; }
-.evento-titulo { font-size:15px; font-weight:700; color:#fff; }
-.evento-meta { font-size:11px; color:rgba(255,255,255,.7); margin-top:4px; display:flex; gap:10px; flex-wrap:wrap; }
-.evento-meta i { width:11px; height:11px; }
-.ver-evento { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.28); color:#fff; border-radius:20px; font-size:11px; padding:7px 12px; text-decoration:none; white-space:nowrap; flex-shrink:0; font-weight:600; display:flex; align-items:center; gap:3px; }
-.evento-barra { position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#fbbf24,#f59e0b); }
+/* ── CHECK-IN ── */
+.checkin-btn {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  box-shadow: 0 2px 16px rgba(0,71,171,.1);
+  border: 1.5px solid #e8eef8;
+  position: relative;
+  overflow: hidden;
+}
+.checkin-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, #0047AB, #3b82f6);
+  border-radius: 18px 0 0 18px;
+}
+.checkin-btn-ic {
+  width: 50px; height: 50px;
+  border-radius: 14px;
+  background: #eef2ff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.checkin-btn-ic i { font-size: 26px; color: #0047AB; }
+.checkin-btn-text { flex: 1; min-width: 0; }
+.checkin-btn-text .big { font-size: 15px; font-weight: 800; color: #111827; line-height: 1.2; }
+.checkin-btn-text .s { font-size: 11px; color: #6b7280; margin-top: 3px; line-height: 1.4; }
+.checkin-registrar {
+  background: #0047AB;
+  color: #fff;
+  border-radius: 22px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
 
-.alerta-card { border-radius:12px; padding:12px 14px; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
-.alerta-red { background:#fef2f2; }
-.alerta-red i { color:#dc2626; flex-shrink:0; width:20px; height:20px; }
-.alerta-red .alerta-t { font-size:13px; font-weight:700; color:#991b1b; }
-.alerta-red .alerta-s { font-size:12px; color:#b91c1c; margin-top:2px; }
-.alerta-red .alerta-link { font-size:12px; color:#dc2626; font-weight:600; white-space:nowrap; flex-shrink:0; text-decoration:none; display:flex; align-items:center; gap:2px; }
-.alerta-red .alerta-link i { width:12px; height:12px; }
+/* ── PRÓXIMA CLASE ── */
+.clase-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  border: 1.5px solid #f0f2f5;
+}
+.clase-label { font-size: 10px; color: #9ca3af; font-weight: 700; letter-spacing: .08em; margin-bottom: 10px; }
+.clase-body { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.clase-icon { width: 44px; height: 44px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 4px; }
+.clase-icon i { font-size: 22px; color: #0047AB; }
+.clase-info { flex: 1; min-width: 0; }
+.clase-dia { font-size: 17px; font-weight: 700; color: #111827; }
+.clase-hora { font-size: 13px; color: #374151; margin-top: 2px; font-weight: 500; }
+.clase-dias { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.clase-lugar { font-size: 11px; color: #9ca3af; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
+.clase-lugar i { width: 11px; height: 11px; }
+.ver-horario { background: #eff6ff; color: #0047AB; border-radius: 20px; font-size: 11px; padding: 7px 14px; text-decoration: none; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.ver-horario i { width: 12px; height: 12px; }
 
-.checkin-btn { background:#0047AB; border-radius:18px; padding:18px 14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; text-decoration:none; box-shadow:0 4px 18px rgba(0,71,171,.4); gap:10px; }
-.checkin-btn-ic { width:52px; height:52px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.checkin-btn-ic i { font-size:26px; color:#fff; }
-.checkin-btn-text { flex:1; min-width:0; }
-.checkin-btn-text .big { font-size:17px; font-weight:800; color:#fff; line-height:1.2; white-space:nowrap; }
-.checkin-btn-text .s { font-size:11px; color:rgba(255,255,255,.75); margin-top:4px; line-height:1.4; }
-.checkin-registrar { background:#fff; color:#0047AB; border-radius:24px; padding:9px 13px; font-size:12px; font-weight:700; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:3px; }
+/* ── RESUMEN ── */
+.resumen-card { background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.06); border: 1.5px solid #f0f2f5; }
+.resumen-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.resumen-header span:first-child { font-size: 14px; font-weight: 700; color: #111827; }
+.resumen-header a { font-size: 12px; color: #0047AB; text-decoration: none; font-weight: 600; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-tile { border-radius: 12px; padding: 12px 10px; text-align: center; }
+.stat-tile .stat-label { font-size: 11px; margin-top: 6px; font-weight: 600; }
+.stat-tile .stat-val { font-size: 18px; font-weight: 800; margin-top: 2px; }
+.stat-tile .stat-sub { font-size: 10px; margin-top: 2px; }
+.stat-blue { background: #eef2ff; }
+.stat-blue .stat-val { color: #1d4ed8; }
+.stat-blue .stat-label { color: #3b5bdb; }
+.stat-blue .stat-sub { color: #6172b0; }
+.stat-amber { background: #fffbeb; }
+.stat-amber .stat-val { color: #d97706; }
+.stat-amber .stat-label { color: #b45309; }
+.stat-amber .stat-sub { color: #92400e; }
+.stat-green { background: #f0fdf4; }
+.stat-green .stat-val { color: #16a34a; }
+.stat-green .stat-label { color: #15803d; }
+.stat-green .stat-sub { color: #166534; }
 
-.menu-card { background:#fff; border-radius:14px; padding:14px 10px 10px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-.menu-section-hdr { font-size:9.5px; font-weight:700; color:#9ca3af; letter-spacing:.07em; text-transform:uppercase; padding:10px 4px 6px; }
-.menu-section-hdr:first-child { padding-top:0; }
-.menu-section-divider { height:1px; background:#f3f4f6; margin:4px 0 2px; }
-.menu-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
-.menu-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
-.menu-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
-.menu-item { text-align:center; padding:7px 2px; text-decoration:none; display:block; }
-.menu-ic { width:62px; height:62px; border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
-.menu-ic.blue { background:#e6eeff; }
-.menu-ic.green { background:#f0fdf4; }
-.menu-ic.amber { background:#fffbeb; }
-.menu-ic.cobalt { background:#e6eeff; }
-.menu-label { font-size:10px; font-weight:600; color:#374151; line-height:1.3; }
-.menu-wide { display:flex; align-items:center; gap:14px; padding:10px 12px; background:#e6eeff; border-radius:14px; text-decoration:none; margin-bottom:4px; }
-.menu-wide-ic { width:52px; height:52px; border-radius:16px; background:#0047AB; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.menu-wide-txt .t { font-size:14px; font-weight:700; color:#0047AB; }
-.menu-wide-txt .s { font-size:11px; color:#4a6fa5; margin-top:1px; }
+/* ── ALERTA ── */
+.alerta-card { border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; border: 1.5px solid #fecaca; }
+.alerta-red { background: #fef2f2; }
+.alerta-red i { color: #dc2626; flex-shrink: 0; width: 20px; height: 20px; }
+.alerta-red .alerta-t { font-size: 13px; font-weight: 700; color: #991b1b; }
+.alerta-red .alerta-s { font-size: 12px; color: #b91c1c; margin-top: 2px; }
+.alerta-red .alerta-link { font-size: 12px; color: #dc2626; font-weight: 600; white-space: nowrap; flex-shrink: 0; text-decoration: none; display: flex; align-items: center; gap: 2px; }
+.alerta-red .alerta-link i { width: 12px; height: 12px; }
+
+/* ── EVENTO ── */
+.evento-card { border-radius: 16px; overflow: hidden; margin-bottom: 12px; position: relative; min-height: 92px; display: flex; align-items: center; background: linear-gradient(135deg, #0d1a5e 0%, #0047AB 100%); }
+.evento-content { position: relative; z-index: 1; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; gap: 10px; }
+.evento-titulo { font-size: 15px; font-weight: 700; color: #fff; }
+.evento-meta { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 5px; display: flex; gap: 10px; flex-wrap: wrap; }
+.ver-evento { background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3); color: #fff; border-radius: 20px; font-size: 11px; padding: 7px 13px; text-decoration: none; white-space: nowrap; flex-shrink: 0; font-weight: 700; }
+
+/* ── MENÚ ── */
+.menu-card { background: #fff; border-radius: 16px; padding: 16px 10px 10px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.06); border: 1.5px solid #f0f2f5; }
+.menu-section-hdr { font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 8px; }
+.menu-section-hdr:not(:first-child) { padding-top: 14px; }
+.menu-section-divider { height: 1px; background: #f3f4f6; margin: 4px 0; }
+.menu-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; }
+.menu-item { text-align: center; padding: 8px 4px; text-decoration: none; display: block; }
+.menu-ic { width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+.menu-ic.cobalt { background: #eef2ff; }
+.menu-ic.amber { background: #fffbeb; }
+.menu-label { font-size: 10px; font-weight: 600; color: #374151; line-height: 1.3; }
 </style>
 </head>
 <body>
-<div class="phone"><div class="screen" style="background:#f0f2f5;">
-
+<div class="phone"><div class="screen" style="background:#f0f4f8;">
 <div class="home-wrap">
 
-  <!-- Header -->
-  <div class="home-header">
-    <div class="home-header-left">
-      <div class="eyebrow">UNION MARTIAL ARTS</div>
-      <div class="greeting" id="saludo-nombre">Bienvenida</div>
-    </div>
-    <div class="home-header-right">
-      <a class="notif-pill" href="notificaciones.html" id="btn-notif" aria-label="Notificaciones">
-        <i data-lucide="bell"></i>
-        <span class="np-count" id="notif-count"></span>
-      </a>
-      <a class="notif-btn" id="btn-logout" href="#" aria-label="Cerrar sesión" style="opacity:.75;">
-        <i data-lucide="log-out" style="color:#fff;"></i>
-      </a>
-    </div>
-  </div>
-
-  <!-- Tarjeta alumno -->
-  <div class="alumno-card">
-    <div class="alumno-foto">
-      <div class="foto-circle" id="foto-wrap" style="position:relative;cursor:pointer;" onclick="document.getElementById('foto-input').click()" title="Cambiar foto">
-        <i data-lucide="user"></i>
-        <div id="foto-cam" style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:#0047AB;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);">
-          <i class="ti ti-camera" style="font-size:13px;color:#fff;"></i>
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-topbar">
+      <div class="hero-brand">
+        <div class="hero-logo-c">
+          <img src="/assets/logo-union-white.png" alt="UMA">
         </div>
+        <span class="hero-brand-txt">UNION<br>MARTIAL ARTS</span>
       </div>
-      <input type="file" id="foto-input" accept="image/*" style="display:none">
-      <!-- Cinta SVG profesional -->
-      <div id="cinta-wrap" style="display:none;text-align:center;">
-        <svg id="cinta-svg" width="72" height="26" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="rgba(255,255,255,.22)"/>
-              <stop offset="45%" stop-color="rgba(255,255,255,.0)"/>
-              <stop offset="100%" stop-color="rgba(0,0,0,.18)"/>
-            </linearGradient>
-            <linearGradient id="ng" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="rgba(255,255,255,.15)"/>
-              <stop offset="100%" stop-color="rgba(0,0,0,.22)"/>
-            </linearGradient>
-          </defs>
-          <!-- Cuerpo de la cinta -->
-          <rect id="c-base" x="0" y="8" width="72" height="10" rx="5" fill="#dc2626"/>
-          <rect x="0" y="8" width="72" height="10" rx="5" fill="url(#cg)"/>
-          <!-- Línea de borde superior sutil -->
-          <rect x="1" y="8.5" width="70" height="1" rx=".5" fill="rgba(255,255,255,.18)"/>
-          <!-- Nudo central -->
-          <rect id="c-nudo" x="28" y="6" width="16" height="14" rx="3" fill="#dc2626"/>
-          <rect x="28" y="6" width="16" height="14" rx="3" fill="url(#ng)"/>
-          <rect x="29" y="6.5" width="14" height="1" rx=".5" fill="rgba(255,255,255,.2)"/>
-          <!-- Línea vertical del nudo -->
-          <line x1="36" y1="7" x2="36" y2="19" stroke="rgba(0,0,0,.12)" stroke-width="1.2"/>
-          <!-- Stripes Dan (derecha) -->
-          <line id="d1" x1="57" y1="9" x2="57" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
-          <line id="d2" x1="61" y1="9" x2="61" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
-          <line id="d3" x1="65" y1="9" x2="65" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
-        </svg>
-        <div id="cinta-label" style="font-size:9.5px;font-weight:700;color:#4b5563;margin-top:3px;letter-spacing:.01em;"></div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <a class="notif-pill" href="notificaciones.html" id="btn-notif" aria-label="Notificaciones">
+          <i data-lucide="bell"></i>
+          <span class="np-count" id="notif-count"></span>
+        </a>
+        <a id="btn-logout" href="#" aria-label="Cerrar sesión" style="opacity:.7;text-decoration:none;">
+          <i data-lucide="log-out" style="color:#fff;width:20px;height:20px;"></i>
+        </a>
       </div>
     </div>
-    <div class="alumno-info">
-      <div class="alumno-nombre" id="nombre-alumno">Mi hijo/a</div>
-      <div class="alumno-grupo" id="grupo-alumno">—</div>
-      <div class="alumno-badges">
-        <span class="badge-activo"><i data-lucide="check-circle"></i> Activo</span>
-      </div>
-      <div id="hijo-chips" style="display:none;margin-top:10px;"></div>
-    </div>
-  </div>
 
-  <!-- Próxima clase -->
-  <div class="clase-card">
-    <div class="clase-label">PRÓXIMA CLASE</div>
-    <div class="clase-body">
-      <div class="clase-info">
-        <div class="clase-dia" id="clase-dia">—</div>
-        <div class="clase-hora" id="clase-hora"></div>
-        <div class="clase-dias" id="clase-dias"></div>
-        <div class="clase-lugar" id="clase-lugar" style="display:none;">
-          <i data-lucide="map-pin"></i><span></span>
-        </div>
-      </div>
-      <a class="ver-horario" href="horario.html">Ver horario <i data-lucide="chevron-right"></i></a>
-    </div>
-  </div>
-
-  <!-- Resumen del mes -->
-  <div class="resumen-card">
-    <div class="resumen-header">
-      <span>Resumen del mes</span>
-      <a href="reporte.html">Ver reporte mensual <i data-lucide="chevron-right" style="width:12px;height:12px;vertical-align:-2px;"></i></a>
-    </div>
-    <div class="stats-grid">
-      <a class="stat-tile stat-blue" href="asistencia.html" style="text-decoration:none;display:block;">
-        <i class="ti ti-calendar-stats" style="font-size:22px;color:#1d4ed8;"></i>
-        <div class="stat-label">Asistencia</div>
-        <div class="stat-val" id="stat-asistencia" style="font-size:17px;">—</div>
-        <div class="stat-sub" id="stat-clases-sub">clases este mes</div>
-      </a>
-      <div class="stat-tile stat-amber">
-        <i class="ti ti-award" style="font-size:22px;color:#d97706;"></i>
-        <div class="stat-label">Evaluación</div>
-        <div class="stat-val" id="stat-eval">—</div>
-        <div class="stat-sub"><a href="evaluacion.html" style="color:inherit;text-decoration:none;font-weight:600;">Ver detalle</a></div>
-      </div>
-      <a class="stat-tile stat-green" href="nutricion.html" style="text-decoration:none;display:block;">
-        <i class="ti ti-salad" style="font-size:22px;color:#16a34a;"></i>
-        <div class="stat-label">Nutrición</div>
-        <div class="stat-val" id="stat-habitos">—</div>
-        <div class="stat-sub">Completados</div>
-      </a>
-      <a class="stat-tile stat-green" href="pagos.html" style="text-decoration:none;display:block;">
-        <i class="ti ti-coin" style="font-size:22px;color:#16a34a;"></i>
-        <div class="stat-label">Pago</div>
-        <div class="stat-val" id="stat-pago">—</div>
-        <div class="stat-sub" id="stat-pago-sub"></div>
-      </a>
-    </div>
-  </div>
-
-
-  <!-- Check-in destacado -->
-  <a class="checkin-btn" href="checkin.html">
-    <div class="checkin-btn-ic"><i class="ti ti-shield-check"></i></div>
-    <div class="checkin-btn-text">
-      <div class="big">Check-in de hoy</div>
-      <div class="s">Marca la llegada de tu hijo a clase<br>o justifica una falta.</div>
-    </div>
-    <div class="checkin-registrar">Registrar ahora <i class="ti ti-chevron-right" style="font-size:14px;"></i></div>
-  </a>
-
-  <!-- Alerta -->
-  <div id="alerta-wrap" style="display:none;">
-    <div class="alerta-card alerta-red">
-      <i data-lucide="alert-triangle"></i>
-      <div class="grow">
-        <div class="alerta-t" id="alerta-t">Alerta activa</div>
-        <div class="alerta-s" id="alerta-s"></div>
-      </div>
-      <a class="alerta-link" href="notificaciones.html">Ver <i data-lucide="chevron-right"></i></a>
-    </div>
-  </div>
-
-  <!-- Próximo evento -->
-  <div id="evento-wrap" style="display:none;margin-bottom:10px;">
-    <div class="evento-card" style="background:linear-gradient(135deg,#0d1a5e 0%,#0047AB 100%);min-height:100px;">
-      <!-- Patrón decorativo -->
-      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.08;" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <pattern id="hex" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
-            <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="none" stroke="#fff" stroke-width="1"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#hex)"/>
-      </svg>
-      <!-- Acento dorado izquierdo -->
-      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(to bottom,#fbbf24,#f59e0b);border-radius:14px 0 0 14px;"></div>
-      <div class="evento-content" style="padding-left:18px;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:9.5px;font-weight:800;color:#fbbf24;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">📅 Próximo evento</div>
-          <div class="evento-titulo" id="evento-titulo">—</div>
-          <div class="evento-meta" style="margin-top:5px;">
-            <span id="evento-fecha" style="display:flex;align-items:center;gap:4px;"></span>
-            <span id="evento-lugar" style="display:none;align-items:center;gap:4px;"></span>
+    <div class="hero-body">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0;">
+        <div class="foto-circle" id="foto-wrap" onclick="document.getElementById('foto-input').click()" title="Cambiar foto">
+          <i data-lucide="user"></i>
+          <div id="foto-cam" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:#0047AB;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);">
+            <i class="ti ti-camera" style="font-size:12px;color:#fff;"></i>
           </div>
         </div>
-        <a class="ver-evento" href="torneos.html" style="margin-left:10px;flex-shrink:0;">Ver más</a>
+        <input type="file" id="foto-input" accept="image/*" style="display:none">
+        <div id="cinta-wrap" style="display:none;text-align:center;margin-top:10px;">
+          <svg id="cinta-svg" width="72" height="26" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,.22)"/>
+                <stop offset="45%" stop-color="rgba(255,255,255,.0)"/>
+                <stop offset="100%" stop-color="rgba(0,0,0,.18)"/>
+              </linearGradient>
+              <linearGradient id="ng" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,.15)"/>
+                <stop offset="100%" stop-color="rgba(0,0,0,.22)"/>
+              </linearGradient>
+            </defs>
+            <rect id="c-base" x="0" y="8" width="72" height="10" rx="5" fill="#dc2626"/>
+            <rect x="0" y="8" width="72" height="10" rx="5" fill="url(#cg)"/>
+            <rect x="1" y="8.5" width="70" height="1" rx=".5" fill="rgba(255,255,255,.18)"/>
+            <rect id="c-nudo" x="28" y="6" width="16" height="14" rx="3" fill="#dc2626"/>
+            <rect x="28" y="6" width="16" height="14" rx="3" fill="url(#ng)"/>
+            <rect x="29" y="6.5" width="14" height="1" rx=".5" fill="rgba(255,255,255,.2)"/>
+            <line x1="36" y1="7" x2="36" y2="19" stroke="rgba(0,0,0,.12)" stroke-width="1.2"/>
+            <line id="d1" x1="57" y1="9" x2="57" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+            <line id="d2" x1="61" y1="9" x2="61" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+            <line id="d3" x1="65" y1="9" x2="65" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          </svg>
+          <div id="cinta-label" style="font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75);margin-top:4px;letter-spacing:.01em;"></div>
+        </div>
+      </div>
+
+      <div class="hero-info">
+        <div class="hero-saludo" id="saludo-nombre">Bienvenida</div>
+        <div class="hero-nombre" id="nombre-alumno">Mi hijo/a</div>
+        <div class="hero-grupo" id="grupo-alumno">—</div>
+        <div class="hero-badges">
+          <span class="badge-activo"><i data-lucide="check-circle"></i> Activo</span>
+        </div>
+        <div id="hijo-chips" style="display:none;margin-top:10px;"></div>
       </div>
     </div>
   </div>
 
-  <!-- Menú por secciones -->
-  <div class="menu-card">
+  <!-- ── CONTENIDO ── -->
+  <div class="home-body">
 
-    <!-- Contenido -->
-    <div class="menu-section-hdr">Contenido</div>
-    <div class="menu-grid-3">
-      <a class="menu-item" href="programas.html">
-        <div class="menu-ic cobalt"><i class="ti ti-crown" style="font-size:30px;color:#0047AB;"></i></div>
-        <div class="menu-label">Programas</div>
-      </a>
-      <a class="menu-item" href="entrena.html">
-        <div class="menu-ic cobalt"><i class="ti ti-run" style="font-size:30px;color:#0047AB;"></i></div>
-        <div class="menu-label">Rutinas en casa</div>
-      </a>
-      <a class="menu-item" href="meditacion.html">
-        <div class="menu-ic cobalt"><i class="ti ti-moon-stars" style="font-size:30px;color:#0047AB;"></i></div>
-        <div class="menu-label">Meditación</div>
-      </a>
+    <!-- Check-in -->
+    <a class="checkin-btn" href="checkin.html">
+      <div class="checkin-btn-ic"><i class="ti ti-shield-check"></i></div>
+      <div class="checkin-btn-text">
+        <div class="big">Check-in de hoy</div>
+        <div class="s">Marca llegada o justifica una falta.</div>
+      </div>
+      <div class="checkin-registrar">Registrar <i class="ti ti-chevron-right" style="font-size:13px;"></i></div>
+    </a>
+
+    <!-- Próxima clase -->
+    <div class="clase-card">
+      <div class="clase-label">PRÓXIMA CLASE</div>
+      <div class="clase-body">
+        <div class="clase-icon"><i class="ti ti-calendar-clock"></i></div>
+        <div class="clase-info">
+          <div class="clase-dia" id="clase-dia">—</div>
+          <div class="clase-hora" id="clase-hora"></div>
+          <div class="clase-dias" id="clase-dias"></div>
+          <div class="clase-lugar" id="clase-lugar" style="display:none;">
+            <i data-lucide="map-pin"></i><span></span>
+          </div>
+        </div>
+        <a class="ver-horario" href="horario.html">Horario <i data-lucide="chevron-right"></i></a>
+      </div>
     </div>
 
-    <div class="menu-section-divider"></div>
-
-    <!-- Cuenta y soporte -->
-    <div class="menu-section-hdr">Cuenta y soporte</div>
-    <div class="menu-grid-3">
-      <a class="menu-item" href="cita.html">
-        <div class="menu-ic cobalt"><i class="ti ti-calendar-plus" style="font-size:30px;color:#0047AB;"></i></div>
-        <div class="menu-label">Agendar cita</div>
-      </a>
-      <a class="menu-item" href="dudas.html">
-        <div class="menu-ic cobalt"><i class="ti ti-message-question" style="font-size:30px;color:#0047AB;"></i></div>
-        <div class="menu-label">Dudas</div>
-      </a>
-      <a class="menu-item" href="tienda.html">
-        <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:30px;color:#d97706;"></i></div>
-        <div class="menu-label">Tienda</div>
-      </a>
+    <!-- Resumen del mes -->
+    <div class="resumen-card">
+      <div class="resumen-header">
+        <span>Resumen del mes</span>
+        <a href="reporte.html">Ver reporte <i data-lucide="chevron-right" style="width:12px;height:12px;vertical-align:-2px;"></i></a>
+      </div>
+      <div class="stats-grid">
+        <a class="stat-tile stat-blue" href="asistencia.html" style="text-decoration:none;display:block;">
+          <i class="ti ti-calendar-stats" style="font-size:24px;color:#1d4ed8;"></i>
+          <div class="stat-label">Asistencia</div>
+          <div class="stat-val" id="stat-asistencia">—</div>
+          <div class="stat-sub" id="stat-clases-sub">clases este mes</div>
+        </a>
+        <div class="stat-tile stat-amber">
+          <i class="ti ti-award" style="font-size:24px;color:#d97706;"></i>
+          <div class="stat-label">Evaluación</div>
+          <div class="stat-val" id="stat-eval">—</div>
+          <div class="stat-sub"><a href="evaluacion.html" style="color:inherit;text-decoration:none;font-weight:700;">Ver detalle</a></div>
+        </div>
+        <a class="stat-tile stat-green" href="nutricion.html" style="text-decoration:none;display:block;">
+          <i class="ti ti-salad" style="font-size:24px;color:#16a34a;"></i>
+          <div class="stat-label">Nutrición</div>
+          <div class="stat-val" id="stat-habitos">—</div>
+          <div class="stat-sub">Completados</div>
+        </a>
+        <a class="stat-tile stat-green" href="pagos.html" style="text-decoration:none;display:block;">
+          <i class="ti ti-coin" style="font-size:24px;color:#16a34a;"></i>
+          <div class="stat-label">Pago</div>
+          <div class="stat-val" id="stat-pago">—</div>
+          <div class="stat-sub" id="stat-pago-sub"></div>
+        </a>
+      </div>
     </div>
-  </div>
 
+    <!-- Alerta -->
+    <div id="alerta-wrap" style="display:none;">
+      <div class="alerta-card alerta-red">
+        <i data-lucide="alert-triangle"></i>
+        <div class="grow">
+          <div class="alerta-t" id="alerta-t">Alerta activa</div>
+          <div class="alerta-s" id="alerta-s"></div>
+        </div>
+        <a class="alerta-link" href="notificaciones.html">Ver <i data-lucide="chevron-right"></i></a>
+      </div>
+    </div>
+
+    <!-- Próximo evento -->
+    <div id="evento-wrap" style="display:none;">
+      <div class="evento-card">
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.07;" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <pattern id="hex" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
+              <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="none" stroke="#fff" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#hex)"/>
+        </svg>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(to bottom,#fbbf24,#f59e0b);border-radius:16px 0 0 16px;"></div>
+        <div class="evento-content" style="padding-left:18px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:9.5px;font-weight:800;color:#fbbf24;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">📅 Próximo evento</div>
+            <div class="evento-titulo" id="evento-titulo">—</div>
+            <div class="evento-meta">
+              <span id="evento-fecha" style="display:flex;align-items:center;gap:4px;"></span>
+              <span id="evento-lugar" style="display:none;align-items:center;gap:4px;"></span>
+            </div>
+          </div>
+          <a class="ver-evento" href="torneos.html">Ver más</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú -->
+    <div class="menu-card">
+      <div class="menu-section-hdr">Contenido</div>
+      <div class="menu-grid-3">
+        <a class="menu-item" href="programas.html">
+          <div class="menu-ic cobalt"><i class="ti ti-crown" style="font-size:28px;color:#0047AB;"></i></div>
+          <div class="menu-label">Programas</div>
+        </a>
+        <a class="menu-item" href="entrena.html">
+          <div class="menu-ic cobalt"><i class="ti ti-run" style="font-size:28px;color:#0047AB;"></i></div>
+          <div class="menu-label">Rutinas en casa</div>
+        </a>
+        <a class="menu-item" href="meditacion.html">
+          <div class="menu-ic cobalt"><i class="ti ti-moon-stars" style="font-size:28px;color:#0047AB;"></i></div>
+          <div class="menu-label">Meditación</div>
+        </a>
+      </div>
+
+      <div class="menu-section-divider"></div>
+
+      <div class="menu-section-hdr">Cuenta y soporte</div>
+      <div class="menu-grid-3">
+        <a class="menu-item" href="cita.html">
+          <div class="menu-ic cobalt"><i class="ti ti-calendar-plus" style="font-size:28px;color:#0047AB;"></i></div>
+          <div class="menu-label">Agendar cita</div>
+        </a>
+        <a class="menu-item" href="dudas.html">
+          <div class="menu-ic cobalt"><i class="ti ti-message-question" style="font-size:28px;color:#0047AB;"></i></div>
+          <div class="menu-label">Dudas</div>
+        </a>
+        <a class="menu-item" href="tienda.html">
+          <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:28px;color:#d97706;"></i></div>
+          <div class="menu-label">Tienda</div>
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /home-body -->
 </div><!-- /home-wrap -->
 
   <nav class="bottomnav">
@@ -352,7 +454,6 @@
 
   lucide.createIcons()
 
-  // Clases esperadas en el mes según horario
   function clasesEsperadasEnMes(horario) {
     if (!horario) return 0
     const l = horario.toLowerCase()
@@ -377,7 +478,6 @@
     return count
   }
 
-  // Colores de cinta
   function cintaColor(c) {
     if (!c) return null
     const l = c.toLowerCase()
@@ -394,7 +494,6 @@
 
   function extractDan(cinta) {
     if (!cinta) return 0
-    // Detecta romanos en el nombre: "Negra II grado", "Café III", etc.
     const map = [['V',5],['IV',4],['III',3],['II',2],['I',1]]
     for (const [r, n] of map) {
       if (cinta.includes(r + ' grado') || cinta.includes(r + ' Grado') || cinta.endsWith(' ' + r)) return n
@@ -410,15 +509,10 @@
     wrap.style.display = 'block'
     document.getElementById('c-base').setAttribute('fill', color)
     document.getElementById('c-nudo').setAttribute('fill', color)
-
-    // Dan: usar campo dan de BD o extraer del nombre de la cinta
     const danes = (dan && dan > 0) ? dan : extractDan(cinta)
-
-    // Color de rayas: dorado para cinta negra, oscuro para amarilla/blanca, blanco para el resto
     const esNegra = color === '#1f2937'
     const claras = ['#e5e7eb', '#fbbf24']
     const stripeColor = esNegra ? '#F5C518' : (claras.includes(color) ? '#374151' : '#fff')
-
     ;['d1','d2','d3'].forEach(id => {
       document.getElementById(id).style.display = 'none'
       document.getElementById(id).setAttribute('stroke', stripeColor)
@@ -426,21 +520,16 @@
     if (danes >= 1) document.getElementById('d1').style.display = 'block'
     if (danes >= 2) document.getElementById('d2').style.display = 'block'
     if (danes >= 3) document.getElementById('d3').style.display = 'block'
-
-    // Etiqueta: preserva mayúsculas del nombre original, quita " grado" si ya tiene el romano
     const label = cinta ? cinta.charAt(0).toUpperCase() + cinta.slice(1) : ''
     document.getElementById('cinta-label').textContent = 'Cinta ' + label
   }
 
-  // Parsear horario para próxima clase
   function proximaClase(horario) {
     if (!horario) return null
-    const dias = ['domingo','lunes','martes','miércoles','miercoles','jueves','viernes','sábado','sabado']
-    const hoy = new Date().getDay() // 0=dom,1=lun...
+    const hoy = new Date().getDay()
     const diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
     const segmentos = horario.split('|').map(s => s.trim()).filter(Boolean)
     if (!segmentos.length) return null
-    // Buscar si hay clase hoy
     for (const seg of segmentos) {
       const lower = seg.toLowerCase()
       if (lower.includes(diasSemana[hoy]) || lower.includes('l, m y v') || lower.includes('l, m, j')) {
@@ -450,7 +539,6 @@
     return { dia: segmentos[0].split('·')[0].trim(), detalle: segmentos[0] }
   }
 
-  // Logout
   document.getElementById('btn-logout').addEventListener('click', async (e) => {
     e.preventDefault()
     await supabase.auth.signOut()
@@ -459,20 +547,16 @@
 
   async function cargarDatos() {
     const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+    const user = session?.user
     if (!user) { window.location.href = 'index.html'; return }
 
     cargarEvento()
     cargarAlerta()
-    const hoyLabel = new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'})
-    const el = document.getElementById('checkin-fecha')
-    if (el) el.textContent = hoyLabel.toUpperCase()
 
     const hoy = new Date()
     const hoyStr = hoy.toISOString().split('T')[0]
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
 
-    // Padre — soporta múltiples hijos (hermanos)
     let padre = null
     let todosLosHijos = []
     try {
@@ -485,8 +569,6 @@
         }
       }
       todosLosHijos = (lista || []).filter(p => p.alumno_id)
-
-      // Elegir hijo activo desde localStorage o el primero
       const savedId = localStorage.getItem('uma_padre_id')
       padre = todosLosHijos.find(p => p.id === savedId) || todosLosHijos[0] || lista?.[0] || null
       if (padre) localStorage.setItem('uma_padre_id', padre.id)
@@ -499,7 +581,6 @@
       document.getElementById('saludo-nombre').textContent = 'Familia ' + apellido
     }
 
-    // Selector de hijo si hay más de uno
     if (todosLosHijos.length > 1) {
       const { data: nombresAlumnos } = await supabase.from('alumnos').select('id, nombre').in('id', todosLosHijos.map(p => p.alumno_id))
       const chipsEl = document.getElementById('hijo-chips')
@@ -510,7 +591,7 @@
         chipsEl.innerHTML = todosLosHijos.map(p => {
           const al = nombresAlumnos?.find(a => a.id === p.alumno_id)
           const activo = p.id === padre?.id
-          return `<button onclick="cambiarHijo('${p.id}')" style="padding:7px 18px;border-radius:22px;font-size:13px;font-weight:700;border:2px solid ${activo?'#0047AB':'#d1d5db'};background:${activo?'#0047AB':'#f9fafb'};color:${activo?'#fff':'#374151'};cursor:pointer;transition:all .15s;">${al?.nombre?.split(' ')[0] || 'Hijo'}</button>`
+          return `<button onclick="cambiarHijo('${p.id}')" style="padding:6px 16px;border-radius:22px;font-size:12px;font-weight:700;border:2px solid ${activo?'rgba(255,255,255,.8)':'rgba(255,255,255,.3)'};background:${activo?'rgba(255,255,255,.25)':'transparent'};color:#fff;cursor:pointer;">${al?.nombre?.split(' ')[0] || 'Hijo'}</button>`
         }).join('')
       }
       window.cambiarHijo = function(padreId) {
@@ -521,7 +602,6 @@
 
     if (!padre?.alumno_id) return
 
-    // Alumno
     let al = null
     try {
       const { data: alData } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
@@ -529,20 +609,16 @@
       if (al) {
         document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
         document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
-
-        // Cinta visual
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
 
-        // Foto si existe
         if (al.foto_url) {
           document.getElementById('foto-wrap').innerHTML = `
             <img src="${al.foto_url}" alt="${al.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
-            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#0047AB;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
               <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
             </div>`
         }
 
-        // Subida de foto
         document.getElementById('foto-input').addEventListener('change', async (e) => {
           const file = e.target.files[0]
           if (!file) return
@@ -558,13 +634,12 @@
           wrap.style.opacity = '1'
           wrap.innerHTML = `
             <img src="${urlConCache}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
-            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#0047AB;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
               <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
             </div>`
           wrap.onclick = () => document.getElementById('foto-input').click()
         })
 
-        // Próxima clase desde horario
         const pc = proximaClase(al.horario)
         if (pc) {
           const segPartes = pc.detalle.split('·')
@@ -583,7 +658,6 @@
       }
     } catch(e) {}
 
-    // Asistencia del mes
     try {
       const { data: checkins } = await supabase.from('checkins')
         .select('id, tipo').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
@@ -594,7 +668,6 @@
       document.getElementById('stat-clases-sub').textContent = (pct !== null ? pct + '% · ' : '') + 'clases este mes'
     } catch(e) {}
 
-    // Pago
     try {
       const { data: pagos } = await supabase.from('pagos')
         .select('estado, fecha_pago').eq('alumno_id', padre.alumno_id)
@@ -611,7 +684,6 @@
       }
     } catch(e) {}
 
-    // Evaluación — última puntuación del mes
     try {
       const { data: evals } = await supabase.from('evaluaciones')
         .select('puntuacion').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
@@ -622,7 +694,6 @@
       document.getElementById('stat-eval').textContent = '—'
     }
 
-    // Hábitos del mes
     try {
       const { data: msgs } = await supabase.from('mensajes')
         .select('texto').eq('de_user_id', user.id).eq('para_admin', true).gte('creado_en', primerDia + 'T00:00:00')
@@ -647,13 +718,7 @@
         if (ev.lugar) {
           const l = document.getElementById('evento-lugar')
           l.style.display = 'flex'
-          l.querySelector('i') ? null : null
           l.innerHTML = `<i data-lucide="map-pin" style="width:11px;height:11px;vertical-align:-1px;"></i> ${ev.lugar}`
-        }
-        if (ev.foto_url) {
-          const img = document.getElementById('evento-foto')
-          img.src = ev.foto_url
-          img.style.display = 'block'
         }
         lucide.createIcons()
       }
@@ -704,5 +769,3 @@
 </script>
 </body>
 </html>
-
-
