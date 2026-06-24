@@ -1,4 +1,4 @@
-﻿const CACHE = 'uma-v11'
+﻿const CACHE = 'uma-v12'
 const SHELL = [
   '/',
   '/home.html',
@@ -9,6 +9,7 @@ const SHELL = [
   '/assets/logo-union-white.png',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
+  '/js/supabase.min.js',
 ]
 
 self.addEventListener('install', e => {
