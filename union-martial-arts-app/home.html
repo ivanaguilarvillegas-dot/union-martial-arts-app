@@ -507,8 +507,8 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  // Frase motivacional del día
-  const frases = [
+  // Frase motivacional — primero del profesor, si no hay usa aleatoria
+  const frasesFallback = [
     "El éxito pertenece al que trabaja cuando nadie lo ve.",
     "La disciplina construye campeones.",
     "Cada clase es un paso hacia tu mejor versión.",
@@ -518,7 +518,12 @@
     "Un campeón no es quien nunca cae, sino quien siempre se levanta."
   ]
   const fraseEl = document.getElementById('frase-txt')
-  if (fraseEl) fraseEl.textContent = frases[Math.floor(Math.random() * frases.length)]
+  if (fraseEl) {
+    fraseEl.textContent = frasesFallback[Math.floor(Math.random() * frasesFallback.length)]
+    supabase.from('frases').select('texto').eq('activa', true).limit(1).maybeSingle()
+      .then(({ data }) => { if (data?.texto && fraseEl) fraseEl.textContent = data.texto })
+      .catch(() => {})
+  }
 
   lucide.createIcons()
 
