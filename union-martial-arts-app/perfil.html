@@ -69,6 +69,24 @@
 <script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
+
+  async function cargarPadre(supabase, user) {
+    const savedId = localStorage.getItem('uma_padre_id')
+    if (savedId) {
+      const { data } = await supabase.from('padres').select('*').eq('id', savedId).maybeSingle()
+      if (data) return data
+    }
+    const { data: p1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1).maybeSingle()
+    if (p1) { localStorage.setItem('uma_padre_id', p1.id); return p1 }
+    const { data: p2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1).maybeSingle()
+    if (p2) {
+      await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
+      localStorage.setItem('uma_padre_id', p2.id)
+      return p2
+    }
+    return null
+  }
+
 (async () => {
   const supabase = window.supabase.createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
@@ -83,16 +101,10 @@
     <span style="font-size:13px;font-weight:600;text-align:right;">${v || '—'}</span></div>`
 
   // Cargar datos reales del padre y alumno
-  let { data: padre } = await supabase.from('padres').select('*, alumnos(*)').eq('user_id', user.id).single()
-  if (!padre) {
-    const { data: padreByEmail } = await supabase.from('padres').select('id').eq('correo', user.email).is('user_id', null).single()
-    if (padreByEmail) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', padreByEmail.id)
-      const { data: padreLinked } = await supabase.from('padres').select('*, alumnos(*)').eq('id', padreByEmail.id).single()
-      padre = padreLinked
-    }
-  }
-  const alumno = padre?.alumnos
+  const padre = await cargarPadre(supabase, user)
+  const { data: alumno } = padre?.alumno_id
+    ? await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
+    : { data: null }
 
   if (alumno) {
     const ini = alumno.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'

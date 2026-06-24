@@ -468,25 +468,47 @@
     const hoyStr = hoy.toISOString().split('T')[0]
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
 
-    // Padre
+    // Padre — soporta múltiples hijos (hermanos)
     let padre = null
+    let todosLosHijos = []
     try {
-      const { data: p1 } = await supabase.from('padres').select('id, nombre, alumno_id, correo, telefono').eq('user_id', user.id).maybeSingle()
-      if (p1) { padre = p1 }
-      else {
-        const { data: p2 } = await supabase.from('padres').select('id, nombre, alumno_id, correo, telefono').eq('correo', user.email).maybeSingle()
-        if (p2) {
-          await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
-          padre = p2
+      let { data: lista } = await supabase.from('padres').select('id, nombre, alumno_id, correo, telefono').eq('user_id', user.id)
+      if (!lista?.length) {
+        const { data: lista2 } = await supabase.from('padres').select('id, nombre, alumno_id, correo, telefono').eq('correo', user.email)
+        if (lista2?.length) {
+          for (const p of lista2) await supabase.from('padres').update({ user_id: user.id }).eq('id', p.id)
+          lista = lista2
         }
       }
+      todosLosHijos = (lista || []).filter(p => p.alumno_id)
+
+      // Elegir hijo activo desde localStorage o el primero
+      const savedId = localStorage.getItem('uma_padre_id')
+      padre = todosLosHijos.find(p => p.id === savedId) || todosLosHijos[0] || lista?.[0] || null
+      if (padre) localStorage.setItem('uma_padre_id', padre.id)
     } catch(e) {}
 
     if (padre) {
       const partes = (padre.nombre || '').trim().split(/\s+/).filter(Boolean)
-      // Formato "Nombre ApellidoPaterno ApellidoMaterno" → toma el penúltimo (primer apellido)
       const apellido = partes.length >= 3 ? partes[partes.length - 2] : partes.length === 2 ? partes[1] : partes[0] || ''
       document.getElementById('saludo-nombre').textContent = 'Familia ' + apellido
+    }
+
+    // Selector de hijo si hay más de uno
+    if (todosLosHijos.length > 1) {
+      const { data: nombresAlumnos } = await supabase.from('alumnos').select('id, nombre').in('id', todosLosHijos.map(p => p.alumno_id))
+      const selectorHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">` +
+        todosLosHijos.map(p => {
+          const al = nombresAlumnos?.find(a => a.id === p.alumno_id)
+          const activo = p.id === padre?.id
+          return `<button onclick="cambiarHijo('${p.id}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid ${activo?'#1d4ed8':'#d1d5db'};background:${activo?'#1d4ed8':'#fff'};color:${activo?'#fff':'#374151'};cursor:pointer;">${al?.nombre?.split(' ')[0] || 'Hijo'}</button>`
+        }).join('') + `</div>`
+      const hdr = document.querySelector('.home-header')
+      hdr.insertAdjacentHTML('afterend', `<div style="padding:0 2px 2px;">${selectorHtml}</div>`)
+      window.cambiarHijo = function(padreId) {
+        localStorage.setItem('uma_padre_id', padreId)
+        location.reload()
+      }
     }
 
     if (!padre?.alumno_id) return
