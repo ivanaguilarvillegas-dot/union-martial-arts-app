@@ -225,14 +225,28 @@
     const motivo = document.querySelector('#motivos .on')?.dataset.motivo || 'Otro'
     const nota = document.getElementById('nota-ausencia').value.trim()
 
-    await supabase.from('checkins').upsert({
-      alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
-    }, { onConflict: 'alumno_id,fecha' })
+    // Verificar si ya existe un registro hoy
+    const { data: existente } = await supabase.from('checkins')
+      .select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).maybeSingle()
+
+    let errCheckin
+    if (existente) {
+      const { error } = await supabase.from('checkins').update({
+        tipo: 'ausencia', ausencia_motivo: motivo
+      }).eq('id', existente.id)
+      errCheckin = error
+    } else {
+      const { error } = await supabase.from('checkins').insert({
+        alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
+      })
+      errCheckin = error
+    }
+
+    if (errCheckin) { alert('Error al registrar: ' + errCheckin.message); return }
 
     // Notificar al instructor
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
-    const { error: errMsg } = await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
-    if (errMsg) alert('No se pudo notificar al instructor: ' + errMsg.message)
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
 
     document.getElementById('msg-ausente').style.display = 'flex'
     lucide.createIcons()
