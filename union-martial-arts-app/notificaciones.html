@@ -316,23 +316,47 @@
       }
 
       if (msgs?.length) {
-        document.getElementById('msgs-list').innerHTML = msgs.map(m => {
-          const col = avatarColor('Instructor')
-          return `<div class="msg-row">
-            <div class="msg-dot${m.leido?' read':''}"></div>
-            <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
-            <div class="msg-body">
-              <div class="msg-name">Instructor</div>
-              <div class="msg-preview">${m.texto||''}</div>
+        const col = avatarColor('Instructor')
+        document.getElementById('msgs-list').innerHTML = msgs.map((m,i) => {
+          return `<div class="msg-row" style="flex-direction:column;gap:0;padding:0;">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleMsg(${i})">
+              <div class="msg-dot${m.leido?' read':''}"></div>
+              <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
+              <div class="msg-body">
+                <div class="msg-name">Instructor</div>
+                <div class="msg-preview">${m.texto||''}</div>
+              </div>
+              <div class="msg-right">
+                ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
+                <span class="msg-time">${timeAgo(m.creado_en)}</span>
+              </div>
             </div>
-            <div class="msg-right">
-              ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
-              <span class="msg-time">${timeAgo(m.creado_en)}</span>
+            <div id="reply-${i}" style="display:none;padding:0 16px 14px;border-top:1px solid #f3f4f6;">
+              <div style="font-size:13px;color:#374151;margin-bottom:10px;line-height:1.5;">${m.texto||''}</div>
+              <textarea id="reply-txt-${i}" rows="2" placeholder="Escribe tu respuesta…" style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:none;box-sizing:border-box;"></textarea>
+              <button onclick="sendReply(${i})" style="margin-top:8px;background:#0047AB;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;">
+                <i class="ti ti-send"></i> Enviar respuesta
+              </button>
             </div>
           </div>`
         }).join('')
       }
     } catch(e) {}
+
+    window.toggleMsg = function(i) {
+      const d = document.getElementById('reply-' + i)
+      if (d) d.style.display = d.style.display === 'none' ? 'block' : 'none'
+    }
+    window.sendReply = async function(i) {
+      const txt = document.getElementById('reply-txt-' + i)?.value?.trim()
+      if (!txt) return
+      const btn = document.querySelector(`#reply-${i} button`)
+      btn.disabled = true; btn.textContent = 'Enviando…'
+      try {
+        await supabase.from('mensajes').insert({ de_user_id: user.id, texto: txt, para_admin: true })
+        document.getElementById('reply-' + i).innerHTML = '<div style="color:#16a34a;font-size:13px;padding:4px 0;">✅ Mensaje enviado al instructor.</div>'
+      } catch(e) { btn.disabled = false; btn.textContent = 'Enviar respuesta' }
+    }
 
     // ── PRÓXIMOS EVENTOS ──────────────────────────────────────
     try {
