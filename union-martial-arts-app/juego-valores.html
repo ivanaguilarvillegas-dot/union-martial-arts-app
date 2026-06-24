@@ -4,11 +4,11 @@
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body,html{background:#0d0d1a;overflow:hidden;}
-.game-wrap{display:flex;flex-direction:column;height:100%;background:#0d0d1a;}
+.game-wrap{display:flex;flex-direction:column;flex:1;min-height:0;background:#0d0d1a;}
 .hud{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .6s;}
 .hud-box{text-align:center;min-width:44px;}
 .hud-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;}
-.hud-val{font-size:18px;font-weight:900;color:#fff;line-height:1.1;}
+.hud-val{font-size:22px;font-weight:900;color:#fff;line-height:1.1;}
 .belt-bar-wrap{flex:1;margin:0 10px;}
 .belt-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.4);margin-bottom:3px;text-align:center;}
 .belt-bar{height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
@@ -19,10 +19,11 @@ body,html{background:#0d0d1a;overflow:hidden;}
 .side-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;}
 .side-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
 .belt-chip{display:inline-block;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;text-align:center;width:100%;margin-top:2px;}
-.controls{padding:5px 10px 10px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px;flex-shrink:0;}
-.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:11px;color:#fff;font-size:18px;padding:9px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;}
+.controls{padding:5px 10px 10px;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;flex-shrink:0;}
+.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:13px;color:#fff;font-size:20px;padding:11px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;font-weight:800;}
 .cb span{font-size:7px;color:rgba(255,255,255,.3);font-weight:600;}
 .cb:active{background:rgba(255,255,255,.2);}
+#btn-hold.has-piece{border-color:#FFD700;box-shadow:0 0 10px rgba(255,215,0,.3);}
 
 /* Overlays */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:100;padding:18px;}
@@ -36,14 +37,14 @@ body,html{background:#0d0d1a;overflow:hidden;}
 </style>
 </head>
 <body>
-<div class="phone"><div class="screen" style="background:#0d0d1a;">
+<div class="phone"><div class="screen" style="background:#0d0d1a;display:flex;flex-direction:column;overflow:hidden;">
   <div class="navhead" style="background:#0d0d1a;border-bottom:1px solid rgba(255,255,255,.06);">
     <a class="navback" href="juegos.html" style="color:#fff;"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="sub" style="color:rgba(255,255,255,.4);">Puzzle · Valores</div><div class="title" style="color:#fff;">Misión de Valores</div></div>
     <button onclick="restartGame()" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;">↺</button>
   </div>
 
-  <div class="game-wrap">
+  <div class="game-wrap" style="flex:1;min-height:0;">
     <!-- HUD -->
     <div class="hud" id="hud-bar" style="background:#0d0d1a;">
       <div class="hud-box"><div class="hud-label">Puntos</div><div class="hud-val" id="hud-score">0</div></div>
@@ -57,6 +58,11 @@ body,html{background:#0d0d1a;overflow:hidden;}
     <div class="arena">
       <canvas id="gc" width="170" height="340" style="border:1.5px solid rgba(255,255,255,.1);"></canvas>
       <div class="side">
+        <!-- Hold piece -->
+        <div class="side-box">
+          <div class="side-label">Hold</div>
+          <canvas id="hc" width="56" height="56"></canvas>
+        </div>
         <!-- Next piece -->
         <div class="side-box">
           <div class="side-label">Siguiente</div>
@@ -82,6 +88,7 @@ body,html{background:#0d0d1a;overflow:hidden;}
       <button class="cb" ontouchstart="startDAS('right')" ontouchend="stopDAS()" onmousedown="startDAS('right')" onmouseup="stopDAS()">▶<span>Mover</span></button>
       <button class="cb" ontouchstart="startSoft()" ontouchend="stopSoft()" onmousedown="startSoft()" onmouseup="stopSoft()">▼<span>Bajar</span></button>
       <button class="cb" onclick="hardDrop()">▼▼<span>Drop</span></button>
+      <button class="cb" id="btn-hold" onclick="doHold()">📦<span>Hold</span></button>
     </div>
   </div>
 
@@ -157,8 +164,10 @@ const PIECES = [
   [[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]],[[1,0],[1,0],[1,1]],[[0,1],[0,1],[1,1]],
 ]
 
-const COLS=10,ROWS=20,CELL=17
+const COLS=10,ROWS=20
+const CELL=Math.floor(Math.min(17,(window.innerHeight-230)/ROWS))
 const canvas=document.getElementById('gc')
+canvas.width=COLS*CELL; canvas.height=ROWS*CELL
 const ctx=canvas.getContext('2d')
 const nctx=document.getElementById('nc').getContext('2d')
 
@@ -166,6 +175,65 @@ let board,cur,curX,curY,curColor,nextPiece
 let score,totalLines,beltLevel,beltLines,valCount,paused,gameRunning
 let dropTimer,scoreFloats=[],flashTimer=0,comboCount=0,lastClearTime=0
 let dasTimer,dasInterval,softInterval2,animId
+let holdPiece=null,holdUsed=false
+let particles=[],shakeFrames=0
+const hc=document.getElementById('hc'),hctx=hc.getContext('2d')
+const PARTY_COLORS=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF6BD6','#FF9F1C','#A855F7','#06B6D4']
+
+function drawHold(){
+  hctx.clearRect(0,0,56,56)
+  if(!holdPiece) return
+  const p=holdPiece,cs=14
+  const ox=Math.floor((3-p.shape[0].length)/2),oy=Math.floor((3-p.shape.length)/2)
+  p.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if(!v) return
+    hctx.fillStyle=holdUsed?'#555':p.color
+    hctx.beginPath();hctx.roundRect((ox+c)*cs+1,(oy+r)*cs+1,cs-2,cs-2,2);hctx.fill()
+    if(!holdUsed){hctx.fillStyle='rgba(255,255,255,.28)';hctx.fillRect((ox+c)*cs+2,(oy+r)*cs+2,cs-4,4)}
+  }))
+}
+
+function doHold(){
+  if(holdUsed||paused||!gameRunning) return
+  if(holdPiece){
+    const tmp={shape:cur,color:curColor}
+    cur=holdPiece.shape;curColor=holdPiece.color
+    holdPiece=tmp
+    curX=Math.floor((COLS-cur[0].length)/2);curY=0
+  } else {
+    holdPiece={shape:[...cur],color:curColor}
+    if(!spawnPiece()) return
+  }
+  holdUsed=true
+  document.getElementById('btn-hold').classList.add('has-piece')
+  drawHold();draw()
+}
+
+function spawnParticles(count){
+  for(let i=0;i<count;i++){
+    const x=Math.random()*COLS*CELL
+    const y=(Math.random()*.6+.2)*ROWS*CELL
+    const angle=Math.random()*Math.PI*2,speed=2+Math.random()*6
+    particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-3,
+      r:3+Math.random()*5,color:PARTY_COLORS[Math.floor(Math.random()*PARTY_COLORS.length)],
+      alpha:1,maxLife:35+Math.random()*20,life:0,
+      shape:Math.random()<.5?'circle':'star'})
+  }
+}
+
+function drawParticles(){
+  particles=particles.filter(p=>{
+    p.life++;if(p.life>p.maxLife) return false
+    p.alpha=1-p.life/p.maxLife;p.x+=p.vx;p.y+=p.vy;p.vy+=.18
+    ctx.save();ctx.globalAlpha=p.alpha;ctx.fillStyle=p.color
+    if(p.shape==='star'){
+      ctx.beginPath()
+      for(let i=0;i<8;i++){const a=i*Math.PI/4,r=i%2===0?p.r:p.r*.4;i===0?ctx.moveTo(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r):ctx.lineTo(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r)}
+      ctx.closePath();ctx.fill()
+    } else {ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()}
+    ctx.restore();return true
+  })
+}
 
 function newBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(null))}
 function makePiece(){const i=Math.floor(Math.random()*PIECES.length);return{shape:PIECES[i],color:PIECE_COLORS[i]}}
@@ -197,6 +265,9 @@ function placePiece(){
   score += pieceBonus
   scoreFloats.push({x:curX*CELL+cur[0].length*CELL/2, y:curY*CELL+10, text:'+'+pieceBonus, alpha:1, dy:-1.2, size:13, color:'rgba(255,255,255,.7)'})
   document.getElementById('hud-score').textContent=score.toLocaleString()
+  holdUsed=false
+  document.getElementById('btn-hold').classList.remove('has-piece')
+  drawHold()
   clearLines()
 }
 
@@ -219,6 +290,8 @@ function clearLines(){
     scoreFloats.push({x:COLS*CELL/2,y:160,text:label,alpha:1,dy:-1.8,size:cleared>=2?22:18,color:cleared>=4?'#FFD700':cleared>=2?'#4ade80':'#fff'})
     if(comboCount>1) scoreFloats.push({x:COLS*CELL/2,y:192,text:'COMBO x'+comboCount+'!',alpha:1,dy:-1.3,size:14,color:'#f97316'})
     flashTimer=12
+    spawnParticles(cleared>=4?60:cleared>=2?35:18)
+    if(cleared>=4) shakeFrames=10; else if(cleared>=2) shakeFrames=5
 
     document.getElementById('hud-score').textContent=score.toLocaleString()
     document.getElementById('hud-lines').textContent=totalLines
@@ -397,8 +470,14 @@ function draw(){
   const b=BELTS[beltLevel-1]
   ctx.fillStyle=b.arena;ctx.fillRect(0,0,COLS*CELL,ROWS*CELL)
 
+  // Screen shake
+  if(shakeFrames>0){
+    const dx=(Math.random()-.5)*5*(shakeFrames/10),dy=(Math.random()-.5)*4*(shakeFrames/10)
+    canvas.style.transform=`translate(${dx}px,${dy}px)`;shakeFrames--
+  } else {canvas.style.transform=''}
+
   // Flash
-  if(flashTimer>0){ctx.fillStyle=`rgba(255,255,255,${flashTimer/12*.22})`;ctx.fillRect(0,0,200,400);flashTimer--}
+  if(flashTimer>0){ctx.fillStyle=`rgba(255,255,255,${flashTimer/12*.22})`;ctx.fillRect(0,0,COLS*CELL,ROWS*CELL);flashTimer--}
 
   // Grid
   ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1
@@ -413,6 +492,9 @@ function draw(){
 
   // Current
   cur.forEach((row,r)=>row.forEach((v,c)=>{if(v) drawCell(curX+c,curY+r,curColor)}))
+
+  // Particles
+  drawParticles()
 
   // Floats
   scoreFloats=scoreFloats.filter(f=>f.alpha>0)
@@ -442,6 +524,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowDown') drop()
   else if(e.key==='ArrowUp'||e.key===' ') rotatePiece()
   else if(e.key==='Enter') hardDrop()
+  else if(e.key==='c'||e.key==='C') doHold()
 })
 
 function restartGame(){
@@ -451,6 +534,8 @@ function restartGame(){
   document.getElementById('lvlup-root').innerHTML=''
   board=newBoard();score=0;totalLines=0;beltLevel=1;beltLines=0;valCount=0;paused=false;gameRunning=true
   scoreFloats=[];flashTimer=0;comboCount=0;nextPiece=null
+  holdPiece=null;holdUsed=false;hctx.clearRect(0,0,56,56)
+  document.getElementById('btn-hold').classList.remove('has-piece')
   document.getElementById('hud-score').textContent='0'
   document.getElementById('hud-lines').textContent='0'
   document.getElementById('hud-vals').textContent='0'
