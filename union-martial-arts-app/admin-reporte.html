@@ -92,24 +92,37 @@
   const hoy = new Date()
   document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
-  // Cargar alumnos: obtener IDs desde padres, luego buscar alumnos por esos IDs
-  const { data: padresRows } = await supabase.from('padres').select('alumno_id').not('alumno_id', 'is', null)
+  // Cargar alumnos
+  const { data: padresRows, error: ePadres } = await supabase.from('padres').select('alumno_id').not('alumno_id', 'is', null)
   const alumnoIds = [...new Set((padresRows || []).map(p => p.alumno_id).filter(Boolean))]
   let alumnos = []
+  let byIds = [], eDirect = null
   if (alumnoIds.length) {
-    const { data: byIds } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').in('id', alumnoIds)
-    alumnos = (byIds || []).sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''))
+    const r = await supabase.from('alumnos').select('id, nombre, cinta, grupo').in('id', alumnoIds)
+    byIds = r.data || []
+    alumnos = byIds.sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''))
   }
   if (!alumnos.length) {
-    const { data: direct } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
-    alumnos = direct || []
+    const r2 = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
+    alumnos = r2.data || []
+    eDirect = r2.error
   }
+
+  // Debug inline — borrar cuando funcione
+  const dbgDiv = document.createElement('div')
+  dbgDiv.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;font-size:11px;margin-bottom:10px;line-height:1.7;'
+  dbgDiv.innerHTML = `<b>Debug:</b><br>
+    padres con alumno_id: ${padresRows?.length ?? 'err'} | err: ${ePadres?.message||'none'}<br>
+    alumno IDs: ${alumnoIds.length > 0 ? alumnoIds.join(', ').slice(0,60) : 'ninguno'}<br>
+    alumnos by IDs: ${byIds.length} | alumnos direct: ${alumnos.length} | err: ${eDirect?.message||'none'}`
+  document.getElementById('selector').prepend(dbgDiv)
+
   if (alumnos.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
   } else {
-    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
+    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos</option>'
   }
 
   // Generar
