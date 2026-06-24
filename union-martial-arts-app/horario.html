@@ -92,13 +92,15 @@
 </div></div>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>document.addEventListener("DOMContentLoaded",()=>{const b=document.getElementById("debug-box");if(b){b.innerHTML="JS cargó OK — versión v11";b.style.display="block"}})</script>
-<script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const { createClient } = window.supabase
   const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
+
+  ;(async () => {
 
   function showErr(msg) {
     document.getElementById('segs-wrap').innerHTML =
@@ -234,6 +236,7 @@
     showErr('Error: ' + e.message)
     lucide.createIcons()
   }
+  })()
 </script>
 <script>
   if ('serviceWorker' in navigator) {
