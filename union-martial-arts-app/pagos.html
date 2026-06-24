@@ -16,7 +16,7 @@
           <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
         </a>
       </div>
-      <div class="hero-avatar" id="hero-initials">MA</div>
+      <div class="hero-avatar" id="hero-initials" onclick="location.href='perfil.html'" style="cursor:pointer;" title="Mi perfil">MA</div>
     </div>
     <div class="hero-title">Pagos</div>
   </div>
@@ -169,10 +169,9 @@
     { label: 'Mensualidad Básico', monto: extraerMonto(cfg.precio_mensual_basico || '1550'), ic: 'star' },
     { label: 'Anual UNION', monto: extraerMonto(cfg.precio_anual || '12500'), ic: 'calendar' },
     { label: 'Club Cinta Negra', monto: extraerMonto(cfg.precio_cinta_negra || '9950'), ic: 'crown' },
-    { label: 'Examen de grado', monto: extraerMonto(cfg.precio_examen || '350'), ic: 'award' },
-    { label: 'Torneo', monto: extraerMonto(cfg.precio_torneo || '250'), ic: 'trophy' },
-    { label: 'Cambio de cinta', monto: extraerMonto(cfg.precio_cambio_cinta || '200'), ic: 'git-commit' },
-    { label: 'Otra cantidad', monto: 0, ic: 'edit-3', otra: true },
+    { label: 'Examen (Cambio de Cinta)', monto: extraerMonto(cfg.precio_examen || '350'), ic: 'award' },
+    { label: 'Torneo (Categorías)', monto: extraerMonto(cfg.precio_torneo || '250'), ic: 'trophy' },
+    { label: 'Otro concepto', monto: 0, ic: 'edit-3', otra: true },
   ]
 
   document.getElementById('planes-pago').innerHTML = planes.map((p, i) => `
