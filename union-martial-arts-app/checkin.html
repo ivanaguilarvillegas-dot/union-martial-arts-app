@@ -240,6 +240,7 @@
 
   // Reportar ausencia
   document.getElementById('btn-ausente').addEventListener('click', async () => {
+    try {
     const errDiv = document.getElementById('msg-ausente')
     const btn = document.getElementById('btn-ausente')
 
@@ -306,6 +307,7 @@
     errDiv.style.display = 'flex'
     lucide.createIcons()
     cargarHistorial()
+    } catch(ex) { alert('Error ausencia: ' + ex.message) }
   })
 
   async function cargarHistorial() {
