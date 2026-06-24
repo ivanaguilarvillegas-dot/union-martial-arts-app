@@ -28,7 +28,8 @@
       <label>Autor (opcional)</label>
       <input type="text" id="autor" placeholder="Ej: Jim Rohn" oninput="actualizarPreview()" />
       <div id="msg-frase" style="font-size:13px; text-align:center; padding:10px; border-radius:8px; display:none; margin-top:8px;"></div>
-      <button class="btn-primary" onclick="publicar()">Publicar frase</button>
+      <div id="editing-banner" style="display:none;font-size:12px;background:#fff7ed;color:#92400e;border-radius:8px;padding:8px 12px;margin-bottom:6px;">✏️ Editando frase existente — <button onclick="cancelarEdicion()" style="background:none;border:none;color:#0047AB;font-weight:700;cursor:pointer;font-size:12px;">Cancelar</button></div>
+      <button class="btn-primary" id="btn-publicar" onclick="publicar()">Publicar frase</button>
     </div>
 
     <div class="section-title">Vista previa</div>
@@ -79,9 +80,33 @@
         ${f.autor ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">— ${f.autor}</div>` : ''}
         <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
           <span class="badge ${f.activa ? 'green' : 'gray'}">${f.activa ? 'Activa' : 'Inactiva'}</span>
-          <button onclick="borrarFrase('${f.id}')" style="margin-left:auto;background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">Borrar</button>
+          <button onclick="editarFrase('${f.id}','${f.texto.replace(/'/g,"\\'")}','${(f.autor||'').replace(/'/g,"\\'")}',${f.activa})" style="background:none;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;margin-left:auto;">Editar</button>
+          <button onclick="borrarFrase('${f.id}')" style="background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">Borrar</button>
         </div>
       </div>`).join('')
+  }
+
+  let editandoId = null
+
+  window.editarFrase = function(id, texto, autor, activa) {
+    editandoId = id
+    document.getElementById('texto').value = texto
+    document.getElementById('autor').value = autor
+    actualizarPreview()
+    document.getElementById('editing-banner').style.display = 'block'
+    document.getElementById('btn-publicar').textContent = 'Guardar cambios'
+    document.getElementById('texto').scrollIntoView({ behavior: 'smooth', block: 'center' })
+    document.getElementById('texto').focus()
+  }
+
+  window.cancelarEdicion = function() {
+    editandoId = null
+    document.getElementById('texto').value = ''
+    document.getElementById('autor').value = ''
+    actualizarPreview()
+    document.getElementById('editing-banner').style.display = 'none'
+    document.getElementById('btn-publicar').textContent = 'Publicar frase'
+    document.getElementById('msg-frase').style.display = 'none'
   }
 
   window.publicar = async function() {
@@ -95,22 +120,26 @@
       msg.style.display = 'block'; return
     }
 
-    await supabase.from('frases').update({ activa: false }).eq('activa', true)
-
-    const { error } = await supabase.from('frases').insert({
-      texto, autor, activa: true,
-      fecha_envio: new Date().toISOString().split('T')[0]
-    })
+    let error
+    if (editandoId) {
+      // Actualizar frase existente
+      ;({ error } = await supabase.from('frases').update({ texto, autor }).eq('id', editandoId))
+    } else {
+      // Nueva frase: desactivar las activas e insertar
+      await supabase.from('frases').update({ activa: false }).eq('activa', true)
+      ;({ error } = await supabase.from('frases').insert({
+        texto, autor, activa: true,
+        fecha_envio: new Date().toISOString().split('T')[0]
+      }))
+    }
 
     if (error) {
-      msg.textContent = 'Error al publicar. Intenta de nuevo.'
+      msg.textContent = 'Error al guardar. Intenta de nuevo.'
       msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
     } else {
-      msg.textContent = '✅ Frase publicada. Ya aparece en la app de los padres.'
+      msg.textContent = editandoId ? '✅ Frase actualizada.' : '✅ Frase publicada. Ya aparece en la app de los padres.'
       msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
-      document.getElementById('texto').value = ''
-      document.getElementById('autor').value = ''
-      actualizarPreview()
+      cancelarEdicion()
       cargarFrases()
     }
     msg.style.display = 'block'
