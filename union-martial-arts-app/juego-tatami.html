@@ -141,6 +141,82 @@ let scoreFloats=[]
 
 const logoImg=new Image(); logoImg.src='assets/logo-union-white.png'; let logoOk=false; logoImg.onload=()=>logoOk=true
 
+// Draw a fighter lying on the floor (knocked down by sweep)
+function drawFighterDown(cx, dir, anim, gi){
+  const giColor=gi==='black'?GI_BLACK:GI_WHITE
+  const beltCol=gi==='black'?'#fff':'#111'
+  const t=anim.t/anim.maxT
+  const fallDir=dir  // falls backward (away from opponent)
+
+  // Extended shadow
+  ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#000'
+  ctx.beginPath();ctx.ellipse(cx,FLOOR+5,44,7,0,0,Math.PI*2);ctx.fill();ctx.restore()
+
+  // Body lying horizontal (feet toward player, head away)
+  ctx.fillStyle=giColor
+  ctx.fillRect(cx-fallDir*42,FLOOR-16,fallDir>0?84:-84,16)
+  // Belt stripe on body
+  ctx.fillStyle=beltCol
+  ctx.fillRect(cx+fallDir*8,FLOOR-16,fallDir>0?14:-14,16)
+  // Gi lapel lines
+  ctx.strokeStyle=gi==='black'?'#333':'#bbb';ctx.lineWidth=1
+  ctx.beginPath();ctx.moveTo(cx-fallDir*10,FLOOR-16);ctx.lineTo(cx-fallDir*10,FLOOR);ctx.stroke()
+
+  // Legs pointing up (comical stumps in the air)
+  ctx.strokeStyle=giColor;ctx.lineWidth=10;ctx.lineCap='round'
+  // Front leg
+  ctx.beginPath();ctx.moveTo(cx+fallDir*28,FLOOR-8);ctx.lineTo(cx+fallDir*22,FLOOR-40);ctx.stroke()
+  // Back leg
+  ctx.beginPath();ctx.moveTo(cx+fallDir*38,FLOOR-8);ctx.lineTo(cx+fallDir*34,FLOOR-38);ctx.stroke()
+  // Feet / shoes (sticking up)
+  ctx.fillStyle='#1a1a1a'
+  ctx.beginPath();ctx.roundRect(cx+fallDir*16,FLOOR-48,14,8,3);ctx.fill()
+  ctx.beginPath();ctx.roundRect(cx+fallDir*28,FLOOR-46,14,8,3);ctx.fill()
+  // Kick pads on feet (red)
+  ctx.fillStyle=RED
+  ctx.beginPath();ctx.ellipse(cx+fallDir*20,FLOOR-52,8,7,0,0,Math.PI*2);ctx.fill()
+  ctx.beginPath();ctx.ellipse(cx+fallDir*33,FLOOR-50,8,7,0,0,Math.PI*2);ctx.fill()
+
+  // Arms splayed out
+  ctx.strokeStyle=giColor;ctx.lineWidth=8
+  ctx.beginPath();ctx.moveTo(cx-fallDir*18,FLOOR-12);ctx.lineTo(cx-fallDir*10,FLOOR-36);ctx.stroke()
+  ctx.beginPath();ctx.moveTo(cx+fallDir*2,FLOOR-12);ctx.lineTo(cx+fallDir*8,FLOOR-34);ctx.stroke()
+  // Gloves on hands
+  ctx.fillStyle=RED
+  ctx.beginPath();ctx.ellipse(cx-fallDir*9,FLOOR-39,9,8,0,0,Math.PI*2);ctx.fill()
+  ctx.beginPath();ctx.ellipse(cx+fallDir*10,FLOOR-37,9,8,0,0,Math.PI*2);ctx.fill()
+
+  // Head with helmet lying on its side
+  const hx=cx-fallDir*38,hy=FLOOR-10
+  ctx.fillStyle=SKIN;ctx.beginPath();ctx.ellipse(hx,hy,13,10,0,0,Math.PI*2);ctx.fill()
+  ctx.fillStyle=RED;ctx.beginPath();ctx.ellipse(hx,hy,15,12,0,0,Math.PI*2);ctx.fill()
+  ctx.fillStyle=gi==='black'?'#0e0e10':'rgba(230,230,220,.95)'
+  ctx.beginPath();ctx.ellipse(hx+fallDir*5,hy,10,8,0,0,Math.PI*2);ctx.fill()
+  ctx.fillStyle=SKIN;ctx.beginPath();ctx.ellipse(hx+fallDir*5,hy,8,6,0,0,Math.PI*2);ctx.fill()
+  // Dizzy eyes
+  ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('😵',hx+fallDir*4,hy+4)
+  // Chin guard
+  ctx.fillStyle=RED;ctx.beginPath();ctx.roundRect(hx-10,hy+6,20,8,3);ctx.fill()
+
+  // Spinning stars above head while down
+  if(t<0.8){
+    const spin=anim.t*0.18,sr=14
+    ctx.font='13px sans-serif';ctx.textAlign='center'
+    ctx.fillText('⭐',hx+Math.cos(spin)*sr,hy-20+Math.sin(spin)*5)
+    ctx.fillText('💫',hx+Math.cos(spin+Math.PI)*sr,hy-20+Math.sin(spin+Math.PI)*5)
+  }
+
+  // "DERRIBO!" text appears at the start
+  if(t<0.4){
+    ctx.save();ctx.globalAlpha=1-t/0.4*0.5
+    ctx.font='bold 16px Inter,sans-serif';ctx.textAlign='center'
+    ctx.strokeStyle='rgba(0,0,0,.8)';ctx.lineWidth=3
+    ctx.strokeText('¡DERRIBO!',cx,FLOOR-62)
+    ctx.fillStyle='#FFD700';ctx.fillText('¡DERRIBO!',cx,FLOOR-62)
+    ctx.restore()
+  }
+}
+
 // ── DRAWING ──────────────────────────────────────────────────────────────────
 const RED='#cc1f1f', SKIN='#f0c08a', GI_BLACK='#111', GI_WHITE='#f0f0f0'
 
@@ -191,6 +267,9 @@ function drawTatami(){
  * jumpY   — vertical offset when jumping (negative = up)
  */
 function drawFighter(cx, dir, anim, gi, oppX, jumpY){
+  // Special: knocked down by sweep
+  if(anim.type==='down'){ drawFighterDown(cx,dir,anim,gi); return }
+
   const jy=jumpY||0
   const fY=FLOOR+jy        // feet Y
   const kneeY=fY-38        // knees
@@ -436,9 +515,14 @@ function draw(){
   ctx.clearRect(0,0,W,H)
   drawTatami()
 
-  // Advance animations
-  if(pAnim.t<pAnim.maxT) pAnim.t++; else if(pAnim.type!=='idle'&&pAnim.type!=='hit'&&pAnim.type!=='block') pAnim.type='idle'
-  if(aAnim.t<aAnim.maxT) aAnim.t++; else if(aAnim.type!=='idle'&&aAnim.type!=='hit'&&aAnim.type!=='block') aAnim.type='idle'
+  // Advance animations — when 'down' finishes, show get-up then idle
+  if(pAnim.t<pAnim.maxT){ pAnim.t++ }
+  else if(pAnim.type==='down'){ pAnim.type='idle'; enableButtons(true) }
+  else if(pAnim.type!=='idle'&&pAnim.type!=='hit'&&pAnim.type!=='block'){ pAnim.type='idle' }
+
+  if(aAnim.t<aAnim.maxT){ aAnim.t++ }
+  else if(aAnim.type==='down'){ aAnim.type='idle' }
+  else if(aAnim.type!=='idle'&&aAnim.type!=='hit'&&aAnim.type!=='block'){ aAnim.type='idle' }
 
   const pJumpY = pAnim.type==='jump' ? -35*Math.sin(Math.PI*pAnim.t/pAnim.maxT) : 0
   const aJumpY = aAnim.type==='jump' ? -35*Math.sin(Math.PI*aAnim.t/aAnim.maxT) : 0
@@ -483,6 +567,13 @@ function checkCombo(){
   }
 }
 
+function enableButtons(on){
+  document.querySelectorAll('.move-btn,.btn-def').forEach(b=>{
+    b.style.opacity = on?'':'.32'
+    b.style.pointerEvents = on?'':'none'
+  })
+}
+
 function fireBtn(key){
   const b=document.getElementById('btn-'+key);if(!b) return
   b.classList.add('firing')
@@ -514,10 +605,13 @@ function playerMove(key){
       if(Math.random()<m.hit*fatigue*combo){
         const pts=key==='contra'?m.pts*2:m.pts
         pScore+=pts;document.getElementById('p-score').textContent=pScore
-        // Impact at the AI's body/head position
         const iy=m.height==='head'?FLOOR-130:m.height==='low'?FLOOR-15:FLOOR-80
         triggerImpact(AX-18, iy, '#FFD700', pts)
-        playAnim('a','hit',22)
+        if(key==='barrida'){
+          playAnim('a','down',85)   // rival cae al piso ~1.4s
+        } else {
+          playAnim('a','hit',22)
+        }
         consecutiveHits++;checkCombo()
         if(comboReady&&key!=='contra'){comboReady=false;document.getElementById('btn-combo').style.display='none'}
         setLog(`<span class="good">+${pts} ${pts===1?'punto':'puntos'}</span> — ${m.name} conectó!${consecutiveHits>=2?' 🔥 ¡COMBO!':''}`)
@@ -550,6 +644,7 @@ function activarDefensa(){
 
 function aiAttack(){
   if(gameOver) return
+  if(aAnim.type==='down') return   // no ataca mientras está en el piso
   const keys=aiLevel===1?AI_EASY:aiLevel===2?AI_MED:AI_HARD
   const key=keys[Math.floor(Math.random()*keys.length)]
   const m=MOVES[key]
@@ -578,11 +673,16 @@ function aiAttack(){
       const aiHit=aiLevel===1?.45:aiLevel===2?.60:.72
       if(Math.random()<aiHit){
         aScore++;document.getElementById('a-score').textContent=aScore
-        // Impact at player's body position
         const iy=m.height==='head'?FLOOR-130:FLOOR-80
         triggerImpact(PX+18, iy, '#f87171', 1)
-        playAnim('p','hit',22)
-        setLog(`<span class="warn">⚠️ Rival anotó con ${m.name}.</span> <span>¡Ataca o defiéndete!</span>`)
+        if(key==='barrida'){
+          playAnim('p','down',85)   // jugador cae al piso
+          enableButtons(false)      // deshabilita controles mientras está caído
+          setLog(`<span class="warn">⚠️ ¡Rival te tiró con barrida! DERRIBO 😵 Espera a levantarte.</span>`)
+        } else {
+          playAnim('p','hit',22)
+          setLog(`<span class="warn">⚠️ Rival anotó con ${m.name}.</span> <span>¡Ataca o defiéndete!</span>`)
+        }
         checkWin()
       } else {
         setLog(`Rival intentó ${m.name} pero falló. <span class="good">¡Tu oportunidad!</span>`)
