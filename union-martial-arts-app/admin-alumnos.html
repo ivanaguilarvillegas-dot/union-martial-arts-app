@@ -84,6 +84,7 @@
     </div>
     <input type="file" id="admin-foto-input" accept="image/*" style="display:none">
     <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre completo</label><input type="text" id="edit-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
+    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">CURP</label><input type="text" id="edit-curp" placeholder="XXXX000000XXXXXXXX00" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;text-transform:uppercase;" /></div>
     <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Fecha de inscripción</label><input type="date" id="edit-fecha-ingreso" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
     <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Cinta</label>
       <select id="edit-cinta" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
@@ -113,6 +114,7 @@
         <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Correo</label><input type="email" id="edit-correo" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
         <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
           <select id="edit-parentesco" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;"><option value="Madre">Madre</option><option value="Padre">Padre</option><option value="Tutor">Tutor/a</option><option value="Abuelo/a">Abuelo/a</option></select></div>
+        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Dirección</label><input type="text" id="edit-direccion" placeholder="Calle, número, colonia" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Contacto de emergencia</div>
@@ -179,23 +181,20 @@
   }
 
   function beltSVG(cinta) {
-    const c = CINTAS[cinta] || { color:'#e5e7eb', border:'#d1d5db', text:'#374151' }
-    const fill = c.split ? `<defs><linearGradient id="rn" x1="0" y1="0" x2="1" y2="0"><stop offset="50%" stop-color="#dc2626"/><stop offset="50%" stop-color="#111827"/></linearGradient></defs>` : ''
-    const rectFill = c.split ? 'url(#rn)' : c.color
-    const nudoFill = c.split ? '#111827' : c.color
+    const cfg = CINTAS[cinta] || { color:'#e5e7eb', border:'#d1d5db', text:'#374151' }
+    const m = (cinta||'').match(/(\d+)\s*grado/)
+    const dan = m ? parseInt(m[1]) : 0
+    const fill = cfg.split ? `<defs><linearGradient id="rn" x1="0" y1="0" x2="1" y2="0"><stop offset="50%" stop-color="#dc2626"/><stop offset="50%" stop-color="#111827"/></linearGradient></defs>` : ''
+    const rectFill = cfg.split ? 'url(#rn)' : cfg.color
+    const nudoFill = cfg.split ? '#111827' : cfg.color
+    const stripes = Array.from({length:dan},(_,i)=>`<rect x="${58-i*5}" y="7" width="3" height="8" fill="#fbbf24"/>`).join('')
     return `<svg width="68" height="22" viewBox="0 0 68 22" xmlns="http://www.w3.org/2000/svg">
       ${fill}
-      <rect x="0" y="7" width="68" height="8" rx="4" fill="${rectFill}" stroke="${c.border}" stroke-width="0.8"/>
-      <rect x="26" y="4" width="16" height="14" rx="3" fill="${nudoFill}" stroke="${c.border}" stroke-width="0.8"/>
+      <rect x="0" y="7" width="68" height="8" rx="4" fill="${rectFill}" stroke="${cfg.border}" stroke-width="0.8"/>
+      ${stripes}
+      <rect x="26" y="4" width="16" height="14" rx="3" fill="${nudoFill}" stroke="${cfg.border}" stroke-width="0.8"/>
       <line x1="34" y1="5" x2="34" y2="17" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
     </svg>`
-  }
-
-  function gradoStripes(cinta) {
-    const m = (cinta||'').match(/(\d+)\s*grado/)
-    if (!m) return ''
-    const n = parseInt(m[1])
-    return Array.from({length:n}, (_,i) => `<div style="width:3px;height:14px;background:#fbbf24;border-radius:2px;"></div>`).join('')
   }
 
   const TODOS_HORARIOS = [
@@ -304,8 +303,6 @@
       const ultima = checkinMap[a.id]
       const fechaStr = ultima ? 'Asistió ' + new Date(ultima+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : 'Sin asistencias'
 
-      const stripes = gradoStripes(a.cinta)
-
       return `<div class="al-card" data-id="${a.id}">
         <div class="al-foto">${foto}</div>
         <div class="al-info">
@@ -313,7 +310,6 @@
           <div class="al-grupo">${a.grupo||'Sin grupo'}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
             ${beltSVG(a.cinta)}
-            ${stripes ? `<div style="display:flex;gap:2px;align-items:center;">${stripes}</div>` : ''}
           </div>
         </div>
         <div class="al-right">
@@ -337,6 +333,7 @@
       if (!a) return
       document.getElementById('edit-id').value = a.id
       document.getElementById('edit-nombre').value = a.nombre||''
+      document.getElementById('edit-curp').value = a.curp||''
       document.getElementById('edit-fecha-ingreso').value = a.fecha_ingreso||''
       document.getElementById('edit-cinta').value = a.cinta||''
       document.getElementById('edit-grupo').value = a.grupo||''
@@ -362,6 +359,7 @@
       document.getElementById('edit-autoriz-nombre').value = p?.autorizado_nombre||''
       document.getElementById('edit-autoriz-tel').value = p?.autorizado_tel||''
       document.getElementById('edit-autoriz-parentesco').value = p?.autorizado_parentesco||''
+      document.getElementById('edit-direccion').value = p?.direccion||''
       document.getElementById('modal').style.display = 'flex'
       lucide.createIcons()
       return
@@ -418,7 +416,7 @@
     const btn = document.getElementById('modal-guardar')
     btn.disabled=true; btn.textContent='Guardando…'
     const { error } = await supabase.from('alumnos').update({
-      nombre, cinta:cinta||null, grupo:grupo||null, horario:horario||null,
+      nombre, cinta:cinta||null, grupo:grupo||null, horario:horario||null, curp:(document.getElementById('edit-curp').value.trim().toUpperCase())||null,
       fecha_ingreso: document.getElementById('edit-fecha-ingreso').value||null
     }).eq('id', id)
     if (!error) {
@@ -433,6 +431,7 @@
         autorizado_nombre: document.getElementById('edit-autoriz-nombre').value.trim()||null,
         autorizado_tel: document.getElementById('edit-autoriz-tel').value.trim()||null,
         autorizado_parentesco: document.getElementById('edit-autoriz-parentesco').value.trim()||null,
+        direccion: document.getElementById('edit-direccion').value.trim()||null,
       }).eq('alumno_id', id)
     }
     btn.disabled=false; btn.innerHTML='<i data-lucide="save"></i> Guardar'; lucide.createIcons()

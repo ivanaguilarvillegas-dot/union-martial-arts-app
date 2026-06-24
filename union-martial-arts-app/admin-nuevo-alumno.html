@@ -78,6 +78,29 @@
             <option value="Tutor">Tutor/a</option>
             <option value="Abuelo/a">Abuelo/a</option>
           </select></label>
+
+        <label class="field"><span class="lab">Dirección</span>
+          <input id="direccion-padre" placeholder="Calle, número, colonia" /></label>
+
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:4px;">CURP del menor</div>
+        <label class="field"><span class="lab">CURP</span>
+          <input id="curp-alumno" placeholder="XXXX000000XXXXXXXX00" style="text-transform:uppercase;" /></label>
+
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:4px;">Contacto de emergencia</div>
+        <label class="field"><span class="lab">Nombre</span>
+          <input id="emerg-nombre" placeholder="Nombre" /></label>
+        <label class="field"><span class="lab">Teléfono</span>
+          <input type="tel" id="emerg-tel" placeholder="(656) 000-0000" /></label>
+        <label class="field"><span class="lab">Parentesco</span>
+          <input id="emerg-parentesco" placeholder="Ej: Tío, Abuela…" /></label>
+
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:4px;">Persona autorizada a recoger</div>
+        <label class="field"><span class="lab">Nombre</span>
+          <input id="autoriz-nombre" placeholder="Nombre" /></label>
+        <label class="field"><span class="lab">Teléfono</span>
+          <input type="tel" id="autoriz-tel" placeholder="(656) 000-0000" /></label>
+        <label class="field"><span class="lab">Parentesco</span>
+          <input id="autoriz-parentesco" placeholder="Ej: Hermana, Tío…" /></label>
       </div></div>
 
       <div class="card mb14"><div class="stack">
@@ -187,10 +210,12 @@
     if (!nombrePadre)  { error('Escribe el nombre del padre/tutor.'); return }
     if (!correo)       { error('El correo es obligatorio para acceso a la app.'); return }
 
+    const curp = (document.getElementById('curp-alumno')?.value||'').trim().toUpperCase()
+
     // 1. Insertar alumno
     const { data: alumno, error: errAlumno } = await supabase
       .from('alumnos')
-      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario })
+      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario, curp: curp || null })
       .select().single()
 
     if (errAlumno) { error('Error al registrar alumno: ' + errAlumno.message); return }
@@ -201,8 +226,15 @@
       correo,
       telefono,
       parentesco,
+      direccion: document.getElementById('direccion-padre')?.value.trim() || null,
       alumno_id: alumno.id,
-      es_admin: false
+      es_admin: false,
+      contacto_emergencia_nombre: document.getElementById('emerg-nombre')?.value.trim() || null,
+      contacto_emergencia_tel: document.getElementById('emerg-tel')?.value.trim() || null,
+      contacto_emergencia_parentesco: document.getElementById('emerg-parentesco')?.value.trim() || null,
+      autorizado_nombre: document.getElementById('autoriz-nombre')?.value.trim() || null,
+      autorizado_tel: document.getElementById('autoriz-tel')?.value.trim() || null,
+      autorizado_parentesco: document.getElementById('autoriz-parentesco')?.value.trim() || null,
     })
     if (errPadre) { error('Error al registrar padre: ' + errPadre.message); return }
 
