@@ -110,18 +110,27 @@
     return name.trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase()
   }
 
+  const dbg = document.getElementById('debug-box')
+  const upd = t => { dbg.innerHTML = t; dbg.style.display = 'block' }
+
   try {
-    const { data: authData } = await supabase.auth.getUser()
+    upd('Paso 1: verificando sesión…')
+    const { data: authData, error: authErr } = await supabase.auth.getUser()
     const user = authData?.user
+    upd('Paso 1 OK — user: ' + (user ? user.email : 'null') + (authErr ? ' | error: '+authErr.message : ''))
     if (!user) { window.location.href = 'index.html'; return }
 
     // Cargar padre — intenta por user_id primero, luego por correo
+    upd('Paso 2: buscando padre (user_id=' + user.id + ')…')
     let padre = null
-    const { data: p1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+    const { data: p1, error: p1err } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+    upd('Paso 2a: p1=' + JSON.stringify(p1) + (p1err?' err:'+p1err.message:''))
     if (p1?.alumno_id) {
       padre = p1
     } else {
-      const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
+      upd('Paso 2b: buscando por correo=' + user.email)
+      const { data: p2, error: p2err } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
+      upd('Paso 2b: p2=' + JSON.stringify(p2) + (p2err?' err:'+p2err.message:''))
       if (p2) {
         await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
         padre = p2
