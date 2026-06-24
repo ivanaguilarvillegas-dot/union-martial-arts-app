@@ -118,10 +118,10 @@
     <div class="hero-sub">Mensajes, avisos y eventos de la academia</div>
   </div>
 
-  <div class="page-bg">
+  <div class="body" style="padding-bottom:80px;">
 
     <!-- 0. FRASE DEL DÍA -->
-    <div style="padding:12px 14px 0;" id="frase-wrap">
+    <div style="margin-bottom:16px;" id="frase-wrap">
       <div class="frase-card">
         <div class="frase-ic">
           <i class="ti ti-quote" style="font-size:20px;color:#fff;"></i>
@@ -192,7 +192,7 @@
     </div>
 
 
-  </div>
+  </div><!-- end .body -->
 
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
@@ -361,9 +361,10 @@
     // ── PRÓXIMOS EVENTOS ──────────────────────────────────────
     try {
       const hoy = new Date().toISOString().split('T')[0]
-      const { data: evs } = await supabase.from('eventos')
-        .select('id,titulo,fecha,lugar,descripcion,foto_url,tipo,hora')
+      const { data: evs, error: evErr } = await supabase.from('eventos')
+        .select('id,titulo,fecha,lugar,tipo,hora')
         .gte('fecha', hoy).order('fecha').limit(5)
+      if (evErr) throw evErr
 
       if (evs?.length) {
         const TIPO_ICON = { torneo:'ti-trophy', examen:'ti-award', actividad:'ti-star', seminario:'ti-school' }
@@ -386,7 +387,7 @@
           </div>`
         }).join('')
       }
-    } catch(e) {}
+    } catch(e) { document.getElementById('eventos-list').innerHTML = '<div style="padding:8px 16px 16px;color:#dc2626;font-size:12px;">Error: ' + e.message + '</div>' }
 
     // ── FRASE DEL DÍA ─────────────────────────────────────────
     try {
