@@ -75,10 +75,9 @@
 .msg-time { font-size:11px; color:#9ca3af; }
 
 /* Eventos */
-.eventos-scroll { display:flex; gap:10px; overflow-x:auto; padding:0 16px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
-.eventos-scroll::-webkit-scrollbar { display:none; }
-.evento-card { background:#fff; border-radius:14px; width:210px; flex-shrink:0; scroll-snap-align:start; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid #f3f4f6; }
-.evento-img { width:100%; height:100px; background:#0d1a5e; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.eventos-scroll { display:flex; flex-direction:column; gap:10px; padding:0 16px 16px; }
+.evento-card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid #f3f4f6; display:flex; align-items:center; gap:12px; padding:12px; }
+.evento-img { width:56px; height:56px; flex-shrink:0; background:#0d1a5e; border-radius:10px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
 .evento-img img { width:100%; height:100%; object-fit:cover; }
 .evento-img-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:rgba(255,255,255,.6); width:100%; height:100%; }
 .evento-tipo-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,.5); color:#fff; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; backdrop-filter:blur(4px); }
@@ -120,6 +119,19 @@
   </div>
 
   <div class="page-bg">
+
+    <!-- 0. FRASE DEL DÍA -->
+    <div style="padding:12px 14px 0;" id="frase-wrap">
+      <div class="frase-card">
+        <div class="frase-ic">
+          <i class="ti ti-quote" style="font-size:20px;color:#fff;"></i>
+        </div>
+        <div>
+          <div class="frase-label">Frase del día</div>
+          <div class="frase-txt" id="frase-txt">…</div>
+        </div>
+      </div>
+    </div>
 
     <!-- 1. AVISOS GENERALES -->
     <div class="sec-card" style="margin-top:16px;">
@@ -179,18 +191,6 @@
       </div>
     </div>
 
-    <!-- 4. FRASE DEL DÍA -->
-    <div style="padding:0 14px 8px;" id="frase-wrap" style="display:none;">
-      <div class="frase-card">
-        <div class="frase-ic">
-          <i class="ti ti-quote" style="font-size:20px;color:#fff;"></i>
-        </div>
-        <div>
-          <div class="frase-label">Frase del día</div>
-          <div class="frase-txt" id="frase-txt"></div>
-        </div>
-      </div>
-    </div>
 
   </div>
 
@@ -351,16 +351,13 @@
             : `<div class="evento-img-placeholder"><i class="ti ${ic}" style="font-size:30px;color:rgba(255,255,255,.5);"></i></div>`
           return `<div class="evento-card">
             <div class="evento-img" style="background:#0d1a5e;">
-              ${imgHTML}
-              ${ev.tipo ? `<div class="evento-tipo-badge">${ev.tipo.toUpperCase()}</div>` : ''}
+              ${ev.foto_url ? `<img src="${ev.foto_url}" alt="${ev.titulo}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="ti ${ic}" style="font-size:22px;color:rgba(255,255,255,.7);"></i>`}
             </div>
-            <div class="evento-body">
-              <div class="evento-nombre">${ev.titulo}</div>
-              <div class="evento-detail"><i class="ti ti-calendar" style="font-size:13px;color:#9ca3af;"></i>${fechaFmt}</div>
-              ${ev.lugar ? `<div class="evento-detail"><i class="ti ti-map-pin" style="font-size:13px;color:#9ca3af;"></i>${ev.lugar}</div>` : ''}
-              ${ev.hora  ? `<div class="evento-detail"><i class="ti ti-clock" style="font-size:13px;color:#9ca3af;"></i>${ev.hora}</div>` : ''}
-              ${ev.descripcion ? `<div class="evento-detail" style="align-items:flex-start;"><i class="ti ti-info-circle" style="font-size:13px;color:#9ca3af;margin-top:1px;flex-shrink:0;"></i><span style="line-height:1.4;">${ev.descripcion}</span></div>` : ''}
-              <a class="evento-btn" href="torneos.html">Ver detalles</a>
+            <div style="flex:1;min-width:0;">
+              ${ev.tipo ? `<span style="font-size:10px;font-weight:700;color:#0047AB;text-transform:uppercase;letter-spacing:.04em;">${ev.tipo}</span>` : ''}
+              <div style="font-size:14px;font-weight:700;color:#111827;margin:2px 0;">${ev.titulo}</div>
+              <div style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:4px;"><i class="ti ti-calendar" style="font-size:12px;"></i>${fechaFmt}${ev.hora ? ' · ' + ev.hora : ''}</div>
+              ${ev.lugar ? `<div style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:4px;margin-top:2px;"><i class="ti ti-map-pin" style="font-size:12px;"></i>${ev.lugar}</div>` : ''}
             </div>
           </div>`
         }).join('')
@@ -372,7 +369,6 @@
       const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
       if (frase?.texto) {
         document.getElementById('frase-txt').textContent = '"' + frase.texto + '"'
-        document.getElementById('frase-wrap').style.display = 'block'
       }
     } catch(e) {}
 
