@@ -198,7 +198,6 @@
     })
 
     document.getElementById('msg-asiste').style.display = 'flex'
-    document.getElementById('btn-asiste').disabled = true
     lucide.createIcons()
     cargarHistorial()
   })
@@ -220,7 +219,6 @@
     if (errMsg) alert('No se pudo notificar al instructor: ' + errMsg.message)
 
     document.getElementById('msg-ausente').style.display = 'flex'
-    document.getElementById('btn-ausente').disabled = true
     lucide.createIcons()
     cargarHistorial()
   })
