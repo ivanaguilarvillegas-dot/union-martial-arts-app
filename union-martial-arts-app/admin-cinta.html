@@ -243,10 +243,15 @@
     let diploma_url = null
     const diplomaFile = document.getElementById('diploma-file').files[0]
     if (diplomaFile) {
+      btn.textContent = 'Subiendo diploma…'
       const ext = diplomaFile.name.split('.').pop()
       const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
       const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile)
-      if (!de) diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+      if (de) {
+        alert('Error al subir diploma: ' + de.message + '\n\nSe continuará sin diploma.')
+      } else {
+        diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+      }
     }
 
     const { error } = await supabase.from('alumnos').update({ cinta: selCinta }).eq('id', alumno_id)
