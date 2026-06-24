@@ -78,7 +78,7 @@
       marcados.delete(id)
     } else {
       const { error } = await supabase.from('checkins').upsert(
-        { alumno_id: id, fecha: hoy, tipo: 'presencial', usuario_id: user.id },
+        { alumno_id: id, fecha: hoy, tipo: 'presencial' },
         { onConflict: 'alumno_id,fecha', ignoreDuplicates: true }
       )
       if (error) { errEl.textContent = 'Error al guardar: ' + error.message; errEl.style.display = 'flex'; return }
