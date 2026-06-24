@@ -99,12 +99,13 @@
     return archivos.find(a => a.nombre.toLowerCase().includes(palabra)) || null
   }
 
-  let videos = [], audios = []
+  let videos = [], audios = [], links = {}
 
   async function cargarMedia() {
-    const [vidRes, audRes] = await Promise.allSettled([
+    const [vidRes, audRes, linkRes] = await Promise.allSettled([
       supabase.storage.from('media').list('videos', { limit: 50 }),
       supabase.storage.from('media').list('audios', { limit: 50 }),
+      supabase.from('configuracion').select('clave,valor').like('clave', 'media_link_%')
     ])
     videos = (vidRes.value?.data || [])
       .filter(v => v.name !== '.emptyFolderPlaceholder')
@@ -112,29 +113,51 @@
     audios = (audRes.value?.data || [])
       .filter(a => a.name !== '.emptyFolderPlaceholder')
       .map(a => ({ nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''), path: 'audios/' + a.name, url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl }))
+    links = {}
+    ;(linkRes.value?.data || []).forEach(r => { links[r.clave] = r.valor })
     renderEjercicios()
     renderMeditacion()
     renderExtras()
   }
 
+  window.pegarLink = async function(claveNombre, tipo) {
+    const ejemplos = tipo === 'video' ? 'YouTube, Vimeo, etc.' : 'Spotify, SoundCloud, YouTube, etc.'
+    const url = prompt(`Pega el link del ${tipo} (${ejemplos}):`)
+    if (!url) return
+    const k = 'media_link_' + claveNombre
+    await supabase.from('configuracion').upsert({ clave: k, valor: url }, { onConflict: 'clave' })
+    await cargarMedia()
+  }
+
+  window.borrarLink = async function(claveNombre) {
+    await supabase.from('configuracion').delete().eq('clave', 'media_link_' + claveNombre)
+    await cargarMedia()
+  }
+
   function itemRow(ic, nombre, desc, nivel, archivo, tipo) {
     const claveNombre = clave(nombre)
     const tiene = !!archivo
+    const tieneLink = links['media_link_' + claveNombre] || ''
     return `<div class="card mb10" style="padding:14px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${tiene ? 10 : 0}px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${(tiene || tieneLink) ? 10 : 0}px;">
         <span class="ic ${tiene ? 'green' : ''}" style="flex-shrink:0;"><i data-lucide="${ic}"></i></span>
         <span class="grow">
           <span class="t" style="display:block;">${nombre}</span>
           <span class="s">${nivel ? nivel + ' · ' : ''}${desc}</span>
         </span>
-        <span class="badge ${tiene ? 'green' : 'red'}" style="flex-shrink:0;">${tiene ? 'Con ' + (tipo === 'video' ? 'video' : 'audio') : 'Sin ' + (tipo === 'video' ? 'video' : 'audio')}</span>
+        <span class="badge ${(tiene || tieneLink) ? 'green' : 'red'}" style="flex-shrink:0;">${tiene ? 'Archivo' : tieneLink ? 'Link' : 'Sin ' + (tipo === 'video' ? 'video' : 'audio')}</span>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${tieneLink ? '8px' : '0'};">
         ${tiene ? `<a href="${archivo.url}" target="_blank" class="btn secondary sm"><i data-lucide="play" style="width:13px;height:13px"></i> Ver</a>` : ''}
         <label class="btn secondary sm" style="cursor:pointer;">
-          <i data-lucide="upload" style="width:13px;height:13px"></i> ${tiene ? 'Reemplazar' : 'Subir'}
+          <i data-lucide="upload" style="width:13px;height:13px"></i> ${tiene ? 'Reemplazar' : 'Subir archivo'}
           <input type="file" accept="${tipo === 'video' ? 'video/*' : 'audio/*'}" hidden data-clave="${claveNombre}" data-tipo="${tipo}" />
         </label>
+        <button class="btn secondary sm" style="cursor:pointer;" onclick="pegarLink('${claveNombre}','${tipo}')">
+          <i data-lucide="link" style="width:13px;height:13px"></i> ${tieneLink ? 'Cambiar link' : 'Pegar link'}
+        </button>
+        ${tieneLink ? `<a href="${tieneLink}" target="_blank" class="btn secondary sm" style="color:#0047AB;"><i data-lucide="external-link" style="width:13px;height:13px"></i> Abrir</a>` : ''}
+        ${tieneLink ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" onclick="borrarLink('${claveNombre}')"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>` : ''}
         ${tiene ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-borrar="${archivo.path}"><i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar</button>` : ''}
       </div>
     </div>`

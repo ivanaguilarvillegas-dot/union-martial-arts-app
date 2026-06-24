@@ -14,6 +14,11 @@
     <h1>Frase / Mensaje</h1>
   </div>
   <div class="screen-body">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+      <a href="home.html" target="_blank" style="font-size:12px;font-weight:700;color:#0047AB;background:#eef2ff;border-radius:8px;padding:7px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
+        👁 Ver como padre
+      </a>
+    </div>
     <div class="section-title">Nueva frase motivacional</div>
     <div class="card">
       <label>Frase o mensaje</label>
@@ -68,8 +73,9 @@
         <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;">${f.fecha_envio || ''}</div>
         <div style="font-size:13px; font-style:italic; color:var(--text-primary); line-height:1.5;">"${f.texto}"</div>
         ${f.autor ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">— ${f.autor}</div>` : ''}
-        <div style="margin-top:8px;">
+        <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
           <span class="badge ${f.activa ? 'green' : 'gray'}">${f.activa ? 'Activa' : 'Inactiva'}</span>
+          <button onclick="borrarFrase('${f.id}')" style="margin-left:auto;background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">Borrar</button>
         </div>
       </div>`).join('')
   }
@@ -104,6 +110,12 @@
       cargarFrases()
     }
     msg.style.display = 'block'
+  }
+
+  window.borrarFrase = async function(id) {
+    if (!confirm('¿Borrar esta frase? Si era la activa, la app mostrará una frase automática.')) return
+    await supabase.from('frases').delete().eq('id', id)
+    cargarFrases()
   }
 
   cargarFrases()
