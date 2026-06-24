@@ -92,8 +92,10 @@
   const hoy = new Date()
   document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
-  // Cargar alumnos — usar select('*') para evitar error si cinta/grupo no existen
-  const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('*').order('nombre')
+  // Cargar alumnos — sin order para evitar fallo si columna nombre no existe
+  const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('*')
+  // Debug temporal
+  alert('alumnos: ' + JSON.stringify(alumnos?.length) + ' | error: ' + (errAl?.message || 'none'))
   if (errAl) {
     document.getElementById('al-sel').innerHTML = `<option value="">Error al cargar</option>`
     const errDiv = document.createElement('div')
