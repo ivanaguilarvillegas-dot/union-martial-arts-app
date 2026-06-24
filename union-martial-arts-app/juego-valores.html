@@ -77,11 +77,18 @@
   <!-- Game over -->
   <div class="gameover-overlay" id="gameover" style="display:none;">
     <div class="gameover-card">
-      <div style="font-size:52px;margin-bottom:10px;">🥋</div>
-      <div style="font-size:22px;font-weight:900;color:#111;margin-bottom:6px;">¡Buen intento!</div>
-      <div style="font-size:13px;color:#6b7280;margin-bottom:6px;">Puntuación: <b id="final-score">0</b></div>
-      <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">Valores desbloqueados: <b id="final-vals">0</b></div>
-      <div style="font-size:12px;color:#9ca3af;font-style:italic;margin-bottom:20px;">"Los grandes campeones también aprenden de cada intento."</div>
+      <div style="font-size:48px;margin-bottom:6px;" id="go-icon">🥋</div>
+      <div style="font-size:21px;font-weight:900;color:#111;margin-bottom:4px;" id="go-title">¡Buen intento!</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:3px;">Puntuación: <b id="final-score">0</b></div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Valores desbloqueados: <b id="final-vals">0</b></div>
+      <!-- Valor destacado en game over -->
+      <div id="go-valor-block" style="background:linear-gradient(135deg,#f0f4ff,#e8f0ff);border-radius:16px;padding:14px 16px;margin-bottom:16px;border:1px solid #bfdbfe;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#0047AB;margin-bottom:6px;" id="go-valor-label">Valor de hoy</div>
+        <div style="font-size:28px;margin-bottom:4px;" id="go-valor-icon">🔥</div>
+        <div style="font-size:16px;font-weight:900;color:#111;margin-bottom:5px;" id="go-valor-name">Constancia</div>
+        <div style="font-size:12px;color:#6b7280;font-style:italic;line-height:1.5;margin-bottom:8px;" id="go-valor-frase">"Cada intento cuenta."</div>
+        <div style="font-size:11px;color:#0369a1;font-weight:600;background:#dbeafe;border-radius:8px;padding:8px;" id="go-valor-reto"></div>
+      </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
         <button class="btn primary block" onclick="restartGame()">🔄 Jugar de nuevo</button>
         <button class="btn secondary block" onclick="location.href='juegos.html'">← Volver a juegos</button>
@@ -206,7 +213,7 @@ function drop(){
 
 function setDropSpeed(){
   clearInterval(dropTimer)
-  const speed=Math.max(100,800-level*70)
+  const speed=Math.max(80,450-level*55)
   dropTimer=setInterval(drop,speed)
 }
 
@@ -214,6 +221,16 @@ function endGame(){
   gameRunning=false; clearInterval(dropTimer)
   document.getElementById('final-score').textContent=score
   document.getElementById('final-vals').textContent=valCount
+  // Show a valor on game over
+  const v = VALORES[valCount % VALORES.length]
+  const won = valCount >= VALORES.length
+  document.getElementById('go-icon').textContent = won ? '🏆' : '💪'
+  document.getElementById('go-title').textContent = won ? '¡Misión completada!' : '¡Buen intento!'
+  document.getElementById('go-valor-label').textContent = valCount>0 ? 'Último valor desbloqueado' : 'Valor del día'
+  document.getElementById('go-valor-icon').textContent = v.icon
+  document.getElementById('go-valor-name').textContent = v.nombre
+  document.getElementById('go-valor-frase').textContent = v.frase
+  document.getElementById('go-valor-reto').textContent = '🎯 Reto: ' + v.reto
   document.getElementById('gameover').style.display='flex'
 }
 
