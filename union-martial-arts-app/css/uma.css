@@ -232,7 +232,7 @@ svg.lucide{width:18px;height:18px}
 .page-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .hero-logo { display:flex; align-items:center; gap:10px; }
 .hero-logo-circle { width:48px; height:48px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,.12); }
-.hero-logo-circle img { width:40px; height:40px; object-fit:contain; image-rendering:auto; }
+.hero-logo-circle img { width:34px; height:34px; object-fit:contain; image-rendering:-webkit-optimize-contrast; image-rendering:crisp-edges; }
 .hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; color:#fff; }
 .hero-logo a { color:#fff; text-decoration:none; display:flex; align-items:center; gap:10px; }
 .hero-avatar { width:38px; height:38px; background:rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
