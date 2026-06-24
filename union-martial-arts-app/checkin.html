@@ -298,7 +298,7 @@
 
     // Notificar al instructor
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
-    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true }).catch(() => {})
+    try { await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true }) } catch(e) {}
 
     errDiv.className = 'notice green'
     errDiv.style.background = '#f0fdf4'
@@ -307,7 +307,10 @@
     errDiv.style.display = 'flex'
     lucide.createIcons()
     cargarHistorial()
-    } catch(ex) { alert('Error ausencia: ' + ex.message) }
+    } catch(ex) {
+      document.getElementById('msg-ausente').style.display = 'flex'
+      document.getElementById('msg-ausente').innerHTML = `<span style="color:#991b1b;">❌ Error: ${ex.message}</span>`
+    }
   })
 
   async function cargarHistorial() {
