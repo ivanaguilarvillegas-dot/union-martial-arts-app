@@ -246,7 +246,7 @@
       btn.textContent = 'Subiendo diploma…'
       const ext = diplomaFile.name.split('.').pop()
       const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
-      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile)
+      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile, { upsert: true, contentType: diplomaFile.type })
       if (de) {
         alert('Error al subir diploma: ' + de.message + '\n\nSe continuará sin diploma.')
       } else {

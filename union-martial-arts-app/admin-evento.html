@@ -132,8 +132,9 @@
       document.getElementById('upload-progress').style.display = 'block'
       const ext = convFile.name.split('.').pop()
       const path = `convocatorias/${Date.now()}.${ext}`
-      const { error: ce } = await supabase.storage.from('eventos').upload(path, convFile)
-      if (!ce) convocatoria_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+      const { error: ce } = await supabase.storage.from('eventos').upload(path, convFile, { upsert: true, contentType: convFile.type })
+      if (ce) alert('Error convocatoria: ' + ce.message)
+      else convocatoria_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
     }
 
     // Subir fotos
@@ -144,8 +145,9 @@
       for (const f of fotosFiles) {
         const ext = f.name.split('.').pop()
         const path = `fotos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-        const { error: fe } = await supabase.storage.from('eventos').upload(path, f)
-        if (!fe) fotos_urls.push(supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl)
+        const { error: fe } = await supabase.storage.from('eventos').upload(path, f, { upsert: true, contentType: f.type })
+        if (fe) alert('Error foto: ' + fe.message)
+        else fotos_urls.push(supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl)
       }
     }
     document.getElementById('upload-progress').style.display = 'none'
