@@ -132,11 +132,31 @@
   try {
     padre = await cargarPadre(supabase, user)
     alumnoId = padre?.alumno_id
-    if (alumnoId) {
-      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).single()
+
+    // Fallback: buscar alumno donde padre_id = padre.id
+    if (!alumnoId && padre?.id) {
+      const { data: alPorPadre } = await supabase.from('alumnos').select('id, nombre').eq('padre_id', padre.id).maybeSingle()
+      if (alPorPadre) { alumnoId = alPorPadre.id; alumnoNombre = alPorPadre.nombre }
+    }
+
+    if (alumnoId && !alumnoNombre) {
+      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).maybeSingle()
       alumnoNombre = al?.nombre || 'tu hijo/a'
     }
   } catch(e) {}
+
+  // Debug visible — muestra estado del alumno vinculado
+  const dbg = document.createElement('div')
+  dbg.id = 'dbg-alumno'
+  dbg.style.cssText = 'font-size:11px;padding:6px 10px;border-radius:8px;margin-bottom:10px;text-align:center;'
+  if (alumnoId) {
+    dbg.style.background = '#ecfdf5'; dbg.style.color = '#065f46'
+    dbg.textContent = '✓ Alumno vinculado: ' + (alumnoNombre || alumnoId)
+  } else {
+    dbg.style.background = '#fef2f2'; dbg.style.color = '#991b1b'
+    dbg.textContent = '⚠️ Sin alumno vinculado | padre: ' + (padre?.id ? padre.id.slice(0,8) + '…' : 'no encontrado') + ' | user: ' + user.id.slice(0,8) + '…'
+  }
+  document.querySelector('.body')?.prepend(dbg)
 
   // Tabs modo
   function activarModo(modo) {
