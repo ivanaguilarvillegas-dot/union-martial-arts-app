@@ -5,28 +5,34 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body,html{background:#0d0d1a;overflow:hidden;}
 .game-wrap{display:flex;flex-direction:column;height:100%;background:#0d0d1a;}
-.hud{background:#0d0d1a;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);}
-.hud-box{text-align:center;min-width:48px;}
+.hud{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .6s;}
+.hud-box{text-align:center;min-width:44px;}
 .hud-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;}
-.hud-val{font-size:19px;font-weight:900;color:#fff;line-height:1.1;}
-.arena{display:flex;justify-content:center;align-items:flex-start;flex:1;padding:6px 8px 4px;gap:8px;}
-#gc{display:block;border-radius:6px;border:1.5px solid rgba(255,255,255,.1);}
-.side{display:flex;flex-direction:column;gap:8px;width:68px;flex-shrink:0;}
+.hud-val{font-size:18px;font-weight:900;color:#fff;line-height:1.1;}
+.belt-bar-wrap{flex:1;margin:0 10px;}
+.belt-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.4);margin-bottom:3px;text-align:center;}
+.belt-bar{height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
+.belt-fill{height:100%;border-radius:99px;transition:width .35s,background .5s;}
+.arena{display:flex;justify-content:center;align-items:flex-start;flex:1;padding:5px 8px 4px;gap:8px;}
+#gc{display:block;border-radius:8px;transition:border-color .5s;}
+.side{display:flex;flex-direction:column;gap:7px;width:66px;flex-shrink:0;}
 .side-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;}
-.side-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-#next-canvas{display:block;margin:0 auto;}
-.controls{padding:6px 10px 12px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;flex-shrink:0;}
-.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:19px;padding:10px 0;cursor:pointer;transition:background .1s;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
-.cb span{font-size:8px;color:rgba(255,255,255,.35);font-weight:600;}
+.side-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.belt-chip{display:inline-block;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;text-align:center;width:100%;margin-top:2px;}
+.controls{padding:5px 10px 10px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px;flex-shrink:0;}
+.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:11px;color:#fff;font-size:18px;padding:9px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;}
+.cb span{font-size:7px;color:rgba(255,255,255,.3);font-weight:600;}
 .cb:active{background:rgba(255,255,255,.2);}
-.valor-overlay,.gameover-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:100;padding:18px;}
-.vc,.gc2{background:#fff;border-radius:22px;padding:24px 20px;text-align:center;max-width:310px;width:100%;}
-.v-icon{font-size:48px;margin-bottom:8px;}
-.v-badge{display:inline-block;background:#0047AB;color:#fff;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:3px 12px;border-radius:99px;margin-bottom:8px;}
-.v-badge-purple{background:#7c3aed;}
-.v-name{font-size:22px;font-weight:900;color:#111;margin-bottom:6px;}
-.v-frase{font-size:12px;color:#6b7280;font-style:italic;line-height:1.55;margin-bottom:8px;}
-.v-reto{background:#f0f9ff;border-radius:10px;padding:10px;font-size:11px;color:#0369a1;font-weight:600;line-height:1.5;margin-bottom:16px;}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:100;padding:18px;}
+.ov-card{background:#fff;border-radius:22px;padding:24px 20px;text-align:center;max-width:310px;width:100%;}
+
+/* Level up overlay */
+.lvlup-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:90;pointer-events:none;animation:lvlFade .4s ease forwards;}
+@keyframes lvlFade{0%{background:rgba(255,255,255,0)}30%{background:rgba(255,255,255,.18)}100%{background:rgba(0,0,0,0)}}
+.lvlup-card{background:rgba(0,0,0,.92);border-radius:20px;padding:22px 24px;text-align:center;border:2px solid;pointer-events:none;animation:lvlPop .45s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes lvlPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -38,27 +44,34 @@ body,html{background:#0d0d1a;overflow:hidden;}
   </div>
 
   <div class="game-wrap">
-    <div class="hud">
+    <!-- HUD -->
+    <div class="hud" id="hud-bar" style="background:#0d0d1a;">
       <div class="hud-box"><div class="hud-label">Puntos</div><div class="hud-val" id="hud-score">0</div></div>
-      <div class="hud-box"><div class="hud-label">Líneas</div><div class="hud-val" id="hud-lines">0</div></div>
-      <div class="hud-box"><div class="hud-label">Nivel</div><div class="hud-val" id="hud-level">1</div></div>
+      <div class="belt-bar-wrap">
+        <div class="belt-label" id="belt-label">Cinturón Blanco — Nivel 1</div>
+        <div class="belt-bar"><div class="belt-fill" id="belt-fill" style="width:0%;background:#f8f8f8;"></div></div>
+      </div>
       <div class="hud-box"><div class="hud-label">Valores 🏅</div><div class="hud-val" id="hud-vals">0</div></div>
     </div>
 
     <div class="arena">
-      <canvas id="gc" width="200" height="400"></canvas>
+      <canvas id="gc" width="200" height="400" style="border:1.5px solid rgba(255,255,255,.1);"></canvas>
       <div class="side">
+        <!-- Next piece -->
         <div class="side-box">
           <div class="side-label">Siguiente</div>
-          <canvas id="next-canvas" width="56" height="56"></canvas>
+          <canvas id="nc" width="56" height="56"></canvas>
         </div>
-        <div class="side-box" id="combo-box" style="display:none;">
-          <div class="side-label">Combo</div>
-          <div id="combo-txt" style="font-size:20px;font-weight:900;color:#FFD700;text-align:center;">x1</div>
-        </div>
+        <!-- Belt info -->
         <div class="side-box">
-          <div class="side-label">Tip</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.4);line-height:1.5;">▼▼ = caída rápida<br/>🔄 = rotar</div>
+          <div class="side-label">Cinturón</div>
+          <div id="belt-chip" class="belt-chip" style="background:#333;color:#fff;">⬜ Blanco</div>
+          <div style="font-size:8px;color:rgba(255,255,255,.3);text-align:center;margin-top:5px;" id="lines-to-next">6 líneas para subir</div>
+        </div>
+        <!-- Lines / level -->
+        <div class="side-box">
+          <div class="side-label">Líneas</div>
+          <div style="font-size:20px;font-weight:900;color:#fff;text-align:center;" id="hud-lines">0</div>
         </div>
       </div>
     </div>
@@ -73,29 +86,29 @@ body,html{background:#0d0d1a;overflow:hidden;}
   </div>
 
   <!-- Valor desbloqueado -->
-  <div class="valor-overlay" id="valor-overlay" style="display:none;">
-    <div class="vc">
-      <div class="v-icon" id="v-icon">⭐</div>
-      <div class="v-badge v-badge-purple">✨ Valor desbloqueado</div>
-      <div class="v-name" id="v-name">Disciplina</div>
-      <div class="v-frase" id="v-frase">"Frase."</div>
-      <div class="v-reto"><b>🎯 Reto del día:</b><br><span id="v-reto"></span></div>
-      <button class="btn primary block" onclick="cerrarValor()">¡Continuar jugando!</button>
+  <div class="overlay" id="valor-overlay" style="display:none;">
+    <div class="ov-card">
+      <div style="font-size:48px;margin-bottom:8px;" id="v-icon">⭐</div>
+      <div style="display:inline-block;background:#0047AB;color:#fff;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:3px 12px;border-radius:99px;margin-bottom:8px;">✨ Valor desbloqueado</div>
+      <div style="font-size:22px;font-weight:900;color:#111;margin-bottom:6px;" id="v-name">Disciplina</div>
+      <div style="font-size:12px;color:#6b7280;font-style:italic;line-height:1.55;margin-bottom:8px;" id="v-frase">"Frase."</div>
+      <div style="background:#f0f9ff;border-radius:10px;padding:10px;font-size:11px;color:#0369a1;font-weight:600;line-height:1.5;margin-bottom:16px;"><b>🎯 Reto del día:</b><br><span id="v-reto"></span></div>
+      <button class="btn primary block" onclick="cerrarOverlay('valor-overlay')">¡Continuar jugando!</button>
     </div>
   </div>
 
-  <!-- Game over -->
-  <div class="gameover-overlay" id="gameover" style="display:none;">
-    <div class="gc2">
+  <!-- Game Over -->
+  <div class="overlay" id="gameover" style="display:none;">
+    <div class="ov-card">
       <div style="font-size:44px;margin-bottom:6px;" id="go-icon">💪</div>
       <div style="font-size:20px;font-weight:900;color:#111;margin-bottom:4px;" id="go-title">¡Buen intento!</div>
       <div style="font-size:13px;color:#6b7280;margin-bottom:3px;">Puntuación: <b id="final-score">0</b></div>
-      <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Valores: <b id="final-vals">0</b></div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:10px;">Cinturón alcanzado: <b id="final-belt">Blanco</b></div>
       <div id="go-valor-block" style="background:linear-gradient(135deg,#f0f4ff,#e8f0ff);border-radius:14px;padding:12px 14px;margin-bottom:14px;border:1px solid #bfdbfe;">
         <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#0047AB;margin-bottom:4px;" id="go-vlabel">Valor del día</div>
         <div style="font-size:24px;margin-bottom:3px;" id="go-vicon">🔥</div>
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:4px;" id="go-vname">Constancia</div>
-        <div style="font-size:11px;color:#6b7280;font-style:italic;line-height:1.5;margin-bottom:6px;" id="go-vfrase">"Cada intento cuenta."</div>
+        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:4px;" id="go-vname"></div>
+        <div style="font-size:11px;color:#6b7280;font-style:italic;line-height:1.5;margin-bottom:6px;" id="go-vfrase"></div>
         <div style="font-size:10px;color:#0369a1;font-weight:600;background:#dbeafe;border-radius:6px;padding:6px;" id="go-vreto"></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:7px;">
@@ -105,68 +118,71 @@ body,html{background:#0d0d1a;overflow:hidden;}
     </div>
   </div>
 
+  <!-- Level up popup (injected dynamically) -->
+  <div id="lvlup-root"></div>
+
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
 lucide.createIcons()
 
-const VALORES = [
-  { nombre:'Respeto',        icon:'🙏', frase:'"Escuchar también es una forma de respeto."', reto:'Escucha a tus papás sin interrumpir y responde con respeto.' },
-  { nombre:'Disciplina',     icon:'🥋', frase:'"Lo que repites cada día construye tu fuerza."', reto:'Completa tu rutina aunque hoy no tengas ganas.' },
-  { nombre:'Honestidad',     icon:'💎', frase:'"Decir la verdad también es parte del carácter."', reto:'Reconoce un error sin buscar excusas.' },
-  { nombre:'Responsabilidad',icon:'⚡', frase:'"Ser responsable también es entrenar tu carácter."', reto:'Prepara tu uniforme sin que te lo recuerden.' },
-  { nombre:'Constancia',     icon:'🔥', frase:'"Cada intento cuenta."', reto:'Practica algo difícil una vez más, aunque no te salga.' },
-  { nombre:'Humildad',       icon:'🌱', frase:'"Siempre hay algo nuevo que aprender."', reto:'Acepta una corrección sin enojarte y ponla en práctica.' },
-  { nombre:'Gratitud',       icon:'💛', frase:'"Agradecer también fortalece el corazón."', reto:'Agradece hoy a quien te ayuda a crecer.' },
-  { nombre:'Enfoque',        icon:'🎯', frase:'"Cuando tu mente está presente, tu técnica mejora."', reto:'Realiza una actividad sin distraerte hasta terminarla.' },
-  { nombre:'Control',        icon:'🧘', frase:'"La fuerza más importante es saber controlarte."', reto:'Respira antes de reaccionar con enojo.' },
-  { nombre:'Esfuerzo',       icon:'💪', frase:'"Cada intento te acerca a tu mejor versión."', reto:'Termina una tarea aunque te cueste trabajo.' },
+// ── BELT LEVELS ──────────────────────────────────────────────────────────────
+// Each level: lines needed to advance, belt name, colors, speed
+const BELTS = [
+  {num:1, name:'Blanco',     emoji:'⬜', color:'#e5e5e5', text:'#111',    arena:'#0d0d1a', border:'rgba(255,255,255,.12)', speed:420, lines:6},
+  {num:2, name:'Amarillo',   emoji:'🟡', color:'#FFD700', text:'#111',    arena:'#150f00', border:'rgba(255,215,0,.35)',   speed:360, lines:6},
+  {num:3, name:'Naranja',    emoji:'🟠', color:'#FF8C00', text:'#fff',    arena:'#150800', border:'rgba(255,140,0,.35)',   speed:300, lines:8},
+  {num:4, name:'Verde',      emoji:'🟢', color:'#16a34a', text:'#fff',    arena:'#001208', border:'rgba(22,163,74,.4)',    speed:250, lines:8},
+  {num:5, name:'Azul',       emoji:'🔵', color:'#0047AB', text:'#fff',    arena:'#00071a', border:'rgba(0,71,171,.5)',     speed:200, lines:8},
+  {num:6, name:'Morado',     emoji:'🟣', color:'#7c3aed', text:'#fff',    arena:'#0a0018', border:'rgba(124,58,237,.5)',   speed:160, lines:10},
+  {num:7, name:'Café',       emoji:'🟤', color:'#92400e', text:'#fff',    arena:'#0e0500', border:'rgba(146,64,14,.5)',    speed:120, lines:10},
+  {num:8, name:'Cinta Negra',emoji:'⬛', color:'#111111', text:'#FFD700', arena:'#050505', border:'rgba(255,215,0,.6)',    speed:85,  lines:999},
 ]
 
-// Vivid distinct colors for each piece type
+const VALORES = [
+  {nombre:'Respeto',        icon:'🙏', frase:'"Escuchar también es una forma de respeto."', reto:'Escucha a tus papás sin interrumpir y responde con respeto.'},
+  {nombre:'Disciplina',     icon:'🥋', frase:'"Lo que repites cada día construye tu fuerza."', reto:'Completa tu rutina aunque hoy no tengas ganas.'},
+  {nombre:'Honestidad',     icon:'💎', frase:'"Decir la verdad también es parte del carácter."', reto:'Reconoce un error sin buscar excusas.'},
+  {nombre:'Responsabilidad',icon:'⚡', frase:'"Ser responsable también es entrenar tu carácter."', reto:'Prepara tu uniforme sin que te lo recuerden.'},
+  {nombre:'Constancia',     icon:'🔥', frase:'"Cada intento cuenta."', reto:'Practica algo difícil una vez más, aunque no te salga.'},
+  {nombre:'Humildad',       icon:'🌱', frase:'"Siempre hay algo nuevo que aprender."', reto:'Acepta una corrección sin enojarte y ponla en práctica.'},
+  {nombre:'Gratitud',       icon:'💛', frase:'"Agradecer también fortalece el corazón."', reto:'Agradece hoy a quien te ayuda a crecer.'},
+  {nombre:'Enfoque',        icon:'🎯', frase:'"Cuando tu mente está presente, tu técnica mejora."', reto:'Realiza una actividad sin distraerte hasta terminarla.'},
+  {nombre:'Control',        icon:'🧘', frase:'"La fuerza más importante es saber controlarte."', reto:'Respira antes de reaccionar con enojo.'},
+  {nombre:'Esfuerzo',       icon:'💪', frase:'"Cada intento te acerca a tu mejor versión."', reto:'Termina una tarea aunque te cueste trabajo.'},
+]
+
 const PIECE_COLORS = ['#00d4ff','#FFD700','#b44cf5','#00e676','#FF5252','#FF9800','#2196F3']
 const PIECES = [
-  [[1,1,1,1]],
-  [[1,1],[1,1]],
-  [[0,1,0],[1,1,1]],
-  [[0,1,1],[1,1,0]],
-  [[1,1,0],[0,1,1]],
-  [[1,0],[1,0],[1,1]],
-  [[0,1],[0,1],[1,1]],
+  [[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]],[[1,0],[1,0],[1,1]],[[0,1],[0,1],[1,1]],
 ]
 
-const COLS=10, ROWS=20, CELL=20
-const canvas = document.getElementById('gc')
-const ctx = canvas.getContext('2d')
-const nctx = document.getElementById('next-canvas').getContext('2d')
+const COLS=10,ROWS=20,CELL=20
+const canvas=document.getElementById('gc')
+const ctx=canvas.getContext('2d')
+const nctx=document.getElementById('nc').getContext('2d')
 
-let board, cur, curX, curY, curColor, nextPiece, nextColor
-let score, lines, level, valCount, paused, gameRunning
-let dropTimer, dasTimer, dasInterval, softInterval
-let scoreFloats = [], flashTimer = 0, comboCount = 0, lastClearTime = 0
+let board,cur,curX,curY,curColor,nextPiece
+let score,totalLines,beltLevel,beltLines,valCount,paused,gameRunning
+let dropTimer,scoreFloats=[],flashTimer=0,comboCount=0,lastClearTime=0
+let dasTimer,dasInterval,softInterval2,animId
 
-function newBoard(){ return Array.from({length:ROWS},()=>Array(COLS).fill(null)) }
-
-function randIdx(){ return Math.floor(Math.random()*PIECES.length) }
-function makePiece(){
-  const i = randIdx()
-  return { shape: PIECES[i], color: PIECE_COLORS[i] }
-}
+function newBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(null))}
+function makePiece(){const i=Math.floor(Math.random()*PIECES.length);return{shape:PIECES[i],color:PIECE_COLORS[i]}}
 
 function spawnPiece(){
-  const p = nextPiece || makePiece()
-  cur = p.shape; curColor = p.color
-  curX = Math.floor((COLS - cur[0].length)/2); curY = 0
-  nextPiece = makePiece()
-  drawNext()
-  if(collision(cur,curX,curY)){ endGame(); return false }
+  const p=nextPiece||makePiece()
+  cur=p.shape;curColor=p.color
+  curX=Math.floor((COLS-cur[0].length)/2);curY=0
+  nextPiece=makePiece();drawNext()
+  if(collision(cur,curX,curY)){endGame();return false}
   return true
 }
 
 function collision(piece,px,py){
   for(let r=0;r<piece.length;r++) for(let c=0;c<piece[r].length;c++){
     if(!piece[r][c]) continue
-    const nr=py+r, nc=px+c
+    const nr=py+r,nc=px+c
     if(nr>=ROWS||nc<0||nc>=COLS) return true
     if(nr>=0&&board[nr][nc]) return true
   }
@@ -174,50 +190,96 @@ function collision(piece,px,py){
 }
 
 function placePiece(){
-  for(let r=0;r<cur.length;r++) for(let c=0;c<cur[r].length;c++){
-    if(cur[r][c]) board[curY+r][curX+c] = curColor
-  }
+  for(let r=0;r<cur.length;r++) for(let c=0;c<cur[r].length;c++)
+    if(cur[r][c]) board[curY+r][curX+c]=curColor
   clearLines()
 }
 
 function clearLines(){
   let cleared=0
   for(let r=ROWS-1;r>=0;r--){
-    if(board[r].every(c=>c!==null)){ board.splice(r,1); board.unshift(Array(COLS).fill(null)); cleared++; r++ }
+    if(board[r].every(c=>c!==null)){board.splice(r,1);board.unshift(Array(COLS).fill(null));cleared++;r++}
   }
   if(cleared){
-    // Combo detection
-    const now = Date.now()
-    if(now - lastClearTime < 3000) comboCount++
-    else comboCount = 1
-    lastClearTime = now
-    if(comboCount>1){ document.getElementById('combo-box').style.display=''; document.getElementById('combo-txt').textContent='x'+comboCount }
-    else { document.getElementById('combo-box').style.display='none' }
+    const now=Date.now()
+    if(now-lastClearTime<3500) comboCount++; else comboCount=1
+    lastClearTime=now
 
-    const baseScore = [0,100,300,600,1000][cleared] * level
-    const comboBonus = comboCount > 1 ? Math.round(baseScore * 0.5 * (comboCount-1)) : 0
-    const total = baseScore + comboBonus
-    score += total
-    lines += cleared
-    level = Math.floor(lines/8)+1
-    flashTimer = 10
-    const labels = ['','+100','¡Doble!','¡Triple!','¡TETRIS!']
-    const label = cleared>=4?'¡TETRIS!':labels[cleared]
-    scoreFloats.push({x:100, y:200, text:'+'+total+(comboCount>1?' COMBO!':''), alpha:1, dy:-1.8, size:cleared>=2?22:18})
-    if(cleared>=2) scoreFloats.push({x:100, y:240, text:label, alpha:1, dy:-1.2, size:14, color:'#FFD700'})
-    document.getElementById('hud-score').textContent=score
-    document.getElementById('hud-lines').textContent=lines
-    document.getElementById('hud-level').textContent=level
+    const base=[0,100,300,600,1200][cleared]*beltLevel
+    const bonus=comboCount>1?Math.round(base*.5*(comboCount-1)):0
+    const total=base+bonus
+    score+=total;totalLines+=cleared;beltLines+=cleared
+
+    const label=cleared>=4?'¡TETRIS! +'+total:cleared>=2?['','','+'+total+' ¡Doble!','+'+total+' ¡Triple!'][cleared]:'+'+total
+    scoreFloats.push({x:100,y:180,text:label,alpha:1,dy:-1.8,size:cleared>=2?22:18,color:cleared>=4?'#FFD700':cleared>=2?'#4ade80':'#fff'})
+    if(comboCount>1) scoreFloats.push({x:100,y:215,text:'COMBO x'+comboCount+'!',alpha:1,dy:-1.3,size:14,color:'#f97316'})
+    flashTimer=12
+
+    document.getElementById('hud-score').textContent=score.toLocaleString()
+    document.getElementById('hud-lines').textContent=totalLines
+    updateBeltBar()
     setDropSpeed()
-    if(Math.floor((lines-cleared)/3) < Math.floor(lines/3)) unlockValor()
+
+    // Valor every 4 lines
+    if(Math.floor((totalLines-cleared)/4)<Math.floor(totalLines/4)) unlockValor()
+
+    // Belt level up
+    const belt=BELTS[beltLevel-1]
+    if(beltLines>=belt.lines && beltLevel<BELTS.length){
+      beltLines=0;beltLevel++
+      showLevelUp()
+      applyBeltTheme()
+    }
   }
+}
+
+function applyBeltTheme(){
+  const b=BELTS[beltLevel-1]
+  document.getElementById('hud-bar').style.background=b.arena
+  document.getElementById('gc').style.borderColor=b.border
+  document.getElementById('belt-fill').style.background=b.color
+  document.getElementById('belt-chip').style.background=b.color
+  document.getElementById('belt-chip').style.color=b.text
+  document.getElementById('belt-chip').textContent=b.emoji+' '+b.name
+  document.getElementById('belt-label').textContent=`Cinturón ${b.name} — Nivel ${b.num}`
+}
+
+function updateBeltBar(){
+  const b=BELTS[beltLevel-1]
+  const pct=b.lines>=999?100:Math.min(100,(beltLines/b.lines)*100)
+  document.getElementById('belt-fill').style.width=pct+'%'
+  const remaining=b.lines>=999?'¡Cinta Negra!':Math.max(0,b.lines-beltLines)+' líneas para subir'
+  document.getElementById('lines-to-next').textContent=remaining
+}
+
+function showLevelUp(){
+  const b=BELTS[beltLevel-1]
+  paused=true;clearInterval(dropTimer)
+  const root=document.getElementById('lvlup-root')
+  root.innerHTML=`
+    <div class="lvlup-overlay">
+      <div class="lvlup-card" style="border-color:${b.color};">
+        <div style="font-size:44px;margin-bottom:6px;">${b.emoji}</div>
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:${b.color};margin-bottom:4px;">¡Subiste de nivel!</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;">Cinturón ${b.name}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);">Nivel ${b.num} de 8 ${b.num===8?'· ¡CINTA NEGRA! 🏆':''}</div>
+      </div>
+    </div>`
+  setTimeout(()=>{
+    root.innerHTML=''
+    paused=false
+    setDropSpeed()
+    if(b.num===8){
+      // Black belt celebration then continue
+      scoreFloats.push({x:100,y:120,text:'🏆 ¡CINTA NEGRA!',alpha:1,dy:-1,size:18,color:'#FFD700'})
+    }
+  }, b.num===8?3200:2200)
 }
 
 function unlockValor(){
   if(valCount>=VALORES.length) return
-  paused=true; clearInterval(dropTimer)
-  const v = VALORES[valCount]
-  valCount++
+  paused=true;clearInterval(dropTimer)
+  const v=VALORES[valCount];valCount++
   document.getElementById('hud-vals').textContent=valCount
   document.getElementById('v-icon').textContent=v.icon
   document.getElementById('v-name').textContent=v.nombre
@@ -226,14 +288,13 @@ function unlockValor(){
   document.getElementById('valor-overlay').style.display='flex'
 }
 
-function cerrarValor(){
-  document.getElementById('valor-overlay').style.display='none'
-  paused=false; setDropSpeed()
+function cerrarOverlay(id){
+  document.getElementById(id).style.display='none'
+  paused=false;setDropSpeed()
 }
 
 function rotatePiece(){
-  const rot = cur[0].map((_,i)=>cur.map(r=>r[i]).reverse())
-  // Wall kick
+  const rot=cur[0].map((_,i)=>cur.map(r=>r[i]).reverse())
   let kx=0
   if(collision(rot,curX,curY)){
     if(!collision(rot,curX+1,curY)) kx=1
@@ -242,140 +303,114 @@ function rotatePiece(){
     else if(!collision(rot,curX-2,curY)) kx=-2
     else return
   }
-  cur=rot; curX+=kx
-  draw()
+  cur=rot;curX+=kx;draw()
 }
 
-function moveLeft(){ if(!paused&&!collision(cur,curX-1,curY)) curX--; draw() }
-function moveRight(){ if(!paused&&!collision(cur,curX+1,curY)) curX++; draw() }
+function moveLeft(){if(!paused&&!collision(cur,curX-1,curY)) curX--;draw()}
+function moveRight(){if(!paused&&!collision(cur,curX+1,curY)) curX++;draw()}
 
 function drop(){
   if(paused) return
-  if(!collision(cur,curX,curY+1)){ curY++; draw() }
-  else { placePiece(); if(!spawnPiece()) return; draw() }
+  if(!collision(cur,curX,curY+1)){curY++;draw()}
+  else{placePiece();if(!spawnPiece()) return;draw()}
 }
 
 function hardDrop(){
   if(paused) return
-  let dy=0
-  while(!collision(cur,curX,curY+dy+1)) dy++
-  if(dy>0){ score+=dy*2; document.getElementById('hud-score').textContent=score }
-  curY+=dy; placePiece(); if(!spawnPiece()) return; draw()
+  let dy=0;while(!collision(cur,curX,curY+dy+1)) dy++
+  score+=dy*2;document.getElementById('hud-score').textContent=score.toLocaleString()
+  curY+=dy;placePiece();if(!spawnPiece()) return;draw()
 }
 
 function setDropSpeed(){
   clearInterval(dropTimer)
-  const speed = Math.max(60, 420 - level*48)
-  dropTimer = setInterval(drop, speed)
+  if(paused) return
+  const base=BELTS[beltLevel-1].speed
+  dropTimer=setInterval(drop,Math.max(60,base))
 }
 
 function endGame(){
-  gameRunning=false; clearInterval(dropTimer)
-  document.getElementById('final-score').textContent=score
-  document.getElementById('final-vals').textContent=valCount
-  const v = VALORES[valCount % VALORES.length]
-  document.getElementById('go-icon').textContent = valCount>=VALORES.length?'🏆':'💪'
-  document.getElementById('go-title').textContent = valCount>=VALORES.length?'¡Misión completada!':'¡Buen intento!'
-  document.getElementById('go-vlabel').textContent = valCount>0?'Último valor desbloqueado':'Valor del día'
-  document.getElementById('go-vicon').textContent = v.icon
-  document.getElementById('go-vname').textContent = v.nombre
-  document.getElementById('go-vfrase').textContent = v.frase
-  document.getElementById('go-vreto').textContent = '🎯 Reto: '+v.reto
+  gameRunning=false;clearInterval(dropTimer)
+  const b=BELTS[beltLevel-1]
+  const v=VALORES[valCount%VALORES.length]
+  document.getElementById('final-score').textContent=score.toLocaleString()
+  document.getElementById('final-belt').textContent=b.name
+  document.getElementById('go-icon').textContent=beltLevel>=8?'🏆':'💪'
+  document.getElementById('go-title').textContent=beltLevel>=8?'¡Cinta Negra!':'¡Buen intento!'
+  document.getElementById('go-vlabel').textContent=valCount>0?'Último valor':'Valor del día'
+  document.getElementById('go-vicon').textContent=v.icon
+  document.getElementById('go-vname').textContent=v.nombre
+  document.getElementById('go-vfrase').textContent=v.frase
+  document.getElementById('go-vreto').textContent='🎯 Reto: '+v.reto
   document.getElementById('gameover').style.display='flex'
 }
 
 // ── DRAWING ──────────────────────────────────────────────────────────────────
 
-function drawCell(c,r,color,alpha,context){
-  const ct = context||ctx
-  ct.save()
-  ct.globalAlpha = alpha||1
-  // Main block
-  ct.fillStyle=color
-  ct.beginPath(); ct.roundRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2,3); ct.fill()
-  // Top shine
-  ct.fillStyle='rgba(255,255,255,.28)'
-  ct.beginPath(); ct.roundRect(c*CELL+2,r*CELL+2,CELL-4,5,2); ct.fill()
-  // Side shadow
-  ct.fillStyle='rgba(0,0,0,.25)'
-  ct.fillRect(c*CELL+CELL-4,r*CELL+2,3,CELL-3)
-  ct.fillRect(c*CELL+2,r*CELL+CELL-4,CELL-5,3)
-  ct.restore()
+function drawCell(c,r,color,alpha,ct){
+  const cx2=ct||ctx
+  cx2.save();cx2.globalAlpha=alpha||1
+  cx2.fillStyle=color
+  cx2.beginPath();cx2.roundRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2,3);cx2.fill()
+  cx2.fillStyle='rgba(255,255,255,.3)';cx2.beginPath();cx2.roundRect(c*CELL+2,r*CELL+2,CELL-4,5,2);cx2.fill()
+  cx2.fillStyle='rgba(0,0,0,.2)';cx2.fillRect(c*CELL+CELL-4,r*CELL+2,3,CELL-3);cx2.fillRect(c*CELL+2,r*CELL+CELL-4,CELL-5,3)
+  cx2.restore()
 }
 
 function drawNext(){
-  nctx.fillStyle='rgba(0,0,0,0)'; nctx.clearRect(0,0,56,56)
-  const p=nextPiece; if(!p) return
-  const offX=Math.floor((3-p.shape[0].length)/2)
-  const offY=Math.floor((3-p.shape.length)/2)
+  nctx.clearRect(0,0,56,56)
+  const p=nextPiece;if(!p) return
+  const ox=Math.floor((3-p.shape[0].length)/2),oy=Math.floor((3-p.shape.length)/2)
   const cs=14
   p.shape.forEach((row,r)=>row.forEach((v,c)=>{
     if(!v) return
-    nctx.fillStyle=p.color
-    nctx.beginPath(); nctx.roundRect((offX+c)*cs+1,(offY+r)*cs+1,cs-2,cs-2,2); nctx.fill()
-    nctx.fillStyle='rgba(255,255,255,.3)'
-    nctx.fillRect((offX+c)*cs+2,(offY+r)*cs+2,cs-4,4)
+    nctx.fillStyle=p.color;nctx.beginPath();nctx.roundRect((ox+c)*cs+1,(oy+r)*cs+1,cs-2,cs-2,2);nctx.fill()
+    nctx.fillStyle='rgba(255,255,255,.28)';nctx.fillRect((ox+c)*cs+2,(oy+r)*cs+2,cs-4,4)
   }))
 }
 
 function draw(){
-  // BG
-  ctx.fillStyle='#0d0d1a'; ctx.fillRect(0,0,200,400)
+  const b=BELTS[beltLevel-1]
+  ctx.fillStyle=b.arena;ctx.fillRect(0,0,200,400)
 
-  // Flash on line clear
-  if(flashTimer>0){
-    ctx.fillStyle=`rgba(255,255,255,${flashTimer/10*0.25})`
-    ctx.fillRect(0,0,200,400)
-    flashTimer--
-  }
+  // Flash
+  if(flashTimer>0){ctx.fillStyle=`rgba(255,255,255,${flashTimer/12*.22})`;ctx.fillRect(0,0,200,400);flashTimer--}
 
-  // Grid lines
-  ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=1
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) ctx.strokeRect(c*CELL,r*CELL,CELL,CELL)
 
   // Board
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-    if(board[r][c]) drawCell(c,r,board[r][c])
-  }
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(board[r][c]) drawCell(c,r,board[r][c])
 
-  // Ghost piece
-  let ghostY=curY
-  while(!collision(cur,curX,ghostY+1)) ghostY++
-  if(ghostY!==curY){
-    cur.forEach((row,r)=>row.forEach((v,c)=>{
-      if(v) drawCell(curX+c,ghostY+r,curColor,0.15)
-    }))
-  }
+  // Ghost
+  let ghostY=curY;while(!collision(cur,curX,ghostY+1)) ghostY++
+  if(ghostY!==curY) cur.forEach((row,r)=>row.forEach((v,c)=>{if(v) drawCell(curX+c,ghostY+r,curColor,.12)}))
 
-  // Current piece
-  cur.forEach((row,r)=>row.forEach((v,c)=>{
-    if(v) drawCell(curX+c,curY+r,curColor)
-  }))
+  // Current
+  cur.forEach((row,r)=>row.forEach((v,c)=>{if(v) drawCell(curX+c,curY+r,curColor)}))
 
-  // Score floats
-  scoreFloats = scoreFloats.filter(f=>f.alpha>0)
+  // Floats
+  scoreFloats=scoreFloats.filter(f=>f.alpha>0)
   scoreFloats.forEach(f=>{
-    ctx.save()
-    ctx.globalAlpha=f.alpha
-    ctx.font=`900 ${f.size||18}px Inter,sans-serif`
-    ctx.fillStyle=f.color||'#fff'
-    ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.lineWidth=3
-    ctx.textAlign='center'
+    ctx.save();ctx.globalAlpha=f.alpha
+    ctx.font=`900 ${f.size||18}px Inter,sans-serif`;ctx.textAlign='center'
+    ctx.strokeStyle='rgba(0,0,0,.7)';ctx.lineWidth=3
     ctx.strokeText(f.text,f.x,f.y)
-    ctx.fillText(f.text,f.x,f.y)
+    ctx.fillStyle=f.color||'#fff';ctx.fillText(f.text,f.x,f.y)
     ctx.restore()
-    f.y+=f.dy; f.alpha-=0.022
+    f.y+=f.dy;f.alpha-=.022
   })
 }
 
-// DAS
-function startDAS(dir){ clearTimeout(dasTimer); clearInterval(dasInterval); doMove(dir); dasTimer=setTimeout(()=>{ dasInterval=setInterval(()=>doMove(dir),55) },190) }
-function stopDAS(){ clearTimeout(dasTimer); clearInterval(dasInterval) }
-function doMove(dir){ if(dir==='left') moveLeft(); else moveRight() }
+function loop(){draw();animId=requestAnimationFrame(loop)}
 
-let softInterval2=null
-function startSoft(){ drop(); softInterval2=setInterval(drop,55) }
-function stopSoft(){ clearInterval(softInterval2) }
+// DAS / controls
+function startDAS(dir){clearTimeout(dasTimer);clearInterval(dasInterval);doMove(dir);dasTimer=setTimeout(()=>{dasInterval=setInterval(()=>doMove(dir),55)},190)}
+function stopDAS(){clearTimeout(dasTimer);clearInterval(dasInterval)}
+function doMove(d){if(d==='left') moveLeft();else moveRight()}
+function startSoft(){drop();softInterval2=setInterval(drop,55)}
+function stopSoft(){clearInterval(softInterval2)}
 
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft') moveLeft()
@@ -385,23 +420,18 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Enter') hardDrop()
 })
 
-// Animation loop
-let animId
-function loop(){ draw(); animId=requestAnimationFrame(loop) }
-
 function restartGame(){
-  clearInterval(dropTimer); cancelAnimationFrame(animId)
+  clearInterval(dropTimer);cancelAnimationFrame(animId)
   document.getElementById('gameover').style.display='none'
   document.getElementById('valor-overlay').style.display='none'
-  document.getElementById('combo-box').style.display='none'
-  board=newBoard(); score=0; lines=0; level=1; valCount=0; paused=false; gameRunning=true
-  scoreFloats=[]; flashTimer=0; comboCount=0; nextPiece=null
+  document.getElementById('lvlup-root').innerHTML=''
+  board=newBoard();score=0;totalLines=0;beltLevel=1;beltLines=0;valCount=0;paused=false;gameRunning=true
+  scoreFloats=[];flashTimer=0;comboCount=0;nextPiece=null
   document.getElementById('hud-score').textContent='0'
   document.getElementById('hud-lines').textContent='0'
-  document.getElementById('hud-level').textContent='1'
   document.getElementById('hud-vals').textContent='0'
-  nextPiece=makePiece()
-  spawnPiece(); setDropSpeed(); loop()
+  applyBeltTheme();updateBeltBar()
+  nextPiece=makePiece();spawnPiece();setDropSpeed();loop()
 }
 
 restartGame()
