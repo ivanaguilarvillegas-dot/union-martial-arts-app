@@ -276,30 +276,30 @@
         const avisosNoConfirmados = avisos.filter(a => !confirmSet.has(a.id))
         if (!avisosNoConfirmados.length) {
           document.getElementById('avisos-list').innerHTML = '<div class="empty-sec"><p>Todo al día ✓</p></div>'
+        } else {
+          document.getElementById('avisos-list').innerHTML = avisosNoConfirmados.map(a => {
+            const p = PMAP[a.prioridad] || PMAP.informativo
+            const pr = a.prioridad || 'informativo'
+            const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+            return `<div class="aviso-row" data-aviso-id="${a.id}">
+              <div class="aviso-top">
+                <div class="aviso-ic ${p.cls}">
+                  <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <span class="badge-imp ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>
+                  <div class="aviso-title">${a.titulo}</div>
+                  <div class="aviso-msg">${a.texto}</div>
+                  <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
+                </div>
+              </div>
+              <button class="btn-enterado" data-id="${a.id}" data-padre="${padre?.nombre||''}">
+                <i class="ti ti-circle-check" style="font-size:16px;"></i> Me enteré
+              </button>
+            </div>`
+          }).join('')
+          lucide.createIcons()
         }
-        document.getElementById('avisos-list').innerHTML = avisosNoConfirmados.map(a => {
-          const p = PMAP[a.prioridad] || PMAP.informativo
-          const pr = a.prioridad || 'informativo'
-          const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
-
-          return `<div class="aviso-row">
-            <div class="aviso-top">
-              <div class="aviso-ic ${p.cls}">
-                <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
-              </div>
-              <div style="flex:1;min-width:0;">
-                <span class="badge-imp ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>
-                <div class="aviso-title">${a.titulo}</div>
-                <div class="aviso-msg">${a.texto}</div>
-                <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
-              </div>
-            </div>
-            <button class="btn-enterado" data-id="${a.id}">
-              <i class="ti ti-circle-check" style="font-size:16px;"></i> Me enteré
-            </button>
-          </div>`
-        }).join('')
-        lucide.createIcons()
       }
     } catch(e) { console.error('avisos:', e) }
 
@@ -321,7 +321,7 @@
       if (msgs?.length) {
         const col = avatarColor('Instructor')
         document.getElementById('msgs-list').innerHTML = msgs.map((m,i) => {
-          return `<div class="msg-row" style="flex-direction:column;gap:0;padding:0;">
+          return `<div class="msg-row" id="msg-card-${i}" style="flex-direction:column;gap:0;padding:0;">
             <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleMsg(${i})">
               <div class="msg-dot${m.leido?' read':''}"></div>
               <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
@@ -337,14 +337,19 @@
             <div id="reply-${i}" style="display:none;padding:0 16px 14px;border-top:1px solid #f3f4f6;">
               <div style="font-size:13px;color:#374151;margin-bottom:10px;line-height:1.5;">${m.texto||''}</div>
               <textarea id="reply-txt-${i}" rows="2" placeholder="Escribe tu respuesta…" style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:none;box-sizing:border-box;"></textarea>
-              <button onclick="sendReply(${i})" style="margin-top:8px;background:#0047AB;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;">
-                <i class="ti ti-send"></i> Enviar respuesta
-              </button>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button onclick="sendReply(${i})" style="flex:1;background:#0047AB;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">
+                  <i class="ti ti-send"></i> Responder
+                </button>
+                <button onclick="deleteMsg(${i},'${m.id}')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">
+                  <i class="ti ti-trash"></i> Borrar
+                </button>
+              </div>
             </div>
           </div>`
         }).join('')
       }
-    } catch(e) {}
+    } catch(e) { console.error('msgs:', e) }
 
     window.toggleMsg = function(i) {
       const d = document.getElementById('reply-' + i)
@@ -359,6 +364,14 @@
         await supabase.from('mensajes').insert({ de_user_id: user.id, texto: txt, para_admin: true })
         document.getElementById('reply-' + i).innerHTML = '<div style="color:#16a34a;font-size:13px;padding:4px 0;">✅ Mensaje enviado al instructor.</div>'
       } catch(e) { btn.disabled = false; btn.textContent = 'Enviar respuesta' }
+    }
+    window.deleteMsg = async function(i, id) {
+      if (!confirm('¿Borrar este mensaje?')) return
+      const card = document.getElementById('msg-card-' + i)
+      try {
+        await supabase.from('mensajes').delete().eq('id', id)
+        if (card) { card.style.transition='opacity .3s'; card.style.opacity='0'; setTimeout(()=>card.remove(),300) }
+      } catch(e) { alert('Error al borrar: ' + e.message) }
     }
 
     // ── PRÓXIMOS EVENTOS ──────────────────────────────────────
@@ -414,6 +427,12 @@
           padre_nombre: padre?.nombre || ''
         })
         if (error) throw error
+        // Notificar al admin
+        await supabase.from('mensajes').insert({
+          de_user_id: user.id,
+          texto: `${padre?.nombre || 'Un padre'} se enteró del aviso.`,
+          para_admin: true
+        })
         // Ocultar la tarjeta del aviso
         const card = btn.closest('.aviso-row')
         if (card) { card.style.transition='opacity .3s'; card.style.opacity='0'; setTimeout(()=>card.remove(),300) }
@@ -425,6 +444,7 @@
       } catch(err) {
         btn.disabled = false
         btn.innerHTML = '<i class="ti ti-circle-check" style="font-size:16px;"></i> Me enteré'
+        alert('Error al confirmar: ' + (err.message || err))
       }
     })
 
