@@ -103,7 +103,7 @@
       <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('')
 
   // Actividad reciente: checkins de hoy
-  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(5)
+  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('creado_en', { ascending: false }).limit(5)
   const homeEl = document.getElementById('home')
   if (checks?.length) {
     homeEl.innerHTML = checks.map(c => {
