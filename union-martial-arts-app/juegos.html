@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Zona de Juegos UNION</title><link rel="stylesheet" href="css/uma.css"/>
+<style>
+.games-hero{background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 60%,#003a8c 100%);padding:24px 18px 28px;text-align:center;}
+.games-hero-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:6px;}
+.games-hero-sub{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;max-width:280px;margin:0 auto;}
+.game-card{background:#fff;border-radius:20px;box-shadow:0 4px 20px rgba(0,71,171,.12);overflow:hidden;margin-bottom:16px;text-decoration:none;display:block;transition:transform .15s;}
+.game-card:active{transform:scale(.98);}
+.game-card-banner{height:110px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.game-card-banner-1{background:linear-gradient(135deg,#0047AB,#1a5cc8);}
+.game-card-banner-2{background:linear-gradient(135deg,#7c3aed,#9f67f5);}
+.game-card-emoji{font-size:54px;line-height:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.25));}
+.game-card-body{padding:16px 18px 20px;}
+.game-card-tag{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0047AB;margin-bottom:4px;}
+.game-card-tag-2{color:#7c3aed;}
+.game-card-name{font-size:18px;font-weight:900;color:#111;margin-bottom:6px;letter-spacing:-.2px;}
+.game-card-desc{font-size:13px;color:#6b7280;line-height:1.5;margin-bottom:14px;}
+.game-card-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;border:none;cursor:pointer;}
+.game-card-btn-1{background:#0047AB;color:#fff;}
+.game-card-btn-2{background:#7c3aed;color:#fff;}
+.valores-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 20px;}
+.valor-chip{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;background:#f0f4ff;color:#0047AB;border:1px solid #bfdbfe;}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Zona de Juegos UNION</div></div>
+  </div>
+
+  <div class="games-hero">
+    <div style="font-size:32px;margin-bottom:10px;">🎮</div>
+    <div class="games-hero-title">Zona de Juegos UNION</div>
+    <div class="games-hero-sub">Juega, aprende y desbloquea valores dentro y fuera del tatami.</div>
+  </div>
+
+  <div class="body" style="padding-top:20px;">
+
+    <a class="game-card" href="juego-tatami.html">
+      <div class="game-card-banner game-card-banner-1">
+        <span class="game-card-emoji">🥋</span>
+      </div>
+      <div class="game-card-body">
+        <div class="game-card-tag">Combate · Point Fighting</div>
+        <div class="game-card-name">Reto del Tatami</div>
+        <div class="game-card-desc">Mini combate point fighting para sumar puntos y desbloquear valores.</div>
+        <button class="game-card-btn game-card-btn-1">▶ Jugar</button>
+      </div>
+    </a>
+
+    <a class="game-card" href="juego-valores.html">
+      <div class="game-card-banner game-card-banner-2">
+        <span class="game-card-emoji">🧩</span>
+      </div>
+      <div class="game-card-body">
+        <div class="game-card-tag game-card-tag-2">Puzzle · Valores</div>
+        <div class="game-card-name">Misión de Valores</div>
+        <div class="game-card-desc">Juego de bloques para entrenar tu mente, tus hábitos y tu carácter.</div>
+        <button class="game-card-btn game-card-btn-2">▶ Jugar</button>
+      </div>
+    </a>
+
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Valores que puedes desbloquear</div>
+    <div class="valores-chips">
+      <span class="valor-chip">Respeto</span>
+      <span class="valor-chip">Disciplina</span>
+      <span class="valor-chip">Honestidad</span>
+      <span class="valor-chip">Responsabilidad</span>
+      <span class="valor-chip">Constancia</span>
+      <span class="valor-chip">Humildad</span>
+      <span class="valor-chip">Gratitud</span>
+      <span class="valor-chip">Enfoque</span>
+      <span class="valor-chip">Control</span>
+      <span class="valor-chip">Esfuerzo</span>
+    </div>
+
+  </div>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons()</script>
+</body></html>

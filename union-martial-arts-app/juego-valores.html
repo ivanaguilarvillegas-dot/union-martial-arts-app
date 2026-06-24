@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Misión de Valores</title><link rel="stylesheet" href="css/uma.css"/>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+.game-layout{display:flex;flex-direction:column;height:100%;background:#0d0d1a;}
+.hud{background:#0d0d1a;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hud-box{text-align:center;}
+.hud-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase;}
+.hud-val{font-size:20px;font-weight:900;color:#fff;line-height:1.1;}
+.canvas-wrap{display:flex;justify-content:center;align-items:flex-start;flex:1;padding:0 0 8px;}
+#game-canvas{display:block;border-radius:8px;border:2px solid rgba(255,255,255,.08);}
+.controls{padding:8px 12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;flex-shrink:0;}
+.ctrl-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#fff;font-size:22px;padding:12px 0;cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.ctrl-btn:active{background:rgba(255,255,255,.22);}
+.ctrl-label{font-size:9px;display:block;font-weight:600;color:rgba(255,255,255,.4);margin-top:2px;}
+.valor-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.valor-card{background:#fff;border-radius:24px;padding:28px 22px;text-align:center;max-width:320px;width:100%;}
+.valor-icon{font-size:52px;line-height:1;margin-bottom:10px;}
+.valor-badge{display:inline-block;background:#0047AB;color:#fff;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:99px;margin-bottom:10px;}
+.valor-badge-purple{background:#7c3aed;}
+.valor-name{font-size:24px;font-weight:900;color:#111;margin-bottom:8px;}
+.valor-frase{font-size:13px;color:#6b7280;font-style:italic;line-height:1.6;margin-bottom:10px;}
+.valor-reto{background:#f0f9ff;border-radius:12px;padding:12px;font-size:12px;color:#0369a1;font-weight:600;line-height:1.5;margin-bottom:18px;}
+.gameover-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.gameover-card{background:#fff;border-radius:24px;padding:28px 22px;text-align:center;max-width:320px;width:100%;}
+</style>
+</head>
+<body style="background:#0d0d1a;">
+<div class="phone"><div class="screen" style="background:#0d0d1a;">
+  <div class="navhead" style="background:#0d0d1a;border-bottom:1px solid rgba(255,255,255,.06);">
+    <a class="navback" href="juegos.html" style="color:#fff;"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub" style="color:rgba(255,255,255,.5);">Puzzle · Valores</div><div class="title" style="color:#fff;">Misión de Valores</div></div>
+    <button onclick="restartGame()" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;">Reiniciar</button>
+  </div>
+
+  <div class="game-layout">
+    <div class="hud">
+      <div class="hud-box"><div class="hud-label">Puntos</div><div class="hud-val" id="hud-score">0</div></div>
+      <div class="hud-box"><div class="hud-label">Líneas</div><div class="hud-val" id="hud-lines">0</div></div>
+      <div class="hud-box"><div class="hud-label">Nivel</div><div class="hud-val" id="hud-level">1</div></div>
+      <div class="hud-box"><div class="hud-label">Valores</div><div class="hud-val" id="hud-vals">0</div></div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="game-canvas" width="180" height="360"></canvas>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" ontouchstart="startDAS('left')" ontouchend="stopDAS()" onmousedown="startDAS('left')" onmouseup="stopDAS()">
+        ◀<span class="ctrl-label">Mover</span>
+      </button>
+      <button class="ctrl-btn" onclick="rotatePiece()">
+        🔄<span class="ctrl-label">Rotar</span>
+      </button>
+      <button class="ctrl-btn" ontouchstart="startDAS('right')" ontouchend="stopDAS()" onmousedown="startDAS('right')" onmouseup="stopDAS()">
+        ▶<span class="ctrl-label">Mover</span>
+      </button>
+      <button class="ctrl-btn" ontouchstart="startSoftDrop()" ontouchend="stopSoftDrop()" onmousedown="startSoftDrop()" onmouseup="stopSoftDrop()">
+        ▼<span class="ctrl-label">Bajar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Valor desbloqueado -->
+  <div class="valor-overlay" id="valor-overlay" style="display:none;">
+    <div class="valor-card">
+      <div class="valor-icon" id="v-icon">⭐</div>
+      <div class="valor-badge valor-badge-purple">Valor desbloqueado</div>
+      <div class="valor-name" id="v-name">Disciplina</div>
+      <div class="valor-frase" id="v-frase">"Frase del valor."</div>
+      <div class="valor-reto"><b>🎯 Reto del día:</b><br><span id="v-reto"></span></div>
+      <button class="btn primary block" onclick="cerrarValor()">¡Continuar jugando!</button>
+    </div>
+  </div>
+
+  <!-- Game over -->
+  <div class="gameover-overlay" id="gameover" style="display:none;">
+    <div class="gameover-card">
+      <div style="font-size:52px;margin-bottom:10px;">🥋</div>
+      <div style="font-size:22px;font-weight:900;color:#111;margin-bottom:6px;">¡Buen intento!</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:6px;">Puntuación: <b id="final-score">0</b></div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">Valores desbloqueados: <b id="final-vals">0</b></div>
+      <div style="font-size:12px;color:#9ca3af;font-style:italic;margin-bottom:20px;">"Los grandes campeones también aprenden de cada intento."</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn primary block" onclick="restartGame()">🔄 Jugar de nuevo</button>
+        <button class="btn secondary block" onclick="location.href='juegos.html'">← Volver a juegos</button>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+lucide.createIcons()
+
+const VALORES = [
+  { nombre:'Respeto',        icon:'🙏', frase:'"Escuchar también es una forma de respeto."', reto:'Escucha a tus papás sin interrumpir y responde con respeto.' },
+  { nombre:'Disciplina',     icon:'🥋', frase:'"Lo que repites cada día construye tu fuerza."', reto:'Completa tu rutina aunque hoy no tengas ganas.' },
+  { nombre:'Honestidad',     icon:'💎', frase:'"Decir la verdad también es parte del carácter."', reto:'Reconoce un error sin buscar excusas.' },
+  { nombre:'Responsabilidad',icon:'⚡', frase:'"Ser responsable también es entrenar tu carácter."', reto:'Prepara tu uniforme sin que te lo recuerden.' },
+  { nombre:'Constancia',     icon:'🔥', frase:'"Cada intento cuenta."', reto:'Practica algo difícil una vez más, aunque no te salga.' },
+  { nombre:'Humildad',       icon:'🌱', frase:'"Siempre hay algo nuevo que aprender."', reto:'Acepta una corrección sin enojarte y ponla en práctica.' },
+  { nombre:'Gratitud',       icon:'💛', frase:'"Agradecer también fortalece el corazón."', reto:'Agradece hoy a quien te ayuda a crecer.' },
+  { nombre:'Enfoque',        icon:'🎯', frase:'"Cuando tu mente está presente, tu técnica mejora."', reto:'Realiza una actividad sin distraerte hasta terminarla.' },
+  { nombre:'Control',        icon:'🧘', frase:'"La fuerza más importante es saber controlarte."', reto:'Respira antes de reaccionar con enojo.' },
+  { nombre:'Esfuerzo',       icon:'💪', frase:'"Cada intento te acerca a tu mejor versión."', reto:'Termina una tarea aunque te cueste trabajo.' },
+]
+
+const COLORS = ['#0047AB','#7c3aed','#15803d','#dc2626','#d97706','#0891b2','#be185d']
+const PIECES = [
+  [[1,1,1,1]],                          // I
+  [[1,1],[1,1]],                         // O
+  [[0,1,0],[1,1,1]],                     // T
+  [[0,1,1],[1,1,0]],                     // S
+  [[1,1,0],[0,1,1]],                     // Z
+  [[1,0],[1,0],[1,1]],                   // L
+  [[0,1],[0,1],[1,1]],                   // J
+]
+
+const COLS=10, ROWS=20, CELL=18
+const canvas=document.getElementById('game-canvas')
+const ctx=canvas.getContext('2d')
+
+let board, cur, curX, curY, curColor, score, lines, level, valCount, gameRunning, dropTimer, dasTimer, softTimer, paused
+
+function newBoard(){ return Array.from({length:ROWS},()=>Array(COLS).fill(0)) }
+function randPiece(){ return PIECES[Math.floor(Math.random()*PIECES.length)] }
+function randColor(){ return COLORS[Math.floor(Math.random()*COLORS.length)] }
+
+function spawnPiece(){
+  cur = randPiece(); curColor = randColor()
+  curX = Math.floor((COLS - cur[0].length)/2); curY = 0
+  if(collision(cur,curX,curY)){ endGame(); return false }
+  return true
+}
+
+function collision(piece,px,py){
+  for(let r=0;r<piece.length;r++) for(let c=0;c<piece[r].length;c++){
+    if(!piece[r][c]) continue
+    const nr=py+r, nc=px+c
+    if(nr>=ROWS||nc<0||nc>=COLS) return true
+    if(nr>=0&&board[nr][nc]) return true
+  }
+  return false
+}
+
+function placePiece(){
+  for(let r=0;r<cur.length;r++) for(let c=0;c<cur[r].length;c++){
+    if(cur[r][c]) board[curY+r][curX+c] = curColor
+  }
+  clearLines()
+}
+
+function clearLines(){
+  let cleared=0
+  for(let r=ROWS-1;r>=0;r--){
+    if(board[r].every(c=>c!==0)){ board.splice(r,1); board.unshift(Array(COLS).fill(0)); cleared++; r++ }
+  }
+  if(cleared){
+    lines += cleared
+    score += [0,100,300,500,800][cleared] * level
+    level = Math.floor(lines/5)+1
+    document.getElementById('hud-score').textContent=score
+    document.getElementById('hud-lines').textContent=lines
+    document.getElementById('hud-level').textContent=level
+    setDropSpeed()
+    if(lines % 2 === 0) unlockValor()
+  }
+}
+
+function unlockValor(){
+  paused=true
+  clearInterval(dropTimer)
+  const v = VALORES[valCount % VALORES.length]
+  valCount++
+  document.getElementById('hud-vals').textContent=valCount
+  document.getElementById('v-icon').textContent=v.icon
+  document.getElementById('v-name').textContent=v.nombre
+  document.getElementById('v-frase').textContent=v.frase
+  document.getElementById('v-reto').textContent=v.reto
+  document.getElementById('valor-overlay').style.display='flex'
+}
+
+function cerrarValor(){
+  document.getElementById('valor-overlay').style.display='none'
+  paused=false
+  setDropSpeed()
+}
+
+function rotatePiece(){
+  const rotated=cur[0].map((_,i)=>cur.map(r=>r[i]).reverse())
+  if(!collision(rotated,curX,curY)) cur=rotated
+  draw()
+}
+
+function moveLeft(){ if(!collision(cur,curX-1,curY)) curX--; draw() }
+function moveRight(){ if(!collision(cur,curX+1,curY)) curX++; draw() }
+
+function drop(){
+  if(paused) return
+  if(!collision(cur,curX,curY+1)){ curY++; draw() }
+  else { placePiece(); if(!spawnPiece()) return; draw() }
+}
+
+function setDropSpeed(){
+  clearInterval(dropTimer)
+  const speed=Math.max(100,800-level*70)
+  dropTimer=setInterval(drop,speed)
+}
+
+function endGame(){
+  gameRunning=false; clearInterval(dropTimer)
+  document.getElementById('final-score').textContent=score
+  document.getElementById('final-vals').textContent=valCount
+  document.getElementById('gameover').style.display='flex'
+}
+
+function draw(){
+  ctx.fillStyle='#0d0d1a'; ctx.fillRect(0,0,180,360)
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=1
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    ctx.strokeRect(c*CELL,r*CELL,CELL,CELL)
+  }
+  // Board
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(board[r][c]){ drawCell(c,r,board[r][c]) }
+  }
+  // Ghost
+  let ghostY=curY
+  while(!collision(cur,curX,ghostY+1)) ghostY++
+  if(ghostY!==curY){
+    ctx.globalAlpha=0.18
+    for(let r=0;r<cur.length;r++) for(let c=0;c<cur[r].length;c++){
+      if(cur[r][c]) drawCell(curX+c,ghostY+r,curColor)
+    }
+    ctx.globalAlpha=1
+  }
+  // Current piece
+  for(let r=0;r<cur.length;r++) for(let c=0;c<cur[r].length;c++){
+    if(cur[r][c]) drawCell(curX+c,curY+r,curColor)
+  }
+}
+
+function drawCell(c,r,color){
+  ctx.fillStyle=color
+  ctx.beginPath()
+  ctx.roundRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2,3)
+  ctx.fill()
+  // Shine
+  ctx.fillStyle='rgba(255,255,255,.2)'
+  ctx.fillRect(c*CELL+2,r*CELL+2,CELL-10,4)
+}
+
+// DAS (delayed auto-shift)
+let dasDir=null, dasInterval=null
+function startDAS(dir){ dasDir=dir; doMove(); dasTimer=setTimeout(()=>{ dasInterval=setInterval(doMove,60) },200) }
+function stopDAS(){ clearTimeout(dasTimer); clearInterval(dasInterval) }
+function doMove(){ if(dasDir==='left') moveLeft(); else moveRight() }
+
+let softInterval=null
+function startSoftDrop(){ drop(); softInterval=setInterval(drop,50) }
+function stopSoftDrop(){ clearInterval(softInterval) }
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft') moveLeft()
+  else if(e.key==='ArrowRight') moveRight()
+  else if(e.key==='ArrowDown') drop()
+  else if(e.key==='ArrowUp'||e.key===' ') rotatePiece()
+})
+
+function restartGame(){
+  document.getElementById('gameover').style.display='none'
+  document.getElementById('valor-overlay').style.display='none'
+  board=newBoard(); score=0; lines=0; level=1; valCount=0; paused=false; gameRunning=true
+  document.getElementById('hud-score').textContent='0'
+  document.getElementById('hud-lines').textContent='0'
+  document.getElementById('hud-level').textContent='1'
+  document.getElementById('hud-vals').textContent='0'
+  spawnPiece(); draw(); setDropSpeed()
+}
+
+restartGame()
+</script>
+</body></html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reto del Tatami</title><link rel="stylesheet" href="css/uma.css"/>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+.game-wrap{background:#f8faff;min-height:100%;display:flex;flex-direction:column;}
+.score-bar{background:#0047AB;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.score-side{text-align:center;}
+.score-name{font-size:10px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.06em;text-transform:uppercase;}
+.score-num{font-size:32px;font-weight:900;color:#fff;line-height:1;}
+.score-goal{font-size:10px;color:rgba(255,255,255,.5);}
+.score-vs{font-size:13px;font-weight:900;color:rgba(255,255,255,.4);}
+.tatami-area{position:relative;background:linear-gradient(180deg,#c8a96e 0%,#b8954e 100%);height:170px;overflow:hidden;flex-shrink:0;}
+.tatami-lines{position:absolute;inset:0;}
+.msg-flash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:15px;font-weight:900;padding:6px 16px;border-radius:99px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;}
+.msg-flash.show{opacity:1;}
+.action-area{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.move-log{background:#fff;border-radius:12px;padding:8px 12px;font-size:12px;color:#374151;min-height:36px;border:1px solid #e5e7eb;line-height:1.5;}
+.btns-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.move-btn{padding:10px 6px;border-radius:14px;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:transform .1s,opacity .1s;}
+.move-btn:active{transform:scale(.93);}
+.move-btn .pts{font-size:10px;font-weight:600;opacity:.75;}
+.btn-golpe{background:#dbeafe;color:#1d4ed8;}
+.btn-patada{background:#dcfce7;color:#15803d;}
+.btn-barrida{background:#fef9c3;color:#92400e;}
+.btn-cabeza{background:#fce7f3;color:#9d174d;}
+.btn-salto{background:#ede9fe;color:#6d28d9;}
+.btn-defensa{background:#f1f5f9;color:#475569;grid-column:span 3;}
+.btn-defensa.active{background:#0047AB;color:#fff;}
+.result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.result-card{background:#fff;border-radius:24px;padding:28px 24px;text-align:center;max-width:320px;width:100%;}
+.result-icon{font-size:56px;line-height:1;margin-bottom:12px;}
+.result-title{font-size:22px;font-weight:900;color:#111;margin-bottom:6px;}
+.result-valor{font-size:12px;font-weight:800;color:#0047AB;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.result-frase{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:20px;}
+.result-btns{display:flex;flex-direction:column;gap:8px;}
+canvas{display:block;width:100%;height:170px;}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="juegos.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Point Fighting</div><div class="title">Reto del Tatami</div></div>
+    <button onclick="resetGame()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;">Reiniciar</button>
+  </div>
+
+  <div class="score-bar">
+    <div class="score-side">
+      <div class="score-name">Tú</div>
+      <div class="score-num" id="p-score">0</div>
+      <div class="score-goal">meta: 7</div>
+    </div>
+    <div class="score-vs">VS</div>
+    <div class="score-side">
+      <div class="score-num" id="a-score">0</div>
+      <div class="score-name">Rival</div>
+      <div class="score-goal">meta: 7</div>
+    </div>
+  </div>
+
+  <div class="tatami-area">
+    <canvas id="tatami" width="390" height="170"></canvas>
+    <div class="msg-flash" id="msg-flash"></div>
+  </div>
+
+  <div class="action-area">
+    <div class="move-log" id="move-log">Presiona un botón para atacar o defenderte.</div>
+
+    <div class="btns-grid">
+      <button class="move-btn btn-golpe" onclick="playerMove('golpe')">
+        👊 Golpe<span class="pts">+1 pt</span>
+      </button>
+      <button class="move-btn btn-patada" onclick="playerMove('patada')">
+        🦵 Patada<span class="pts">+1 pt</span>
+      </button>
+      <button class="move-btn btn-barrida" onclick="playerMove('barrida')">
+        💨 Barrida<span class="pts">+1 pt</span>
+      </button>
+      <button class="move-btn btn-cabeza" onclick="playerMove('cabeza')">
+        🎯 P. Cabeza<span class="pts">+2 pts</span>
+      </button>
+      <button class="move-btn btn-salto" onclick="playerMove('salto')">
+        🚀 P. Salto<span class="pts">+3 pts</span>
+      </button>
+      <button class="move-btn btn-defensa" id="btn-def" onclick="activarDefensa()">
+        🛡️ Defensa
+      </button>
+    </div>
+  </div>
+
+  <!-- Result overlay -->
+  <div class="result-overlay" id="result" style="display:none;">
+    <div class="result-card">
+      <div class="result-icon" id="r-icon">🏆</div>
+      <div class="result-title" id="r-title">¡Round ganado!</div>
+      <div class="result-valor" id="r-valor">Valor desbloqueado: Disciplina</div>
+      <div class="result-frase" id="r-frase">"Cada punto se construye con constancia, técnica y control."</div>
+      <div class="result-btns">
+        <button class="btn primary block" onclick="resetGame()">🔄 Jugar de nuevo</button>
+        <button class="btn secondary block" onclick="location.href='juegos.html'">← Volver a juegos</button>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+lucide.createIcons()
+
+const MOVES = {
+  golpe:   { pts: 1, name: 'Golpe',            hit: 0.70, emoji: '👊' },
+  patada:  { pts: 1, name: 'Patada',           hit: 0.65, emoji: '🦵' },
+  barrida: { pts: 1, name: 'Barrida',          hit: 0.60, emoji: '💨' },
+  cabeza:  { pts: 2, name: 'Patada a cabeza',  hit: 0.45, emoji: '🎯' },
+  salto:   { pts: 3, name: 'Patada en salto',  hit: 0.35, emoji: '🚀' },
+}
+const AI_MOVE_KEYS = ['golpe','patada','barrida','cabeza']
+
+const VALORES = [
+  { nombre:'Disciplina',    frase:'"Cada punto se construye con constancia, técnica y control."', reto:'Completa tu rutina aunque hoy no tengas ganas.' },
+  { nombre:'Control',       frase:'"La fuerza más importante es saber controlarte."', reto:'Respira antes de reaccionar con enojo.' },
+  { nombre:'Esfuerzo',      frase:'"Cada intento te acerca a tu mejor versión."', reto:'Termina una tarea aunque te cueste trabajo.' },
+  { nombre:'Constancia',    frase:'"Cada intento cuenta."', reto:'Practica algo difícil una vez más, aunque no te salga.' },
+  { nombre:'Enfoque',       frase:'"Cuando tu mente está presente, tu técnica mejora."', reto:'Realiza una actividad sin distraerte hasta terminarla.' },
+]
+
+let pScore = 0, aScore = 0
+let defending = false, defTimer = null
+let gameOver = false
+let playerAnim = { x: 80, y: 60, attack: false, hit: false }
+let aiAnim = { x: 280, y: 60, attack: false, hit: false }
+let aiTimer = null
+
+const canvas = document.getElementById('tatami')
+const ctx = canvas.getContext('2d')
+
+function drawFighter(x, y, color, flip, attacking, hit) {
+  ctx.save()
+  if (flip) { ctx.scale(-1,1); x = -x }
+  const alpha = hit ? 0.5 : 1
+  ctx.globalAlpha = alpha
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,.15)'
+  ctx.beginPath(); ctx.ellipse(x, y+68, 22, 6, 0, 0, Math.PI*2); ctx.fill()
+
+  // Legs
+  ctx.strokeStyle = color; ctx.lineWidth = 7; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(x, y+40); ctx.lineTo(x-12, y+68); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(x, y+40); ctx.lineTo(x+8, y+68); ctx.stroke()
+
+  // Body (gi)
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.roundRect(x-14, y+10, 28, 34, 6)
+  ctx.fill()
+
+  // Belt
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(x-14, y+32, 28, 5)
+
+  // Arms
+  ctx.strokeStyle = color; ctx.lineWidth = 7
+  if (attacking) {
+    ctx.beginPath(); ctx.moveTo(x+14, y+18); ctx.lineTo(x+36, y+10); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x-14, y+22); ctx.lineTo(x-18, y+38); ctx.stroke()
+  } else {
+    ctx.beginPath(); ctx.moveTo(x+14, y+18); ctx.lineTo(x+20, y+34); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x-14, y+18); ctx.lineTo(x-20, y+34); ctx.stroke()
+  }
+
+  // Head
+  ctx.fillStyle = '#f5c99b'
+  ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI*2); ctx.fill()
+  ctx.fillStyle = '#e6b484'
+  ctx.beginPath(); ctx.arc(x, y+2, 16, 0, Math.PI*1); ctx.fill()
+
+  // Hair
+  ctx.fillStyle = '#333'
+  ctx.beginPath(); ctx.arc(x, y-4, 13, Math.PI, 0); ctx.fill()
+
+  // Eyes
+  ctx.fillStyle = '#222'
+  if (hit) {
+    ctx.font = '10px sans-serif'; ctx.fillText('😵', x-8, y+5)
+  } else {
+    ctx.beginPath(); ctx.arc(x-5, y-1, 2.5, 0, Math.PI*2); ctx.fill()
+    ctx.beginPath(); ctx.arc(x+5, y-1, 2.5, 0, Math.PI*2); ctx.fill()
+  }
+
+  ctx.restore()
+}
+
+function drawTatami() {
+  // Floor
+  const grad = ctx.createLinearGradient(0,0,0,170)
+  grad.addColorStop(0,'#c8a96e'); grad.addColorStop(1,'#b8954e')
+  ctx.fillStyle = grad; ctx.fillRect(0,0,390,170)
+
+  // Tatami grid lines
+  ctx.strokeStyle = 'rgba(0,0,0,.08)'; ctx.lineWidth = 1
+  for(let i=0;i<390;i+=40){ ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,170);ctx.stroke() }
+  for(let j=0;j<170;j+=40){ ctx.beginPath();ctx.moveTo(0,j);ctx.lineTo(390,j);ctx.stroke() }
+
+  // Center line
+  ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 2
+  ctx.beginPath(); ctx.moveTo(195,0); ctx.lineTo(195,170); ctx.stroke()
+
+  // Area circle
+  ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 2
+  ctx.beginPath(); ctx.arc(195,100,70,0,Math.PI*2); ctx.stroke()
+
+  // Fighters
+  drawFighter(playerAnim.x, playerAnim.y, '#0047AB', false, playerAnim.attack, playerAnim.hit)
+  drawFighter(aiAnim.x, aiAnim.y, '#dc2626', true, aiAnim.attack, aiAnim.hit)
+}
+
+function render(){ ctx.clearRect(0,0,390,170); drawTatami() }
+
+function flash(msg, color, bg) {
+  const el = document.getElementById('msg-flash')
+  el.textContent = msg
+  el.style.background = bg; el.style.color = color
+  el.classList.add('show')
+  setTimeout(()=>el.classList.remove('show'), 900)
+}
+
+function log(txt){ document.getElementById('move-log').textContent = txt }
+
+function animateAttack(who, onDone) {
+  const anim = who === 'player' ? playerAnim : aiAnim
+  anim.attack = true; render()
+  setTimeout(()=>{ anim.attack = false; render(); if(onDone) onDone() }, 350)
+}
+
+function animateHit(who) {
+  const anim = who === 'player' ? aiAnim : playerAnim
+  anim.hit = true; render()
+  setTimeout(()=>{ anim.hit = false; render() }, 500)
+}
+
+function playerMove(key) {
+  if (gameOver) return
+  const m = MOVES[key]
+  const aiDef = Math.random() < 0.28
+
+  animateAttack('player', () => {
+    if (aiDef) {
+      flash('❌ Bloqueado', '#fff', 'rgba(220,38,38,.85)')
+      log(`Tu ${m.name} fue bloqueada por el rival.`)
+    } else if (Math.random() < m.hit) {
+      pScore += m.pts
+      document.getElementById('p-score').textContent = pScore
+      animateHit('ai')
+      flash(`+${m.pts} ${m.pts>1?'pts':'pt'}`, '#fff', 'rgba(0,71,171,.9)')
+      log(`¡${m.emoji} ${m.name}! +${m.pts} punto${m.pts>1?'s':''}.`)
+      checkWin()
+    } else {
+      flash('Fallo', '#fff', 'rgba(107,114,128,.8)')
+      log(`Tu ${m.name} no llegó al rival. ¡Intenta de nuevo!`)
+    }
+  })
+}
+
+function activarDefensa() {
+  if (gameOver) return
+  defending = true
+  document.getElementById('btn-def').classList.add('active')
+  log('🛡️ En guardia — bloqueando el próximo ataque.')
+  clearTimeout(defTimer)
+  defTimer = setTimeout(()=>{ defending=false; document.getElementById('btn-def').classList.remove('active') }, 2000)
+}
+
+function aiAttack() {
+  if (gameOver) return
+  const key = AI_MOVE_KEYS[Math.floor(Math.random()*AI_MOVE_KEYS.length)]
+  const m = MOVES[key]
+  animateAttack('ai', () => {
+    if (defending) {
+      defending = false
+      document.getElementById('btn-def').classList.remove('active')
+      clearTimeout(defTimer)
+      flash('🛡️ Bloqueado', '#fff', 'rgba(0,71,171,.9)')
+      log(`Bloqueaste el ${m.name} del rival. ¡Bien hecho!`)
+    } else if (Math.random() < 0.60) {
+      aScore += m.pts
+      document.getElementById('a-score').textContent = aScore
+      animateHit('player')
+      flash(`Rival +${m.pts}`, '#fff', 'rgba(220,38,38,.85)')
+      log(`El rival anotó con ${m.name}. ¡Defiéndete!`)
+      checkWin()
+    } else {
+      log(`El rival intentó ${m.name} pero falló.`)
+    }
+  })
+}
+
+function checkWin() {
+  if (pScore >= 7) endGame(true)
+  else if (aScore >= 7) endGame(false)
+}
+
+function endGame(won) {
+  gameOver = true
+  clearInterval(aiTimer)
+  const v = VALORES[Math.floor(Math.random()*VALORES.length)]
+  document.getElementById('r-icon').textContent = won ? '🏆' : '💪'
+  document.getElementById('r-title').textContent = won ? '¡Round ganado!' : 'Sigue entrenando'
+  if (won) {
+    document.getElementById('r-valor').textContent = 'Valor desbloqueado: ' + v.nombre
+    document.getElementById('r-frase').innerHTML = v.frase + '<br><br><b style="color:#0047AB;">Reto del día:</b> ' + v.reto
+  } else {
+    document.getElementById('r-valor').textContent = ''
+    document.getElementById('r-frase').textContent = 'Los grandes peleadores también aprenden de cada round. ¡Vuelve a intentarlo!'
+  }
+  document.getElementById('result').style.display = 'flex'
+}
+
+function resetGame() {
+  pScore = 0; aScore = 0; gameOver = false; defending = false
+  document.getElementById('p-score').textContent = '0'
+  document.getElementById('a-score').textContent = '0'
+  document.getElementById('move-log').textContent = 'Presiona un botón para atacar o defenderte.'
+  document.getElementById('result').style.display = 'none'
+  document.getElementById('btn-def').classList.remove('active')
+  clearInterval(aiTimer)
+  startAI()
+  render()
+}
+
+function startAI() {
+  aiTimer = setInterval(()=>{ if(!gameOver) aiAttack() }, 2200 + Math.random()*1200)
+}
+
+render()
+startAI()
+</script>
+</body></html>
