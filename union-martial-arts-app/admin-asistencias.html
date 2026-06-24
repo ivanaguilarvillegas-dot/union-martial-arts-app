@@ -34,13 +34,8 @@
   let marcados = new Set()
 
   async function cargar() {
-    const { data: padresRows } = await supabase.from('padres').select('alumno_id, alumnos(id, nombre)').not('alumno_id', 'is', null)
-    let raw = padresRows?.map(p => p.alumnos).filter(Boolean) || []
-    alumnos = [...new Map(raw.map(a => [a.id, a])).values()].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''))
-    if (!alumnos.length) {
-      const { data: direct } = await supabase.from('alumnos').select('id, nombre').order('nombre')
-      alumnos = direct || []
-    }
+    const { data: rpcData } = await supabase.rpc('get_alumnos_lista')
+    alumnos = rpcData || []
 
     // Checkins de hoy registrados por padres
     const { data: checks } = await supabase.from('checkins').select('alumno_id').eq('fecha', hoy)
