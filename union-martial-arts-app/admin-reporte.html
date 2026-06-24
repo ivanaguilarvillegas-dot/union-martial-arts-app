@@ -96,16 +96,9 @@
   const SUPA_URL = 'https://gdajgennlsuvndanpxiz.supabase.co'
   const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   const token = session?.access_token || ANON_KEY
-  const alumnosRes = await fetch(`${SUPA_URL}/rest/v1/alumnos?select=id,nombre&order=nombre`, {
-    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}` }
-  })
-  const alumnos = await alumnosRes.json()
-  const dbg2 = document.createElement('div')
-  dbg2.style.cssText = 'background:#fef9c3;border:1px solid #ca8a04;border-radius:8px;padding:8px 10px;font-size:11px;margin-bottom:8px;word-break:break-all;'
-  dbg2.textContent = 'Respuesta: ' + JSON.stringify(alumnos).slice(0, 300)
-  document.getElementById('selector').prepend(dbg2)
-
-  if (Array.isArray(alumnos) && alumnos.length) {
+  // Filtro explícito: WHERE id IS NOT NULL — equivale a todos los alumnos
+  const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinturon, grupo').not('id', 'is', null).order('nombre')
+  if (alumnos?.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
       alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
