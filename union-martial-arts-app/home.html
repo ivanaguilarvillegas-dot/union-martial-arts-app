@@ -87,12 +87,13 @@
 .alerta-red .alerta-link { font-size:12px; color:#dc2626; font-weight:600; white-space:nowrap; flex-shrink:0; text-decoration:none; display:flex; align-items:center; gap:2px; }
 .alerta-red .alerta-link i { width:12px; height:12px; }
 
-.checkin-btn { background:linear-gradient(135deg,#003d94 0%,#0047AB 60%,#0055c8 100%); border-radius:18px; padding:18px 20px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; text-decoration:none; box-shadow:0 4px 18px rgba(0,71,171,.4); }
-.checkin-btn-ic { width:58px; height:58px; border-radius:16px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid rgba(255,255,255,.25); }
-.checkin-btn-ic i { width:32px; height:32px; color:#fff; }
-.checkin-btn-text .big { font-size:20px; font-weight:900; color:#fff; letter-spacing:-.01em; line-height:1.1; }
-.checkin-btn-text .s { font-size:11.5px; color:rgba(255,255,255,.65); margin-top:4px; }
-.checkin-btn-arr i { width:22px; height:22px; color:rgba(255,255,255,.6); }
+.checkin-btn { background:#0047AB; border-radius:18px; padding:20px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; text-decoration:none; box-shadow:0 4px 18px rgba(0,71,171,.4); gap:12px; }
+.checkin-btn-ic { width:64px; height:64px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.checkin-btn-ic i { font-size:32px; color:#fff; }
+.checkin-btn-text { flex:1; min-width:0; }
+.checkin-btn-text .big { font-size:21px; font-weight:800; color:#fff; line-height:1.2; }
+.checkin-btn-text .s { font-size:12px; color:rgba(255,255,255,.75); margin-top:5px; line-height:1.45; }
+.checkin-registrar { background:#fff; color:#0047AB; border-radius:24px; padding:10px 16px; font-size:13px; font-weight:700; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:4px; }
 
 .menu-card { background:#fff; border-radius:14px; padding:14px 10px 10px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
 .menu-section-hdr { font-size:9.5px; font-weight:700; color:#9ca3af; letter-spacing:.07em; text-transform:uppercase; padding:10px 4px 6px; }
@@ -254,14 +255,12 @@
 
   <!-- Check-in destacado -->
   <a class="checkin-btn" href="checkin.html">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <div class="checkin-btn-ic"><i class="ti ti-shield-check" style="font-size:30px;color:#fff;"></i></div>
-      <div class="checkin-btn-text">
-        <div class="big">CHECK-IN DE HOY</div>
-        <div class="s">Confirma llegada o reporta ausencia</div>
-      </div>
+    <div class="checkin-btn-ic"><i class="ti ti-shield-check"></i></div>
+    <div class="checkin-btn-text">
+      <div class="big">Check-in de hoy</div>
+      <div class="s">Marca la llegada de tu hijo a clase<br>o justifica una falta.</div>
     </div>
-    <div class="checkin-btn-arr"><i data-lucide="chevron-right"></i></div>
+    <div class="checkin-registrar">Registrar ahora <i class="ti ti-chevron-right" style="font-size:14px;"></i></div>
   </a>
 
   <!-- Próximo evento -->
