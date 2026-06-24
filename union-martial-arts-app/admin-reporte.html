@@ -92,23 +92,23 @@
   const hoy = new Date()
   document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
 
-  // Cargar alumnos
-  const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
+  // Cargar alumnos — usar select('*') para evitar error si cinta/grupo no existen
+  const { data: alumnos, error: errAl } = await supabase.from('alumnos').select('*').order('nombre')
   if (errAl) {
     document.getElementById('al-sel').innerHTML = `<option value="">Error al cargar</option>`
     const errDiv = document.createElement('div')
     errDiv.style.cssText = 'background:#fee;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-bottom:12px;'
-    errDiv.textContent = '⚠️ No se pudieron cargar los alumnos: ' + errAl.message + '. Ejecuta en Supabase → SQL Editor: CREATE POLICY "admin lee alumnos" ON alumnos FOR SELECT TO authenticated USING (true);'
+    errDiv.textContent = '⚠️ Error al cargar alumnos: ' + errAl.message
     document.getElementById('selector').prepend(errDiv)
   } else if (alumnos?.length) {
     document.getElementById('al-sel').innerHTML =
       '<option value="">Selecciona alumno…</option>' +
-      alumnos.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('')
+      alumnos.map(a => `<option value="${a.id}">${a.nombre || a.id}</option>`).join('')
   } else {
-    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos registrados</option>'
+    document.getElementById('al-sel').innerHTML = '<option value="">Sin alumnos en la base de datos</option>'
     const errDiv = document.createElement('div')
     errDiv.style.cssText = 'background:#fff7ed;border:1px solid #fed7aa;color:#92400e;padding:12px;border-radius:10px;font-size:12px;margin-bottom:12px;line-height:1.6;'
-    errDiv.innerHTML = '⚠️ <strong>Sin acceso a alumnos.</strong> Ejecuta este SQL en Supabase → SQL Editor:<br><code style="display:block;background:#fff;border-radius:6px;padding:6px 8px;margin-top:6px;font-size:11px;color:#1e40af;">CREATE POLICY "admin lee alumnos" ON alumnos FOR SELECT TO authenticated USING (true);</code>'
+    errDiv.innerHTML = '⚠️ La tabla <code>alumnos</code> existe pero no tiene registros. Agrega alumnos desde <a href="admin-alumnos.html" style="color:#1e40af;font-weight:700;">Alumnos</a>.'
     document.getElementById('selector').prepend(errDiv)
   }
 

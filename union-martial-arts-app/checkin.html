@@ -299,8 +299,10 @@
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
     await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true }).catch(() => {})
 
-    errDiv.style.background = ''
-    errDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="bell"></i> Ausencia registrada</span><span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>`
+    errDiv.className = 'notice green'
+    errDiv.style.background = '#f0fdf4'
+    errDiv.style.color = '#166534'
+    errDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="check-circle"></i> ✅ Ausencia registrada</span><span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>`
     errDiv.style.display = 'flex'
     lucide.createIcons()
     cargarHistorial()
