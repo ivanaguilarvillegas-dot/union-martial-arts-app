@@ -62,21 +62,36 @@
     lucide.createIcons()
   }
 
+  const errEl = document.createElement('div')
+  errEl.className = 'notice red'
+  errEl.style.cssText = 'display:none;margin:8px 0;'
+  document.getElementById('list').before(errEl)
+
   document.getElementById('list').addEventListener('click', async e => {
     const b = e.target.closest('[data-id]'); if (!b) return
     const id = b.dataset.id
+    errEl.style.display = 'none'
+
     if (marcados.has(id)) {
-      await supabase.from('checkins').delete().eq('alumno_id', id).eq('fecha', hoy)
+      const { error } = await supabase.from('checkins').delete().eq('alumno_id', id).eq('fecha', hoy)
+      if (error) { errEl.textContent = 'Error al quitar: ' + error.message; errEl.style.display = 'flex'; return }
       marcados.delete(id)
     } else {
-      await supabase.from('checkins').upsert({ alumno_id: id, fecha: hoy }, { onConflict: 'alumno_id,fecha' })
-      marcados.add(id)
+      const { error } = await supabase.from('checkins').insert({ alumno_id: id, fecha: hoy, tipo: 'presencial', usuario_id: user.id })
+      if (error && error.code === '23505') {
+        // Ya existe, solo marcar como presente
+        marcados.add(id)
+      } else if (error) {
+        errEl.textContent = 'Error al guardar: ' + error.message; errEl.style.display = 'flex'; return
+      } else {
+        marcados.add(id)
+      }
     }
     render()
   })
 
   document.querySelector('.btn.primary').addEventListener('click', () => {
-    alert('✅ Asistencias guardadas para hoy: ' + hoy)
+    alert('✅ ' + marcados.size + ' asistencias guardadas para hoy: ' + hoy)
     window.location.href = 'admin.html'
   })
 
