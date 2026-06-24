@@ -306,12 +306,13 @@
 
     // ── MENSAJES PRIVADOS ─────────────────────────────────────
     try {
+      const padreId = padre?.id || '00000000-0000-0000-0000-000000000000'
       const { data: msgs } = await supabase.from('mensajes')
         .select('id, texto, creado_en, leido')
         .eq('para_admin', false)
-        .or('destinatario_id.is.null,destinatario_id.eq.' + (padre?.id||'00000000-0000-0000-0000-000000000000') + ',destinatario_id.eq.' + user.id)
+        .or('destinatario_id.is.null,destinatario_id.eq.' + padreId + ',destinatario_id.eq.' + user.id)
         .order('creado_en', { ascending: false })
-        .limit(10)
+        .limit(20)
 
       const sinLeer = (msgs||[]).filter(m => !m.leido).length
       if (sinLeer > 0) {
