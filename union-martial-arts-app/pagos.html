@@ -156,7 +156,7 @@
 
   // Cargar planes/precios desde configuracion
   const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
-    .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra'])
+    .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra','precio_examen','precio_torneo','precio_cambio_cinta'])
   const cfg = {}; (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor })
 
   function extraerMonto(str) {
@@ -169,6 +169,9 @@
     { label: 'Mensualidad Básico', monto: extraerMonto(cfg.precio_mensual_basico || '1550'), ic: 'star' },
     { label: 'Anual UNION', monto: extraerMonto(cfg.precio_anual || '12500'), ic: 'calendar' },
     { label: 'Club Cinta Negra', monto: extraerMonto(cfg.precio_cinta_negra || '9950'), ic: 'crown' },
+    { label: 'Examen de grado', monto: extraerMonto(cfg.precio_examen || '350'), ic: 'award' },
+    { label: 'Torneo', monto: extraerMonto(cfg.precio_torneo || '250'), ic: 'trophy' },
+    { label: 'Cambio de cinta', monto: extraerMonto(cfg.precio_cambio_cinta || '200'), ic: 'git-commit' },
     { label: 'Otra cantidad', monto: 0, ic: 'edit-3', otra: true },
   ]
 
