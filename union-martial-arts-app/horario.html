@@ -92,15 +92,19 @@
 </div></div>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-  const supabase = createClient(
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"
+  onerror="document.getElementById('debug-box').innerHTML='Error: no cargó supabase';document.getElementById('debug-box').style.display='block'"
+  onload="initHorario()"></script>
+<script>
+  function dbgShow(t){var b=document.getElementById('debug-box');b.innerHTML=t;b.style.display='block'}
+  dbgShow('Cargando supabase…')
+  async function initHorario() {
+  dbgShow('Supabase listo — iniciando…')
+  const supabase = window.supabase.createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const dbg = document.getElementById('debug-box')
-  const upd = t => { dbg.innerHTML = t; dbg.style.display = 'block' }
-  upd('Módulo iniciado')
+  const upd = t => dbgShow(t)
 
   function showErr(msg) {
     upd('ERROR: ' + msg)
@@ -231,9 +235,12 @@
 
     lucide.createIcons()
   } catch(e) {
-    showErr('Error: ' + e.message)
+    upd('CATCH: ' + e.message)
+    document.getElementById('segs-wrap').innerHTML =
+      `<div class="seg-card" style="padding:16px;color:#dc2626;font-size:13px;text-align:center;">${e.message}</div>`
     lucide.createIcons()
   }
+  } // end initHorario
 </script>
 <script>
   if ('serviceWorker' in navigator) {
