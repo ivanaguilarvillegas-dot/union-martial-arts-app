@@ -88,10 +88,11 @@
 .alerta-red .alerta-link i { width:12px; height:12px; }
 
 .checkin-btn { background:linear-gradient(135deg,#003d94 0%,#0047AB 60%,#0055c8 100%); border-radius:18px; padding:18px 20px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; text-decoration:none; box-shadow:0 4px 18px rgba(0,71,171,.4); }
-.checkin-btn-ic { width:56px; height:56px; border-radius:16px; background:rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.checkin-btn-ic { width:58px; height:58px; border-radius:16px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid rgba(255,255,255,.25); }
 .checkin-btn-ic i { width:32px; height:32px; color:#fff; }
-.checkin-btn-text .t { font-size:17px; font-weight:800; color:#fff; letter-spacing:-.01em; }
-.checkin-btn-text .s { font-size:12px; color:rgba(255,255,255,.7); margin-top:3px; }
+.checkin-btn-text .t { font-size:13px; font-weight:900; color:rgba(255,255,255,.8); letter-spacing:.12em; text-transform:uppercase; }
+.checkin-btn-text .big { font-size:20px; font-weight:900; color:#fff; letter-spacing:-.01em; line-height:1.1; }
+.checkin-btn-text .s { font-size:11.5px; color:rgba(255,255,255,.65); margin-top:4px; }
 .checkin-btn-arr i { width:22px; height:22px; color:rgba(255,255,255,.6); }
 
 .menu-card { background:#fff; border-radius:14px; padding:14px 10px 10px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -100,13 +101,18 @@
 .menu-section-divider { height:1px; background:#f3f4f6; margin:4px 0 2px; }
 .menu-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
 .menu-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+.menu-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
 .menu-item { text-align:center; padding:7px 2px; text-decoration:none; display:block; }
-.menu-ic { width:48px; height:48px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 6px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
-.menu-ic.blue { background:#eef2ff; }
+.menu-ic { width:52px; height:52px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 7px; box-shadow:0 1px 4px rgba(0,0,0,.09); }
+.menu-ic.blue { background:#e6eeff; }
 .menu-ic.green { background:#f0fdf4; }
 .menu-ic.amber { background:#fffbeb; }
-.menu-ic.purple { background:#f5f3ff; }
-.menu-label { font-size:9.5px; color:#4b5563; line-height:1.3; }
+.menu-ic.cobalt { background:#e6eeff; }
+.menu-label { font-size:10px; font-weight:600; color:#374151; line-height:1.3; }
+.menu-wide { display:flex; align-items:center; gap:14px; padding:10px 12px; background:#e6eeff; border-radius:14px; text-decoration:none; margin-bottom:4px; }
+.menu-wide-ic { width:52px; height:52px; border-radius:16px; background:#0047AB; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.menu-wide-txt .t { font-size:14px; font-weight:700; color:#0047AB; }
+.menu-wide-txt .s { font-size:11px; color:#4a6fa5; margin-top:1px; }
 </style>
 </head>
 <body>
@@ -248,11 +254,12 @@
 
   <!-- Check-in destacado -->
   <a class="checkin-btn" href="checkin.html">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div class="checkin-btn-ic"><i data-lucide="clipboard-check"></i></div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="checkin-btn-ic"><i class="ti ti-shield-check" style="font-size:30px;color:#fff;"></i></div>
       <div class="checkin-btn-text">
-        <div class="t">Check-in de hoy</div>
-        <div class="s">Confirma llegada o reporta ausencia</div>
+        <div class="t">CHECK-IN</div>
+        <div class="big" id="checkin-fecha">de hoy</div>
+        <div class="s">Registra tu asistencia</div>
       </div>
     </div>
     <div class="checkin-btn-arr"><i data-lucide="chevron-right"></i></div>
@@ -291,37 +298,27 @@
 
     <!-- Academia -->
     <div class="menu-section-hdr">Academia</div>
-    <div class="menu-grid-3">
-      <a class="menu-item" href="programas.html">
-        <div class="menu-ic amber"><i class="ti ti-crown" style="22px;color:#d97706;"></i></div>
-        <div class="menu-label">Programas</div>
-      </a>
-      <a class="menu-item" href="notificaciones.html">
-        <div class="menu-ic blue"><i class="ti ti-bell-ringing" style="22px;color:#1d4ed8;"></i></div>
-        <div class="menu-label">Avisos</div>
-      </a>
-      <a class="menu-item" href="torneos.html">
-        <div class="menu-ic amber"><i class="ti ti-trophy" style="22px;color:#d97706;"></i></div>
-        <div class="menu-label">Eventos</div>
-      </a>
-    </div>
+    <a class="menu-wide" href="programas.html">
+      <div class="menu-wide-ic"><i class="ti ti-crown" style="font-size:26px;color:#fff;"></i></div>
+      <div class="menu-wide-txt">
+        <div class="t">Programas</div>
+        <div class="s">Planes, niveles y beneficios</div>
+      </div>
+      <i data-lucide="chevron-right" style="width:18px;height:18px;color:#0047AB;margin-left:auto;opacity:.6;flex-shrink:0;"></i>
+    </a>
 
     <div class="menu-section-divider"></div>
 
     <!-- Seguimiento -->
     <div class="menu-section-hdr">Seguimiento</div>
-    <div class="menu-grid-3">
+    <div class="menu-grid-2">
       <a class="menu-item" href="entrena.html">
-        <div class="menu-ic amber"><i class="ti ti-run" style="22px;color:#d97706;"></i></div>
+        <div class="menu-ic cobalt"><i class="ti ti-run" style="font-size:24px;color:#0047AB;"></i></div>
         <div class="menu-label">Rutinas en casa</div>
       </a>
       <a class="menu-item" href="meditacion.html">
-        <div class="menu-ic blue"><i class="ti ti-moon-stars" style="22px;color:#1d4ed8;"></i></div>
+        <div class="menu-ic cobalt"><i class="ti ti-moon-stars" style="font-size:24px;color:#0047AB;"></i></div>
         <div class="menu-label">Meditación</div>
-      </a>
-      <a class="menu-item" href="horario.html">
-        <div class="menu-ic purple"><i class="ti ti-clock" style="22px;color:#7c3aed;"></i></div>
-        <div class="menu-label">Horario</div>
       </a>
     </div>
 
@@ -331,15 +328,15 @@
     <div class="menu-section-hdr">Cuenta y soporte</div>
     <div class="menu-grid-3">
       <a class="menu-item" href="cita.html">
-        <div class="menu-ic blue"><i class="ti ti-calendar-plus" style="22px;color:#1d4ed8;"></i></div>
+        <div class="menu-ic cobalt"><i class="ti ti-calendar-plus" style="font-size:24px;color:#0047AB;"></i></div>
         <div class="menu-label">Agendar cita</div>
       </a>
       <a class="menu-item" href="dudas.html">
-        <div class="menu-ic green"><i class="ti ti-message-question" style="22px;color:#16a34a;"></i></div>
+        <div class="menu-ic cobalt"><i class="ti ti-message-question" style="font-size:24px;color:#0047AB;"></i></div>
         <div class="menu-label">Dudas</div>
       </a>
       <a class="menu-item" href="tienda.html">
-        <div class="menu-ic amber"><i class="ti ti-shirt" style="22px;color:#d97706;"></i></div>
+        <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:24px;color:#d97706;"></i></div>
         <div class="menu-label">Tienda</div>
       </a>
     </div>
@@ -478,6 +475,9 @@
 
     cargarEvento()
     cargarAlerta()
+    const hoyLabel = new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'})
+    const el = document.getElementById('checkin-fecha')
+    if (el) el.textContent = hoyLabel.charAt(0).toUpperCase() + hoyLabel.slice(1)
 
     const hoy = new Date()
     const hoyStr = hoy.toISOString().split('T')[0]
