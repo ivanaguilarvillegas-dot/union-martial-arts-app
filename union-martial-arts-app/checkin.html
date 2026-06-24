@@ -145,18 +145,6 @@
     }
   } catch(e) {}
 
-  // Debug visible — muestra estado del alumno vinculado
-  const dbg = document.createElement('div')
-  dbg.id = 'dbg-alumno'
-  dbg.style.cssText = 'font-size:11px;padding:6px 10px;border-radius:8px;margin-bottom:10px;text-align:center;'
-  if (alumnoId) {
-    dbg.style.background = '#ecfdf5'; dbg.style.color = '#065f46'
-    dbg.textContent = '✓ Alumno vinculado: ' + (alumnoNombre || alumnoId)
-  } else {
-    dbg.style.background = '#fef2f2'; dbg.style.color = '#991b1b'
-    dbg.textContent = '⚠️ Sin alumno vinculado | padre: ' + (padre?.id ? padre.id.slice(0,8) + '…' : 'no encontrado') + ' | user: ' + user.id.slice(0,8) + '…'
-  }
-  document.querySelector('.body')?.prepend(dbg)
 
   // Tabs modo
   function activarModo(modo) {
