@@ -220,7 +220,17 @@
 
   // Reportar ausencia
   document.getElementById('btn-ausente').addEventListener('click', async () => {
-    if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
+    const errDiv = document.getElementById('msg-ausente')
+    const btn = document.getElementById('btn-ausente')
+
+    if (!alumnoId) {
+      errDiv.style.display = 'flex'
+      errDiv.style.background = '#fef2f2'
+      errDiv.innerHTML = '<span style="color:#991b1b;font-size:13px;">⚠️ No hay alumno vinculado a tu cuenta. Verifica tu perfil.</span>'
+      return
+    }
+
+    btn.disabled = true
     const hoy = new Date().toISOString().split('T')[0]
     const motivo = document.querySelector('#motivos .on')?.dataset.motivo || 'Otro'
     const nota = document.getElementById('nota-ausencia').value.trim()
@@ -231,24 +241,47 @@
 
     let errCheckin
     if (existente) {
-      const { error } = await supabase.from('checkins').update({
+      const res = await supabase.from('checkins').update({
         tipo: 'ausencia', ausencia_motivo: motivo
       }).eq('id', existente.id)
-      errCheckin = error
+      // Si falla por columna inexistente, intentar sin ausencia_motivo
+      if (res.error && res.error.message.includes('ausencia_motivo')) {
+        const r2 = await supabase.from('checkins').update({ tipo: 'ausencia' }).eq('id', existente.id)
+        errCheckin = r2.error
+      } else {
+        errCheckin = res.error
+      }
     } else {
-      const { error } = await supabase.from('checkins').insert({
+      const res = await supabase.from('checkins').insert({
         alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
       })
-      errCheckin = error
+      // Si falla por columna inexistente, intentar sin ausencia_motivo
+      if (res.error && res.error.message.includes('ausencia_motivo')) {
+        const r2 = await supabase.from('checkins').insert({
+          alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia'
+        })
+        errCheckin = r2.error
+      } else {
+        errCheckin = res.error
+      }
     }
 
-    if (errCheckin) { alert('Error al registrar: ' + errCheckin.message); return }
+    btn.disabled = false
+
+    if (errCheckin) {
+      errDiv.style.display = 'flex'
+      errDiv.style.background = '#fef2f2'
+      errDiv.innerHTML = `<span style="color:#991b1b;font-size:12px;">❌ Error: ${errCheckin.message}</span>`
+      return
+    }
 
     // Notificar al instructor
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
-    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true }).catch(() => {})
 
-    document.getElementById('msg-ausente').style.display = 'flex'
+    errDiv.style.background = ''
+    errDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="bell"></i> Ausencia registrada</span><span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>`
+    errDiv.style.display = 'flex'
     lucide.createIcons()
     cargarHistorial()
   })
