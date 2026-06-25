@@ -134,6 +134,7 @@
     el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
   }
   actualizarReloj(); setInterval(actualizarReloj, 30000)
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})
 })();
 </script>
 </body>
