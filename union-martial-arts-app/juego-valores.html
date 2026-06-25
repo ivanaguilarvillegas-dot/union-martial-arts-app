@@ -56,7 +56,7 @@ body,html{background:#0d0d1a;overflow:hidden;}
     </div>
 
     <div class="arena">
-      <canvas id="gc" width="170" height="340" style="border:1.5px solid rgba(255,255,255,.1);"></canvas>
+      <canvas id="gc" width="130" height="260" style="border:1.5px solid rgba(255,255,255,.1);border-radius:8px;"></canvas>
       <div class="side">
         <!-- Hold piece -->
         <div class="side-box">
@@ -165,7 +165,7 @@ const PIECES = [
 ]
 
 const COLS=10,ROWS=20
-const CELL=Math.floor(Math.min(17,(window.innerHeight-230)/ROWS))
+let CELL=13  // recalculado tras layout DOM
 const canvas=document.getElementById('gc')
 canvas.width=COLS*CELL; canvas.height=ROWS*CELL
 const ctx=canvas.getContext('2d')
@@ -176,7 +176,7 @@ let score,totalLines,beltLevel,beltLines,valCount,paused,gameRunning
 let dropTimer,scoreFloats=[],flashTimer=0,comboCount=0,lastClearTime=0
 let dasTimer,dasInterval,softInterval2,animId
 let holdPiece=null,holdUsed=false
-let particles=[],shakeFrames=0
+let particles=[],shakeFrames=0,valorFloats=[]
 const hc=document.getElementById('hc'),hctx=hc.getContext('2d')
 const PARTY_COLORS=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF6BD6','#FF9F1C','#A855F7','#06B6D4']
 
@@ -291,6 +291,9 @@ function clearLines(){
     if(comboCount>1) scoreFloats.push({x:COLS*CELL/2,y:192,text:'COMBO x'+comboCount+'!',alpha:1,dy:-1.3,size:14,color:'#f97316'})
     flashTimer=12
     spawnParticles(cleared>=4?60:cleared>=2?35:18)
+    // Valor words float inside the canvas
+    const numWords = cleared>=4?3:cleared>=2?2:1
+    for(let i=0;i<numWords;i++) setTimeout(()=>spawnValorFloat(), i*400)
     if(cleared>=4) shakeFrames=10; else if(cleared>=2) shakeFrames=5
 
     document.getElementById('hud-score').textContent=score.toLocaleString()
@@ -507,6 +510,9 @@ function draw(){
     ctx.restore()
     f.y+=f.dy;f.alpha-=.022
   })
+
+  // Valor words floating
+  drawValorFloats()
 }
 
 function loop(){draw();animId=requestAnimationFrame(loop)}
@@ -533,7 +539,7 @@ function restartGame(){
   document.getElementById('valor-overlay').style.display='none'
   document.getElementById('lvlup-root').innerHTML=''
   board=newBoard();score=0;totalLines=0;beltLevel=1;beltLines=0;valCount=0;paused=false;gameRunning=true
-  scoreFloats=[];flashTimer=0;comboCount=0;nextPiece=null
+  scoreFloats=[];flashTimer=0;comboCount=0;nextPiece=null;valorFloats=[]
   holdPiece=null;holdUsed=false;hctx.clearRect(0,0,56,56)
   document.getElementById('btn-hold').classList.remove('has-piece')
   document.getElementById('hud-score').textContent='0'
@@ -543,6 +549,53 @@ function restartGame(){
   nextPiece=makePiece();spawnPiece();setDropSpeed();loop()
 }
 
-restartGame()
+// Recalculate CELL after layout so controls always fit on screen
+window.addEventListener('load', () => {
+  const gw = document.querySelector('.game-wrap')
+  const hud = document.getElementById('hud-bar')
+  const ctrl = document.querySelector('.controls')
+  if(gw && hud && ctrl){
+    const avail = gw.clientHeight - hud.offsetHeight - ctrl.offsetHeight - 18
+    CELL = Math.max(11, Math.min(15, Math.floor(avail / ROWS)))
+  }
+  canvas.width = COLS * CELL
+  canvas.height = ROWS * CELL
+  restartGame()
+})
+
+function spawnValorFloat(){
+  const v = VALORES[Math.floor(Math.random()*VALORES.length)]
+  const b = BELTS[beltLevel-1]
+  const cw = COLS*CELL
+  valorFloats.push({
+    text: v.icon + ' ' + v.nombre.toUpperCase(),
+    x: 8 + Math.random() * (cw - 80),
+    y: ROWS*CELL - 30 - Math.random()*60,
+    alpha: 0, dy: -0.55,
+    color: b.color==='#e5e5e5'?'#ffffff':b.color,
+    life: 0, maxLife: 160,
+    size: 12 + Math.floor(Math.random()*5)
+  })
+}
+
+function drawValorFloats(){
+  valorFloats = valorFloats.filter(f => {
+    f.life++; f.y += f.dy
+    if(f.life < 25) f.alpha = (f.life/25)*0.5
+    else if(f.life > f.maxLife-45) f.alpha = ((f.maxLife-f.life)/45)*0.5
+    else f.alpha = 0.5
+    if(f.life >= f.maxLife) return false
+    ctx.save()
+    ctx.globalAlpha = f.alpha
+    ctx.font = `900 ${f.size}px Inter,sans-serif`
+    ctx.textAlign = 'left'
+    ctx.fillStyle = f.color
+    ctx.shadowColor = 'rgba(0,0,0,.6)'
+    ctx.shadowBlur = 6
+    ctx.fillText(f.text, f.x, f.y)
+    ctx.restore()
+    return true
+  })
+}
 </script>
 </body></html>

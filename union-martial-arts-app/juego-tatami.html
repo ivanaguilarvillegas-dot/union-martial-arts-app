@@ -434,64 +434,73 @@ function drawFighter(cx, dir, anim, gi, oppX, jumpY){
   // ── NECK ──
   ctx.fillStyle=SKIN;ctx.fillRect(cx+dir*2,neckY,dir>0?6:-6,10)
 
-  // ── HEAD base (no eyes yet — they go AFTER helmet) ──
-  ctx.fillStyle=SKIN
-  ctx.beginPath();ctx.ellipse(cx+dir*4,headY,13,15,0,0,Math.PI*2);ctx.fill()
+  // ── HEAD ──────────────────────────────────────────────────────────────
+  // Everything aligned to headCX so helmet sits straight on the face
+  const headCX = cx + dir*4
 
-  // ── HELMET shell (Top Ten) — drawn over head ──
+  // Skin head (base layer — face will show through helmet opening)
+  ctx.fillStyle=SKIN
+  ctx.beginPath();ctx.ellipse(headCX,headY,13,14,0,0,Math.PI*2);ctx.fill()
+
+  // HELMET shell — full red circle, slightly larger and shifted up 2px
   ctx.fillStyle=RED
-  ctx.beginPath();ctx.ellipse(cx+dir*3,headY-3,19,21,0,0,Math.PI*2);ctx.fill()
-  // Side ear guards
-  ctx.beginPath();ctx.ellipse(cx-dir*6,headY,5,10,0,0,Math.PI*2);ctx.fill()
+  ctx.beginPath();ctx.ellipse(headCX,headY-2,17,19,0,0,Math.PI*2);ctx.fill()
 
-  // ── FACE OPENING — shows full face front ──
-  const faceAngle = dir>0 ? 0 : Math.PI
-  // Helmet shadow behind opening
-  ctx.fillStyle='rgba(0,0,0,.25)'
-  ctx.beginPath()
-  ctx.ellipse(cx+dir*6,headY,15,17,0,faceAngle-1.7,faceAngle+1.7)
-  ctx.closePath();ctx.fill()
-  // Full skin face
+  // Ear guard on the back side (away from opponent)
+  ctx.beginPath();ctx.ellipse(headCX-dir*12,headY,5,9,0,0,Math.PI*2);ctx.fill()
+
+  // FACE OPENING — pie-slice cut toward opponent, revealing skin underneath
+  // Shadow ring just inside opening for depth
+  const faceDir = dir>0 ? 0 : Math.PI
+  ctx.fillStyle='rgba(0,0,0,.18)'
+  ctx.beginPath();ctx.moveTo(headCX,headY)
+  ctx.arc(headCX,headY,16,faceDir-1.65,faceDir+1.65);ctx.closePath();ctx.fill()
+  // Skin fill in the opening
   ctx.fillStyle=SKIN
-  ctx.beginPath()
-  ctx.ellipse(cx+dir*6,headY,13,15,0,faceAngle-1.6,faceAngle+1.6)
-  ctx.closePath();ctx.fill()
+  ctx.beginPath();ctx.moveTo(headCX,headY)
+  ctx.arc(headCX,headY,14,faceDir-1.55,faceDir+1.55);ctx.closePath();ctx.fill()
 
-  // ── FACE FEATURES drawn LAST so visible through opening ──
+  // ── FACE FEATURES ──────────────────────────────────────────────────────
   if(isHit){
-    ctx.font='12px sans-serif';ctx.textAlign='center'
-    ctx.fillText('😵',cx+dir*7,headY+5)
+    ctx.font='14px sans-serif';ctx.textAlign='center'
+    ctx.fillText('😵',headCX+dir*8,headY+5)
   } else {
-    // Eye — large and clear
-    ctx.fillStyle='#1a1a1a'
-    ctx.beginPath();ctx.ellipse(cx+dir*11,headY-1,3,3.5,0,0,Math.PI*2);ctx.fill()
+    const eyeX=headCX+dir*10, eyeY=headY-2
     // White of eye
-    ctx.fillStyle='rgba(255,255,255,.7)'
-    ctx.beginPath();ctx.ellipse(cx+dir*12,headY-2,1.4,1.4,0,0,Math.PI*2);ctx.fill()
+    ctx.fillStyle='#fff'
+    ctx.beginPath();ctx.ellipse(eyeX,eyeY,5,4.5,0,0,Math.PI*2);ctx.fill()
+    // Iris
+    ctx.fillStyle='#2a1a0a'
+    ctx.beginPath();ctx.ellipse(eyeX+dir*1.5,eyeY,3.5,4,0,0,Math.PI*2);ctx.fill()
+    // Pupil highlight
+    ctx.fillStyle='rgba(255,255,255,.85)'
+    ctx.beginPath();ctx.ellipse(eyeX+dir*2,eyeY-1.5,1.5,1.5,0,0,Math.PI*2);ctx.fill()
     // Eyebrow
-    ctx.strokeStyle='#5a3a1a';ctx.lineWidth=1.8
-    ctx.beginPath();ctx.moveTo(cx+dir*7,headY-8);ctx.lineTo(cx+dir*15,headY-6);ctx.stroke()
-    // Nose tip
-    ctx.strokeStyle='#b07050';ctx.lineWidth=1.2
-    ctx.beginPath();ctx.moveTo(cx+dir*15,headY+3);ctx.lineTo(cx+dir*17,headY+8);ctx.lineTo(cx+dir*13,headY+10);ctx.stroke()
-    // Mouth line
-    ctx.strokeStyle='#c07858';ctx.lineWidth=1.2
-    ctx.beginPath();ctx.arc(cx+dir*10,headY+12,3,-.4,.4);ctx.stroke()
+    ctx.strokeStyle='#5a3a1a';ctx.lineWidth=2.2;ctx.lineCap='round'
+    ctx.beginPath();ctx.moveTo(headCX+dir*5,headY-9);ctx.lineTo(headCX+dir*15,headY-7);ctx.stroke()
+    // Nose (side profile tip)
+    ctx.strokeStyle='#b07050';ctx.lineWidth=1.5;ctx.lineJoin='round'
+    ctx.beginPath();ctx.moveTo(headCX+dir*13,headY+2);ctx.lineTo(headCX+dir*15,headY+7);ctx.lineTo(headCX+dir*11,headY+8);ctx.stroke()
+    // Mouth
+    ctx.strokeStyle='#c07858';ctx.lineWidth=1.5
+    ctx.beginPath();ctx.arc(headCX+dir*9,headY+13,3.5,-0.35,0.35);ctx.stroke()
   }
 
-  // ── HELMET finishing touches ──
-  // Top shine
-  ctx.fillStyle='rgba(255,255,255,.18)'
-  ctx.beginPath();ctx.ellipse(cx-dir*1,headY-14,7,4,dir*.2,0,Math.PI*2);ctx.fill()
-  // Helmet band / stripe
-  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=2
-  ctx.beginPath();ctx.arc(cx+dir*3,headY-3,17,Math.PI*.25,Math.PI*.75);ctx.stroke()
-  // Chin guard (below helmet, covers jaw)
+  // ── HELMET DETAILS ─────────────────────────────────────────────────────
+  // Top dome shine
+  ctx.fillStyle='rgba(255,255,255,.22)'
+  ctx.beginPath();ctx.ellipse(headCX-dir*3,headY-14,8,4,dir*-.15,0,Math.PI*2);ctx.fill()
+  // Helmet seam stripe across top-back
+  ctx.strokeStyle='rgba(0,0,0,.28)';ctx.lineWidth=2
+  ctx.beginPath()
+  if(dir>0) ctx.arc(headCX,headY-2,15,Math.PI*.2,Math.PI*.8)
+  else ctx.arc(headCX,headY-2,15,Math.PI*1.2,Math.PI*1.8)
+  ctx.stroke()
+  // Chin guard centered on head
   ctx.fillStyle=RED
-  ctx.beginPath();ctx.roundRect(cx+dir*3-13,headY+11,26,10,5);ctx.fill()
-  // Chin strap hint
-  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.5
-  ctx.beginPath();ctx.moveTo(cx+dir*3-13,headY+16);ctx.lineTo(cx+dir*3+13,headY+16);ctx.stroke()
+  ctx.beginPath();ctx.roundRect(headCX-11,headY+12,22,9,5);ctx.fill()
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1.2
+  ctx.beginPath();ctx.moveTo(headCX-10,headY+17);ctx.lineTo(headCX+10,headY+17);ctx.stroke()
 
   ctx.restore();ctx.globalAlpha=1
 }
