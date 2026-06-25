@@ -20,11 +20,11 @@ body,html{background:#0d0d1a;overflow:hidden;}
 .side-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px;}
 .side-label{font-size:7px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
 .belt-chip{display:inline-block;font-size:9px;font-weight:800;padding:3px 6px;border-radius:8px;text-align:center;width:100%;margin-top:2px;}
-/* controls ALWAYS anchored at bottom - independent of canvas size */
-.controls{position:absolute;bottom:0;left:0;right:0;padding:4px 8px env(safe-area-inset-bottom,8px);display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:#0d0d1a;border-top:1px solid rgba(255,255,255,.06);z-index:20;}
-.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:11px;color:#fff;font-size:18px;padding:8px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;font-weight:800;-webkit-tap-highlight-color:transparent;}
-.cb span{font-size:6px;color:rgba(255,255,255,.3);font-weight:600;}
-.cb:active{background:rgba(255,255,255,.25);transform:scale(.92);}
+/* controls fixed to viewport bottom — always above Android nav bar */
+.controls{position:fixed;bottom:0;left:0;right:0;padding:6px 8px;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));display:grid;grid-template-columns:repeat(6,1fr);gap:4px;background:rgba(10,10,26,.97);border-top:1px solid rgba(255,255,255,.12);z-index:200;}
+.cb{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.25);border-radius:12px;color:#fff;font-size:22px;padding:11px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;font-weight:800;-webkit-tap-highlight-color:transparent;min-height:52px;}
+.cb span{font-size:7px;color:rgba(255,255,255,.5);font-weight:600;}
+.cb:active{background:rgba(255,255,255,.35);transform:scale(.91);}
 #btn-hold.has-piece{border-color:#FFD700;box-shadow:0 0 10px rgba(255,215,0,.3);}
 
 /* Overlays */
@@ -586,18 +586,18 @@ function restartGame(){
 // Controls are position:absolute so measure them, add padding-bottom to arena,
 // then size canvas to fit the remaining vertical space.
 requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  const gw  = document.querySelector('.game-wrap')
-  const hud = document.getElementById('hud-bar')
   const ctrl = document.querySelector('.controls')
+  const hud  = document.getElementById('hud-bar')
+  const nav  = document.querySelector('.navhead')
   const arena = document.querySelector('.arena')
-  if(gw && hud && ctrl && gw.clientHeight > 0){
-    const ctrlH = ctrl.offsetHeight || 68
-    const hudH  = hud.offsetHeight  || 38
-    // push arena content up so canvas isn't hidden under floating controls
-    if(arena) arena.style.paddingBottom = (ctrlH + 4) + 'px'
-    const avail = gw.clientHeight - hudH - ctrlH - 12
-    if(avail > 80) CELL = Math.max(10, Math.min(16, Math.floor(avail / ROWS)))
-  }
+  // controls are position:fixed so use window height minus fixed elements
+  const ctrlH = ctrl ? ctrl.offsetHeight : 76
+  const hudH  = hud  ? hud.offsetHeight  : 38
+  const navH  = nav  ? nav.offsetHeight  : 44
+  // add bottom padding to arena so canvas doesn't hide under fixed controls
+  if(arena) arena.style.paddingBottom = (ctrlH + 6) + 'px'
+  const avail = window.innerHeight - navH - hudH - ctrlH - 16
+  if(avail > 80) CELL = Math.max(10, Math.min(16, Math.floor(avail / ROWS)))
   canvas.width  = COLS * CELL
   canvas.height = ROWS * CELL
   restartGame()
