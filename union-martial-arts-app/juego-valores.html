@@ -4,25 +4,25 @@
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body,html{background:#0d0d1a;overflow:hidden;}
-.game-wrap{display:flex;flex-direction:column;flex:1;min-height:0;background:#0d0d1a;}
-.hud{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .6s;}
-.hud-box{text-align:center;min-width:44px;}
-.hud-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;}
-.hud-val{font-size:22px;font-weight:900;color:#fff;line-height:1.1;}
-.belt-bar-wrap{flex:1;margin:0 10px;}
-.belt-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.4);margin-bottom:3px;text-align:center;}
+.game-wrap{display:flex;flex-direction:column;flex:1;min-height:0;background:#0d0d1a;overflow:hidden;}
+.hud{padding:5px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .6s;}
+.hud-box{text-align:center;min-width:42px;}
+.hud-label{font-size:7px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;}
+.hud-val{font-size:20px;font-weight:900;color:#fff;line-height:1.1;}
+.belt-bar-wrap{flex:1;margin:0 8px;}
+.belt-label{font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.4);margin-bottom:3px;text-align:center;}
 .belt-bar{height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
 .belt-fill{height:100%;border-radius:99px;transition:width .35s,background .5s;}
-.arena{display:flex;justify-content:center;align-items:flex-start;flex:1;padding:5px 8px 4px;gap:8px;}
-#gc{display:block;border-radius:8px;transition:border-color .5s;}
-.side{display:flex;flex-direction:column;gap:7px;width:66px;flex-shrink:0;}
-.side-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;}
-.side-label{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
-.belt-chip{display:inline-block;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;text-align:center;width:100%;margin-top:2px;}
-.controls{padding:5px 10px 10px;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;flex-shrink:0;}
-.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:13px;color:#fff;font-size:20px;padding:11px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;font-weight:800;}
-.cb span{font-size:7px;color:rgba(255,255,255,.3);font-weight:600;}
-.cb:active{background:rgba(255,255,255,.2);}
+.arena{display:flex;justify-content:center;align-items:flex-start;flex:1;min-height:0;overflow:hidden;padding:4px 6px 3px;gap:6px;}
+#gc{display:block;border-radius:8px;transition:border-color .5s;flex-shrink:0;}
+.side{display:flex;flex-direction:column;gap:5px;width:60px;flex-shrink:0;}
+.side-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px;}
+.side-label{font-size:7px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.belt-chip{display:inline-block;font-size:9px;font-weight:800;padding:3px 6px;border-radius:8px;text-align:center;width:100%;margin-top:2px;}
+.controls{padding:4px 8px 8px;display:grid;grid-template-columns:repeat(6,1fr);gap:3px;flex-shrink:0;}
+.cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:11px;color:#fff;font-size:18px;padding:8px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;font-weight:800;-webkit-tap-highlight-color:transparent;}
+.cb span{font-size:6px;color:rgba(255,255,255,.3);font-weight:600;}
+.cb:active{background:rgba(255,255,255,.25);transform:scale(.92);}
 #btn-hold.has-piece{border-color:#FFD700;box-shadow:0 0 10px rgba(255,215,0,.3);}
 
 /* Overlays */
@@ -127,6 +127,27 @@ body,html{background:#0d0d1a;overflow:hidden;}
 
   <!-- Level up popup (injected dynamically) -->
   <div id="lvlup-root"></div>
+
+  <!-- HOW TO PLAY overlay — shown on first load -->
+  <div class="overlay" id="howto-overlay" style="display:none;">
+    <div class="ov-card" style="background:linear-gradient(135deg,#111128,#0d0d1a);border:2px solid #0047AB;color:#fff;max-width:300px;">
+      <div style="font-size:34px;margin-bottom:6px;">🧩</div>
+      <div style="font-size:17px;font-weight:900;margin-bottom:10px;">¿Cómo se juega?</div>
+      <div style="text-align:left;font-size:12px;line-height:1.9;margin-bottom:12px;color:#cbd5e1;">
+        <div>◀ ▶ &nbsp;Mover la pieza</div>
+        <div>🔄 &nbsp;Rotar la pieza</div>
+        <div>▼ &nbsp;Bajar más rápido</div>
+        <div>▼▼ &nbsp;Caer al instante (Drop)</div>
+      </div>
+      <div style="background:rgba(0,71,171,.35);border-radius:10px;padding:10px 12px;margin-bottom:10px;border-left:3px solid #60a5fa;font-size:12px;color:#bfdbfe;line-height:1.6;">
+        🎯 <b style="color:#fff;">Llena filas completas de lado a lado</b> para borrarlas. ¡Todas las celdas de la fila deben estar llenas!
+      </div>
+      <div style="background:rgba(255,215,0,.12);border-radius:10px;padding:8px 12px;margin-bottom:14px;border-left:3px solid #FFD700;font-size:12px;color:#fef08a;line-height:1.6;">
+        🥋 Completa líneas → sube de cinturón → ¡llega a Cinta Negra! Los valores de UNION aparecen al limpiar filas.
+      </div>
+      <button class="btn primary block" onclick="document.getElementById('howto-overlay').style.display='none'" style="font-size:14px;padding:12px;">🎮 ¡Entendido! Jugar</button>
+    </div>
+  </div>
 
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -291,9 +312,11 @@ function clearLines(){
     if(comboCount>1) scoreFloats.push({x:COLS*CELL/2,y:192,text:'COMBO x'+comboCount+'!',alpha:1,dy:-1.3,size:14,color:'#f97316'})
     flashTimer=12
     spawnParticles(cleared>=4?60:cleared>=2?35:18)
-    // Valor words float inside the canvas
-    const numWords = cleared>=4?3:cleared>=2?2:1
-    for(let i=0;i<numWords;i++) setTimeout(()=>spawnValorFloat(), i*400)
+    // Valor words float big inside canvas on line clear
+    const vShow=VALORES[Math.floor(Math.random()*VALORES.length)]
+    spawnValorFloat(vShow.nombre, vShow.icon)
+    if(cleared>=2) setTimeout(()=>{const v2=VALORES[Math.floor(Math.random()*VALORES.length)];spawnValorFloat(v2.nombre,v2.icon)},600)
+    if(cleared>=4) setTimeout(()=>{const v3=VALORES[Math.floor(Math.random()*VALORES.length)];spawnValorFloat(v3.nombre,v3.icon)},1200)
     if(cleared>=4) shakeFrames=10; else if(cleared>=2) shakeFrames=5
 
     document.getElementById('hud-score').textContent=score.toLocaleString()
@@ -486,6 +509,15 @@ function draw(){
   ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) ctx.strokeRect(c*CELL,r*CELL,CELL,CELL)
 
+  // Near-complete row highlight (hint for player)
+  for(let r=0;r<ROWS;r++){
+    const filled=board[r].filter(c=>c!==null).length
+    if(filled>=7){
+      ctx.fillStyle=`rgba(255,255,255,${(filled-6)/4*0.1})`
+      ctx.fillRect(0,r*CELL,COLS*CELL,CELL)
+    }
+  }
+
   // Board
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(board[r][c]) drawCell(c,r,board[r][c])
 
@@ -549,49 +581,55 @@ function restartGame(){
   nextPiece=makePiece();spawnPiece();setDropSpeed();loop()
 }
 
-// Recalculate CELL after layout so controls always fit on screen
-window.addEventListener('load', () => {
+// Double RAF: waits for two render frames so CSS layout is fully resolved
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
   const gw = document.querySelector('.game-wrap')
   const hud = document.getElementById('hud-bar')
   const ctrl = document.querySelector('.controls')
-  if(gw && hud && ctrl){
-    const avail = gw.clientHeight - hud.offsetHeight - ctrl.offsetHeight - 18
-    CELL = Math.max(11, Math.min(15, Math.floor(avail / ROWS)))
+  if(gw && hud && ctrl && gw.clientHeight > 0){
+    const avail = gw.clientHeight - hud.offsetHeight - ctrl.offsetHeight - 14
+    if(avail > 80) CELL = Math.max(10, Math.min(15, Math.floor(avail / ROWS)))
   }
   canvas.width = COLS * CELL
   canvas.height = ROWS * CELL
   restartGame()
-})
+  document.getElementById('howto-overlay').style.display='flex'
+}))
 
-function spawnValorFloat(){
-  const v = VALORES[Math.floor(Math.random()*VALORES.length)]
+function spawnValorFloat(nombre, icon){
   const b = BELTS[beltLevel-1]
-  const cw = COLS*CELL
+  const cw = COLS*CELL, ch = ROWS*CELL
+  const color = b.color==='#e5e5e5'?'#ffffff':b.color
   valorFloats.push({
-    text: v.icon + ' ' + v.nombre.toUpperCase(),
-    x: 8 + Math.random() * (cw - 80),
-    y: ROWS*CELL - 30 - Math.random()*60,
-    alpha: 0, dy: -0.55,
-    color: b.color==='#e5e5e5'?'#ffffff':b.color,
-    life: 0, maxLife: 160,
-    size: 12 + Math.floor(Math.random()*5)
+    text: (icon||'✨') + ' ' + (nombre||'UNION'),
+    x: cw/2, y: ch*0.55,
+    alpha: 0, dy: -0.9,
+    color, life: 0, maxLife: 110, size: 22
   })
 }
 
 function drawValorFloats(){
   valorFloats = valorFloats.filter(f => {
     f.life++; f.y += f.dy
-    if(f.life < 25) f.alpha = (f.life/25)*0.5
-    else if(f.life > f.maxLife-45) f.alpha = ((f.maxLife-f.life)/45)*0.5
-    else f.alpha = 0.5
+    if(f.life < 12) f.alpha = f.life/12
+    else if(f.life > f.maxLife-18) f.alpha = (f.maxLife-f.life)/18
+    else f.alpha = 1
     if(f.life >= f.maxLife) return false
     ctx.save()
     ctx.globalAlpha = f.alpha
     ctx.font = `900 ${f.size}px Inter,sans-serif`
-    ctx.textAlign = 'left'
+    ctx.textAlign = 'center'
+    // Dark pill background
+    const tw = ctx.measureText(f.text).width
+    ctx.fillStyle = 'rgba(0,0,0,.72)'
+    ctx.beginPath();ctx.roundRect(f.x-tw/2-12, f.y-f.size+2, tw+24, f.size+10, 8);ctx.fill()
+    // Glow border
+    ctx.strokeStyle = f.color; ctx.lineWidth = 1.5
+    ctx.beginPath();ctx.roundRect(f.x-tw/2-12, f.y-f.size+2, tw+24, f.size+10, 8);ctx.stroke()
+    // Text
+    ctx.strokeStyle='rgba(0,0,0,.9)';ctx.lineWidth=5
+    ctx.strokeText(f.text, f.x, f.y)
     ctx.fillStyle = f.color
-    ctx.shadowColor = 'rgba(0,0,0,.6)'
-    ctx.shadowBlur = 6
     ctx.fillText(f.text, f.x, f.y)
     ctx.restore()
     return true
