@@ -4,8 +4,8 @@
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body,html{background:#0d0d1a;overflow:hidden;}
-.game-wrap{display:flex;flex-direction:column;flex:1;min-height:0;background:#0d0d1a;overflow:hidden;}
-.hud{padding:5px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .6s;}
+.game-wrap{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;background:#0d0d1a;overflow:hidden;}
+.hud{padding:5px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .6s;position:relative;z-index:5;}
 .hud-box{text-align:center;min-width:42px;}
 .hud-label{font-size:7px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;}
 .hud-val{font-size:20px;font-weight:900;color:#fff;line-height:1.1;}
@@ -13,13 +13,15 @@ body,html{background:#0d0d1a;overflow:hidden;}
 .belt-label{font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.4);margin-bottom:3px;text-align:center;}
 .belt-bar{height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
 .belt-fill{height:100%;border-radius:99px;transition:width .35s,background .5s;}
-.arena{display:flex;justify-content:center;align-items:flex-start;flex:1;min-height:0;overflow:hidden;padding:4px 6px 3px;gap:6px;}
+/* arena fills space between HUD and controls (absolute-positioned controls at bottom) */
+.arena{display:flex;justify-content:center;align-items:flex-start;flex:1;min-height:0;overflow:hidden;padding:4px 6px 0;gap:6px;}
 #gc{display:block;border-radius:8px;transition:border-color .5s;flex-shrink:0;}
 .side{display:flex;flex-direction:column;gap:5px;width:60px;flex-shrink:0;}
 .side-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px;}
 .side-label{font-size:7px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
 .belt-chip{display:inline-block;font-size:9px;font-weight:800;padding:3px 6px;border-radius:8px;text-align:center;width:100%;margin-top:2px;}
-.controls{padding:4px 8px 8px;display:grid;grid-template-columns:repeat(6,1fr);gap:3px;flex-shrink:0;}
+/* controls ALWAYS anchored at bottom - independent of canvas size */
+.controls{position:absolute;bottom:0;left:0;right:0;padding:4px 8px env(safe-area-inset-bottom,8px);display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:#0d0d1a;border-top:1px solid rgba(255,255,255,.06);z-index:20;}
 .cb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:11px;color:#fff;font-size:18px;padding:8px 0;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .1s;font-weight:800;-webkit-tap-highlight-color:transparent;}
 .cb span{font-size:6px;color:rgba(255,255,255,.3);font-weight:600;}
 .cb:active{background:rgba(255,255,255,.25);transform:scale(.92);}
@@ -581,16 +583,22 @@ function restartGame(){
   nextPiece=makePiece();spawnPiece();setDropSpeed();loop()
 }
 
-// Double RAF: waits for two render frames so CSS layout is fully resolved
+// Controls are position:absolute so measure them, add padding-bottom to arena,
+// then size canvas to fit the remaining vertical space.
 requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  const gw = document.querySelector('.game-wrap')
+  const gw  = document.querySelector('.game-wrap')
   const hud = document.getElementById('hud-bar')
   const ctrl = document.querySelector('.controls')
+  const arena = document.querySelector('.arena')
   if(gw && hud && ctrl && gw.clientHeight > 0){
-    const avail = gw.clientHeight - hud.offsetHeight - ctrl.offsetHeight - 14
-    if(avail > 80) CELL = Math.max(10, Math.min(15, Math.floor(avail / ROWS)))
+    const ctrlH = ctrl.offsetHeight || 68
+    const hudH  = hud.offsetHeight  || 38
+    // push arena content up so canvas isn't hidden under floating controls
+    if(arena) arena.style.paddingBottom = (ctrlH + 4) + 'px'
+    const avail = gw.clientHeight - hudH - ctrlH - 12
+    if(avail > 80) CELL = Math.max(10, Math.min(16, Math.floor(avail / ROWS)))
   }
-  canvas.width = COLS * CELL
+  canvas.width  = COLS * CELL
   canvas.height = ROWS * CELL
   restartGame()
   document.getElementById('howto-overlay').style.display='flex'
