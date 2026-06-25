@@ -116,7 +116,7 @@ body{background:#0a0a1a;font-family:'Segoe UI',sans-serif;height:100dvh;overflow
   </div>
   <div class="scene-row">
     <div class="scene-card" onclick="pickScene('exterior')">
-      <img src="assets/avatar-exterior.jpg" alt="Exterior" onerror="this.style.background='#1a2a6a';this.style.height='130px'"/>
+      <img src="assets/avatar-exterior.png" alt="Exterior" onerror="this.style.background='#1a2a6a';this.style.height='130px'"/>
       <div class="label">🏙️ Academia UNION</div>
     </div>
     <div class="scene-card" onclick="pickScene('interior')">
@@ -216,7 +216,7 @@ function pickChar(c) {
 function pickScene(s) {
   scene = s
   const img = document.getElementById('scene-img')
-  img.src = s === 'exterior' ? 'assets/avatar-exterior.jpg' : 'assets/avatar-interior.jpg'
+  img.src = s === 'exterior' ? 'assets/avatar-exterior.png' : 'assets/avatar-interior.jpg'
   buildStage()
   buildEquipGrid()
   buildBeltRow()
