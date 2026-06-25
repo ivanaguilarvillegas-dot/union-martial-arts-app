@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+<title>UNION Avatar – Vístete de Kickboxer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#0a0a1a;font-family:'Segoe UI',sans-serif;height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* ── SCREENS ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s;}
+.screen.active{opacity:1;pointer-events:all;}
+
+/* ── HEADER ── */
+.hdr{width:100%;max-width:430px;display:flex;align-items:center;gap:10px;padding:12px 16px 8px;position:relative;z-index:10;}
+.hdr .back{background:rgba(255,255,255,.12);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.hdr h1{flex:1;text-align:center;font-size:16px;font-weight:700;color:#fff;letter-spacing:.05em;}
+.hdr .logo{font-size:13px;font-weight:900;color:#4a7fff;letter-spacing:.15em;}
+
+/* ── SELECT CHARACTER ── */
+#s-char{background:linear-gradient(160deg,#0a1a4a 0%,#0a0a1a 60%);}
+.s-title{color:#fff;font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;}
+.s-sub{color:rgba(255,255,255,.5);font-size:13px;text-align:center;margin-bottom:32px;}
+.char-row{display:flex;gap:24px;justify-content:center;}
+.char-card{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:20px;padding:20px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:all .2s;width:148px;}
+.char-card:hover,.char-card:active{border-color:#4a7fff;background:rgba(74,127,255,.12);transform:translateY(-3px);}
+.char-card img{width:110px;height:130px;object-fit:contain;}
+.char-card .name{color:#fff;font-size:14px;font-weight:700;}
+.char-card .tag{font-size:11px;color:#4a7fff;font-weight:600;background:rgba(74,127,255,.15);padding:3px 10px;border-radius:20px;}
+
+/* ── SELECT SCENE ── */
+#s-scene{background:#0a0a1a;}
+.scene-row{display:flex;gap:16px;justify-content:center;padding:0 16px;}
+.scene-card{flex:1;max-width:180px;border-radius:16px;overflow:hidden;cursor:pointer;position:relative;border:2px solid transparent;transition:all .2s;}
+.scene-card:hover,.scene-card:active{border-color:#4a7fff;transform:scale(1.03);}
+.scene-card img{width:100%;height:130px;object-fit:cover;display:block;}
+.scene-card .label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:13px;font-weight:700;padding:20px 10px 10px;text-align:center;}
+
+/* ── DRESS-UP GAME ── */
+#s-game{background:#0a0a1a;flex-direction:column;justify-content:flex-start;}
+.game-wrap{width:100%;max-width:430px;flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.scene-bg{position:relative;flex:1;min-height:0;overflow:hidden;}
+.scene-bg img.bg{width:100%;height:100%;object-fit:cover;display:block;}
+.char-stage{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:95%;display:flex;align-items:flex-end;justify-content:center;}
+.char-stage .layer{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:100%;object-fit:contain;transition:opacity .3s;}
+.char-stage .layer.hidden{opacity:0;}
+
+/* car overlay */
+.car-overlay{position:absolute;bottom:0;left:4%;width:52%;object-fit:contain;pointer-events:none;transition:opacity .3s;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));}
+.car-overlay.hidden{opacity:0;}
+
+/* belt badge */
+.belt-badge{position:absolute;top:10px;right:12px;width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8);}
+
+/* ── EQUIPMENT PANEL ── */
+.equip-panel{background:rgba(10,10,26,.97);border-top:1px solid rgba(255,255,255,.1);padding:10px 12px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom,12px));}
+.equip-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.equip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.eq-btn{background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all .2s;position:relative;}
+.eq-btn .ico{font-size:22px;line-height:1;}
+.eq-btn .lbl{font-size:9px;color:rgba(255,255,255,.5);font-weight:600;text-align:center;}
+.eq-btn.on{background:rgba(74,127,255,.2);border-color:#4a7fff;}
+.eq-btn.on .lbl{color:#4a7fff;}
+.eq-btn.on::after{content:'✓';position:absolute;top:4px;right:6px;font-size:9px;color:#4a7fff;font-weight:900;}
+
+/* belt row */
+.belt-row{display:flex;gap:6px;justify-content:center;margin-top:4px;}
+.belt-opt{width:28px;height:12px;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+.belt-opt.sel{border-color:#fff;transform:scale(1.2);}
+
+/* action buttons */
+.action-row{display:flex;gap:10px;margin-top:10px;}
+.act-btn{flex:1;padding:10px;border-radius:12px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.act-btn.primary{background:#4a7fff;color:#fff;}
+.act-btn.secondary{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);}
+.act-btn:active{transform:scale(.96);}
+
+/* ── CONGRATS OVERLAY ── */
+#congrats{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
+#congrats.show{opacity:1;pointer-events:all;}
+.confetti-ring{font-size:60px;margin-bottom:12px;animation:spin 2s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cong-title{font-size:28px;font-weight:900;color:#fff;text-align:center;}
+.cong-sub{font-size:14px;color:rgba(255,255,255,.6);text-align:center;margin-top:6px;margin-bottom:24px;}
+.cong-btn{background:#4a7fff;color:#fff;border:none;border-radius:14px;padding:14px 36px;font-size:15px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- ── SCREEN 1: ELEGIR PERSONAJE ── -->
+<div class="screen active" id="s-char">
+  <div class="s-title">¡Elige tu luchador!</div>
+  <div class="s-sub">Personaliza tu equipo UNION</div>
+  <div class="char-row">
+    <div class="char-card" onclick="pickChar('nino')">
+      <img src="assets/avatar-nino-base.png" alt="Niño" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 110 130%22><rect width=%22110%22 height=%22130%22 rx=%2212%22 fill=%22%23223%22/><text x=%2255%22 y=%2270%22 text-anchor=%22middle%22 font-size=%2248%22>🥋</text></svg>'"/>
+      <div class="name">KAITO</div>
+      <div class="tag">Niño</div>
+    </div>
+    <div class="char-card" onclick="pickChar('nina')">
+      <img src="assets/avatar-nina-base.png" alt="Niña" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 110 130%22><rect width=%22110%22 height=%22130%22 rx=%2212%22 fill=%22%22/><text x=%2255%22 y=%2270%22 text-anchor=%22middle%22 font-size=%2248%22>🥊</text></svg>'"/>
+      <div class="name">SAKURA</div>
+      <div class="tag">Niña</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN 2: ELEGIR ESCENA ── -->
+<div class="screen" id="s-scene">
+  <div class="hdr">
+    <button class="back" onclick="goTo('s-char')">‹</button>
+    <h1>¿Dónde entrenas?</h1>
+    <div class="logo">UNION</div>
+  </div>
+  <div class="scene-row">
+    <div class="scene-card" onclick="pickScene('exterior')">
+      <img src="assets/avatar-exterior.jpg" alt="Exterior" onerror="this.style.background='#1a2a6a';this.style.height='130px'"/>
+      <div class="label">🏙️ Academia UNION</div>
+    </div>
+    <div class="scene-card" onclick="pickScene('interior')">
+      <img src="assets/avatar-interior.jpg" alt="Interior" onerror="this.style.background='#2a1a0a';this.style.height='130px'"/>
+      <div class="label">🥋 Tatami UNION</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN 3: JUEGO DRESS-UP ── -->
+<div class="screen" id="s-game">
+  <div class="game-wrap">
+    <!-- header -->
+    <div class="hdr">
+      <button class="back" onclick="goTo('s-scene')">‹</button>
+      <h1 id="char-name-hdr">KAITO</h1>
+      <div class="logo">UNION</div>
+    </div>
+
+    <!-- scene + character -->
+    <div class="scene-bg">
+      <img class="bg" id="scene-img" src="" alt=""/>
+      <img class="car-overlay hidden" id="car-img" src="assets/avatar-carro.png" alt="carro"/>
+      <div class="char-stage" id="char-stage">
+        <!-- layers injected by JS -->
+      </div>
+      <!-- belt badge -->
+      <div class="belt-badge" id="belt-badge" style="background:#e8e8e8;color:#333;">BLAN</div>
+    </div>
+
+    <!-- equipment panel -->
+    <div class="equip-panel">
+      <div class="equip-label">Equipo de competencia</div>
+      <div class="equip-grid" id="equip-grid">
+        <!-- injected by JS -->
+      </div>
+      <div class="equip-label">Nivel de cinta</div>
+      <div class="belt-row" id="belt-row">
+        <!-- injected by JS -->
+      </div>
+      <div class="action-row">
+        <button class="act-btn secondary" id="car-btn" onclick="toggleCar()">🚗 Mi carro</button>
+        <button class="act-btn secondary" onclick="clearAll()">Quitar todo</button>
+        <button class="act-btn primary" onclick="fullEquip()">¡Equipo!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- congrats overlay -->
+<div id="congrats">
+  <div class="confetti-ring">🏆</div>
+  <div class="cong-title">¡LISTO PARA PELEAR!</div>
+  <div class="cong-sub">Equipo UNION completo 🥊🦺⛑️</div>
+  <button class="cong-btn" onclick="hideCongrats()">¡Seguir jugando!</button>
+</div>
+
+<script>
+const EQUIPMENT = [
+  { id:'casco',   ico:'⛑️',  label:'Casco'       },
+  { id:'guantes', ico:'🥊',  label:'Guantes'     },
+  { id:'peto',    ico:'🦺',  label:'Peto'        },
+  { id:'espini',  ico:'🦵',  label:'Espinilleras'},
+  { id:'coderas', ico:'💪',  label:'Coderas'     },
+  { id:'bucal',   ico:'😬',  label:'Bucal'       },
+  { id:'zapatos', ico:'👟',  label:'Zapatos'     },
+  { id:'shorts',  ico:'🩳',  label:'Shorts'      },
+]
+
+const BELTS = [
+  { color:'#f5f5f5', label:'BLAN', text:'#333' },
+  { color:'#ffe033', label:'AMAR', text:'#333' },
+  { color:'#ff8c00', label:'NARA', text:'#fff' },
+  { color:'#2ecc71', label:'VERD', text:'#fff' },
+  { color:'#3498db', label:'AZUL', text:'#fff' },
+  { color:'#9b59b6', label:'MORA', text:'#fff' },
+  { color:'#c0392b', label:'ROJO', text:'#fff' },
+  { color:'#1a1a1a', label:'NEGR', text:'#fff' },
+]
+
+let char = 'nino'
+let scene = 'exterior'
+let equipped = new Set()
+let beltIdx = 0
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+}
+
+function pickChar(c) {
+  char = c
+  document.getElementById('char-name-hdr').textContent = c === 'nino' ? 'KAITO' : 'SAKURA'
+  goTo('s-scene')
+}
+
+function pickScene(s) {
+  scene = s
+  const img = document.getElementById('scene-img')
+  img.src = s === 'exterior' ? 'assets/avatar-exterior.jpg' : 'assets/avatar-interior.jpg'
+  buildStage()
+  buildEquipGrid()
+  buildBeltRow()
+  goTo('s-game')
+}
+
+function buildStage() {
+  const stage = document.getElementById('char-stage')
+  stage.innerHTML = `
+    <img class="layer" id="layer-base"  src="assets/avatar-${char}-base.png"  alt=""
+      onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 280%22><text x=%22100%22 y=%22200%22 text-anchor=%22middle%22 font-size=%22120%22>${char==='nino'?'🥋':'🥊'}</text></svg>'"/>
+    <img class="layer hidden" id="layer-equipo" src="assets/avatar-${char}-equipo.png" alt=""
+      onerror="this.classList.add('err')"/>
+  `
+}
+
+function buildEquipGrid() {
+  const grid = document.getElementById('equip-grid')
+  grid.innerHTML = EQUIPMENT.map(e => `
+    <div class="eq-btn" id="eq-${e.id}" onclick="toggleEquip('${e.id}')">
+      <div class="ico">${e.ico}</div>
+      <div class="lbl">${e.label}</div>
+    </div>
+  `).join('')
+}
+
+function buildBeltRow() {
+  const row = document.getElementById('belt-row')
+  row.innerHTML = BELTS.map((b,i) => `
+    <div class="belt-opt${i===0?' sel':''}" style="background:${b.color}"
+      onclick="pickBelt(${i})" title="${b.label}"></div>
+  `).join('')
+  updateBeltBadge()
+}
+
+function toggleEquip(id) {
+  if (equipped.has(id)) equipped.delete(id)
+  else equipped.add(id)
+  document.getElementById('eq-'+id).classList.toggle('on', equipped.has(id))
+  updateCharLayers()
+}
+
+function updateCharLayers() {
+  const allOn = equipped.size === EQUIPMENT.length
+  const eq = document.getElementById('layer-equipo')
+  const base = document.getElementById('layer-base')
+  if (eq && !eq.classList.contains('err')) {
+    eq.classList.toggle('hidden', !allOn)
+    base.classList.toggle('hidden', allOn)
+  }
+  if (allOn) showCongrats()
+}
+
+function pickBelt(i) {
+  beltIdx = i
+  document.querySelectorAll('.belt-opt').forEach((el,j) => el.classList.toggle('sel', j===i))
+  updateBeltBadge()
+}
+
+function updateBeltBadge() {
+  const b = BELTS[beltIdx]
+  const badge = document.getElementById('belt-badge')
+  badge.style.background = b.color
+  badge.style.color = b.text
+  badge.textContent = b.label
+}
+
+function clearAll() {
+  equipped.clear()
+  document.querySelectorAll('.eq-btn').forEach(el => el.classList.remove('on'))
+  const eq = document.getElementById('layer-equipo')
+  const base = document.getElementById('layer-base')
+  if (eq) eq.classList.add('hidden')
+  if (base) base.classList.remove('hidden')
+}
+
+function fullEquip() {
+  EQUIPMENT.forEach(e => {
+    equipped.add(e.id)
+    document.getElementById('eq-'+e.id).classList.add('on')
+  })
+  updateCharLayers()
+}
+
+function showCongrats() {
+  document.getElementById('congrats').classList.add('show')
+}
+function hideCongrats() {
+  document.getElementById('congrats').classList.remove('show')
+}
+
+let carVisible = false
+function toggleCar() {
+  carVisible = !carVisible
+  document.getElementById('car-img').classList.toggle('hidden', !carVisible)
+  const btn = document.getElementById('car-btn')
+  btn.classList.toggle('primary', carVisible)
+  btn.classList.toggle('secondary', !carVisible)
+}
+</script>
+</body>
+</html>
