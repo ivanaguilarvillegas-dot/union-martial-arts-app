@@ -552,7 +552,7 @@ function draw(){
 function loop(){draw();animId=requestAnimationFrame(loop)}
 
 // DAS / controls
-function startDAS(dir){clearTimeout(dasTimer);clearInterval(dasInterval);doMove(dir);dasTimer=setTimeout(()=>{dasInterval=setInterval(()=>doMove(dir),55)},190)}
+function startDAS(dir){clearTimeout(dasTimer);clearInterval(dasInterval);doMove(dir);dasTimer=setTimeout(()=>{dasInterval=setInterval(()=>doMove(dir),80)},220)}
 function stopDAS(){clearTimeout(dasTimer);clearInterval(dasInterval)}
 function doMove(d){if(d==='left') moveLeft();else moveRight()}
 function startSoft(){drop();softInterval2=setInterval(drop,55)}
