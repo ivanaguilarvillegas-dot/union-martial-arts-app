@@ -235,22 +235,36 @@
 .resumen-header span:first-child { font-size: 14px; font-weight: 700; color: #111827; }
 .resumen-header a { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.stat-tile { border-radius: 12px; padding: 12px 10px; text-align: center; }
-.stat-tile .stat-label { font-size: 11px; margin-top: 6px; font-weight: 600; }
-.stat-tile .stat-val { font-size: 18px; font-weight: 800; margin-top: 2px; }
+.stat-tile { border-radius: 16px; padding: 16px 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.stat-tile .stat-label { font-size: 11px; margin-top: 7px; font-weight: 700; }
+.stat-tile .stat-val { font-size: 22px; font-weight: 900; margin-top: 3px; }
 .stat-tile .stat-sub { font-size: 10px; margin-top: 2px; }
-.stat-blue { background: #eef2ff; }
-.stat-blue .stat-val { color: #1d4ed8; }
-.stat-blue .stat-label { color: #3b5bdb; }
+.stat-blue { background: linear-gradient(135deg,#eef2ff,#e0e7ff); }
+.stat-blue .stat-val { color: var(--primary); }
+.stat-blue .stat-label { color: var(--primary); }
 .stat-blue .stat-sub { color: #6172b0; }
-.stat-amber { background: #fffbeb; }
+.stat-amber { background: linear-gradient(135deg,#fffbeb,#fef3c7); }
 .stat-amber .stat-val { color: #d97706; }
 .stat-amber .stat-label { color: #b45309; }
 .stat-amber .stat-sub { color: #92400e; }
-.stat-green { background: #f0fdf4; }
+.stat-green { background: linear-gradient(135deg,#f0fdf4,#dcfce7); }
 .stat-green .stat-val { color: #16a34a; }
 .stat-green .stat-label { color: #15803d; }
 .stat-green .stat-sub { color: #166534; }
+.stat-purple { background: linear-gradient(135deg,#f5f3ff,#ede9fe); }
+.stat-purple .stat-val { color: #7c3aed; }
+.stat-purple .stat-label { color: #6d28d9; }
+.stat-purple .stat-sub { color: #5b21b6; }
+/* Progreso mensual */
+.prog-card { background:#fff; border-radius:16px; padding:14px 16px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,.06); border:1px solid var(--ink-100); }
+.prog-row { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #f3f4f6; }
+.prog-row:last-child { border-bottom:none; }
+.prog-ic { width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; }
+.prog-info { flex:1; min-width:0; }
+.prog-name { font-size:13px; font-weight:700; color:var(--text); }
+.prog-bar-wrap { height:6px; background:#f3f4f6; border-radius:99px; margin-top:5px; overflow:hidden; }
+.prog-bar { height:100%; border-radius:99px; transition:width .4s; }
+.prog-count { font-size:13px; font-weight:800; flex-shrink:0; }
 
 /* ── ALERTA ── */
 .alerta-card { border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; border: 1.5px solid #fecaca; }
@@ -409,29 +423,65 @@
       </div>
       <div class="stats-grid">
         <a class="stat-tile stat-blue" href="asistencia.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-calendar-stats" style="font-size:24px;color:#1d4ed8;"></i>
+          <i class="ti ti-calendar-stats" style="font-size:28px;color:var(--primary);"></i>
           <div class="stat-label">Asistencia</div>
           <div class="stat-val" id="stat-asistencia">—</div>
           <div class="stat-sub" id="stat-clases-sub">clases este mes</div>
         </a>
-        <div class="stat-tile stat-amber">
-          <i class="ti ti-award" style="font-size:24px;color:#d97706;"></i>
+        <a class="stat-tile stat-amber" href="evaluacion.html" style="text-decoration:none;display:block;">
+          <i class="ti ti-award" style="font-size:28px;color:#d97706;"></i>
           <div class="stat-label">Evaluación</div>
           <div class="stat-val" id="stat-eval">—</div>
-          <div class="stat-sub"><a href="evaluacion.html" style="color:inherit;text-decoration:none;font-weight:700;">Ver detalle</a></div>
-        </div>
-        <a class="stat-tile stat-green" id="tile-nutricion" href="nutricion.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-salad" style="font-size:24px;color:#16a34a;"></i>
-          <div class="stat-label">Nutrición</div>
-          <div class="stat-val" id="stat-habitos">—</div>
-          <div class="stat-sub">Completados</div>
+          <div class="stat-sub">Ver detalle</div>
         </a>
         <a class="stat-tile stat-green" href="pagos.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-coin" style="font-size:24px;color:#16a34a;"></i>
+          <i class="ti ti-coin" style="font-size:28px;color:#16a34a;"></i>
           <div class="stat-label">Pago</div>
           <div class="stat-val" id="stat-pago">—</div>
           <div class="stat-sub" id="stat-pago-sub"></div>
         </a>
+        <a class="stat-tile stat-purple" href="reporte.html" style="text-decoration:none;display:block;">
+          <i class="ti ti-chart-bar" style="font-size:28px;color:#7c3aed;"></i>
+          <div class="stat-label">Ver reporte</div>
+          <div class="stat-val" style="font-size:16px;">📊</div>
+          <div class="stat-sub">Progreso completo</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Progreso del mes: Nutrición / Meditación / Rutinas -->
+    <div class="prog-card" id="prog-wrap" style="display:none;">
+      <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:4px;">Progreso del mes</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;" id="prog-mes-label"></div>
+      <div id="tile-nutricion">
+        <div class="prog-row">
+          <div class="prog-ic" style="background:#f0fdf4;">🥗</div>
+          <div class="prog-info">
+            <div class="prog-name">Nutrición</div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="bar-nutricion" style="width:0%;background:#16a34a;"></div></div>
+          </div>
+          <span class="prog-count" style="color:#16a34a;" id="cnt-nutricion">—</span>
+        </div>
+      </div>
+      <div id="menu-meditacion">
+        <div class="prog-row">
+          <div class="prog-ic" style="background:#f5f3ff;">🧘</div>
+          <div class="prog-info">
+            <div class="prog-name">Meditación</div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="bar-meditacion" style="width:0%;background:#7c3aed;"></div></div>
+          </div>
+          <span class="prog-count" style="color:#7c3aed;" id="cnt-meditacion">—</span>
+        </div>
+      </div>
+      <div id="menu-entrena">
+        <div class="prog-row">
+          <div class="prog-ic" style="background:#eff6ff;">🏃</div>
+          <div class="prog-info">
+            <div class="prog-name">Rutinas en casa</div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="bar-entrena" style="width:0%;background:var(--primary);"></div></div>
+          </div>
+          <span class="prog-count" style="color:var(--primary);" id="cnt-entrena">—</span>
+        </div>
       </div>
     </div>
 
@@ -782,10 +832,12 @@
           if (diasVencido > 0) lucide.createIcons()
         }
 
-        // Ocultar nutrición, meditación y rutinas si es plan básico mensual
+        // Mostrar progreso del mes (ocultar si plan básico mensual)
         if (al.plan_pago === 'mensual') {
-          const hide = ['tile-nutricion', 'menu-entrena', 'menu-meditacion']
-          hide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none' })
+          document.getElementById('prog-wrap').style.display = 'none'
+        } else {
+          document.getElementById('prog-wrap').style.display = 'block'
+          cargarProgreso(al.id)
         }
 
         if (al.foto_url) {
@@ -871,16 +923,36 @@
       document.getElementById('stat-eval').textContent = '—'
     }
 
-    try {
-      const { data: msgs } = await supabase.from('mensajes')
-        .select('texto').eq('de_user_id', user.id).eq('para_admin', true).gte('creado_en', primerDia + 'T00:00:00')
-      const total = (msgs || []).filter(m => m.texto && m.texto.indexOf("🥗 Hábito") >= 0).length
-      document.getElementById('stat-habitos').textContent = total > 0 ? total : '—'
-    } catch(e) {
-      document.getElementById('stat-habitos').textContent = '—'
-    }
-
     lucide.createIcons()
+  }
+
+  async function cargarProgreso(alumnoId) {
+    try {
+      const hoy = new Date()
+      const primerDia = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01'
+      const mes = hoy.toLocaleDateString('es-MX', { month:'long', year:'numeric' })
+      document.getElementById('prog-mes-label').textContent = mes.charAt(0).toUpperCase() + mes.slice(1)
+
+      const { data: acts } = await supabase.from('actividades_casa')
+        .select('tipo').eq('alumno_id', alumnoId).gte('fecha', primerDia)
+
+      const META = 12 // sesiones esperadas al mes (~3/semana)
+      const cnts = { nutricion: 0, meditacion: 0, entrena: 0 }
+      ;(acts || []).forEach(a => {
+        const t = (a.tipo || '').toLowerCase()
+        if (t.includes('nutri') || t.includes('habit')) cnts.nutricion++
+        else if (t.includes('medita')) cnts.meditacion++
+        else if (t.includes('entr') || t.includes('rutina')) cnts.entrena++
+      })
+
+      const set = (id, bar, cnt) => {
+        document.getElementById(id).textContent = cnt + ' sesiones'
+        document.getElementById(bar).style.width = Math.min(100, Math.round(cnt/META*100)) + '%'
+      }
+      set('cnt-nutricion','bar-nutricion', cnts.nutricion)
+      set('cnt-meditacion','bar-meditacion', cnts.meditacion)
+      set('cnt-entrena','bar-entrena', cnts.entrena)
+    } catch(e) {}
   }
 
   async function cargarEvento() {
