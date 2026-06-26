@@ -419,9 +419,8 @@
     <div class="resumen-card">
       <div class="resumen-header">
         <span>Resumen del mes</span>
-        <a href="reporte.html">Ver reporte <i data-lucide="chevron-right" style="width:12px;height:12px;vertical-align:-2px;"></i></a>
       </div>
-      <div class="stats-grid">
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
         <a class="stat-tile stat-blue" href="asistencia.html" style="text-decoration:none;display:block;">
           <i class="ti ti-calendar-stats" style="font-size:28px;color:var(--primary);"></i>
           <div class="stat-label">Asistencia</div>
@@ -440,12 +439,6 @@
           <div class="stat-val" id="stat-pago">—</div>
           <div class="stat-sub" id="stat-pago-sub"></div>
         </a>
-        <a class="stat-tile stat-purple" href="reporte.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-chart-bar" style="font-size:28px;color:#7c3aed;"></i>
-          <div class="stat-label">Ver reporte</div>
-          <div class="stat-val" style="font-size:16px;">📊</div>
-          <div class="stat-sub">Progreso completo</div>
-        </a>
       </div>
     </div>
 
@@ -453,8 +446,8 @@
     <div class="prog-card" id="prog-wrap" style="display:none;">
       <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:4px;">Progreso del mes</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px;" id="prog-mes-label"></div>
-      <div id="tile-nutricion">
-        <div class="prog-row">
+      <a href="nutricion.html" style="text-decoration:none;display:block;">
+        <div class="prog-row" style="cursor:pointer;">
           <div class="prog-ic" style="background:#f0fdf4;">🥗</div>
           <div class="prog-info">
             <div class="prog-name">Nutrición</div>
@@ -462,9 +455,9 @@
           </div>
           <span class="prog-count" style="color:#16a34a;" id="cnt-nutricion">—</span>
         </div>
-      </div>
-      <div id="menu-meditacion">
-        <div class="prog-row">
+      </a>
+      <a href="meditacion.html" style="text-decoration:none;display:block;">
+        <div class="prog-row" style="cursor:pointer;">
           <div class="prog-ic" style="background:#f5f3ff;">🧘</div>
           <div class="prog-info">
             <div class="prog-name">Meditación</div>
@@ -472,9 +465,9 @@
           </div>
           <span class="prog-count" style="color:#7c3aed;" id="cnt-meditacion">—</span>
         </div>
-      </div>
-      <div id="menu-entrena">
-        <div class="prog-row">
+      </a>
+      <a href="entrena.html" style="text-decoration:none;display:block;">
+        <div class="prog-row" style="cursor:pointer;">
           <div class="prog-ic" style="background:#eff6ff;">🏃</div>
           <div class="prog-info">
             <div class="prog-name">Rutinas en casa</div>
@@ -482,7 +475,7 @@
           </div>
           <span class="prog-count" style="color:var(--primary);" id="cnt-entrena">—</span>
         </div>
-      </div>
+      </a>
     </div>
 
     <!-- Alerta -->
@@ -525,26 +518,18 @@
 
     <!-- Menú -->
     <div class="menu-card">
-      <div class="menu-section-hdr">Contenido</div>
-      <div class="menu-grid-3">
-        <a class="menu-item" href="programas.html">
-          <div class="menu-ic cobalt"><i class="ti ti-crown" style="font-size:28px;color:var(--primary);"></i></div>
-          <div class="menu-label">Programas</div>
-        </a>
-        <a class="menu-item" id="menu-entrena" href="entrena.html">
-          <div class="menu-ic cobalt"><i class="ti ti-run" style="font-size:28px;color:var(--primary);"></i></div>
-          <div class="menu-label">Rutinas en casa</div>
-        </a>
-        <a class="menu-item" id="menu-meditacion" href="meditacion.html">
-          <div class="menu-ic cobalt"><i class="ti ti-moon-stars" style="font-size:28px;color:var(--primary);"></i></div>
-          <div class="menu-label">Meditación</div>
-        </a>
-      </div>
 
-        <a class="menu-item" href="juegos.html">
-          <div class="menu-ic cobalt"><i class="ti ti-device-gamepad-2" style="font-size:28px;color:var(--primary);"></i></div>
-          <div class="menu-label">Zona de Juegos</div>
-        </a>
+      <!-- Programas: banner llamativo -->
+      <a href="programas.html" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--uma-blue-700) 0%,var(--primary) 100%);border-radius:14px;padding:14px 16px;text-decoration:none;margin-bottom:14px;">
+        <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ti-crown" style="font-size:26px;color:#fff;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:#fff;">Programas UNION</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">Básico · Anual · Club · UACJ</div>
+        </div>
+        <i class="ti ti-chevron-right" style="font-size:18px;color:rgba(255,255,255,.6);"></i>
+      </a>
 
       <div class="menu-section-divider"></div>
 
@@ -565,6 +550,10 @@
         <a class="menu-item" href="tienda.html">
           <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:28px;color:#d97706;"></i></div>
           <div class="menu-label">Tienda</div>
+        </a>
+        <a class="menu-item" href="juegos.html">
+          <div class="menu-ic cobalt" style="background:#fdf4ff;"><i class="ti ti-device-gamepad-2" style="font-size:28px;color:#9333ea;"></i></div>
+          <div class="menu-label">Zona de Juegos</div>
         </a>
       </div>
     </div>
@@ -835,8 +824,6 @@
         // Mostrar progreso del mes (ocultar si plan básico mensual)
         if (al.plan_pago === 'mensual') {
           document.getElementById('prog-wrap').style.display = 'none'
-          document.getElementById('menu-entrena').style.display = 'none'
-          document.getElementById('menu-meditacion').style.display = 'none'
         } else {
           document.getElementById('prog-wrap').style.display = 'block'
           cargarProgreso(al.id)
