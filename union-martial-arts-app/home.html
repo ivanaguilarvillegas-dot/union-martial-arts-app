@@ -420,25 +420,32 @@
       <div class="resumen-header">
         <span>Resumen del mes</span>
       </div>
-      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-        <a class="stat-tile stat-blue" href="asistencia.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-calendar-stats" style="font-size:28px;color:var(--primary);"></i>
-          <div class="stat-label">Asistencia</div>
-          <div class="stat-val" id="stat-asistencia">—</div>
-          <div class="stat-sub" id="stat-clases-sub">clases este mes</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="asistencia.html" style="text-decoration:none;display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:12px 14px;">
+          <i class="ti ti-calendar-stats" style="font-size:24px;color:var(--primary);flex-shrink:0;"></i>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.04em;text-transform:uppercase;">Asistencia</div>
+            <div style="font-size:18px;font-weight:900;color:#111827;" id="stat-asistencia">—</div>
+          </div>
+          <div style="font-size:10px;color:#6b7280;text-align:right;" id="stat-clases-sub">clases este mes</div>
         </a>
-        <a class="stat-tile stat-amber" href="evaluacion.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-award" style="font-size:28px;color:#d97706;"></i>
-          <div class="stat-label">Evaluación</div>
-          <div class="stat-val" id="stat-eval">—</div>
-          <div class="stat-sub">Ver detalle</div>
-        </a>
-        <a class="stat-tile stat-green" href="pagos.html" style="text-decoration:none;display:block;">
-          <i class="ti ti-coin" style="font-size:28px;color:#16a34a;"></i>
-          <div class="stat-label">Pago</div>
-          <div class="stat-val" id="stat-pago">—</div>
-          <div class="stat-sub" id="stat-pago-sub"></div>
-        </a>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <a href="evaluacion.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;background:#fffbeb;border-radius:14px;padding:12px 12px;">
+            <i class="ti ti-award" style="font-size:22px;color:#d97706;flex-shrink:0;"></i>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:#d97706;letter-spacing:.04em;text-transform:uppercase;">Evaluación</div>
+              <div style="font-size:16px;font-weight:900;color:#111827;" id="stat-eval">—</div>
+            </div>
+          </a>
+          <a href="pagos.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;background:#f0fdf4;border-radius:14px;padding:12px 12px;">
+            <i class="ti ti-coin" style="font-size:22px;color:#16a34a;flex-shrink:0;"></i>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:#16a34a;letter-spacing:.04em;text-transform:uppercase;">Pago</div>
+              <div style="font-size:16px;font-weight:900;color:#111827;" id="stat-pago">—</div>
+              <div style="font-size:10px;color:#6b7280;" id="stat-pago-sub"></div>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
 
