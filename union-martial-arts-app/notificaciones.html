@@ -418,6 +418,8 @@
     document.getElementById('sec-mensajes').style.display = tab === 'mensajes' ? 'block' : 'none'
     document.getElementById('sec-eventos').style.display  = tab === 'eventos'  ? 'block' : 'none'
     document.getElementById('hero-tab-title').textContent = tabTitles[tab]
+    const sec = document.getElementById('sec-' + tab)
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 </script>
 <script>

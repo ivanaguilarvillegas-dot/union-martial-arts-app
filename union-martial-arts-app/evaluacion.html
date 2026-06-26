@@ -65,15 +65,16 @@
   // Obtener alumno
   let padre = null, alumnoId = null, alumnoNombre = ''
   try {
-    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
-    if (!p) {
-      const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).single()
-      if (pe) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id); padre = pe }
-    } else { padre = p }
+    const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
+    if (r1?.length) { padre = r1[0] }
+    else {
+      const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
+      if (r2?.length) { await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id); padre = r2[0] }
+    }
     alumnoId = padre?.alumno_id
     if (alumnoId) {
-      const { data: al } = await supabase.from('alumnos').select('nombre, cinta').eq('id', alumnoId).single()
-      alumnoNombre = al?.nombre || ''
+      const { data: r3 } = await supabase.from('alumnos').select('nombre, cinta').eq('id', alumnoId).limit(1)
+      alumnoNombre = r3?.[0]?.nombre || ''
       document.getElementById('sub-nombre').textContent = 'Progreso de ' + alumnoNombre
     }
   } catch(e) {}
