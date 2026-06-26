@@ -8,16 +8,24 @@
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
 <link rel="stylesheet" href="css/uma.css" />
 <style>
-.asis-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-100);}
-.asis-row:last-child{border-bottom:none;}
-.asis-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
-.asis-motivo{font-size:11px;color:var(--red-text,#9b2c2c);margin-top:2px;line-height:1.3;}
-.asis-nota{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;}
-.asis-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
-.st-ok{background:var(--green-bg);color:var(--green-text);}
-.st-aus{background:var(--red-bg,#fff5f5);color:var(--red-text,#9b2c2c);}
-.st-none{background:var(--ink-100);color:var(--muted);}
-.mark-btn{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;border:none;cursor:pointer;flex-shrink:0;}
+.al-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--ink-100);transition:background .15s;}
+.al-row:last-child{border-bottom:none;}
+.al-row.ok{background:#f0fdf4;}
+.al-row.aus{background:#fff5f5;}
+.al-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.al-info{flex:1;min-width:0;}
+.al-nombre{font-size:13px;font-weight:700;color:var(--text);}
+.al-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.al-motivo{font-size:11px;color:#dc2626;margin-top:2px;}
+.btn-ok,.btn-aus{width:38px;height:38px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px;transition:all .15s;font-weight:700;}
+.btn-ok{border-color:#bbf7d0;background:#fff;color:#86efac;}
+.btn-aus{border-color:#fecaca;background:#fff;color:#fca5a5;}
+.btn-ok.activo{background:#059669;border-color:#059669;color:#fff;}
+.btn-aus.activo{background:#dc2626;border-color:#dc2626;color:#fff;}
+.resumen{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px 14px;background:#f4f6fb;}
+.res-box{background:#fff;border-radius:10px;padding:8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.res-n{font-size:18px;font-weight:800;}
+.res-l{font-size:10px;color:var(--muted);margin-top:1px;}
 </style>
 </head>
 <body>
@@ -28,45 +36,24 @@
       <div class="sub" id="fecha-sub">Hoy</div>
       <div class="title">Asistencias</div>
     </div>
-    <input type="date" id="fecha-picker" style="opacity:0;position:absolute;right:12px;top:12px;width:36px;height:36px;cursor:pointer;" />
-    <button style="background:none;border:none;color:#fff;cursor:pointer;" onclick="document.getElementById('fecha-picker').showPicker?.() || document.getElementById('fecha-picker').click()">
+    <input type="date" id="fecha-picker" style="opacity:0;position:absolute;right:12px;top:10px;width:36px;height:36px;cursor:pointer;" />
+    <button style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;" onclick="document.getElementById('fecha-picker').showPicker?.() || document.getElementById('fecha-picker').click()">
       <i data-lucide="calendar"></i>
     </button>
   </div>
 
-  <div class="body">
-    <!-- Resumen -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;" id="resumen">
-      <div class="card" style="text-align:center;padding:10px;">
-        <div style="font-size:20px;font-weight:800;color:var(--green-text);" id="cnt-ok">—</div>
-        <div style="font-size:11px;color:var(--muted);">Asistieron</div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;">
-        <div style="font-size:20px;font-weight:800;color:var(--red-text,#9b2c2c);" id="cnt-aus">—</div>
-        <div style="font-size:11px;color:var(--muted);">Faltaron</div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;">
-        <div style="font-size:20px;font-weight:800;color:var(--muted);" id="cnt-none">—</div>
-        <div style="font-size:11px;color:var(--muted);">Sin reporte</div>
-      </div>
-    </div>
+  <!-- Resumen -->
+  <div class="resumen">
+    <div class="res-box"><div class="res-n" style="color:#059669;" id="cnt-ok">—</div><div class="res-l">Asistieron</div></div>
+    <div class="res-box"><div class="res-n" style="color:#dc2626;" id="cnt-aus">—</div><div class="res-l">Faltaron</div></div>
+    <div class="res-box"><div class="res-n" style="color:var(--muted);" id="cnt-none">—</div><div class="res-l">Sin marcar</div></div>
+  </div>
 
-    <!-- Ausencias con motivo -->
-    <div id="sec-aus" style="display:none;">
-      <div class="label">Faltaron hoy</div>
-      <div class="card flush mb14" id="list-aus"></div>
-    </div>
-
-    <!-- Asistencias confirmadas -->
-    <div id="sec-ok" style="display:none;">
-      <div class="label">Asistieron</div>
-      <div class="card flush mb14" id="list-ok"></div>
-    </div>
-
-    <!-- Sin reporte / el profe puede marcar -->
-    <div id="sec-none" style="display:none;">
-      <div class="label">Sin reporte del padre — marcar manualmente</div>
-      <div class="card flush mb14" id="list-none"></div>
+  <div class="body" style="padding:0;">
+    <div class="card flush" style="margin:10px 12px;">
+      <div id="lista-alumnos">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando…</div>
+      </div>
     </div>
   </div>
 
@@ -89,6 +76,9 @@ const { data: { user } } = await sb.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
 let fecha = new Date().toISOString().split('T')[0]
+let alumnos = []
+let checkMap = {}   // alumno_id → { tipo, ausencia_motivo, ausencia_nota }
+
 const picker = document.getElementById('fecha-picker')
 picker.value = fecha
 picker.addEventListener('change', () => { fecha = picker.value; cargar() })
@@ -96,112 +86,111 @@ picker.addEventListener('change', () => { fecha = picker.value; cargar() })
 function ini(nombre) {
   return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
 }
-function colorBg(nombre) {
+function colorAvatar(nombre) {
   const cols = ['#1d4ed8','#059669','#7c3aed','#dc2626','#d97706','#0891b2']
-  let h = 0; for (const c of (nombre||'')) h = (h * 31 + c.charCodeAt(0)) % cols.length
+  let h = 0; for (const c of (nombre||'')) h = (h*31 + c.charCodeAt(0)) % cols.length
   return cols[h]
 }
 
 async function cargar() {
-  const fechaLabel = new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
-  document.getElementById('fecha-sub').textContent = fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)
+  const label = new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
+  document.getElementById('fecha-sub').textContent = label.charAt(0).toUpperCase() + label.slice(1)
 
-  const [{ data: alumnos }, { data: checks }] = await Promise.all([
+  const [{ data: als }, { data: checks }] = await Promise.all([
     sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
-    sb.from('checkins').select('alumno_id, tipo, hora, ausencia_motivo, ausencia_nota').eq('fecha', fecha)
+    sb.from('checkins').select('alumno_id, tipo, ausencia_motivo, ausencia_nota').eq('fecha', fecha)
   ])
-
-  const checkMap = {}
+  alumnos = als || []
+  checkMap = {}
   ;(checks || []).forEach(c => { checkMap[c.alumno_id] = c })
+  render()
+}
 
-  const ausentes = []
-  const asistieron = []
-  const sinReporte = []
-
-  ;(alumnos || []).forEach(a => {
+function render() {
+  let cntOk = 0, cntAus = 0, cntNone = 0
+  document.getElementById('lista-alumnos').innerHTML = alumnos.map(a => {
     const c = checkMap[a.id]
-    if (!c) { sinReporte.push(a); return }
-    const tipo = (c.tipo || '').toLowerCase()
-    if (tipo === 'ausente' || tipo === 'ausencia') ausentes.push({ ...a, check: c })
-    else asistieron.push({ ...a, check: c })
-  })
-
-  document.getElementById('cnt-ok').textContent = asistieron.length
-  document.getElementById('cnt-aus').textContent = ausentes.length
-  document.getElementById('cnt-none').textContent = sinReporte.length
-
-  // Ausencias
-  document.getElementById('sec-aus').style.display = ausentes.length ? 'block' : 'none'
-  document.getElementById('list-aus').innerHTML = ausentes.map(a => `
-    <div class="asis-row" style="padding:10px 14px;">
-      <div class="asis-avatar" style="background:${colorBg(a.nombre)}">${ini(a.nombre)}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;">${a.nombre}</div>
-        ${a.check.ausencia_motivo ? `<div class="asis-motivo">🔴 ${a.check.ausencia_motivo}</div>` : ''}
-        ${a.check.ausencia_nota ? `<div class="asis-nota">"${a.check.ausencia_nota}"</div>` : ''}
+    const tipo = c?.tipo?.toLowerCase() || ''
+    const esOk = tipo && tipo !== 'ausente' && tipo !== 'ausencia'
+    const esAus = tipo === 'ausente' || tipo === 'ausencia'
+    if (esOk) cntOk++; else if (esAus) cntAus++; else cntNone++
+    const rowClass = esOk ? 'ok' : esAus ? 'aus' : ''
+    const subTxt = esOk ? (c.tipo || 'Clase') + (c.hora ? ' · ' + c.hora : '') : esAus ? '' : 'Sin marcar'
+    const motivoHtml = esAus && c?.ausencia_motivo ? `<div class="al-motivo">🔴 ${c.ausencia_motivo}${c.ausencia_nota ? ' — ' + c.ausencia_nota : ''}</div>` : ''
+    return `<div class="al-row ${rowClass}" id="row-${a.id}">
+      <div class="al-avatar" style="background:${colorAvatar(a.nombre)}">${ini(a.nombre)}</div>
+      <div class="al-info">
+        <div class="al-nombre">${a.nombre}</div>
+        <div class="al-sub" id="sub-${a.id}">${subTxt}</div>
+        ${motivoHtml}
       </div>
-      <span class="asis-status st-aus">Faltó</span>
-    </div>`).join('')
-
-  // Asistencias
-  document.getElementById('sec-ok').style.display = asistieron.length ? 'block' : 'none'
-  document.getElementById('list-ok').innerHTML = asistieron.map(a => `
-    <div class="asis-row" style="padding:10px 14px;">
-      <div class="asis-avatar" style="background:${colorBg(a.nombre)}">${ini(a.nombre)}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;">${a.nombre}</div>
-        <div style="font-size:11px;color:var(--muted);">${a.check.tipo || 'Clase'}${a.check.hora ? ' · ' + a.check.hora : ''}</div>
-      </div>
-      <span class="asis-status st-ok">Asistió</span>
-    </div>`).join('')
-
-  // Sin reporte — profe puede marcar
-  document.getElementById('sec-none').style.display = sinReporte.length ? 'block' : 'none'
-  document.getElementById('list-none').innerHTML = sinReporte.map(a => `
-    <div class="asis-row" style="padding:10px 14px;" id="row-${a.id}">
-      <div class="asis-avatar" style="background:${colorBg(a.nombre)}">${ini(a.nombre)}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;">${a.nombre}</div>
-        <div style="font-size:11px;color:var(--muted);">Sin reporte</div>
-      </div>
-      <button class="mark-btn" style="background:var(--green-bg);color:var(--green-text);" data-marcar="${a.id}" data-tipo="clase">
-        ✓ Asistió
-      </button>
-      <button class="mark-btn" style="background:var(--red-bg,#fff5f5);color:var(--red-text,#9b2c2c);margin-left:4px;" data-marcar="${a.id}" data-tipo="ausente">
-        ✗ Faltó
-      </button>
-    </div>`).join('')
-
-  lucide.createIcons()
+      <button class="btn-ok ${esOk?'activo':''}" data-id="${a.id}" data-accion="clase" title="Asistió">✓</button>
+      <button class="btn-aus ${esAus?'activo':''}" data-id="${a.id}" data-accion="ausente" title="Faltó">✗</button>
+    </div>`
+  }).join('')
+  document.getElementById('cnt-ok').textContent = cntOk
+  document.getElementById('cnt-aus').textContent = cntAus
+  document.getElementById('cnt-none').textContent = cntNone
 }
 
-function toast(msg, color = '#059669') {
-  const t = document.createElement('div')
-  t.textContent = msg
-  t.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:${color};color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;`
-  document.body.appendChild(t); setTimeout(() => t.remove(), 2500)
-}
+// Click en ✓ o ✗ — actualiza UI inmediatamente, luego guarda
+document.getElementById('lista-alumnos').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-accion]'); if (!btn) return
+  const alumnoId = btn.dataset.id
+  const accion = btn.dataset.accion
+  const row = document.getElementById('row-' + alumnoId)
 
-document.getElementById('list-none').addEventListener('click', async e => {
-  const btn = e.target.closest('[data-marcar]'); if (!btn) return
-  const alumnoId = btn.dataset.marcar
-  const tipo = btn.dataset.tipo
-  btn.disabled = true; btn.textContent = '...'
+  // Si ya está activo ese botón → desmarcar
+  const yaActivo = btn.classList.contains('activo')
 
-  const { error } = await sb.from('checkins').upsert(
-    { alumno_id: alumnoId, fecha, tipo, hora: new Date().toTimeString().slice(0, 5) },
-    { onConflict: 'alumno_id,fecha' }
-  )
-
-  if (error) {
-    toast('❌ ' + error.message, '#dc2626')
-    btn.disabled = false
-    btn.textContent = tipo === 'clase' ? '✓ Asistió' : '✗ Faltó'
-    return
+  // Actualizar UI inmediatamente (optimistic)
+  row.querySelectorAll('[data-accion]').forEach(b => b.classList.remove('activo'))
+  row.classList.remove('ok', 'aus')
+  if (!yaActivo) {
+    btn.classList.add('activo')
+    row.classList.add(accion === 'clase' ? 'ok' : 'aus')
+    document.getElementById('sub-' + alumnoId).textContent = accion === 'clase' ? 'Clase · ' + new Date().toTimeString().slice(0,5) : 'Faltó'
+  } else {
+    document.getElementById('sub-' + alumnoId).textContent = 'Sin marcar'
   }
-  toast(tipo === 'clase' ? '✓ Asistencia registrada' : '✗ Ausencia registrada', tipo === 'clase' ? '#059669' : '#dc2626')
-  await cargar()
+
+  // Reconteo inmediato
+  reconteo()
+
+  // Guardar en BD
+  if (yaActivo) {
+    await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
+    delete checkMap[alumnoId]
+  } else {
+    const { error } = await sb.from('checkins').upsert(
+      { alumno_id: alumnoId, fecha, tipo: accion, hora: new Date().toTimeString().slice(0,5) },
+      { onConflict: 'alumno_id,fecha' }
+    )
+    if (error) {
+      // Revertir si falla
+      btn.classList.remove('activo'); row.classList.remove('ok','aus')
+      document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + error.message
+      reconteo(); return
+    }
+    checkMap[alumnoId] = { tipo: accion }
+  }
 })
+
+function reconteo() {
+  let ok = 0, aus = 0, none = 0
+  alumnos.forEach(a => {
+    const c = checkMap[a.id]
+    const t = c?.tipo?.toLowerCase() || ''
+    if (!t) none++
+    else if (t === 'ausente' || t === 'ausencia') aus++
+    else ok++
+  })
+  // También verificar los que fueron actualizados en UI
+  document.querySelectorAll('[data-accion].activo').forEach(b => {})
+  document.getElementById('cnt-ok').textContent = document.querySelectorAll('.al-row.ok').length
+  document.getElementById('cnt-aus').textContent = document.querySelectorAll('.al-row.aus').length
+  document.getElementById('cnt-none').textContent = alumnos.length - document.querySelectorAll('.al-row.ok').length - document.querySelectorAll('.al-row.aus').length
+}
 
 cargar()
 </script>
