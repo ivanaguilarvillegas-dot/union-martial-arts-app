@@ -414,13 +414,6 @@ try {
   if (v('precio_mensual_basico')) document.getElementById('precio-mensual').textContent = v('precio_mensual_basico')
   if (v('precio_anual'))          document.getElementById('precio-anual').textContent   = v('precio_anual')
   if (v('precio_cinta_negra'))    document.getElementById('precio-cinta').textContent   = v('precio_cinta_negra')
-  if (v('horario_basico_ninos') || v('horario_jovenes')) {
-    const n = v('horario_basico_ninos') || 'Niños: Lunes, Miércoles y Viernes (4, 5 o 6 pm)'
-    const j = v('horario_jovenes') || 'Jóvenes y adultos: Lunes, Martes, Jueves y Viernes (7 pm)'
-    document.getElementById('h-basico-bloque').innerHTML =
-      '<b>Niños:</b> ' + n + '<br><b>Jóvenes y adultos:</b> ' + j +
-      '<br><b>Combate:</b> Niños martes 6:15 pm · Jóvenes jueves 6:00 pm<br><b>Sábado:</b> Niños 11 am · Jóvenes 12 pm'
-  }
 } catch(e) {}
 </script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
