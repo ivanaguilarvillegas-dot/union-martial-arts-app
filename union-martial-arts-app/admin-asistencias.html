@@ -175,28 +175,31 @@ async function cargar() {
   lucide.createIcons()
 }
 
+function toast(msg, color = '#059669') {
+  const t = document.createElement('div')
+  t.textContent = msg
+  t.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:${color};color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;`
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2500)
+}
+
 document.getElementById('list-none').addEventListener('click', async e => {
   const btn = e.target.closest('[data-marcar]'); if (!btn) return
   const alumnoId = btn.dataset.marcar
   const tipo = btn.dataset.tipo
-  const originalText = btn.textContent
   btn.disabled = true; btn.textContent = '...'
 
-  // Intentar delete primero por si ya existe un registro (evita conflicto)
-  await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
-
-  const { error } = await sb.from('checkins').insert({
-    alumno_id: alumnoId,
-    fecha,
-    tipo,
-    hora: new Date().toTimeString().slice(0, 5)
-  })
+  const { error } = await sb.from('checkins').upsert(
+    { alumno_id: alumnoId, fecha, tipo, hora: new Date().toTimeString().slice(0, 5) },
+    { onConflict: 'alumno_id,fecha' }
+  )
 
   if (error) {
-    alert('❌ Error al registrar: ' + error.message + '\n\nEjecuta en Supabase SQL:\nCREATE POLICY "admin_checkins" ON checkins FOR ALL USING (EXISTS (SELECT 1 FROM padres WHERE user_id = auth.uid() AND es_admin = true));')
-    btn.disabled = false; btn.textContent = originalText
+    toast('❌ ' + error.message, '#dc2626')
+    btn.disabled = false
+    btn.textContent = tipo === 'clase' ? '✓ Asistió' : '✗ Faltó'
     return
   }
+  toast(tipo === 'clase' ? '✓ Asistencia registrada' : '✗ Ausencia registrada', tipo === 'clase' ? '#059669' : '#dc2626')
   await cargar()
 })
 

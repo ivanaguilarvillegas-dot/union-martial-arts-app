@@ -1,271 +1,366 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Videos y audios</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Videos y audios</title><link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+.media-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.media-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.media-ic{width:36px;height:36px;border-radius:10px;background:#eef2ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.media-ic.green{background:#f0fdf4;color:#059669;}
+.media-ic.amber{background:#fffbeb;color:#d97706;}
+.media-badge{font-size:10px;font-weight:700;border-radius:99px;padding:3px 9px;flex-shrink:0;}
+.media-badge.ok{background:#f0fdf4;color:#059669;}
+.media-badge.none{background:#fff1f2;color:#dc2626;}
+.media-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:430px;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.url-field{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin:10px 0 14px;}
+.url-field:focus{border-color:var(--primary);}
+</style>
+</head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Videos y audios</div></div></div>
+    <div class="grow"><div class="title">Videos y vínculos</div></div></div>
   <div class="body">
 
-    <!-- Tabs -->
     <div style="display:flex;gap:8px;margin-bottom:16px;" id="tabs">
-      <button class="chip on" data-tab="entrena">Ejercicios en casa</button>
+      <button class="chip on" data-tab="entrena">Ejercicios</button>
       <button class="chip" data-tab="meditacion">Meditación</button>
       <button class="chip" data-tab="extras">Extras</button>
     </div>
 
-    <!-- Ejercicios -->
     <div id="tab-entrena">
-      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Sube un video para cada ejercicio. Los padres lo verán junto al ejercicio en la app.</div>
+      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Sube un video <strong>o</strong> pega un vínculo de YouTube para cada ejercicio.</div>
       <div id="entrena-list"></div>
     </div>
 
-    <!-- Meditación -->
     <div id="tab-meditacion" style="display:none;">
-      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Sube un audio para cada sesión de meditación nocturna.</div>
+      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Sube un audio o pega un vínculo para cada sesión de meditación.</div>
       <div id="med-list"></div>
     </div>
 
-    <!-- Extras -->
     <div id="tab-extras" style="display:none;">
       <div class="label row"><span>Videos extras</span>
-        <label class="btn secondary sm" style="cursor:pointer;"><i data-lucide="upload"></i> Subir video
+        <label class="btn secondary sm" style="cursor:pointer;"><i data-lucide="upload"></i> Subir
           <input type="file" accept="video/*" hidden id="up-video-extra" />
         </label>
       </div>
       <div id="extras-vid" class="stack-10 mb16"></div>
       <div class="label row"><span>Audios extras</span>
-        <label class="btn secondary sm" style="cursor:pointer;"><i data-lucide="upload"></i> Subir audio
+        <label class="btn secondary sm" style="cursor:pointer;"><i data-lucide="upload"></i> Subir
           <input type="file" accept="audio/*" hidden id="up-audio-extra" />
         </label>
       </div>
       <div id="extras-aud" class="stack-10"></div>
     </div>
 
+    <div id="msg-global" style="display:none;" class="notice mb12"></div>
   </div>
+
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
     <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
     <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Chat</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
+
+<!-- Modal vínculo URL -->
+<div class="modal-overlay" id="modal-url">
+  <div class="modal-box">
+    <div class="modal-title">🔗 Agregar vínculo</div>
+    <div style="font-size:12px;color:var(--muted);" id="modal-desc"></div>
+    <input class="url-field" id="modal-url-input" placeholder="https://youtube.com/watch?v=…" />
+    <div style="display:flex;gap:8px;">
+      <button class="btn primary" style="flex:1;" id="modal-guardar">Guardar</button>
+      <button class="btn secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) { window.location.href = 'index.html' }
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const supabase = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
 
-  // Ejercicios predefinidos
-  const EJERCICIOS = [
-    { nivel:'Principiante', ic:'flame',      nombre:'Calentamiento básico',        desc:'10 min · Sin equipo' },
-    { nivel:'Principiante', ic:'dumbbell',   nombre:'Sentadillas + Planchas',      desc:'15 min · 3 series de 10' },
-    { nivel:'Principiante', ic:'target',     nombre:'Combinación de golpes',       desc:'10 min · Frente al espejo' },
-    { nivel:'Principiante', ic:'footprints', nombre:'Cardio — saltar la cuerda',   desc:'5 min · Ritmo moderado' },
-    { nivel:'Principiante', ic:'leaf',       nombre:'Enfriamiento y estiramiento', desc:'5 min · Siempre al final' },
-    { nivel:'Intermedio',   ic:'flame',      nombre:'Calentamiento dinámico',      desc:'10 min · Movilidad articular' },
-    { nivel:'Intermedio',   ic:'activity',   nombre:'Patadas al aire — series',    desc:'20 min · 4 series' },
-    { nivel:'Intermedio',   ic:'zap',        nombre:'Circuito de fuerza',          desc:'20 min · Burpees, lagartijas' },
-    { nivel:'Intermedio',   ic:'target',     nombre:'Combos avanzados',            desc:'15 min · Golpe + patada' },
-    { nivel:'Avanzado',     ic:'flame',      nombre:'HIIT Kickboxing',             desc:'30 min · Alta intensidad' },
-    { nivel:'Avanzado',     ic:'trophy',     nombre:'Simulación de combate',       desc:'15 min · Shadowboxing' },
-    { nivel:'Avanzado',     ic:'zap',        nombre:'Fuerza explosiva',            desc:'20 min · Pliométricos' },
-    { nivel:'Avanzado',     ic:'leaf',       nombre:'Recuperación activa',         desc:'10 min · Foam roller' },
-  ]
+const EJERCICIOS = [
+  { nivel:'Principiante', ic:'flame',      nombre:'Calentamiento básico',       desc:'10 min · Sin equipo' },
+  { nivel:'Principiante', ic:'dumbbell',   nombre:'Sentadillas y Planchas',     desc:'15 min · 3 series de 10' },
+  { nivel:'Principiante', ic:'target',     nombre:'Combinación de golpes',      desc:'10 min · Frente al espejo' },
+  { nivel:'Principiante', ic:'footprints', nombre:'Cardio saltar cuerda',       desc:'5 min · Ritmo moderado' },
+  { nivel:'Principiante', ic:'leaf',       nombre:'Enfriamiento estiramiento',  desc:'5 min · Siempre al final' },
+  { nivel:'Intermedio',   ic:'flame',      nombre:'Calentamiento dinámico',     desc:'10 min · Movilidad articular' },
+  { nivel:'Intermedio',   ic:'activity',   nombre:'Patadas al aire series',     desc:'20 min · 4 series' },
+  { nivel:'Intermedio',   ic:'zap',        nombre:'Circuito de fuerza',         desc:'20 min · Burpees lagartijas' },
+  { nivel:'Intermedio',   ic:'target',     nombre:'Combos avanzados',           desc:'15 min · Golpe más patada' },
+  { nivel:'Avanzado',     ic:'flame',      nombre:'HIIT Kickboxing',            desc:'30 min · Alta intensidad' },
+  { nivel:'Avanzado',     ic:'trophy',     nombre:'Simulación de combate',      desc:'15 min · Shadowboxing' },
+  { nivel:'Avanzado',     ic:'zap',        nombre:'Fuerza explosiva',           desc:'20 min · Pliométricos' },
+  { nivel:'Avanzado',     ic:'leaf',       nombre:'Recuperación activa',        desc:'10 min · Foam roller' },
+]
 
-  // Sesiones de meditación predefinidas
-  const SESIONES = [
-    { nombre:'Respiración 4-7-8',          desc:'5 minutos · Relajación profunda' },
-    { nombre:'Visualización del campeón',   desc:'8 minutos · Para atletas jóvenes' },
-    { nombre:'Gratitud y metas',            desc:'6 minutos · Reflexión positiva' },
-    { nombre:'Sueño reparador',             desc:'10 minutos · Antes de dormir' },
-  ]
+const SESIONES = [
+  { nombre:'Respiración 4-7-8',         desc:'5 minutos · Relajación profunda' },
+  { nombre:'Visualización del campeón', desc:'8 minutos · Para atletas jóvenes' },
+  { nombre:'Gratitud y metas',          desc:'6 minutos · Reflexión positiva' },
+  { nombre:'Sueño reparador',           desc:'10 minutos · Antes de dormir' },
+]
 
-  function clave(nombre) {
-    return nombre.toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]/g, '_')
-      .substring(0, 30)
-  }
+function clave(nombre) {
+  return nombre.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_').replace(/^_|_$/g, '')
+    .substring(0, 40)
+}
 
-  function matchMedia(archivos, nombre) {
-    const palabra = nombre.toLowerCase().split(' ')[0]
-    return archivos.find(a => a.nombre.toLowerCase().includes(palabra)) || null
-  }
+function getYouTubeId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)
+  return m ? m[1] : null
+}
 
-  let videos = [], audios = [], links = {}
+let videos = [], audios = [], links = {}
 
-  async function cargarMedia() {
-    const [vidRes, audRes, linkRes] = await Promise.allSettled([
-      supabase.storage.from('media').list('videos', { limit: 50 }),
-      supabase.storage.from('media').list('audios', { limit: 50 }),
-      supabase.from('configuracion').select('clave,valor').like('clave', 'media_link_%')
-    ])
-    videos = (vidRes.value?.data || [])
-      .filter(v => v.name !== '.emptyFolderPlaceholder')
-      .map(v => ({ nombre: v.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''), path: 'videos/' + v.name, url: supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl }))
-    audios = (audRes.value?.data || [])
-      .filter(a => a.name !== '.emptyFolderPlaceholder')
-      .map(a => ({ nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''), path: 'audios/' + a.name, url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl }))
-    links = {}
-    ;(linkRes.value?.data || []).forEach(r => { links[r.clave] = r.valor })
-    renderEjercicios()
-    renderMeditacion()
-    renderExtras()
-  }
+function mostrarMsg(txt, tipo = 'red') {
+  const el = document.getElementById('msg-global')
+  el.textContent = txt
+  el.className = 'notice mb12 ' + tipo
+  el.style.display = 'flex'
+  setTimeout(() => { el.style.display = 'none' }, 4000)
+}
 
-  window.pegarLink = async function(claveNombre, tipo) {
-    const ejemplos = tipo === 'video' ? 'YouTube, Vimeo, etc.' : 'Spotify, SoundCloud, YouTube, etc.'
-    const url = prompt(`Pega el link del ${tipo} (${ejemplos}):`)
-    if (!url) return
-    const k = 'media_link_' + claveNombre
-    await supabase.from('configuracion').upsert({ clave: k, valor: url }, { onConflict: 'clave' })
-    await cargarMedia()
-  }
+async function cargarMedia() {
+  const { data: vidData, error: vidErr } = await supabase.storage.from('media').list('videos', { limit: 100 })
+  const { data: audData, error: audErr } = await supabase.storage.from('media').list('audios', { limit: 100 })
+  const { data: linkRow } = await supabase.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle()
 
-  window.borrarLink = async function(claveNombre) {
-    await supabase.from('configuracion').delete().eq('clave', 'media_link_' + claveNombre)
-    await cargarMedia()
-  }
+  if (vidErr) mostrarMsg('❌ Error al leer videos: ' + vidErr.message + ' — Revisa las políticas de Storage en Supabase')
+  if (audErr) mostrarMsg('❌ Error al leer audios: ' + audErr.message)
 
-  function itemRow(ic, nombre, desc, nivel, archivo, tipo) {
-    const claveNombre = clave(nombre)
-    const tiene = !!archivo
-    const tieneLink = links['media_link_' + claveNombre] || ''
-    return `<div class="card mb10" style="padding:14px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${(tiene || tieneLink) ? 10 : 0}px;">
-        <span class="ic ${tiene ? 'green' : ''}" style="flex-shrink:0;"><i data-lucide="${ic}"></i></span>
-        <span class="grow">
-          <span class="t" style="display:block;">${nombre}</span>
-          <span class="s">${nivel ? nivel + ' · ' : ''}${desc}</span>
-        </span>
-        <span class="badge ${(tiene || tieneLink) ? 'green' : 'red'}" style="flex-shrink:0;">${tiene ? 'Archivo' : tieneLink ? 'Link' : 'Sin ' + (tipo === 'video' ? 'video' : 'audio')}</span>
+  videos = (vidData || [])
+    .filter(v => v.name !== '.emptyFolderPlaceholder')
+    .map(v => ({
+      nombre: v.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
+      path: 'videos/' + v.name,
+      url: supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
+    }))
+  audios = (audData || [])
+    .filter(a => a.name !== '.emptyFolderPlaceholder')
+    .map(a => ({
+      nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
+      path: 'audios/' + a.name,
+      url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
+    }))
+
+  try { links = JSON.parse(linkRow?.valor || '{}') } catch { links = {} }
+
+  renderEjercicios()
+  renderMeditacion()
+  renderExtras()
+}
+
+function archivoParaNombre(lista, nombre) {
+  const k = clave(nombre)
+  return lista.find(a => {
+    const ak = clave(a.nombre)
+    return ak === k || ak.startsWith(k.substring(0, 8)) || k.startsWith(ak.substring(0, 8))
+  }) || null
+}
+
+function mediaCard(ic, nombre, desc, nivel, archivo, tipo) {
+  const k = clave(nombre)
+  const link = links[k] || null
+  const tieneArchivo = !!archivo
+  const tieneLink = !!link
+  const tiene = tieneArchivo || tieneLink
+  const ytId = tieneLink ? getYouTubeId(link) : null
+  const ytThumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null
+
+  return `<div class="media-card">
+    <div class="media-row">
+      <div class="media-ic ${tiene ? 'green' : ''}"><i data-lucide="${ic}"></i></div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;">${nombre}</div>
+        <div style="font-size:11px;color:var(--muted);">${nivel ? nivel + ' · ' : ''}${desc}</div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${tieneLink ? '8px' : '0'};">
-        ${tiene ? `<a href="${archivo.url}" target="_blank" class="btn secondary sm"><i data-lucide="play" style="width:13px;height:13px"></i> Ver</a>` : ''}
-        <label class="btn secondary sm" style="cursor:pointer;">
-          <i data-lucide="upload" style="width:13px;height:13px"></i> ${tiene ? 'Reemplazar' : 'Subir archivo'}
-          <input type="file" accept="${tipo === 'video' ? 'video/*' : 'audio/*'}" hidden data-clave="${claveNombre}" data-tipo="${tipo}" />
-        </label>
-        <button class="btn secondary sm" style="cursor:pointer;" onclick="pegarLink('${claveNombre}','${tipo}')">
-          <i data-lucide="link" style="width:13px;height:13px"></i> ${tieneLink ? 'Cambiar link' : 'Pegar link'}
-        </button>
-        ${tieneLink ? `<a href="${tieneLink}" target="_blank" class="btn secondary sm" style="color:#0047AB;"><i data-lucide="external-link" style="width:13px;height:13px"></i> Abrir</a>` : ''}
-        ${tieneLink ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" onclick="borrarLink('${claveNombre}')"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>` : ''}
-        ${tiene ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-borrar="${archivo.path}"><i data-lucide="trash-2" style="width:13px;height:13px"></i> Borrar</button>` : ''}
-      </div>
-    </div>`
-  }
+      <span class="media-badge ${tiene ? 'ok' : 'none'}">${tiene ? '✓ OK' : 'Sin ' + (tipo==='video'?'video':'audio')}</span>
+    </div>
+    ${ytThumb ? `<img src="${ytThumb}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:90px;object-fit:cover;" />` : ''}
+    <div class="media-actions">
+      ${tieneArchivo ? `<a href="${archivo.url}" target="_blank" class="btn secondary sm"><i data-lucide="play" style="width:13px;height:13px"></i> Archivo</a>` : ''}
+      ${tieneLink ? `<a href="${link}" target="_blank" class="btn secondary sm"><i data-lucide="external-link" style="width:13px;height:13px"></i> Ver</a>` : ''}
+      <label class="btn secondary sm" style="cursor:pointer;">
+        <i data-lucide="upload" style="width:13px;height:13px"></i> ${tieneArchivo ? 'Reemplazar' : 'Subir'}
+        <input type="file" accept="${tipo==='video'?'video/*':'audio/*'}" hidden data-clave="${k}" data-tipo="${tipo}" />
+      </label>
+      <button class="btn secondary sm" data-modal-clave="${k}" data-modal-nombre="${nombre.replace(/"/g,'')}" style="cursor:pointer;">
+        <i data-lucide="link" style="width:13px;height:13px"></i> ${tieneLink ? 'Editar vínculo' : 'Vínculo'}
+      </button>
+      ${tieneArchivo ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-borrar="${archivo.path}"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>` : ''}
+      ${tieneLink ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;" data-borrar-link="${k}"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>` : ''}
+    </div>
+  </div>`
+}
 
-  function renderEjercicios() {
-    let html = ''
-    let nivelActual = ''
-    EJERCICIOS.forEach(e => {
-      if (e.nivel !== nivelActual) {
-        nivelActual = e.nivel
-        html += `<div class="label">${e.nivel}</div>`
-      }
-      const archivo = matchMedia(videos, e.nombre)
-      html += itemRow(e.ic, e.nombre, e.desc, '', archivo, 'video')
-    })
-    document.getElementById('entrena-list').innerHTML = html
-    lucide.createIcons()
-  }
-
-  function renderMeditacion() {
-    document.getElementById('med-list').innerHTML = SESIONES.map(s => {
-      const archivo = matchMedia(audios, s.nombre)
-      return itemRow('headphones', s.nombre, s.desc, '', archivo, 'audio')
-    }).join('')
-    lucide.createIcons()
-  }
-
-  function renderExtras() {
-    const predVids = new Set(EJERCICIOS.map(e => e.nombre.toLowerCase().split(' ')[0]))
-    const predAuds = new Set(SESIONES.map(s => s.nombre.toLowerCase().split(' ')[0]))
-
-    const extrasVid = videos.filter(v => ![...predVids].some(p => v.nombre.toLowerCase().includes(p)))
-    const extrasAud = audios.filter(a => ![...predAuds].some(p => a.nombre.toLowerCase().includes(p)))
-
-    document.getElementById('extras-vid').innerHTML = extrasVid.length
-      ? extrasVid.map(v => `<div class="row"><span class="ic amber"><i data-lucide="video"></i></span>
-          <span class="grow"><span class="t">${v.nombre}</span></span>
-          <span class="trail" style="gap:6px;">
-            <a href="${v.url}" target="_blank" class="iconbtn"><i data-lucide="play"></i></a>
-            <button class="iconbtn" style="color:var(--red-600);" data-borrar="${v.path}"><i data-lucide="trash-2"></i></button>
-          </span></div>`).join('')
-      : '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin videos extras.</div>'
-
-    document.getElementById('extras-aud').innerHTML = extrasAud.length
-      ? extrasAud.map(a => `<div class="row"><span class="ic blue"><i data-lucide="music"></i></span>
-          <span class="grow"><span class="t">${a.nombre}</span></span>
-          <span class="trail" style="gap:6px;">
-            <a href="${a.url}" target="_blank" class="iconbtn"><i data-lucide="play"></i></a>
-            <button class="iconbtn" style="color:var(--red-600);" data-borrar="${a.path}"><i data-lucide="trash-2"></i></button>
-          </span></div>`).join('')
-      : '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin audios extras.</div>'
-
-    lucide.createIcons()
-  }
-
-  // Subir archivo a ejercicio/sesión predefinida
-  document.querySelector('.body').addEventListener('change', async e => {
-    const input = e.target.closest('input[data-clave]')
-    if (!input) return
-    const file = input.files[0]; if (!file) return
-    const claveVal = input.dataset.clave
-    const tipo = input.dataset.tipo
-    const carpeta = tipo === 'video' ? 'videos' : 'audios'
-    const ext = file.name.split('.').pop()
-    const path = carpeta + '/' + claveVal + '.' + ext
-    input.closest('.btn').textContent = 'Subiendo…'
-    const { error } = await supabase.storage.from('media').upload(path, file, { upsert: true })
-    if (error) { alert('❌ Error: ' + error.message) }
-    await cargarMedia()
+function renderEjercicios() {
+  let html = '', nivelActual = ''
+  EJERCICIOS.forEach(e => {
+    if (e.nivel !== nivelActual) { nivelActual = e.nivel; html += `<div class="label">${e.nivel}</div>` }
+    html += mediaCard(e.ic, e.nombre, e.desc, '', archivoParaNombre(videos, e.nombre), 'video')
   })
+  document.getElementById('entrena-list').innerHTML = html
+  lucide.createIcons()
+}
 
-  // Subir extras
-  document.getElementById('up-video-extra').addEventListener('change', async e => {
-    const file = e.target.files[0]; if (!file) return
-    const { error } = await supabase.storage.from('media').upload('videos/' + Date.now() + '_' + file.name, file)
-    if (error) { alert('❌ Error: ' + error.message); return }
-    await cargarMedia()
-  })
-  document.getElementById('up-audio-extra').addEventListener('change', async e => {
-    const file = e.target.files[0]; if (!file) return
-    const { error } = await supabase.storage.from('media').upload('audios/' + Date.now() + '_' + file.name, file)
-    if (error) { alert('❌ Error: ' + error.message); return }
-    await cargarMedia()
-  })
+function renderMeditacion() {
+  document.getElementById('med-list').innerHTML = SESIONES.map(s =>
+    mediaCard('headphones', s.nombre, s.desc, '', archivoParaNombre(audios, s.nombre), 'audio')
+  ).join('')
+  lucide.createIcons()
+}
 
-  // Borrar
-  document.querySelector('.body').addEventListener('click', async e => {
-    const btn = e.target.closest('[data-borrar]'); if (!btn) return
-    const path = btn.dataset.borrar
+function renderExtras() {
+  const predVids = EJERCICIOS.map(e => clave(e.nombre).substring(0, 8))
+  const predAuds = SESIONES.map(s => clave(s.nombre).substring(0, 8))
+  const extVid = videos.filter(v => !predVids.some(p => clave(v.nombre).startsWith(p)))
+  const extAud = audios.filter(a => !predAuds.some(p => clave(a.nombre).startsWith(p)))
+
+  document.getElementById('extras-vid').innerHTML = extVid.length
+    ? extVid.map(v => `<div class="row">
+        <span class="media-ic amber"><i data-lucide="video"></i></span>
+        <span class="grow"><span class="t">${v.nombre}</span></span>
+        <span class="trail" style="gap:6px;">
+          <a href="${v.url}" target="_blank" class="iconbtn"><i data-lucide="play"></i></a>
+          <button class="iconbtn" style="color:var(--red-600);" data-borrar="${v.path}"><i data-lucide="trash-2"></i></button>
+        </span></div>`).join('')
+    : '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin videos extras.</div>'
+
+  document.getElementById('extras-aud').innerHTML = extAud.length
+    ? extAud.map(a => `<div class="row">
+        <span class="media-ic"><i data-lucide="music"></i></span>
+        <span class="grow"><span class="t">${a.nombre}</span></span>
+        <span class="trail" style="gap:6px;">
+          <a href="${a.url}" target="_blank" class="iconbtn"><i data-lucide="play"></i></a>
+          <button class="iconbtn" style="color:var(--red-600);" data-borrar="${a.path}"><i data-lucide="trash-2"></i></button>
+        </span></div>`).join('')
+    : '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin audios extras.</div>'
+
+  lucide.createIcons()
+}
+
+// Subir archivo
+document.querySelector('.body').addEventListener('change', async e => {
+  const input = e.target.closest('input[data-clave]')
+  if (!input) return
+  const file = input.files[0]; if (!file) return
+  const k = input.dataset.clave
+  const tipo = input.dataset.tipo
+  const carpeta = tipo === 'video' ? 'videos' : 'audios'
+  const ext = file.name.split('.').pop().toLowerCase()
+  const path = carpeta + '/' + k + '.' + ext
+  const label = input.closest('label')
+  const origText = label ? label.innerHTML : ''
+  if (label) label.textContent = 'Subiendo…'
+  const { error } = await supabase.storage.from('media').upload(path, file, { upsert: true, contentType: file.type })
+  if (error) {
+    mostrarMsg('❌ Error: ' + error.message)
+    if (label) label.innerHTML = origText
+  } else {
+    mostrarMsg('✅ Subido correctamente', 'green')
+  }
+  await cargarMedia()
+})
+
+// Subir extras
+document.getElementById('up-video-extra').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return
+  const { error } = await supabase.storage.from('media').upload('videos/' + Date.now() + '_' + file.name, file, { contentType: file.type })
+  if (error) { mostrarMsg('❌ ' + error.message); return }
+  mostrarMsg('✅ Subido', 'green'); await cargarMedia()
+})
+document.getElementById('up-audio-extra').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return
+  const { error } = await supabase.storage.from('media').upload('audios/' + Date.now() + '_' + file.name, file, { contentType: file.type })
+  if (error) { mostrarMsg('❌ ' + error.message); return }
+  mostrarMsg('✅ Subido', 'green'); await cargarMedia()
+})
+
+// Clicks (borrar archivo, borrar link, abrir modal)
+document.querySelector('.body').addEventListener('click', async e => {
+  const btnModal = e.target.closest('[data-modal-clave]')
+  if (btnModal) { abrirModal(btnModal.dataset.modalClave, btnModal.dataset.modalNombre); return }
+  const btnB = e.target.closest('[data-borrar]')
+  if (btnB) {
     if (!confirm('¿Borrar este archivo?')) return
-    const { error } = await supabase.storage.from('media').remove([path])
-    if (error) { alert('❌ Error: ' + error.message); return }
-    await cargarMedia()
-  })
+    const { error } = await supabase.storage.from('media').remove([btnB.dataset.borrar])
+    if (error) { mostrarMsg('❌ ' + error.message); return }
+    await cargarMedia(); return
+  }
+  const btnL = e.target.closest('[data-borrar-link]')
+  if (btnL) {
+    if (!confirm('¿Quitar este vínculo?')) return
+    delete links[btnL.dataset.borrarLink]
+    await guardarLinks(); await cargarMedia()
+  }
+})
 
-  // Tabs
-  document.getElementById('tabs').addEventListener('click', e => {
-    const b = e.target.closest('[data-tab]'); if (!b) return
-    ;[...document.getElementById('tabs').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
-    document.getElementById('tab-entrena').style.display = 'none'
-    document.getElementById('tab-meditacion').style.display = 'none'
-    document.getElementById('tab-extras').style.display = 'none'
-    document.getElementById('tab-' + b.dataset.tab).style.display = 'block'
-  })
+// Modal vínculo
+let modalClave = ''
+window.abrirModal = function(k, nombre) {
+  modalClave = k
+  document.getElementById('modal-desc').textContent = nombre
+  document.getElementById('modal-url-input').value = links[k] || ''
+  document.getElementById('modal-url').classList.add('open')
+  setTimeout(() => document.getElementById('modal-url-input').focus(), 100)
+}
+window.cerrarModal = function() {
+  document.getElementById('modal-url').classList.remove('open')
+}
+document.getElementById('modal-guardar').addEventListener('click', async () => {
+  const url = document.getElementById('modal-url-input').value.trim()
+  if (!url) { alert('Pega un vínculo primero.'); return }
+  links[modalClave] = url
+  await guardarLinks()
+  cerrarModal()
+  mostrarMsg('✅ Vínculo guardado', 'green')
+  await cargarMedia()
+})
+document.getElementById('modal-url').addEventListener('click', e => {
+  if (e.target === e.currentTarget) cerrarModal()
+})
 
-  cargarMedia()
-})();
+async function guardarLinks() {
+  const { error } = await supabase.from('configuracion').upsert(
+    { clave: 'media_links', valor: JSON.stringify(links) },
+    { onConflict: 'clave' }
+  )
+  if (error) mostrarMsg('❌ Error guardando vínculo: ' + error.message)
+}
+
+// Tabs
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return
+  ;[...document.getElementById('tabs').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+  document.getElementById('tab-entrena').style.display = 'none'
+  document.getElementById('tab-meditacion').style.display = 'none'
+  document.getElementById('tab-extras').style.display = 'none'
+  document.getElementById('tab-' + b.dataset.tab).style.display = 'block'
+})
+
+cargarMedia()
 </script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})</script>
 </body></html>
-
