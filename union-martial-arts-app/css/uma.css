@@ -5,8 +5,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Archivo+Expanded:wght@600;700;800;900&display=swap');
 
 :root {
-  --uma-blue-electric:#0A18EC; --uma-blue-700:#0810C4; --uma-blue-600:#0A18EC;
-  --uma-blue-500:#3040F5; --uma-blue-300:#B0B8FC; --uma-blue-100:#E4E6FD; --uma-blue-050:#F2F3FE;
+  --uma-blue-electric:#2020E8; --uma-blue-700:#1818C4; --uma-blue-600:#2020E8;
+  --uma-blue-500:#4444EF; --uma-blue-300:#A0A0F5; --uma-blue-100:#E0E0FC; --uma-blue-050:#F0F0FE;
   --ink-900:#14172B; --ink-700:#3A3F57; --ink-500:#6B7280; --ink-300:#9AA5C4;
   --ink-200:#D0D8F0; --ink-100:#E8EDF5; --white:#fff;
   --green-600:#2F9E62; --green-text:#276749; --green-bg:#F0FFF4; --green-border:#B7E4C7;
