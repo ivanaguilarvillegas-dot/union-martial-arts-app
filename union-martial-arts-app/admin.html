@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Panel</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0047AB">
+  <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
@@ -31,12 +31,6 @@
       <div class="tile"><b>19</b><span>Asistencias hoy</span></div>
     </div>
 
-    <a href="home.html" target="_blank" style="display:flex;align-items:center;gap:12px;background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:14px;padding:12px 14px;text-decoration:none;margin-bottom:18px;">
-      <span style="width:36px;height:36px;background:#0047AB;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="eye" style="width:18px;height:18px;color:#fff;"></i></span>
-      <span style="flex:1;"><span style="display:block;font-size:13px;font-weight:700;color:#0047AB;">Ver app de padres</span><span style="display:block;font-size:11px;color:#6b7280;margin-top:1px;">Ver exactamente lo que ve un padre</span></span>
-      <i data-lucide="chevron-right" style="width:16px;height:16px;color:#0047AB;"></i>
-    </a>
-
     <div class="label">Acciones</div>
     <div class="stack-10 mb18" id="acc"></div>
 
@@ -47,14 +41,13 @@
     <a class="on" href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
     <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
     <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Mensajes</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
@@ -64,8 +57,7 @@
   }
   actualizarReloj(); setInterval(actualizarReloj, 30000)
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   // Verificar que sea admin
@@ -92,11 +84,10 @@
 
   const ACC = [
     ['user-check','Confirmar asistencias', (asistHoy||0)+' check-ins hoy','admin-asistencias.html'],
-    ['speakerphone','Gestionar avisos','Crear avisos y ver confirmaciones','admin-avisos.html'],
     ['clipboard-list','Registrar evaluación','Calificar alumno del día/mes','admin-evaluacion.html'],
-    ['message-square','Mensajes de padres',(msgNuevos||0)+' sin leer','admin-mensaje.html'],
-    ['sliders-horizontal','Editar contenido y precios','Rutinas, horarios, reglamento','admin-editar.html'],
-    ['salad','Nutrición','Hábitos, menú y recetas del mes','admin-nutricion.html'],
+    ['message-square','Mensajes de padres',(msgNuevos||0)+' sin leer','admin-chat.html'],
+    ['sliders-horizontal','Editar contenido y precios','Nutrición, rutinas, horarios, reglamento','admin-editar.html'],
+    ['salad','Menú del mes','Recetas y sugerencias de nutrición','admin-menu.html'],
     ['award','Subir de cinta','Promover alumno de rango','admin-cinta.html'],
     ['calendar-plus','Crear torneo o actividad','Evento, clase especial, aviso','admin-evento.html'],
     ['upload','Subir videos y media','Rutinas, audios de meditación','admin-media.html'],
@@ -109,23 +100,21 @@
       <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('')
 
   // Actividad reciente: checkins de hoy
-  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('creado_en', { ascending: false }).limit(5)
+  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(5)
   const homeEl = document.getElementById('home')
   if (checks?.length) {
     homeEl.innerHTML = checks.map(c => {
       const nom = c.alumnos?.nombre || 'Alumno'
       const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
-      const esAusencia = c.tipo === 'ausencia'
       return `<div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-        <span class="grow"><span class="t">${nom}</span><span class="s">${esAusencia ? 'No asistirá' : 'Asistencia · ' + (c.tipo||'Clase')}${c.hora ? ' · ' + c.hora : ''}</span></span>
-        <span class="trail"><span class="badge ${esAusencia ? 'red' : 'green'}" style="${esAusencia ? 'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;' : ''}"><i data-lucide="${esAusencia ? 'x' : 'check'}"></i> ${esAusencia ? 'Ausente' : 'Asistió'}</span></span></div>`
+        <span class="grow"><span class="t">${nom}</span><span class="s">Asistencia · ${c.tipo||'Clase'}${c.hora ? ' · ' + c.hora : ''}</span></span>
+        <span class="trail"><span class="badge green"><i data-lucide="check"></i> Asistió</span></span></div>`
     }).join('')
   } else {
     homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin asistencias registradas hoy.</div>'
   }
 
   lucide.createIcons()
-})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -134,5 +123,4 @@
 </script>
 </body>
 </html>
-
 

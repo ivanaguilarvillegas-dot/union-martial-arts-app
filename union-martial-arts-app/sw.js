@@ -1,4 +1,4 @@
-﻿const CACHE = 'uma-v14'
+const CACHE = 'uma-v15'
 const SHELL = [
   '/',
   '/home.html',
@@ -9,7 +9,6 @@ const SHELL = [
   '/assets/logo-union-white.png',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
-  '/js/supabase.min.js',
 ]
 
 self.addEventListener('install', e => {
@@ -60,4 +59,3 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(e.request).then(r => r || caches.match('/home.html')))
   )
 })
-
