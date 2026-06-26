@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Inicio</title>
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+.home-wrap { background:#f0f2f5; flex:1; overflow-y:auto; padding:12px 12px 24px; }
+.home-header { background:var(--primary,#1d4ed8); border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+.home-header-left .eyebrow { font-size:10px; color:rgba(255,255,255,.55); letter-spacing:.06em; font-weight:600; }
+.home-header-left .greeting { font-size:16px; color:#fff; font-weight:700; margin-top:2px; }
+.home-header-right { display:flex; gap:12px; align-items:center; }
+.notif-btn { position:relative; }
+.notif-btn i { color:#fff; width:22px; height:22px; }
+.notif-badge { position:absolute; top:-11px; right:-12px; background:#dc2626; color:#fff; border-radius:16px; font-size:13px; font-weight:900; padding:4px 8px; min-width:24px; text-align:center; box-shadow:0 2px 8px rgba(220,38,38,.8); line-height:1; }
+.notif-pill { display:inline-flex; align-items:center; gap:5px; background:#dc2626; border-radius:20px; padding:6px 11px; text-decoration:none; box-shadow:0 2px 8px rgba(220,38,38,.5); }
+.notif-pill i { color:#fff; width:18px; height:18px; flex-shrink:0; }
+.notif-pill .np-count { color:#fff; font-size:13px; font-weight:800; line-height:1; display:none; }
+
+.alumno-card { background:#fff; border-radius:14px; padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.alumno-foto { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.foto-circle { width:62px; height:62px; border-radius:50%; background:#e6f0ff; border:2.5px solid #b5d0f5; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.foto-circle img { width:100%; height:100%; object-fit:cover; }
+.foto-circle i { width:28px; height:28px; color:#4a7fcb; }
+.alumno-info { flex:1; min-width:0; }
+.alumno-nombre { font-size:15px; font-weight:700; color:var(--text,#1a1a2e); line-height:1.2; }
+.alumno-grupo { font-size:12px; color:var(--muted,#6b7280); margin-top:3px; }
+.alumno-badges { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.badge-activo { background:#ecfdf5; color:#065f46; border-radius:20px; font-size:11px; padding:3px 10px; display:flex; align-items:center; gap:4px; font-weight:600; }
+.badge-activo i { width:12px; height:12px; color:#059669; }
+
+.clase-card { background:var(--primary,#1d4ed8); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.clase-label { font-size:10px; color:rgba(255,255,255,.55); font-weight:600; letter-spacing:.06em; margin-bottom:8px; }
+.clase-body { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.clase-info .clase-dia { font-size:19px; font-weight:700; color:#fff; }
+.clase-info .clase-hora { font-size:13px; color:rgba(255,255,255,.9); margin-top:3px; }
+.clase-info .clase-dias { font-size:12px; color:rgba(255,255,255,.65); margin-top:3px; }
+.clase-info .clase-lugar { font-size:11px; color:rgba(255,255,255,.55); margin-top:3px; display:flex; align-items:center; gap:3px; }
+.clase-info .clase-lugar i { width:11px; height:11px; }
+.ver-horario { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.28); color:#fff; border-radius:20px; font-size:11px; padding:7px 14px; text-decoration:none; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:4px; font-weight:600; }
+.ver-horario i { width:12px; height:12px; }
+
+.resumen-card { background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.resumen-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.resumen-header span:first-child { font-size:13px; font-weight:700; color:var(--text,#1a1a2e); }
+.resumen-header a { font-size:12px; color:var(--primary,#1d4ed8); text-decoration:none; font-weight:600; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stat-tile { border-radius:10px; padding:12px; text-align:center; }
+.stat-tile i { width:20px; height:20px; }
+.stat-tile .stat-label { font-size:11px; margin-top:5px; }
+.stat-tile .stat-val { font-size:19px; font-weight:700; margin-top:3px; }
+.stat-tile .stat-sub { font-size:11px; margin-top:2px; }
+.stat-blue { background:#eef2ff; }
+.stat-blue i,.stat-blue .stat-val { color:#1d4ed8; }
+.stat-blue .stat-label,.stat-blue .stat-sub { color:#4a5fa0; }
+.stat-amber { background:#fffbeb; }
+.stat-amber i,.stat-amber .stat-val { color:#d97706; }
+.stat-amber .stat-label,.stat-amber .stat-sub { color:#92400e; }
+.stat-green { background:#f0fdf4; }
+.stat-green i,.stat-green .stat-val { color:#16a34a; }
+.stat-green .stat-label,.stat-green .stat-sub { color:#166534; }
+
+.evento-card { background:#0d1a5e; border-radius:14px; overflow:hidden; margin-bottom:10px; position:relative; min-height:88px; display:flex; align-items:center; }
+.evento-foto { position:absolute; inset:0; object-fit:cover; width:100%; height:100%; opacity:.35; }
+.evento-overlay { position:absolute; inset:0; background:linear-gradient(to right,rgba(13,26,94,.15),rgba(13,26,94,.82)); }
+.evento-content { position:relative; z-index:1; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; gap:10px; }
+.evento-tag { font-size:10px; font-weight:700; color:#fbbf24; letter-spacing:.05em; margin-bottom:3px; }
+.evento-titulo { font-size:15px; font-weight:700; color:#fff; }
+.evento-meta { font-size:11px; color:rgba(255,255,255,.7); margin-top:4px; display:flex; gap:10px; flex-wrap:wrap; }
+.evento-meta i { width:11px; height:11px; }
+.ver-evento { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.28); color:#fff; border-radius:20px; font-size:11px; padding:7px 12px; text-decoration:none; white-space:nowrap; flex-shrink:0; font-weight:600; display:flex; align-items:center; gap:3px; }
+.evento-barra { position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#fbbf24,#f59e0b); }
+
+.alerta-card { border-radius:12px; padding:12px 14px; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+.alerta-red { background:#fef2f2; }
+.alerta-red i { color:#dc2626; flex-shrink:0; width:20px; height:20px; }
+.alerta-red .alerta-t { font-size:13px; font-weight:700; color:#991b1b; }
+.alerta-red .alerta-s { font-size:12px; color:#b91c1c; margin-top:2px; }
+.alerta-red .alerta-link { font-size:12px; color:#dc2626; font-weight:600; white-space:nowrap; flex-shrink:0; text-decoration:none; display:flex; align-items:center; gap:2px; }
+.alerta-red .alerta-link i { width:12px; height:12px; }
+
+.checkin-btn { background:var(--primary,#1d4ed8); border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; text-decoration:none; }
+.checkin-btn-ic { width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.checkin-btn-ic i { width:24px; height:24px; color:#fff; }
+.checkin-btn-text .t { font-size:15px; font-weight:700; color:#fff; }
+.checkin-btn-text .s { font-size:11px; color:rgba(255,255,255,.65); margin-top:2px; }
+.checkin-btn-arr i { width:20px; height:20px; color:rgba(255,255,255,.5); }
+
+.menu-card { background:#fff; border-radius:14px; padding:14px 10px 10px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.menu-section-hdr { font-size:9.5px; font-weight:700; color:#9ca3af; letter-spacing:.07em; text-transform:uppercase; padding:10px 4px 6px; }
+.menu-section-hdr:first-child { padding-top:0; }
+.menu-section-divider { height:1px; background:#f3f4f6; margin:4px 0 2px; }
+.menu-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
+.menu-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+.menu-item { text-align:center; padding:7px 2px; text-decoration:none; display:block; }
+.menu-ic { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 5px; }
+.menu-ic.blue { background:#eef2ff; }
+.menu-ic.green { background:#f0fdf4; }
+.menu-ic.amber { background:#fffbeb; }
+.menu-ic.purple { background:#f5f3ff; }
+.menu-label { font-size:9.5px; color:#4b5563; line-height:1.3; }
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen" style="background:#f0f2f5;">
+
+<div class="home-wrap">
+
+  <!-- Banner instalar PWA -->
+  <div id="install-banner" style="display:none;background:#0A18EC;border-radius:14px;padding:12px 14px;margin-bottom:10px;display:none;align-items:center;gap:10px;">
+    <div style="font-size:22px;">📲</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:700;color:#fff;">Instala la app UNION</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">Acceso rápido desde tu pantalla de inicio</div>
+    </div>
+    <button id="btn-instalar" style="background:#fff;color:#0A18EC;border:none;border-radius:20px;font-size:12px;font-weight:800;padding:7px 14px;cursor:pointer;">Instalar</button>
+    <button onclick="document.getElementById('install-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;padding:0 2px;">✕</button>
+  </div>
+
+  <!-- Header -->
+  <div class="home-header">
+    <div class="home-header-left">
+      <div class="eyebrow">UNION MARTIAL ARTS</div>
+      <div class="greeting" id="saludo-nombre">Bienvenida</div>
+    </div>
+    <div class="home-header-right">
+      <a class="notif-pill" href="notificaciones.html" id="btn-notif" aria-label="Notificaciones">
+        <i data-lucide="bell"></i>
+        <span class="np-count" id="notif-count"></span>
+      </a>
+      <a class="notif-btn" id="btn-logout" href="#" aria-label="Cerrar sesión" style="opacity:.75;">
+        <i data-lucide="log-out" style="color:#fff;"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Tarjeta alumno -->
+  <div class="alumno-card">
+    <div class="alumno-foto">
+      <div class="foto-circle" id="foto-wrap" style="position:relative;cursor:pointer;" onclick="document.getElementById('foto-input').click()" title="Cambiar foto">
+        <i data-lucide="user"></i>
+        <div id="foto-cam" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+          <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+        </div>
+      </div>
+      <input type="file" id="foto-input" accept="image/*" style="display:none">
+      <!-- Cinta SVG profesional -->
+      <div id="cinta-wrap" style="display:none;text-align:center;">
+        <svg id="cinta-svg" width="72" height="26" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(255,255,255,.22)"/>
+              <stop offset="45%" stop-color="rgba(255,255,255,.0)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,.18)"/>
+            </linearGradient>
+            <linearGradient id="ng" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(255,255,255,.15)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,.22)"/>
+            </linearGradient>
+          </defs>
+          <!-- Cuerpo de la cinta -->
+          <rect id="c-base" x="0" y="8" width="72" height="10" rx="5" fill="#dc2626"/>
+          <rect x="0" y="8" width="72" height="10" rx="5" fill="url(#cg)"/>
+          <!-- Línea de borde superior sutil -->
+          <rect x="1" y="8.5" width="70" height="1" rx=".5" fill="rgba(255,255,255,.18)"/>
+          <!-- Nudo central -->
+          <rect id="c-nudo" x="28" y="6" width="16" height="14" rx="3" fill="#dc2626"/>
+          <rect x="28" y="6" width="16" height="14" rx="3" fill="url(#ng)"/>
+          <rect x="29" y="6.5" width="14" height="1" rx=".5" fill="rgba(255,255,255,.2)"/>
+          <!-- Línea vertical del nudo -->
+          <line x1="36" y1="7" x2="36" y2="19" stroke="rgba(0,0,0,.12)" stroke-width="1.2"/>
+          <!-- Stripes Dan (derecha) -->
+          <line id="d1" x1="57" y1="9" x2="57" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          <line id="d2" x1="61" y1="9" x2="61" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+          <line id="d3" x1="65" y1="9" x2="65" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
+        </svg>
+        <div id="cinta-label" style="font-size:9.5px;font-weight:700;color:#4b5563;margin-top:3px;letter-spacing:.01em;"></div>
+      </div>
+    </div>
+    <div class="alumno-info">
+      <div class="alumno-nombre" id="nombre-alumno">Mi hijo/a</div>
+      <div class="alumno-grupo" id="grupo-alumno">—</div>
+      <div class="alumno-badges">
+        <span class="badge-activo"><i data-lucide="check-circle"></i> Activo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próxima clase -->
+  <div class="clase-card">
+    <div class="clase-label">PRÓXIMA CLASE</div>
+    <div class="clase-body">
+      <div class="clase-info">
+        <div class="clase-dia" id="clase-dia">—</div>
+        <div class="clase-hora" id="clase-hora"></div>
+        <div class="clase-dias" id="clase-dias"></div>
+        <div class="clase-lugar" id="clase-lugar" style="display:none;">
+          <i data-lucide="map-pin"></i><span></span>
+        </div>
+      </div>
+      <a class="ver-horario" href="horario.html">Ver horario <i data-lucide="chevron-right"></i></a>
+    </div>
+  </div>
+
+  <!-- Resumen del mes -->
+  <div class="resumen-card">
+    <div class="resumen-header">
+      <span>Resumen del mes</span>
+      <a href="reporte.html">Ver reporte <i data-lucide="chevron-right" style="width:12px;height:12px;vertical-align:-2px;"></i></a>
+    </div>
+    <div class="stats-grid">
+      <a class="stat-tile stat-blue" href="asistencia.html" style="text-decoration:none;display:block;">
+        <i class="ti ti-calendar-stats" style="font-size:22px;color:#1d4ed8;"></i>
+        <div class="stat-label">Asistencia</div>
+        <div class="stat-val" id="stat-asistencia" style="font-size:17px;">—</div>
+        <div class="stat-sub" id="stat-clases-sub">clases este mes</div>
+      </a>
+      <div class="stat-tile stat-amber">
+        <i class="ti ti-award" style="font-size:22px;color:#d97706;"></i>
+        <div class="stat-label">Evaluación</div>
+        <div class="stat-val" id="stat-eval">—</div>
+        <div class="stat-sub"><a href="evaluacion.html" style="color:inherit;text-decoration:none;font-weight:600;">Ver detalle</a></div>
+      </div>
+      <a class="stat-tile stat-green" href="nutricion.html" style="text-decoration:none;display:block;">
+        <i class="ti ti-salad" style="font-size:22px;color:#16a34a;"></i>
+        <div class="stat-label">Hábitos</div>
+        <div class="stat-val" id="stat-habitos">—</div>
+        <div class="stat-sub">Completados</div>
+      </a>
+      <a class="stat-tile stat-green" href="pagos.html" style="text-decoration:none;display:block;">
+        <i class="ti ti-coin" style="font-size:22px;color:#16a34a;"></i>
+        <div class="stat-label">Pago</div>
+        <div class="stat-val" id="stat-pago">—</div>
+        <div class="stat-sub" id="stat-pago-sub"></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Próximo evento -->
+  <div id="evento-wrap" style="display:none;">
+    <a class="evento-card" href="torneos.html" id="evento-card" style="text-decoration:none;display:flex;">
+      <img id="evento-foto" class="evento-foto" src="" alt="" style="display:none;" />
+      <div class="evento-overlay"></div>
+      <div class="evento-content">
+        <div>
+          <div class="evento-tag">PRÓXIMO EVENTO</div>
+          <div class="evento-titulo" id="evento-titulo">—</div>
+          <div class="evento-meta">
+            <span id="evento-fecha"><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-1px;"></i> —</span>
+            <span id="evento-lugar" style="display:none;"><i data-lucide="map-pin" style="width:11px;height:11px;vertical-align:-1px;"></i> —</span>
+          </div>
+        </div>
+        <a class="ver-evento" href="torneos.html">Ver <i data-lucide="chevron-right" style="width:12px;height:12px;"></i></a>
+      </div>
+      <div class="evento-barra"></div>
+    </a>
+  </div>
+
+  <!-- Alerta -->
+  <div id="alerta-wrap" style="display:none;">
+    <div class="alerta-card alerta-red">
+      <i data-lucide="alert-triangle"></i>
+      <div class="grow">
+        <div class="alerta-t" id="alerta-t">Alerta activa</div>
+        <div class="alerta-s" id="alerta-s"></div>
+      </div>
+      <a class="alerta-link" href="notificaciones.html">Ver <i data-lucide="chevron-right"></i></a>
+    </div>
+  </div>
+
+  <!-- Check-in destacado -->
+  <a class="checkin-btn" href="checkin.html">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="checkin-btn-ic"><i data-lucide="clipboard-check"></i></div>
+      <div class="checkin-btn-text">
+        <div class="t">Check-in de hoy</div>
+        <div class="s">Confirma llegada o reporta ausencia</div>
+      </div>
+    </div>
+    <div class="checkin-btn-arr"><i data-lucide="chevron-right"></i></div>
+  </a>
+
+  <!-- Menú por secciones -->
+  <div class="menu-card">
+
+    <!-- Academia -->
+    <div class="menu-section-hdr">Academia</div>
+    <div class="menu-grid">
+      <a class="menu-item" href="programas.html">
+        <div class="menu-ic amber"><i class="ti ti-crown" style="font-size:19px;color:#d97706;"></i></div>
+        <div class="menu-label">Programas</div>
+      </a>
+      <a class="menu-item" href="notificaciones.html">
+        <div class="menu-ic blue"><i class="ti ti-bell-ringing" style="font-size:19px;color:#1d4ed8;"></i></div>
+        <div class="menu-label">Avisos</div>
+      </a>
+      <a class="menu-item" href="evaluacion.html">
+        <div class="menu-ic green"><i class="ti ti-chart-line" style="font-size:19px;color:#16a34a;"></i></div>
+        <div class="menu-label">Evaluación</div>
+      </a>
+      <a class="menu-item" href="torneos.html">
+        <div class="menu-ic amber"><i class="ti ti-trophy" style="font-size:19px;color:#d97706;"></i></div>
+        <div class="menu-label">Eventos</div>
+      </a>
+    </div>
+
+    <div class="menu-section-divider"></div>
+
+    <!-- Seguimiento -->
+    <div class="menu-section-hdr">Seguimiento</div>
+    <div class="menu-grid">
+      <a class="menu-item" href="nutricion.html">
+        <div class="menu-ic green"><i class="ti ti-salad" style="font-size:19px;color:#16a34a;"></i></div>
+        <div class="menu-label">Hábitos</div>
+      </a>
+      <a class="menu-item" href="entrena.html">
+        <div class="menu-ic amber"><i class="ti ti-run" style="font-size:19px;color:#d97706;"></i></div>
+        <div class="menu-label">Rutinas en casa</div>
+      </a>
+      <a class="menu-item" href="meditacion.html">
+        <div class="menu-ic blue"><i class="ti ti-moon-stars" style="font-size:19px;color:#1d4ed8;"></i></div>
+        <div class="menu-label">Meditación</div>
+      </a>
+      <a class="menu-item" href="reporte.html">
+        <div class="menu-ic purple"><i class="ti ti-report-analytics" style="font-size:19px;color:#7c3aed;"></i></div>
+        <div class="menu-label">Reporte mensual</div>
+      </a>
+    </div>
+
+    <div class="menu-section-divider"></div>
+
+    <!-- Cuenta y soporte -->
+    <div class="menu-section-hdr">Cuenta y soporte</div>
+    <div class="menu-grid">
+      <a class="menu-item" href="pagos.html">
+        <div class="menu-ic blue"><i class="ti ti-receipt" style="font-size:19px;color:#1d4ed8;"></i></div>
+        <div class="menu-label">Pagos</div>
+      </a>
+      <a class="menu-item" href="cita.html">
+        <div class="menu-ic blue"><i class="ti ti-calendar-plus" style="font-size:19px;color:#1d4ed8;"></i></div>
+        <div class="menu-label">Agendar cita</div>
+      </a>
+      <a class="menu-item" href="chat.html">
+        <div class="menu-ic blue"><i class="ti ti-message-2" style="font-size:19px;color:#1d4ed8;"></i></div>
+        <div class="menu-label">Chat</div>
+      </a>
+      <a class="menu-item" href="dudas.html">
+        <div class="menu-ic green"><i class="ti ti-message-question" style="font-size:19px;color:#16a34a;"></i></div>
+        <div class="menu-label">Dudas</div>
+      </a>
+      <a class="menu-item" href="tienda.html">
+        <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:19px;color:#d97706;"></i></div>
+        <div class="menu-label">Tienda</div>
+      </a>
+    </div>
+    <div class="menu-grid-3" style="margin-top:2px;">
+      <div></div>
+      <a class="menu-item" href="perfil.html">
+        <div class="menu-ic blue"><i class="ti ti-user-circle" style="font-size:19px;color:#1d4ed8;"></i></div>
+        <div class="menu-label">Perfil</div>
+      </a>
+      <div></div>
+    </div>
+
+  </div>
+
+</div><!-- /home-wrap -->
+
+  <nav class="bottomnav">
+    <a class="on" href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  lucide.createIcons()
+
+  // Clases esperadas en el mes según horario
+  function clasesEsperadasEnMes(horario) {
+    if (!horario) return 0
+    const l = horario.toLowerCase()
+    const map = [
+      ['domingo', 0], ['lunes', 1], ['martes', 2],
+      ['miércoles', 3], ['miercoles', 3], ['jueves', 4],
+      ['viernes', 5], ['sábado', 6], ['sabado', 6]
+    ]
+    const diasClase = new Set()
+    for (const [nombre, num] of map) {
+      if (l.includes(nombre)) diasClase.add(num)
+    }
+    if (!diasClase.size) return 0
+    const hoy = new Date()
+    const año = hoy.getFullYear()
+    const mes = hoy.getMonth()
+    const ultimoDia = new Date(año, mes + 1, 0).getDate()
+    let count = 0
+    for (let d = 1; d <= ultimoDia; d++) {
+      if (diasClase.has(new Date(año, mes, d).getDay())) count++
+    }
+    return count
+  }
+
+  // Colores de cinta
+  function cintaColor(c) {
+    if (!c) return null
+    const l = c.toLowerCase()
+    if (l.includes('negra') || l.includes('negro')) return '#1f2937'
+    if (l.includes('roja') || l.includes('rojo')) return '#dc2626'
+    if (l.includes('café') || l.includes('cafe') || l.includes('marron') || l.includes('marrón')) return '#78350f'
+    if (l.includes('verde')) return '#16a34a'
+    if (l.includes('azul')) return '#2563eb'
+    if (l.includes('morada') || l.includes('morado') || l.includes('púrpura')) return '#9333ea'
+    if (l.includes('naranja')) return '#f97316'
+    if (l.includes('amarilla') || l.includes('amarillo')) return '#fbbf24'
+    return '#e5e7eb'
+  }
+
+  function extractDan(cinta) {
+    if (!cinta) return 0
+    // Detecta romanos en el nombre: "Negra II grado", "Café III", etc.
+    const map = [['V',5],['IV',4],['III',3],['II',2],['I',1]]
+    for (const [r, n] of map) {
+      if (cinta.includes(r + ' grado') || cinta.includes(r + ' Grado') || cinta.endsWith(' ' + r)) return n
+    }
+    return 0
+  }
+
+  function mostrarCinta(cinta, dan) {
+    const color = cintaColor(cinta)
+    if (!color) return
+    const wrap = document.getElementById('cinta-wrap')
+    if (!wrap) return
+    wrap.style.display = 'block'
+    document.getElementById('c-base').setAttribute('fill', color)
+    document.getElementById('c-nudo').setAttribute('fill', color)
+
+    // Dan: usar campo dan de BD o extraer del nombre de la cinta
+    const danes = (dan && dan > 0) ? dan : extractDan(cinta)
+
+    // Color de rayas: dorado para cinta negra, oscuro para amarilla/blanca, blanco para el resto
+    const esNegra = color === '#1f2937'
+    const claras = ['#e5e7eb', '#fbbf24']
+    const stripeColor = esNegra ? '#F5C518' : (claras.includes(color) ? '#374151' : '#fff')
+
+    ;['d1','d2','d3'].forEach(id => {
+      document.getElementById(id).style.display = 'none'
+      document.getElementById(id).setAttribute('stroke', stripeColor)
+    })
+    if (danes >= 1) document.getElementById('d1').style.display = 'block'
+    if (danes >= 2) document.getElementById('d2').style.display = 'block'
+    if (danes >= 3) document.getElementById('d3').style.display = 'block'
+
+    // Etiqueta: preserva mayúsculas del nombre original, quita " grado" si ya tiene el romano
+    const label = cinta ? cinta.charAt(0).toUpperCase() + cinta.slice(1) : ''
+    document.getElementById('cinta-label').textContent = 'Cinta ' + label
+  }
+
+  // Parsear horario para próxima clase
+  function proximaClase(horario) {
+    if (!horario) return null
+    const dias = ['domingo','lunes','martes','miércoles','miercoles','jueves','viernes','sábado','sabado']
+    const hoy = new Date().getDay() // 0=dom,1=lun...
+    const diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
+    const segmentos = horario.split('|').map(s => s.trim()).filter(Boolean)
+    if (!segmentos.length) return null
+    // Buscar si hay clase hoy
+    for (const seg of segmentos) {
+      const lower = seg.toLowerCase()
+      if (lower.includes(diasSemana[hoy]) || lower.includes('l, m y v') || lower.includes('l, m, j')) {
+        return { dia: 'Hoy', detalle: seg }
+      }
+    }
+    return { dia: segmentos[0].split('·')[0].trim(), detalle: segmentos[0] }
+  }
+
+  // Logout
+  document.getElementById('btn-logout').addEventListener('click', async (e) => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  async function cargarDatos() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = 'index.html'; return }
+
+    mostrarBadge(user)
+    cargarEvento()
+    cargarAlerta()
+
+    const hoy = new Date()
+    const hoyStr = hoy.toISOString().split('T')[0]
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0]
+
+    // Padre
+    let padre = null
+    try {
+      const { data: p1 } = await supabase.from('padres').select('id, nombre, alumno_id, correo, telefono').eq('user_id', user.id).maybeSingle()
+      if (p1) { padre = p1 }
+      else {
+        const { data: p2 } = await supabase.from('padres').select('id, nombre, alumno_id, correo, telefono').eq('correo', user.email).maybeSingle()
+        if (p2) {
+          await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
+          padre = p2
+        }
+      }
+    } catch(e) {}
+
+    if (padre) {
+      const partes = (padre.nombre || '').trim().split(/\s+/).filter(Boolean)
+      // Formato "Nombre ApellidoPaterno ApellidoMaterno" → toma el penúltimo (primer apellido)
+      const apellido = partes.length >= 3 ? partes[partes.length - 2] : partes.length === 2 ? partes[1] : partes[0] || ''
+      document.getElementById('saludo-nombre').textContent = 'Familia ' + apellido
+    }
+
+    if (!padre?.alumno_id) return
+
+    // Alumno
+    let al = null
+    try {
+      const { data: alData } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
+      al = alData
+      if (al) {
+        document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
+        document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
+
+        // Cinta visual
+        mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
+
+        // Foto si existe
+        if (al.foto_url) {
+          document.getElementById('foto-wrap').innerHTML = `
+            <img src="${al.foto_url}" alt="${al.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+              <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+            </div>`
+        }
+
+        // Subida de foto
+        document.getElementById('foto-input').addEventListener('change', async (e) => {
+          const file = e.target.files[0]
+          if (!file) return
+          const ext = file.name.split('.').pop().toLowerCase()
+          const path = `${user.id}/alumno-${al.id}.${ext}`
+          const wrap = document.getElementById('foto-wrap')
+          wrap.style.opacity = '.5'
+          const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert: true, contentType: file.type })
+          if (error) { alert('Error al subir: ' + error.message); wrap.style.opacity = '1'; return }
+          const { data: { publicUrl } } = supabase.storage.from('fotos-alumnos').getPublicUrl(path)
+          const urlConCache = publicUrl + '?t=' + Date.now()
+          await supabase.from('alumnos').update({ foto_url: urlConCache }).eq('id', al.id)
+          wrap.style.opacity = '1'
+          wrap.innerHTML = `
+            <img src="${urlConCache}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+              <i class="ti ti-camera" style="font-size:11px;color:#fff;"></i>
+            </div>`
+          wrap.onclick = () => document.getElementById('foto-input').click()
+        })
+
+        // Próxima clase desde horario
+        const pc = proximaClase(al.horario)
+        if (pc) {
+          const segPartes = pc.detalle.split('·')
+          if (segPartes.length > 1) {
+            document.getElementById('clase-dia').textContent = pc.dia
+            document.getElementById('clase-hora').textContent = segPartes[1].trim()
+            document.getElementById('clase-dias').textContent = segPartes[0].trim()
+          } else {
+            document.getElementById('clase-dia').textContent = pc.dia
+            document.getElementById('clase-dias').textContent = pc.detalle
+          }
+        } else {
+          document.getElementById('clase-dia').textContent = 'Sin horario'
+          document.getElementById('clase-dias').textContent = 'Consulta con tu instructor'
+        }
+      }
+    } catch(e) {}
+
+    // Asistencia del mes
+    try {
+      const { data: checkins } = await supabase.from('checkins')
+        .select('id, tipo').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+      const n = (checkins || []).filter(c => c.tipo !== 'ausencia').length
+      const esperadas = clasesEsperadasEnMes(al?.horario)
+      const pct = esperadas ? Math.round((n / esperadas) * 100) : null
+      document.getElementById('stat-asistencia').textContent = n + ' / ' + (esperadas || '?')
+      document.getElementById('stat-clases-sub').textContent = (pct !== null ? pct + '% · ' : '') + 'clases este mes'
+    } catch(e) {}
+
+    // Pago
+    try {
+      const { data: pagos } = await supabase.from('pagos')
+        .select('estado, fecha_pago').eq('alumno_id', padre.alumno_id)
+        .order('creado_en', { ascending: false }).limit(1)
+      const p = pagos?.[0]
+      if (p?.estado === 'pagado') {
+        document.getElementById('stat-pago').textContent = 'Al día'
+        document.getElementById('stat-pago').style.color = '#16a34a'
+      } else if (p) {
+        document.getElementById('stat-pago').textContent = 'Pendiente'
+        document.getElementById('stat-pago').style.color = '#d97706'
+      } else {
+        document.getElementById('stat-pago').textContent = '—'
+      }
+    } catch(e) {}
+
+    // Evaluación — última puntuación del mes
+    try {
+      const { data: evals } = await supabase.from('evaluaciones')
+        .select('nivel').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+        .order('fecha', { ascending: false }).limit(1)
+      const niv = evals?.[0]?.nivel
+      const etiquetas = { excelente:'Excelente', bueno:'Bueno', regular:'Regular', mejorar:'Por mejorar' }
+      document.getElementById('stat-eval').textContent = etiquetas[niv?.toLowerCase()] || (niv || '—')
+    } catch(e) {
+      document.getElementById('stat-eval').textContent = '—'
+    }
+
+    // Hábitos del mes
+    try {
+      const { data: habitos } = await supabase.from('habitos')
+        .select('completados').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+      const total = (habitos || []).reduce((s, h) => s + (h.completados || 0), 0)
+      document.getElementById('stat-habitos').textContent = total || '—'
+    } catch(e) {
+      document.getElementById('stat-habitos').textContent = '—'
+    }
+
+    lucide.createIcons()
+  }
+
+  async function cargarEvento() {
+    const hoyStr = new Date().toISOString().split('T')[0]
+    try {
+      const { data: ev } = await supabase.from('eventos')
+        .select('titulo, fecha, lugar, foto_url').gte('fecha', hoyStr).order('fecha').limit(1).maybeSingle()
+      if (ev) {
+        document.getElementById('evento-wrap').style.display = 'block'
+        document.getElementById('evento-titulo').textContent = ev.titulo
+        document.getElementById('evento-fecha').innerHTML = `<i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-1px;"></i> ${ev.fecha}`
+        if (ev.lugar) {
+          const l = document.getElementById('evento-lugar')
+          l.style.display = 'flex'
+          l.querySelector('i') ? null : null
+          l.innerHTML = `<i data-lucide="map-pin" style="width:11px;height:11px;vertical-align:-1px;"></i> ${ev.lugar}`
+        }
+        if (ev.foto_url) {
+          const img = document.getElementById('evento-foto')
+          img.src = ev.foto_url
+          img.style.display = 'block'
+        }
+        lucide.createIcons()
+      }
+    } catch(e) {}
+  }
+
+  async function cargarAlerta() {
+    try {
+      const { data: aviso } = await supabase.from('configuracion').select('valor').eq('clave', 'aviso_general').maybeSingle()
+      if (aviso?.valor) {
+        document.getElementById('alerta-wrap').style.display = 'block'
+        document.getElementById('alerta-t').textContent = 'Aviso del instructor'
+        document.getElementById('alerta-s').textContent = aviso.valor.substring(0, 80)
+        lucide.createIcons()
+      }
+    } catch(e) {}
+  }
+
+  async function mostrarBadge(user) {
+    const visto = localStorage.getItem('notif_visto') || '2000-01-01'
+    let count = 0
+    try {
+      const [a, p] = await Promise.allSettled([
+        supabase.from('configuracion').select('valor, actualizado_en').eq('clave', 'aviso_general').maybeSingle(),
+        supabase.from('mensajes').select('id').eq('para_admin', false).eq('destinatario_id', user.id).gt('creado_en', visto)
+      ])
+      const aviso = a.value?.data
+      if (aviso?.valor && aviso.actualizado_en > visto) count++
+      count += (p.value?.data?.length || 0)
+    } catch(e) {}
+
+    const countEl = document.getElementById('notif-count')
+    if (countEl && count > 0) {
+      countEl.textContent = count
+      countEl.style.display = 'block'
+    }
+  }
+
+  cargarDatos()
+</script>
+<script>
+  // PWA install banner
+  let deferredPrompt
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault()
+    deferredPrompt = e
+    const banner = document.getElementById('install-banner')
+    if (banner) banner.style.display = 'flex'
+  })
+  const btnInstalar = document.getElementById('btn-instalar')
+  if (btnInstalar) {
+    btnInstalar.addEventListener('click', async () => {
+      if (!deferredPrompt) return
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      deferredPrompt = null
+      document.getElementById('install-banner').style.display = 'none'
+    })
+  }
+  window.addEventListener('appinstalled', () => {
+    const banner = document.getElementById('install-banner')
+    if (banner) banner.style.display = 'none'
+  })
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body>
+</html>

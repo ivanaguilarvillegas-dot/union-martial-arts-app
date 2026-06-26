@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Panel</title>
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
+</head>
+<body>
+<div class="phone"><div class="screen">
+  <div class="header-dark">
+    <div class="statusbar dark"><span id="reloj-admin"></span><span class="right">
+      <i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+    <div class="appbar dark">
+      <div class="grow"><div class="eyebrow"><i data-lucide="shield" style="width:13px;height:13px"></i> Panel de administrador</div><div class="name">Union Martial Arts</div></div>
+      <a class="iconbtn-dark" href="index.html" aria-label="Cerrar sesión"><i data-lucide="log-out"></i></a>
+    </div>
+  </div>
+  <div class="body">
+    <div class="label">Resumen general</div>
+    <div class="grid2 mb18">
+      <div class="tile"><b>48</b><span>Alumnos activos</span></div>
+      <div class="tile green"><b>$28,800</b><span>Cobrado este mes</span></div>
+      <div class="tile red"><b>7</b><span>Pagos pendientes</span></div>
+      <div class="tile"><b>19</b><span>Asistencias hoy</span></div>
+    </div>
+
+    <div class="label">Acciones</div>
+    <div class="stack-10 mb18" id="acc"></div>
+
+    <div class="label">Asistencia de hoy</div>
+    <div class="stack-8" id="home"></div>
+  </div>
+  <nav class="bottomnav">
+    <a class="on" href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
+    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
+    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Mensajes</a>
+  </nav>
+</div></div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  function actualizarReloj() {
+    const el = document.getElementById('reloj-admin'); if (!el) return
+    el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+  }
+  actualizarReloj(); setInterval(actualizarReloj, 30000)
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
+
+  // Verificar que sea admin
+  const { data: admin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).single()
+  if (!admin?.es_admin) { window.location.href = 'home.html' }
+
+  const hoy = new Date().toISOString().split('T')[0]
+
+  // Cargar estadísticas reales
+  const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
+  const [{ count: totalAlumnos }, pagPendRes, { count: asistHoy }, { count: msgNuevos }, cobradoRes] = await Promise.all([
+    supabase.from('alumnos').select('*', { count: 'exact', head: true }),
+    supabase.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
+    supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
+    supabase.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
+    supabase.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDiaMes),
+  ])
+
+  const totalCobrado = (cobradoRes.data || []).reduce((s, p) => s + (Number(p.monto) || 0), 0)
+  document.querySelector('.tile b').textContent = totalAlumnos || 0
+  document.querySelectorAll('.tile b')[1].textContent = '$' + totalCobrado.toLocaleString('es-MX')
+  document.querySelectorAll('.tile b')[2].textContent = pagPendRes.count || 0
+  document.querySelectorAll('.tile b')[3].textContent = asistHoy || 0
+
+  const ACC = [
+    ['user-check','Confirmar asistencias', (asistHoy||0)+' check-ins hoy','admin-asistencias.html'],
+    ['clipboard-list','Registrar evaluación','Calificar alumno del día/mes','admin-evaluacion.html'],
+    ['message-square','Mensajes de padres',(msgNuevos||0)+' sin leer','admin-chat.html'],
+    ['sliders-horizontal','Editar contenido y precios','Nutrición, rutinas, horarios, reglamento','admin-editar.html'],
+    ['salad','Menú del mes','Recetas y sugerencias de nutrición','admin-menu.html'],
+    ['award','Subir de cinta','Promover alumno de rango','admin-cinta.html'],
+    ['calendar-plus','Crear torneo o actividad','Evento, clase especial, aviso','admin-evento.html'],
+    ['upload','Subir videos y media','Rutinas, audios de meditación','admin-media.html'],
+    ['shopping-bag','Editar tienda','Productos y precios','admin-tienda.html'],
+    ['file-text','Reporte mensual','Historial por alumno en PDF','admin-reporte.html'],
+  ]
+  document.getElementById('acc').innerHTML = ACC.map(([ic,t,s,href])=>`
+    <a class="row" href="${href}"><span class="ic"><i data-lucide="${ic}"></i></span>
+      <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
+      <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('')
+
+  // Actividad reciente: checkins de hoy
+  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(5)
+  const homeEl = document.getElementById('home')
+  if (checks?.length) {
+    homeEl.innerHTML = checks.map(c => {
+      const nom = c.alumnos?.nombre || 'Alumno'
+      const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
+      return `<div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
+        <span class="grow"><span class="t">${nom}</span><span class="s">Asistencia · ${c.tipo||'Clase'}${c.hora ? ' · ' + c.hora : ''}</span></span>
+        <span class="trail"><span class="badge green"><i data-lucide="check"></i> Asistió</span></span></div>`
+    }).join('')
+  } else {
+    homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin asistencias registradas hoy.</div>'
+  }
+
+  lucide.createIcons()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body>
+</html>
+
