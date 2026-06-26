@@ -308,6 +308,56 @@
   }
 
   lucide.createIcons()
+
+  // ── NOTIFICACIONES DEL NAVEGADOR ──
+  async function pedirPermiso() {
+    if (!('Notification' in window)) return
+    if (Notification.permission === 'default') await Notification.requestPermission()
+  }
+  pedirPermiso()
+
+  function notificar(titulo, cuerpo, url) {
+    if (Notification.permission !== 'granted') return
+    const n = new Notification(titulo, {
+      body: cuerpo,
+      icon: '/assets/icon-192.png',
+      badge: '/assets/icon-192.png',
+      tag: url
+    })
+    n.onclick = () => { window.focus(); window.location.href = url; n.close() }
+  }
+
+  // Estado anterior para detectar cambios
+  let prevMsg = msgCount
+  let prevCitas = citasCount || 0
+  let prevPagos = pagosCompCount || 0
+
+  async function pollNotificaciones() {
+    const [mRes, cRes, pRes] = await Promise.all([
+      sb.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
+      sb.from('citas').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
+      sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente').not('comprobante_url', 'is', null),
+    ])
+
+    const nuevoMsg = mRes.count || 0
+    const nuevaCita = cRes.count || 0
+    const nuevoPago = pRes.count || 0
+
+    if (nuevoMsg > prevMsg) notificar('💬 Mensaje nuevo', `${nuevoMsg - prevMsg} mensaje(s) sin leer de padres`, 'admin-chat.html')
+    if (nuevaCita > prevCitas) notificar('📅 Nueva solicitud de cita', 'Un padre solicitó una cita', 'admin-citas.html')
+    if (nuevoPago > prevPagos) notificar('💳 Comprobante de pago', 'Un padre envió comprobante para confirmar', 'admin-pagos.html')
+
+    // Actualizar badges en pantalla
+    const bc = document.getElementById('badge-chat')
+    if (nuevoMsg > 0) { bc.textContent = nuevoMsg; bc.style.display = 'flex' } else bc.style.display = 'none'
+    const bci = document.getElementById('badge-citas')
+    if (nuevaCita > 0) { bci.textContent = nuevaCita; bci.style.display = 'flex' } else bci.style.display = 'none'
+
+    prevMsg = nuevoMsg; prevCitas = nuevaCita; prevPagos = nuevoPago
+  }
+
+  // Revisar cada 30 segundos
+  setInterval(pollNotificaciones, 30000)
 </script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body>
