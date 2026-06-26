@@ -117,7 +117,7 @@ async function cargarLista() {
     const hora = ultimo ? new Date(ultimo.creado_en).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' }) : ''
     const badge = noLeidoMap[p.id] ? `<div class="badge">${noLeidoMap[p.id]}</div>` : ''
     const iniciales = p.nombre ? p.nombre.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : '?'
-    return `<div class="chat-list-item" onclick="abrirChat('${p.id}','${p.nombre?.replace(/'/g,"\\'")}')">
+    return `<div class="chat-list-item" data-padre-id="${p.id}" data-padre-user-id="${p.user_id||''}" onclick="abrirChat('${p.id}','${p.nombre?.replace(/'/g,"\\'")}')">
       <div class="chat-avatar">${iniciales}</div>
       <div class="chat-info">
         <div class="chat-name">${p.nombre || 'Padre'}</div>
@@ -139,8 +139,15 @@ window.abrirChat = async function(padreId, nombre) {
   document.getElementById('cw-nombre').textContent = nombre
   document.getElementById('chat-window').classList.add('open')
   await cargarMensajes()
-  // Marcar como leídos
-  await sb.from('mensajes').update({ leido: true }).eq('destinatario_id', padreId).eq('leido', false)
+  // Marcar como leídos: mensajes del admin al padre Y mensajes del padre al admin
+  const padre = document.querySelector(`[data-padre-id="${padreId}"]`)
+  const padreUserId = padre?.dataset.padreUserId
+  await Promise.all([
+    sb.from('mensajes').update({ leido: true }).eq('destinatario_id', padreId).eq('leido', false),
+    padreUserId
+      ? sb.from('mensajes').update({ leido: true }).eq('de_user_id', padreUserId).eq('para_admin', true).eq('leido', false)
+      : Promise.resolve()
+  ])
   clearInterval(pollTimer)
   pollTimer = setInterval(cargarMensajes, 4000)
 }
