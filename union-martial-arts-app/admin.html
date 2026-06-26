@@ -136,6 +136,7 @@
         <div class="ac-label">Citas</div>
         <div class="ac-sub">Solicitudes pendientes</div>
       </div>
+      <div class="ac-badge" id="badge-citas" style="display:none;">0</div>
     </a>
   </div>
 
@@ -257,7 +258,7 @@
     sb.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
     sb.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
     sb.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDia),
-    sb.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(8),
+    sb.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(12),
   ])
 
   const cobrado = (cobradoRes.data || []).reduce((s, p) => s + (Number(p.monto) || 0), 0)
@@ -273,17 +274,33 @@
     badge.textContent = msgCount; badge.style.display = 'flex'
   }
 
+  // Badge citas pendientes
+  const { count: citasCount } = await sb.from('citas').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente')
+  if (citasCount > 0) {
+    const bc = document.getElementById('badge-citas')
+    bc.textContent = citasCount; bc.style.display = 'flex'
+  }
+
+  // Badge pagos pendientes con comprobante
+  const { count: pagosCompCount } = await sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente').not('comprobante_url', 'is', null)
+  document.getElementById('st-pendientes').style.color = (pagPendRes.count || 0) > 0 ? '#dc2626' : 'inherit'
+
   const checks = checksRes.data || []
   const listEl = document.getElementById('checkin-hoy')
   if (checks.length) {
     listEl.innerHTML = checks.map(c => {
       const nom = c.alumnos?.nombre || 'Alumno'
       const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
+      const ausente = c.tipo === 'ausente' || c.tipo === 'ausencia'
       return `<div class="checkin-row">
-        <div class="checkin-avatar">${ini}</div>
-        <div class="checkin-nombre">${nom}</div>
-        <div class="checkin-hora">${c.hora || ''}</div>
-        <span class="badge-asistio">✓ Asistió</span>
+        <div class="checkin-avatar" style="${ausente ? 'background:#fff1f2;color:#dc2626;' : ''}">${ini}</div>
+        <div style="flex:1;">
+          <div class="checkin-nombre">${nom}</div>
+          <div class="checkin-hora">${c.justificacion || c.hora || ''}</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;border-radius:99px;padding:3px 8px;background:${ausente ? '#fff1f2' : '#f0fdf4'};color:${ausente ? '#dc2626' : '#059669'};">
+          ${ausente ? '✗ Ausente' : '✓ Asistió'}
+        </span>
       </div>`
     }).join('')
   } else {
