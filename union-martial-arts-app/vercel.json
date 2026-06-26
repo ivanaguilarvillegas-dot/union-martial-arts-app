@@ -1,15 +1,6 @@
 {
   "rewrites": [
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "unionmartialarts.org" }],
-      "destination": "/landing.html"
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "www.unionmartialarts.org" }],
-      "destination": "/landing.html"
-    }
+    { "source": "/", "destination": "/landing.html" }
   ],
   "headers": [
     {
