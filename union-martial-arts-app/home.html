@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Union MA">
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
-<link rel="stylesheet" href="css/uma.css?v=14" />
+<link rel="stylesheet" href="css/uma.css?v=18" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
 <style>
 /* ── LAYOUT ── */
@@ -762,7 +762,7 @@
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
 
         // Ocultar nutrición, meditación y rutinas si es plan básico mensual
-        if (al.plan_pago === 'mensual' || !al.plan_pago) {
+        if (al.plan_pago === 'mensual') {
           const hide = ['tile-nutricion', 'menu-entrena', 'menu-meditacion']
           hide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none' })
         }
