@@ -1,126 +1,297 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Panel</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f2167">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Union MA">
-  <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" />
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+.admin-header{background:var(--uma-blue-700,#0d1a5e);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.admin-header .brand{display:flex;flex-direction:column;}
+.admin-header .brand .sup{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.08em;font-weight:600;text-transform:uppercase;}
+.admin-header .brand .name{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.01em;}
+.admin-header .actions{display:flex;gap:8px;align-items:center;}
+.hdr-btn{background:rgba(255,255,255,.12);border:none;border-radius:10px;color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;font-size:13px;}
+.hdr-btn:active{opacity:.7;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 12px 0;}
+.stat-c{background:#fff;border-radius:12px;padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.stat-c .sv{font-size:20px;font-weight:800;color:var(--uma-blue-700,#0d1a5e);line-height:1;}
+.stat-c .sl{font-size:9.5px;color:var(--muted);margin-top:3px;line-height:1.2;}
+.stat-c.red .sv{color:#dc2626;}
+.stat-c.green .sv{color:#059669;}
+
+.section-hdr{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:14px 16px 6px;}
+
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px;}
+.action-card{background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.action-card:active{opacity:.85;}
+.action-card .ac-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.action-card .ac-icon i{width:20px;height:20px;}
+.action-card .ac-label{font-size:13px;font-weight:700;color:var(--text);line-height:1.2;}
+.action-card .ac-sub{font-size:11px;color:var(--muted);line-height:1.3;}
+.action-card .ac-badge{position:absolute;top:10px;right:10px;background:#dc2626;color:#fff;font-size:10px;font-weight:800;border-radius:99px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+
+.action-card.blue .ac-icon{background:#eef2ff;}
+.action-card.blue .ac-icon i{color:#1d4ed8;}
+.action-card.green .ac-icon{background:#f0fdf4;}
+.action-card.green .ac-icon i{color:#059669;}
+.action-card.amber .ac-icon{background:#fffbeb;}
+.action-card.amber .ac-icon i{color:#d97706;}
+.action-card.purple .ac-icon{background:#f5f3ff;}
+.action-card.purple .ac-icon i{color:#7c3aed;}
+.action-card.red .ac-icon{background:#fff1f2;}
+.action-card.red .ac-icon i{color:#dc2626;}
+.action-card.cobalt .ac-icon{background:#e0f2fe;}
+.action-card.cobalt .ac-icon i{color:#0369a1;}
+
+.view-parent-btn{margin:10px 12px 0;background:linear-gradient(135deg,#0d1a5e,#1d4ed8);border:none;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;width:calc(100% - 24px);cursor:pointer;text-decoration:none;}
+.view-parent-btn i{color:#fff;width:20px;height:20px;flex-shrink:0;}
+.view-parent-btn .vp-txt{flex:1;text-align:left;}
+.view-parent-btn .vp-title{font-size:13px;font-weight:700;color:#fff;}
+.view-parent-btn .vp-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px;}
+.view-parent-btn .vp-arrow{color:rgba(255,255,255,.5);width:16px;height:16px;}
+
+.manage-list{padding:0 12px;}
+.manage-row{background:#fff;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;text-decoration:none;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.manage-row:active{opacity:.8;}
+.manage-row .mr-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.manage-row .mr-ic i{width:16px;height:16px;}
+.manage-row .mr-txt{flex:1;}
+.manage-row .mr-label{font-size:13px;font-weight:600;color:var(--text);}
+.manage-row .mr-sub{font-size:11px;color:var(--muted);}
+.manage-row .mr-arrow{color:var(--faint);width:16px;height:16px;}
+.manage-row.blue .mr-ic{background:#eef2ff;} .manage-row.blue .mr-ic i{color:#1d4ed8;}
+.manage-row.green .mr-ic{background:#f0fdf4;} .manage-row.green .mr-ic i{color:#059669;}
+.manage-row.amber .mr-ic{background:#fffbeb;} .manage-row.amber .mr-ic i{color:#d97706;}
+.manage-row.purple .mr-ic{background:#f5f3ff;} .manage-row.purple .mr-ic i{color:#7c3aed;}
+.manage-row.cobalt .mr-ic{background:#e0f2fe;} .manage-row.cobalt .mr-ic i{color:#0369a1;}
+.manage-row.gray .mr-ic{background:#f3f4f6;} .manage-row.gray .mr-ic i{color:#6b7280;}
+
+.checkin-list{padding:0 12px;}
+.checkin-row{background:#fff;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.checkin-avatar{width:32px;height:32px;border-radius:50%;background:#eef2ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.checkin-nombre{flex:1;font-size:13px;font-weight:600;color:var(--text);}
+.checkin-hora{font-size:11px;color:var(--muted);}
+.badge-asistio{background:#f0fdf4;color:#059669;font-size:10px;font-weight:700;border-radius:99px;padding:3px 8px;}
+</style>
 </head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="header-dark">
-    <div class="statusbar dark"><span id="reloj-admin"></span><span class="right">
-      <i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
-    <div class="appbar dark">
-      <div class="grow"><div class="eyebrow"><i data-lucide="shield" style="width:13px;height:13px"></i> Panel de administrador</div><div class="name">Union Martial Arts</div></div>
-      <a class="iconbtn-dark" href="index.html" aria-label="Cerrar sesión"><i data-lucide="log-out"></i></a>
+<div class="phone"><div class="screen" style="background:#f4f6fb;overflow-y:auto;">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="brand">
+      <div class="sup"><i data-lucide="shield" style="width:10px;height:10px;display:inline;vertical-align:middle;"></i> Administrador</div>
+      <div class="name">Union Martial Arts</div>
+    </div>
+    <div class="actions">
+      <a class="hdr-btn" href="home.html" target="_blank" title="Ver como padre" id="btn-ver-padre">👨‍👦</a>
+      <a class="hdr-btn" href="index.html" title="Cerrar sesión"><i data-lucide="log-out"></i></a>
     </div>
   </div>
-  <div class="body">
-    <div class="label">Resumen general</div>
-    <div class="grid2 mb18">
-      <div class="tile"><b>48</b><span>Alumnos activos</span></div>
-      <div class="tile green"><b>$28,800</b><span>Cobrado este mes</span></div>
-      <div class="tile red"><b>7</b><span>Pagos pendientes</span></div>
-      <div class="tile"><b>19</b><span>Asistencias hoy</span></div>
-    </div>
 
-    <div class="label">Acciones</div>
-    <div class="stack-10 mb18" id="acc"></div>
-
-    <div class="label">Asistencia de hoy</div>
-    <div class="stack-8" id="home"></div>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-c"><div class="sv" id="st-alumnos">—</div><div class="sl">Alumnos</div></div>
+    <div class="stat-c green"><div class="sv" id="st-cobrado">—</div><div class="sl">Cobrado</div></div>
+    <div class="stat-c red"><div class="sv" id="st-pendientes">—</div><div class="sl">Pendientes</div></div>
+    <div class="stat-c"><div class="sv" id="st-hoy">—</div><div class="sl">Hoy</div></div>
   </div>
-  <nav class="bottomnav">
-    <a class="on" href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
-    <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
-    <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-chat.html"><i data-lucide="message-square"></i>Mensajes</a>
-  </nav>
+
+  <!-- COMUNICACIÓN -->
+  <div class="section-hdr">Comunicación</div>
+  <div class="action-grid">
+    <a class="action-card blue" href="admin-chat.html">
+      <div class="ac-icon"><i data-lucide="message-circle"></i></div>
+      <div>
+        <div class="ac-label">Chat</div>
+        <div class="ac-sub">Mensajes de padres</div>
+      </div>
+      <div class="ac-badge" id="badge-chat" style="display:none;">0</div>
+    </a>
+    <a class="action-card cobalt" href="admin-evento.html">
+      <div class="ac-icon"><i data-lucide="calendar"></i></div>
+      <div>
+        <div class="ac-label">Eventos</div>
+        <div class="ac-sub">Torneos y actividades</div>
+      </div>
+    </a>
+    <a class="action-card purple" href="admin-avisos.html">
+      <div class="ac-icon"><i data-lucide="bell"></i></div>
+      <div>
+        <div class="ac-label">Avisos</div>
+        <div class="ac-sub">Comunicados a padres</div>
+      </div>
+    </a>
+    <a class="action-card amber" href="admin-citas.html">
+      <div class="ac-icon"><i data-lucide="calendar-plus"></i></div>
+      <div>
+        <div class="ac-label">Citas</div>
+        <div class="ac-sub">Solicitudes pendientes</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- OPERACIÓN DIARIA -->
+  <div class="section-hdr">Operación diaria</div>
+  <div class="action-grid">
+    <a class="action-card green" href="admin-asistencias.html">
+      <div class="ac-icon"><i data-lucide="clipboard-check"></i></div>
+      <div>
+        <div class="ac-label">Check-in</div>
+        <div class="ac-sub" id="sub-checkin">Asistencias hoy</div>
+      </div>
+    </a>
+    <a class="action-card blue" href="admin-evaluacion.html">
+      <div class="ac-icon"><i data-lucide="star"></i></div>
+      <div>
+        <div class="ac-label">Evaluación</div>
+        <div class="ac-sub">Calificar alumnos</div>
+      </div>
+    </a>
+    <a class="action-card amber" href="admin-cinta.html">
+      <div class="ac-icon"><i data-lucide="award"></i></div>
+      <div>
+        <div class="ac-label">Cintas</div>
+        <div class="ac-sub">Subir de rango</div>
+      </div>
+    </a>
+    <a class="action-card purple" href="admin-reporte.html">
+      <div class="ac-icon"><i data-lucide="bar-chart-2"></i></div>
+      <div>
+        <div class="ac-label">Reportes</div>
+        <div class="ac-sub">Historial mensual</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- ACTIVIDAD DE ALUMNOS -->
+  <div class="section-hdr">Actividad de alumnos</div>
+  <div class="manage-list">
+    <a class="manage-row green" href="admin-actividad.html">
+      <div class="mr-ic"><i data-lucide="activity"></i></div>
+      <div class="mr-txt">
+        <div class="mr-label">Hábitos y rutinas</div>
+        <div class="mr-sub">Nutrición, ejercicio, meditación</div>
+      </div>
+      <i data-lucide="chevron-right" class="mr-arrow"></i>
+    </a>
+  </div>
+
+  <!-- GESTIÓN -->
+  <div class="section-hdr">Gestión</div>
+  <div class="manage-list">
+    <a class="manage-row blue" href="admin-alumnos.html">
+      <div class="mr-ic"><i data-lucide="users"></i></div>
+      <div class="mr-txt"><div class="mr-label">Alumnos</div><div class="mr-sub">Perfiles y datos</div></div>
+      <i data-lucide="chevron-right" class="mr-arrow"></i>
+    </a>
+    <a class="manage-row green" href="admin-pagos.html">
+      <div class="mr-ic"><i data-lucide="credit-card"></i></div>
+      <div class="mr-txt"><div class="mr-label">Pagos</div><div class="mr-sub">Cobros y pendientes</div></div>
+      <i data-lucide="chevron-right" class="mr-arrow"></i>
+    </a>
+    <a class="manage-row amber" href="admin-editar.html">
+      <div class="mr-ic"><i data-lucide="sliders-horizontal"></i></div>
+      <div class="mr-txt"><div class="mr-label">Contenido</div><div class="mr-sub">Precios, horarios, reglamento</div></div>
+      <i data-lucide="chevron-right" class="mr-arrow"></i>
+    </a>
+    <a class="manage-row cobalt" href="admin-tienda.html">
+      <div class="mr-ic"><i data-lucide="shopping-bag"></i></div>
+      <div class="mr-txt"><div class="mr-label">Tienda</div><div class="mr-sub">Productos y precios</div></div>
+      <i data-lucide="chevron-right" class="mr-arrow"></i>
+    </a>
+    <a class="manage-row purple" href="admin-media.html">
+      <div class="mr-ic"><i data-lucide="upload"></i></div>
+      <div class="mr-txt"><div class="mr-label">Media</div><div class="mr-sub">Videos, rutinas, audios</div></div>
+      <i data-lucide="chevron-right" class="mr-arrow"></i>
+    </a>
+  </div>
+
+  <!-- Ver como padre -->
+  <a class="view-parent-btn" href="home.html" target="_blank">
+    <i data-lucide="smartphone"></i>
+    <div class="vp-txt">
+      <div class="vp-title">Ver como padre</div>
+      <div class="vp-sub">Vista de la app para padres</div>
+    </div>
+    <i data-lucide="external-link" class="vp-arrow"></i>
+  </a>
+
+  <!-- Check-ins de hoy -->
+  <div class="section-hdr">Check-ins de hoy</div>
+  <div class="checkin-list" id="checkin-hoy">
+    <div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Cargando...</div>
+  </div>
+
+  <div style="height:20px;"></div>
+
 </div></div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-  const supabase = createClient(
+  const sb = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  function actualizarReloj() {
-    const el = document.getElementById('reloj-admin'); if (!el) return
-    el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
-  }
-  actualizarReloj(); setInterval(actualizarReloj, 30000)
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await sb.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
-
-  // Verificar que sea admin
-  const { data: admin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).single()
+  const { data: admin } = await sb.from('padres').select('es_admin').eq('user_id', user.id).single()
   if (!admin?.es_admin) { window.location.href = 'home.html' }
 
   const hoy = new Date().toISOString().split('T')[0]
+  const primerDia = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
 
-  // Cargar estadísticas reales
-  const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
-  const [{ count: totalAlumnos }, pagPendRes, { count: asistHoy }, { count: msgNuevos }, cobradoRes] = await Promise.all([
-    supabase.from('alumnos').select('*', { count: 'exact', head: true }),
-    supabase.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
-    supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
-    supabase.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
-    supabase.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDiaMes),
+  const [alumnosRes, pagPendRes, asistRes, msgRes, cobradoRes, checksRes] = await Promise.all([
+    sb.from('alumnos').select('*', { count: 'exact', head: true }),
+    sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
+    sb.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
+    sb.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
+    sb.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDia),
+    sb.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(8),
   ])
 
-  const totalCobrado = (cobradoRes.data || []).reduce((s, p) => s + (Number(p.monto) || 0), 0)
-  document.querySelector('.tile b').textContent = totalAlumnos || 0
-  document.querySelectorAll('.tile b')[1].textContent = '$' + totalCobrado.toLocaleString('es-MX')
-  document.querySelectorAll('.tile b')[2].textContent = pagPendRes.count || 0
-  document.querySelectorAll('.tile b')[3].textContent = asistHoy || 0
+  const cobrado = (cobradoRes.data || []).reduce((s, p) => s + (Number(p.monto) || 0), 0)
+  document.getElementById('st-alumnos').textContent = alumnosRes.count || 0
+  document.getElementById('st-cobrado').textContent = '$' + (cobrado/1000).toFixed(1) + 'k'
+  document.getElementById('st-pendientes').textContent = pagPendRes.count || 0
+  document.getElementById('st-hoy').textContent = asistRes.count || 0
+  document.getElementById('sub-checkin').textContent = (asistRes.count || 0) + ' asistencias hoy'
 
-  const ACC = [
-    ['user-check','Confirmar asistencias', (asistHoy||0)+' check-ins hoy','admin-asistencias.html'],
-    ['clipboard-list','Registrar evaluación','Calificar alumno del día/mes','admin-evaluacion.html'],
-    ['message-square','Mensajes de padres',(msgNuevos||0)+' sin leer','admin-chat.html'],
-    ['sliders-horizontal','Editar contenido y precios','Nutrición, rutinas, horarios, reglamento','admin-editar.html'],
-    ['salad','Menú del mes','Recetas y sugerencias de nutrición','admin-menu.html'],
-    ['award','Subir de cinta','Promover alumno de rango','admin-cinta.html'],
-    ['calendar-plus','Crear torneo o actividad','Evento, clase especial, aviso','admin-evento.html'],
-    ['upload','Subir videos y media','Rutinas, audios de meditación','admin-media.html'],
-    ['shopping-bag','Editar tienda','Productos y precios','admin-tienda.html'],
-    ['file-text','Reporte mensual','Historial por alumno en PDF','admin-reporte.html'],
-  ]
-  document.getElementById('acc').innerHTML = ACC.map(([ic,t,s,href])=>`
-    <a class="row" href="${href}"><span class="ic"><i data-lucide="${ic}"></i></span>
-      <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
-      <span class="trail"><i data-lucide="chevron-right"></i></span></a>`).join('')
+  const msgCount = msgRes.count || 0
+  if (msgCount > 0) {
+    const badge = document.getElementById('badge-chat')
+    badge.textContent = msgCount; badge.style.display = 'flex'
+  }
 
-  // Actividad reciente: checkins de hoy
-  const { data: checks } = await supabase.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(5)
-  const homeEl = document.getElementById('home')
-  if (checks?.length) {
-    homeEl.innerHTML = checks.map(c => {
+  const checks = checksRes.data || []
+  const listEl = document.getElementById('checkin-hoy')
+  if (checks.length) {
+    listEl.innerHTML = checks.map(c => {
       const nom = c.alumnos?.nombre || 'Alumno'
       const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
-      return `<div class="row"><span class="avatar" style="width:34px;height:34px;font-size:12px;">${ini}</span>
-        <span class="grow"><span class="t">${nom}</span><span class="s">Asistencia · ${c.tipo||'Clase'}${c.hora ? ' · ' + c.hora : ''}</span></span>
-        <span class="trail"><span class="badge green"><i data-lucide="check"></i> Asistió</span></span></div>`
+      return `<div class="checkin-row">
+        <div class="checkin-avatar">${ini}</div>
+        <div class="checkin-nombre">${nom}</div>
+        <div class="checkin-hora">${c.hora || ''}</div>
+        <span class="badge-asistio">✓ Asistió</span>
+      </div>`
     }).join('')
   } else {
-    homeEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin asistencias registradas hoy.</div>'
+    listEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin check-ins hoy.</div>'
   }
 
   lucide.createIcons()
 </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
-  }
-</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body>
 </html>
-
