@@ -4,7 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Nuevo alumno — Union Martial Arts</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
 </head>
 <body>
 <div class="phone"><div class="screen">
@@ -78,29 +84,6 @@
             <option value="Tutor">Tutor/a</option>
             <option value="Abuelo/a">Abuelo/a</option>
           </select></label>
-
-        <label class="field"><span class="lab">Dirección</span>
-          <input id="direccion-padre" placeholder="Calle, número, colonia" /></label>
-
-        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:4px;">CURP del menor</div>
-        <label class="field"><span class="lab">CURP</span>
-          <input id="curp-alumno" placeholder="XXXX000000XXXXXXXX00" style="text-transform:uppercase;" /></label>
-
-        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:4px;">Contacto de emergencia</div>
-        <label class="field"><span class="lab">Nombre</span>
-          <input id="emerg-nombre" placeholder="Nombre" /></label>
-        <label class="field"><span class="lab">Teléfono</span>
-          <input type="tel" id="emerg-tel" placeholder="(656) 000-0000" /></label>
-        <label class="field"><span class="lab">Parentesco</span>
-          <input id="emerg-parentesco" placeholder="Ej: Tío, Abuela…" /></label>
-
-        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:4px;">Persona autorizada a recoger</div>
-        <label class="field"><span class="lab">Nombre</span>
-          <input id="autoriz-nombre" placeholder="Nombre" /></label>
-        <label class="field"><span class="lab">Teléfono</span>
-          <input type="tel" id="autoriz-tel" placeholder="(656) 000-0000" /></label>
-        <label class="field"><span class="lab">Parentesco</span>
-          <input id="autoriz-parentesco" placeholder="Ej: Hermana, Tío…" /></label>
       </div></div>
 
       <div class="card mb14"><div class="stack">
@@ -145,16 +128,14 @@
   </nav>
 </div></div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   const TODOS_HORARIOS = [
@@ -191,7 +172,12 @@
     lucide.createIcons()
   }
 
+  let registrando = false
+
   document.getElementById('registrar').addEventListener('click', async () => {
+    if (registrando) return
+    const btn = document.getElementById('registrar')
+
     const nombreAlumno = document.getElementById('nombre-alumno').value.trim()
     const fechaNac     = document.getElementById('fecha-nac').value
     const fechaIngreso = document.getElementById('fecha-ingreso').value
@@ -210,35 +196,53 @@
     if (!nombrePadre)  { error('Escribe el nombre del padre/tutor.'); return }
     if (!correo)       { error('El correo es obligatorio para acceso a la app.'); return }
 
-    const curp = (document.getElementById('curp-alumno')?.value||'').trim().toUpperCase()
+    // Bloquear botón para evitar doble registro
+    registrando = true
+    btn.disabled = true
+    btn.innerHTML = '<i data-lucide="loader"></i> Registrando…'
+    lucide.createIcons()
 
-    // 1. Insertar alumno
+    // 1. Verificar si el padre ya existe con ese correo
+    const { data: padreExistente } = await supabase.from('padres').select('id').eq('correo', correo).maybeSingle()
+    if (padreExistente) {
+      error('Ya existe un padre registrado con ese correo.')
+      registrando = false; btn.disabled = false
+      btn.innerHTML = '<i data-lucide="user-plus"></i> Registrar alumno'
+      lucide.createIcons(); return
+    }
+
+    // 2. Insertar alumno
     const { data: alumno, error: errAlumno } = await supabase
       .from('alumnos')
-      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario, curp: curp || null })
+      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario })
       .select().single()
 
-    if (errAlumno) { error('Error al registrar alumno: ' + errAlumno.message); return }
+    if (errAlumno) {
+      error('Error al registrar alumno: ' + errAlumno.message)
+      registrando = false; btn.disabled = false
+      btn.innerHTML = '<i data-lucide="user-plus"></i> Registrar alumno'
+      lucide.createIcons(); return
+    }
 
-    // 2. Insertar padre
+    // 3. Insertar padre (sin user_id por ahora — se vincula al aceptar invitación)
     const { error: errPadre } = await supabase.from('padres').insert({
       nombre: nombrePadre,
       correo,
-      telefono,
+      telefono: telefono || null,
       parentesco,
-      direccion: document.getElementById('direccion-padre')?.value.trim() || null,
       alumno_id: alumno.id,
-      es_admin: false,
-      contacto_emergencia_nombre: document.getElementById('emerg-nombre')?.value.trim() || null,
-      contacto_emergencia_tel: document.getElementById('emerg-tel')?.value.trim() || null,
-      contacto_emergencia_parentesco: document.getElementById('emerg-parentesco')?.value.trim() || null,
-      autorizado_nombre: document.getElementById('autoriz-nombre')?.value.trim() || null,
-      autorizado_tel: document.getElementById('autoriz-tel')?.value.trim() || null,
-      autorizado_parentesco: document.getElementById('autoriz-parentesco')?.value.trim() || null,
+      es_admin: false
     })
-    if (errPadre) { error('Error al registrar padre: ' + errPadre.message); return }
+    if (errPadre) {
+      error('Error al registrar padre: ' + errPadre.message)
+      // Revertir alumno insertado
+      await supabase.from('alumnos').delete().eq('id', alumno.id)
+      registrando = false; btn.disabled = false
+      btn.innerHTML = '<i data-lucide="user-plus"></i> Registrar alumno'
+      lucide.createIcons(); return
+    }
 
-    // 3. Registrar primer pago si hay mes
+    // 4. Registrar primer pago si hay mes
     if (mes && monto) {
       await supabase.from('pagos').insert({
         alumno_id: alumno.id,
@@ -256,7 +260,11 @@
   })
 
   lucide.createIcons()
-})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>
