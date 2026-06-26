@@ -120,15 +120,17 @@
       <div class="ac-icon"><i data-lucide="calendar"></i></div>
       <div>
         <div class="ac-label">Eventos</div>
-        <div class="ac-sub">Torneos y actividades</div>
+        <div class="ac-sub" id="sub-eventos">Torneos y actividades</div>
       </div>
+      <div class="ac-badge" id="badge-eventos" style="display:none;">0</div>
     </a>
     <a class="action-card purple" href="admin-avisos.html">
       <div class="ac-icon"><i data-lucide="bell"></i></div>
       <div>
         <div class="ac-label">Avisos</div>
-        <div class="ac-sub">Comunicados a padres</div>
+        <div class="ac-sub" id="sub-avisos">Comunicados a padres</div>
       </div>
+      <div class="ac-badge" id="badge-avisos" style="display:none;">0</div>
     </a>
     <a class="action-card amber" href="admin-citas.html">
       <div class="ac-icon"><i data-lucide="calendar-plus"></i></div>
@@ -149,6 +151,7 @@
         <div class="ac-label">Check-in</div>
         <div class="ac-sub" id="sub-checkin">Asistencias hoy</div>
       </div>
+      <div class="ac-badge" id="badge-checkin" style="display:none;background:#059669;">0</div>
     </a>
     <a class="action-card blue" href="admin-evaluacion.html">
       <div class="ac-icon"><i data-lucide="star"></i></div>
@@ -267,6 +270,10 @@
   document.getElementById('st-pendientes').textContent = pagPendRes.count || 0
   document.getElementById('st-hoy').textContent = asistRes.count || 0
   document.getElementById('sub-checkin').textContent = (asistRes.count || 0) + ' asistencias hoy'
+  if ((asistRes.count || 0) > 0) {
+    const bc = document.getElementById('badge-checkin')
+    bc.textContent = asistRes.count; bc.style.display = 'flex'
+  }
 
   const msgCount = msgRes.count || 0
   if (msgCount > 0) {
@@ -284,6 +291,27 @@
   // Badge pagos pendientes con comprobante
   const { count: pagosCompCount } = await sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente').not('comprobante_url', 'is', null)
   document.getElementById('st-pendientes').style.color = (pagPendRes.count || 0) > 0 ? '#dc2626' : 'inherit'
+
+  // Badge eventos próximos
+  const { count: eventosCount } = await sb.from('eventos').select('*', { count: 'exact', head: true }).gte('fecha', hoy)
+  if (eventosCount > 0) {
+    const be = document.getElementById('badge-eventos')
+    be.textContent = eventosCount; be.style.display = 'flex'
+    document.getElementById('sub-eventos').textContent = eventosCount + ' próximo' + (eventosCount > 1 ? 's' : '')
+  }
+
+  // Badge avisos activos sin confirmar por todos
+  const { count: avisosCount } = await sb.from('avisos').select('*', { count: 'exact', head: true }).eq('activo', true)
+  if (avisosCount > 0) {
+    const { count: alumnosTotal } = await sb.from('alumnos').select('*', { count: 'exact', head: true })
+    const { count: confirmaciones } = await sb.from('avisos_confirmaciones').select('*', { count: 'exact', head: true })
+    const sinConfirmar = Math.max(0, (avisosCount * (alumnosTotal || 1)) - (confirmaciones || 0))
+    if (sinConfirmar > 0) {
+      const ba = document.getElementById('badge-avisos')
+      ba.textContent = avisosCount; ba.style.display = 'flex'
+      document.getElementById('sub-avisos').textContent = avisosCount + ' aviso' + (avisosCount > 1 ? 's' : '') + ' activo' + (avisosCount > 1 ? 's' : '')
+    }
+  }
 
   const checks = checksRes.data || []
   const listEl = document.getElementById('checkin-hoy')
