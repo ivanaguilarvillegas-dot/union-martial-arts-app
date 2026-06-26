@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Videos — Union Martial Arts</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css"/>
+<style>
+.vid-card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.vid-thumb{width:100%;height:140px;background:#0d1a5e;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.vid-thumb img{width:100%;height:100%;object-fit:cover;}
+.vid-play{position:absolute;width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.vid-play i{width:20px;height:20px;color:#0d1a5e;margin-left:2px;}
+.vid-body{padding:12px 14px;}
+.vid-tipo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1d4ed8;margin-bottom:3px;}
+.vid-titulo{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.vid-sub{font-size:12px;color:var(--muted);}
+.link-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;text-decoration:none;}
+.link-card:active{opacity:.8;}
+.link-ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;}
+.link-ic.fb{background:#eef3ff;}
+.link-ic.yt{background:#fff1f1;}
+.link-ic.ig{background:#fff0f9;}
+.link-ic.web{background:#f0fdf4;}
+.section-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead blue">
+    <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Videos y redes</div></div>
+  </div>
+  <div class="body" id="contenido">
+    <div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div>
+  </div>
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const sb = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await sb.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
+
+// Nombres de ejercicios predefinidos (para excluirlos de extras)
+const PRED_KEYS = [
+  'calentamiento','sentadillas','combinacion','cardio','enfriamiento',
+  'patadas','circuito','combos','hiit','simulacion','fuerza','recuperacion',
+  'respiracion','visualizacion','gratitud','sueno'
+]
+
+function getYouTubeId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)
+  return m ? m[1] : null
+}
+
+function detectTipo(url) {
+  if (/facebook\.com|fb\.com/i.test(url)) return { icon: '📘', cls: 'fb', label: 'Facebook' }
+  if (/instagram\.com/i.test(url)) return { icon: '📸', cls: 'ig', label: 'Instagram' }
+  if (/youtube\.com|youtu\.be/i.test(url)) return { icon: '▶️', cls: 'yt', label: 'YouTube' }
+  return { icon: '🔗', cls: 'web', label: 'Enlace' }
+}
+
+async function cargar() {
+  const [vidRes, audRes, linkRes] = await Promise.allSettled([
+    sb.storage.from('media').list('videos', { limit: 100 }),
+    sb.storage.from('media').list('audios', { limit: 100 }),
+    sb.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle(),
+  ])
+
+  const PRED = new Set(PRED_KEYS)
+  function esPred(nombre) {
+    const n = nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    return PRED_KEYS.some(p => n.includes(p))
+  }
+
+  const videos = (vidRes.value?.data || [])
+    .filter(v => v.name !== '.emptyFolderPlaceholder')
+    .map(v => ({
+      nombre: v.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
+      url: sb.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
+    }))
+    .filter(v => !esPred(v.nombre))
+
+  const audios = (audRes.value?.data || [])
+    .filter(a => a.name !== '.emptyFolderPlaceholder')
+    .map(a => ({
+      nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
+      url: sb.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
+    }))
+    .filter(a => !esPred(a.nombre))
+
+  let links = {}
+  try { links = JSON.parse(linkRes.value?.data?.valor || '{}') } catch {}
+
+  // Separar links URL puros de links de ejercicios (predefinidos)
+  const linksExtras = Object.entries(links).filter(([k]) => !esPred(k))
+
+  const body = document.getElementById('contenido')
+  let html = ''
+
+  // Videos extras
+  if (videos.length) {
+    html += `<div class="section-lbl">📹 Videos</div>`
+    html += videos.map(v => {
+      return `<a href="${v.url}" target="_blank" class="vid-card" style="display:block;text-decoration:none;">
+        <div class="vid-thumb" style="background:#0d1a5e;">
+          <div class="vid-play"><i data-lucide="play"></i></div>
+        </div>
+        <div class="vid-body">
+          <div class="vid-tipo">Video</div>
+          <div class="vid-titulo">${v.nombre.replace(/_/g, ' ')}</div>
+        </div>
+      </a>`
+    }).join('')
+  }
+
+  // Links extras (YouTube, Facebook, redes)
+  if (linksExtras.length) {
+    html += `<div class="section-lbl">🔗 Redes y enlaces</div>`
+    html += linksExtras.map(([k, url]) => {
+      const ytId = getYouTubeId(url)
+      const tipo = detectTipo(url)
+      const nombre = k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+
+      if (ytId) {
+        const thumb = `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
+        return `<a href="${url}" target="_blank" class="vid-card" style="display:block;text-decoration:none;">
+          <div class="vid-thumb">
+            <img src="${thumb}" />
+            <div class="vid-play"><i data-lucide="play"></i></div>
+          </div>
+          <div class="vid-body">
+            <div class="vid-tipo">YouTube</div>
+            <div class="vid-titulo">${nombre}</div>
+          </div>
+        </a>`
+      }
+
+      return `<a href="${url}" target="_blank" class="link-card">
+        <div class="link-ic ${tipo.cls}">${tipo.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${nombre}</div>
+          <div style="font-size:11px;color:var(--muted);">${tipo.label}</div>
+        </div>
+        <i data-lucide="external-link" style="width:16px;height:16px;color:var(--muted);"></i>
+      </a>`
+    }).join('')
+  }
+
+  // Audios extras
+  if (audios.length) {
+    html += `<div class="section-lbl">🎵 Audios</div>`
+    html += audios.map(a => `
+      <a href="${a.url}" target="_blank" class="link-card">
+        <div class="link-ic web">🎵</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${a.nombre.replace(/_/g,' ')}</div>
+          <div style="font-size:11px;color:var(--muted);">Audio</div>
+        </div>
+        <i data-lucide="external-link" style="width:16px;height:16px;color:var(--muted);"></i>
+      </a>`).join('')
+  }
+
+  if (!html) {
+    html = `<div style="text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:36px;margin-bottom:10px;">📹</div>
+      <div style="font-size:14px;font-weight:600;">Sin videos por ahora</div>
+      <div style="font-size:12px;margin-top:6px;">El instructor publicará videos y enlaces pronto.</div>
+    </div>`
+  }
+
+  body.innerHTML = html
+  lucide.createIcons()
+}
+
+cargar()
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
+</body>
+</html>
