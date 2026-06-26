@@ -1,19 +1,53 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Crear torneo o actividad</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Eventos — UNION Admin</title><link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+.ev-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.ev-tipo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1d4ed8;margin-bottom:4px;}
+.ev-titulo{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.ev-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.ev-meta span{display:flex;align-items:center;gap:3px;}
+.ev-actions{display:flex;gap:8px;}
+.tab-bar{display:flex;gap:4px;padding:10px 12px 0;background:#f4f6fb;}
+.tab{flex:1;padding:8px;border:none;background:none;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px;font-family:inherit;}
+.tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+</style>
+</head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Crear torneo o actividad</div></div></div>
-  <div class="body">
-    <div id="form"><div class="card"><div class="stack">
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Eventos</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" data-tab="lista" onclick="cambiarTab('lista')">Eventos publicados</button>
+    <button class="tab" data-tab="nuevo" onclick="cambiarTab('nuevo')">+ Nuevo evento</button>
+  </div>
+
+  <!-- Lista de eventos -->
+  <div id="tab-lista" class="body">
+    <div id="eventos-list">
+      <div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div>
+    </div>
+  </div>
+
+  <!-- Formulario nuevo -->
+  <div id="tab-nuevo" class="body" style="display:none;">
+    <div class="card"><div class="stack">
       <div>
         <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Tipo</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="tipos">
           <button class="chip on" data-tipo="Torneo">Torneo</button>
           <button class="chip" data-tipo="Clase especial">Clase especial</button>
           <button class="chip" data-tipo="Actividad">Actividad</button>
-          <button class="chip" data-tipo="Aviso">Aviso</button>
+          <button class="chip" data-tipo="Examen">Examen</button>
         </div>
       </div>
       <label class="field"><span class="lab">Nombre del evento</span>
@@ -26,193 +60,156 @@
         <input id="lugar" placeholder="Ej. Gimnasio Municipal" /></label>
       <label class="field"><span class="lab">Descripción</span>
         <textarea id="desc" rows="3" placeholder="Detalles del evento…"></textarea></label>
-
-      <!-- Convocatoria -->
-      <div>
-        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Convocatoria (PDF o imagen, opcional)</div>
-        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
-          <i data-lucide="file-text" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
-          <span id="conv-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir convocatoria</span>
-          <input type="file" id="conv-file" accept=".pdf,image/*" hidden />
-        </label>
-      </div>
-
-      <!-- Fotos -->
-      <div>
-        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Fotos del evento (opcional, máx. 5)</div>
-        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
-          <i data-lucide="image" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
-          <span id="fotos-label" style="font-size:13px;color:var(--primary);font-weight:600;">Seleccionar fotos</span>
-          <input type="file" id="fotos-files" accept="image/*" multiple hidden />
-        </label>
-        <div id="fotos-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
-      </div>
-
-      <div id="upload-progress" style="display:none;font-size:12px;color:var(--muted);text-align:center;">Subiendo archivos…</div>
       <div id="err-msg" class="notice red" style="display:none;"></div>
       <button class="btn primary block" id="save"><i data-lucide="plus"></i> Publicar evento</button>
-    </div></div></div>
-    <!-- Lista de eventos existentes -->
-    <div style="margin-top:8px;">
-      <div class="label">Eventos publicados</div>
-      <div id="eventos-admin-list" class="stack-8"></div>
-    </div>
-
+    </div></div>
     <div id="ok" style="display:none;">
       <div class="card green center">
         <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="calendar-check" style="width:26px;height:26px"></i></div>
         <div style="font-size:15px;font-weight:700;color:var(--green-text);" id="ok-msg">Evento publicado</div>
-        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Visible para los padres en Torneos y actividades.</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Visible para los padres.</div>
       </div>
-      <button class="btn secondary block mt14" onclick="location.reload()"><i data-lucide="plus"></i> Crear otro evento</button>
+      <button class="btn secondary block mt14" onclick="resetForm()"><i data-lucide="plus"></i> Crear otro evento</button>
+      <button class="btn primary block mt10" onclick="cambiarTab('lista')"><i data-lucide="list"></i> Ver todos los eventos</button>
     </div>
   </div>
+
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
     <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
     <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Chat</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) { window.location.href = 'index.html' }
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const supabase = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
 
-  // Fecha por defecto hoy
-  document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
+document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
 
-  // Preview convocatoria
-  document.getElementById('conv-file').addEventListener('change', e => {
-    const f = e.target.files[0]
-    document.getElementById('conv-label').textContent = f ? f.name : 'Subir convocatoria'
-  })
+window.cambiarTab = function(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
+  document.getElementById('tab-lista').style.display = tab === 'lista' ? 'block' : 'none'
+  document.getElementById('tab-nuevo').style.display = tab === 'nuevo' ? 'block' : 'none'
+  if (tab === 'lista') cargarEventos()
+}
 
-  // Preview fotos
-  document.getElementById('fotos-files').addEventListener('change', e => {
-    const files = [...e.target.files].slice(0, 5)
-    document.getElementById('fotos-label').textContent = files.length ? files.length + ' foto(s) seleccionada(s)' : 'Seleccionar fotos'
-    const prev = document.getElementById('fotos-preview')
-    prev.innerHTML = ''
-    files.forEach(f => {
-      const img = document.createElement('img')
-      img.src = URL.createObjectURL(f)
-      img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);'
-      prev.appendChild(img)
-    })
-  })
+async function cargarEventos() {
+  const el = document.getElementById('eventos-list')
+  el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div>'
+  const { data, error } = await supabase.from('eventos').select('*').order('fecha', { ascending: true })
+  if (error) { el.innerHTML = `<div style="color:red;padding:16px;font-size:13px;">Error: ${error.message}</div>`; return }
+  if (!data?.length) {
+    el.innerHTML = `<div style="text-align:center;color:var(--muted);font-size:13px;padding:32px;">
+      <div style="font-size:32px;margin-bottom:8px;">📅</div>Sin eventos publicados.
+      <br><button class="btn primary sm mt14" onclick="cambiarTab('nuevo')" style="margin-top:12px;">+ Crear primer evento</button>
+    </div>`
+    return
+  }
 
-  const tipos = document.getElementById('tipos')
-  tipos.addEventListener('click', e => {
-    const b = e.target.closest('.chip'); if (!b) return
-    ;[...tipos.children].forEach(c => c.classList.remove('on')); b.classList.add('on')
-  })
-
-  document.getElementById('save').addEventListener('click', async () => {
-    const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'Torneo'
-    const titulo = document.getElementById('titulo').value.trim()
-    const fecha = document.getElementById('fecha').value
-    const hora = document.getElementById('hora').value || null
-    const lugar = document.getElementById('lugar').value.trim() || null
-    const descripcion = document.getElementById('desc').value.trim() || null
-    const errEl = document.getElementById('err-msg')
-
-    if (!titulo) { errEl.textContent = 'Escribe el nombre del evento.'; errEl.style.display='flex'; return }
-    if (!fecha) { errEl.textContent = 'Selecciona la fecha del evento.'; errEl.style.display='flex'; return }
-    errEl.style.display = 'none'
-
-    const btn = document.getElementById('save')
-    btn.disabled = true; btn.textContent = 'Publicando…'
-
-    // Subir convocatoria
-    let convocatoria_url = null
-    const convFile = document.getElementById('conv-file').files[0]
-    if (convFile) {
-      document.getElementById('upload-progress').style.display = 'block'
-      const ext = convFile.name.split('.').pop()
-      const path = `convocatorias/${Date.now()}.${ext}`
-      const { error: ce } = await supabase.storage.from('eventos').upload(path, convFile, { upsert: true, contentType: convFile.type })
-      if (ce) alert('Error convocatoria: ' + ce.message)
-      else convocatoria_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
-    }
-
-    // Subir fotos
-    let fotos_urls = []
-    const fotosFiles = [...(document.getElementById('fotos-files').files || [])].slice(0, 5)
-    if (fotosFiles.length) {
-      document.getElementById('upload-progress').style.display = 'block'
-      for (const f of fotosFiles) {
-        const ext = f.name.split('.').pop()
-        const path = `fotos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-        const { error: fe } = await supabase.storage.from('eventos').upload(path, f, { upsert: true, contentType: f.type })
-        if (fe) alert('Error foto: ' + fe.message)
-        else fotos_urls.push(supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl)
-      }
-    }
-    document.getElementById('upload-progress').style.display = 'none'
-
-    const { error } = await supabase.from('eventos').insert({
-      tipo, titulo, fecha, hora, lugar, descripcion,
-      foto_url: fotos_urls[0] || null,
-      convocatoria_url: convocatoria_url || null,
-      fotos_urls: fotos_urls.length ? fotos_urls : null
-    })
-    if (error) {
-      errEl.textContent = 'Error: ' + error.message
-      errEl.style.display = 'flex'
-      btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Publicar evento'
-      lucide.createIcons(); return
-    }
-
-    // Notificar a todos los padres vía mensajes
-    const horaStr = hora ? ' a las ' + hora : ''
-    await supabase.from('mensajes').insert({
-      de_user_id: user.id,
-      texto: `📅 ${tipo}: ${titulo} — ${fecha}${horaStr}${lugar ? ' · ' + lugar : ''}${descripcion ? '\n' + descripcion : ''}`,
-      para_admin: false
-    })
-
-    document.getElementById('form').style.display = 'none'
-    document.getElementById('ok').style.display = 'block'
-    document.getElementById('ok-msg').textContent = titulo + ' publicado'
-    lucide.createIcons()
-  })
-  // ── LISTA DE EVENTOS CON EDITAR/BORRAR ──────────────────
-  async function cargarEventos() {
-    const { data: evs } = await supabase.from('eventos').select('id,titulo,fecha,tipo').order('fecha', { ascending: false }).limit(20)
-    const el = document.getElementById('eventos-admin-list')
-    if (!evs?.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px;">Sin eventos publicados.</div>'; return }
-    el.innerHTML = evs.map(e => `
-      <div class="row" id="ev-${e.id}" style="border:1px solid var(--border);border-radius:var(--r-md);padding:0;">
-        <span class="ic blue" style="flex-shrink:0;"><i data-lucide="calendar" style="width:16px;height:16px;"></i></span>
-        <span class="grow">
-          <span class="t" style="font-size:13px;">${e.titulo}</span>
-          <span class="s">${e.fecha} · ${e.tipo}</span>
-        </span>
-        <button onclick="borrarEvento('${e.id}')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;">
-          <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+  const hoy = new Date().toISOString().split('T')[0]
+  el.innerHTML = data.map(ev => {
+    const pasado = ev.fecha < hoy
+    const fechaFmt = new Date(ev.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'long', year:'numeric' })
+    return `<div class="ev-card" style="${pasado ? 'opacity:.6;' : ''}">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
+        <div style="flex:1;">
+          <div class="ev-tipo">${ev.tipo || 'Evento'}${pasado ? ' · Pasado' : ''}</div>
+          <div class="ev-titulo">${ev.titulo}</div>
+        </div>
+      </div>
+      <div class="ev-meta">
+        <span><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fechaFmt}</span>
+        ${ev.hora ? `<span><i data-lucide="clock" style="width:12px;height:12px;"></i>${ev.hora}</span>` : ''}
+        ${ev.lugar ? `<span><i data-lucide="map-pin" style="width:12px;height:12px;"></i>${ev.lugar}</span>` : ''}
+      </div>
+      ${ev.descripcion ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;">${ev.descripcion}</div>` : ''}
+      <div class="ev-actions">
+        <button class="btn sm" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;cursor:pointer;font-size:12px;padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:4px;" data-borrar="${ev.id}">
+          <i data-lucide="trash-2" style="width:13px;height:13px;"></i> Borrar
         </button>
-      </div>`).join('')
-    lucide.createIcons()
-  }
-
-  window.borrarEvento = async function(id) {
-    if (!confirm('¿Borrar este evento? Esta acción no se puede deshacer.')) return
-    const { error } = await supabase.from('eventos').delete().eq('id', id)
-    if (error) { alert('Error: ' + error.message); return }
-    document.getElementById('ev-' + id)?.remove()
-  }
-
-  cargarEventos()
+      </div>
+    </div>`
+  }).join('')
   lucide.createIcons()
-})();
-</script>
-</body></html>
+}
 
+document.getElementById('tab-lista').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-borrar]')
+  if (!btn) return
+  if (!confirm('¿Borrar este evento? Los padres ya no lo verán.')) return
+  btn.disabled = true; btn.textContent = 'Borrando…'
+  const { error } = await supabase.from('eventos').delete().eq('id', btn.dataset.borrar)
+  if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; return }
+  await cargarEventos()
+})
+
+// Tipos
+document.getElementById('tipos').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return
+  ;[...document.getElementById('tipos').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+})
+
+// Guardar nuevo evento
+document.getElementById('save').addEventListener('click', async () => {
+  const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'Torneo'
+  const titulo = document.getElementById('titulo').value.trim()
+  const fecha = document.getElementById('fecha').value
+  const hora = document.getElementById('hora').value || null
+  const lugar = document.getElementById('lugar').value.trim() || null
+  const descripcion = document.getElementById('desc').value.trim() || null
+  const errEl = document.getElementById('err-msg')
+
+  if (!titulo) { errEl.textContent = 'Escribe el nombre del evento.'; errEl.style.display = 'flex'; return }
+  if (!fecha) { errEl.textContent = 'Selecciona la fecha.'; errEl.style.display = 'flex'; return }
+  errEl.style.display = 'none'
+
+  const btn = document.getElementById('save')
+  btn.disabled = true; btn.textContent = 'Publicando…'
+
+  const { error } = await supabase.from('eventos').insert({ tipo, titulo, fecha, hora, lugar, descripcion })
+  if (error) {
+    errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'flex'
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Publicar evento'
+    lucide.createIcons(); return
+  }
+
+  const horaStr = hora ? ' a las ' + hora : ''
+  await supabase.from('mensajes').insert({
+    de_user_id: user.id,
+    texto: `📅 ${tipo}: ${titulo} — ${fecha}${horaStr}${lugar ? ' · ' + lugar : ''}${descripcion ? '\n' + descripcion : ''}`,
+    para_admin: false
+  })
+
+  document.getElementById('form-wrap') // no-op, just keep ref
+  document.querySelector('#tab-nuevo .card').style.display = 'none'
+  document.getElementById('ok').style.display = 'block'
+  document.getElementById('ok-msg').textContent = '✅ ' + titulo + ' publicado'
+  lucide.createIcons()
+})
+
+window.resetForm = function() {
+  document.querySelector('#tab-nuevo .card').style.display = 'block'
+  document.getElementById('ok').style.display = 'none'
+  document.getElementById('titulo').value = ''
+  document.getElementById('hora').value = ''
+  document.getElementById('lugar').value = ''
+  document.getElementById('desc').value = ''
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
+  ;[...document.getElementById('tipos').children].forEach((c,i) => c.classList.toggle('on', i===0))
+  const btn = document.getElementById('save')
+  btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Publicar evento'
+  lucide.createIcons()
+}
+
+cargarEventos()
+</script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})</script>
+</body></html>
