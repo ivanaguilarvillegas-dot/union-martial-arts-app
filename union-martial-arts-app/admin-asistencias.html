@@ -179,8 +179,24 @@ document.getElementById('list-none').addEventListener('click', async e => {
   const btn = e.target.closest('[data-marcar]'); if (!btn) return
   const alumnoId = btn.dataset.marcar
   const tipo = btn.dataset.tipo
+  const originalText = btn.textContent
   btn.disabled = true; btn.textContent = '...'
-  await sb.from('checkins').upsert({ alumno_id: alumnoId, fecha, tipo, hora: new Date().toTimeString().slice(0,5) }, { onConflict: 'alumno_id,fecha' })
+
+  // Intentar delete primero por si ya existe un registro (evita conflicto)
+  await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
+
+  const { error } = await sb.from('checkins').insert({
+    alumno_id: alumnoId,
+    fecha,
+    tipo,
+    hora: new Date().toTimeString().slice(0, 5)
+  })
+
+  if (error) {
+    alert('❌ Error al registrar: ' + error.message + '\n\nEjecuta en Supabase SQL:\nCREATE POLICY "admin_checkins" ON checkins FOR ALL USING (EXISTS (SELECT 1 FROM padres WHERE user_id = auth.uid() AND es_admin = true));')
+    btn.disabled = false; btn.textContent = originalText
+    return
+  }
   await cargar()
 })
 
