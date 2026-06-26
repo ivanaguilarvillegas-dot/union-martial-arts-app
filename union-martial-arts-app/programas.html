@@ -1,94 +1,428 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Union Martial Arts — Programas</title>
+<title>Programas UNION</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f2167">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Union MA">
-  <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css?v=18" />
+<meta name="theme-color" content="#1818C4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+.prog-wrap { background:#f0f4f8; flex:1; overflow-y:auto; padding-bottom:28px; }
+
+/* Hero */
+.prog-hero {
+  background: linear-gradient(150deg,var(--uma-blue-700) 0%,var(--primary) 55%,var(--uma-blue-500) 100%);
+  padding: 52px 18px 28px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 32px 32px;
+  margin-bottom: 16px;
+}
+.prog-hero::before {
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(255,255,255,.07) 0%,transparent 65%);
+  border-radius:50%;
+}
+.prog-hero-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;position:relative;z-index:1; }
+.prog-hero-logo { display:flex;align-items:center;gap:10px; }
+.prog-hero-logo-c { width:38px;height:38px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.5);box-shadow:0 2px 8px rgba(0,0,0,.15); }
+.prog-hero-logo-c img { width:24px;height:24px;object-fit:contain; }
+.prog-hero-brand { font-size:9px;font-weight:900;color:rgba(255,255,255,.9);letter-spacing:.1em;line-height:1.5; }
+.prog-hero-back { width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.2); }
+.prog-hero-title { font-size:26px;font-weight:900;color:#fff;line-height:1.1;position:relative;z-index:1; }
+.prog-hero-sub { font-size:13px;color:rgba(255,255,255,.7);margin-top:5px;position:relative;z-index:1; }
+
+/* Ruta de progreso */
+.prog-ruta { display:flex;align-items:center;gap:0;margin-top:18px;position:relative;z-index:1;overflow-x:auto;padding-bottom:2px; }
+.ruta-step { display:flex;flex-direction:column;align-items:center;min-width:62px; }
+.ruta-ic { width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;margin-bottom:5px; }
+.ruta-ic i { font-size:14px;color:#fff; }
+.ruta-ic.active { background:rgba(255,255,255,.25);border-color:#fff; }
+.ruta-num { font-size:8px;font-weight:900;color:rgba(255,255,255,.5);margin-bottom:3px;letter-spacing:.04em; }
+.ruta-lbl { font-size:9px;font-weight:700;color:rgba(255,255,255,.9);text-align:center;line-height:1.3;white-space:nowrap; }
+.ruta-sub { font-size:8px;color:rgba(255,255,255,.5);text-align:center;margin-top:1px;white-space:nowrap; }
+.ruta-arrow { color:rgba(255,255,255,.3);font-size:14px;margin:0 2px;flex-shrink:0;padding-bottom:16px; }
+
+/* Body */
+.prog-body { padding:0 12px; }
+
+/* Tarjetas */
+.prog-card { background:#fff;border-radius:20px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07); }
+.prog-card-top { padding:18px 18px 14px; }
+.prog-card-head { display:flex;align-items:flex-start;gap:14px;margin-bottom:14px; }
+.prog-card-ic { width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.prog-card-ic.blue { background:#eef2ff; }
+.prog-card-ic.green { background:#ecfdf5; }
+.prog-card-ic.amber { background:#fffbeb; }
+.prog-card-ic i { font-size:24px; }
+.prog-card-ic.blue i { color:var(--primary); }
+.prog-card-ic.green i { color:#059669; }
+.prog-card-ic.amber i { color:#d97706; }
+.prog-card-info { flex:1;min-width:0; }
+.prog-badge { display:inline-flex;align-items:center;border-radius:20px;font-size:10px;font-weight:800;padding:3px 10px;margin-bottom:5px;letter-spacing:.02em; }
+.prog-badge.azul { background:#eef2ff;color:var(--primary); }
+.prog-badge.azul-solid { background:var(--primary);color:#fff; }
+.prog-badge.verde { background:#ecfdf5;color:#059669; }
+.prog-badge.amber { background:#fffbeb;color:#d97706; }
+.prog-nombre { font-size:18px;font-weight:900;color:#111827;line-height:1.1; }
+.prog-sub { font-size:12px;color:#6b7280;margin-top:3px;line-height:1.4; }
+
+/* Precio */
+.prog-precio-box { background:#f8faff;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;border:1px solid #e8eef8; }
+.prog-precio-main { font-size:22px;font-weight:900;color:var(--primary);line-height:1; }
+.prog-precio-note { font-size:11px;color:#9ca3af;margin-top:2px; }
+.prog-precio-side { text-align:right; }
+.prog-precio-label { font-size:10px;color:#9ca3af;font-weight:600; }
+.prog-precio-val { font-size:15px;font-weight:800;color:#374151; }
+
+/* Icon grid */
+.prog-icons { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px; }
+.prog-icons.five { grid-template-columns:repeat(3,1fr); }
+.prog-icon-tile { display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;background:#f8faff;border-radius:12px;border:1px solid #e8eef8; }
+.prog-icon-tile i { font-size:22px;color:var(--primary); }
+.prog-icon-tile.green i { color:#059669; }
+.prog-icon-tile.amber i { color:#d97706; }
+.prog-icon-tile span { font-size:9px;font-weight:700;color:#374151;text-align:center;line-height:1.3; }
+
+/* Checkmarks */
+.prog-checks { display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px; }
+.prog-check { display:flex;align-items:flex-start;gap:5px;font-size:12px;color:#374151;line-height:1.4; }
+.prog-check i { font-size:14px;color:var(--primary);flex-shrink:0;margin-top:1px; }
+
+/* 2 columnas Anual */
+.anual-cols { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
+.anual-col { background:#f8faff;border-radius:12px;padding:10px 12px;border:1px solid #e8eef8; }
+.anual-col-hdr { display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--primary);margin-bottom:8px;letter-spacing:.02em; }
+.anual-col-hdr i { font-size:15px; }
+.anual-col-item { display:flex;align-items:flex-start;gap:5px;font-size:11.5px;color:#374151;margin-bottom:5px;line-height:1.4; }
+.anual-col-item:last-child { margin-bottom:0; }
+.anual-col-item i { font-size:13px;color:var(--primary);flex-shrink:0;margin-top:1px; }
+
+/* Horario inline */
+.prog-horario-inline { display:flex;align-items:flex-start;gap:8px;background:#f8faff;border-radius:12px;padding:10px 12px;margin-bottom:14px;border:1px solid #e8eef8; }
+.prog-horario-inline i { font-size:16px;color:var(--primary);flex-shrink:0;margin-top:2px; }
+.prog-horario-inline .ht { font-size:11.5px;color:#374151;line-height:1.7; }
+.prog-horario-inline .ht b { color:var(--primary);font-weight:700; }
+
+/* Nota */
+.prog-nota { background:#fffbeb;border-radius:10px;padding:10px 12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;border:1px solid #fde68a; }
+.prog-nota i { font-size:15px;color:#d97706;flex-shrink:0;margin-top:1px; }
+.prog-nota span { font-size:12px;color:#92400e;line-height:1.5; }
+.prog-nota.azul { background:#eef6ff;border-color:#bfdbfe; }
+.prog-nota.azul i { color:var(--primary); }
+.prog-nota.azul span { color:#1e40af; }
+.prog-nota.verde { background:#ecfdf5;border-color:#bbf7d0; }
+.prog-nota.verde i { color:#059669; }
+.prog-nota.verde span { color:#065f46; }
+
+/* Requiere pill */
+.prog-requiere { display:inline-flex;align-items:center;gap:6px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:8px 12px;margin-bottom:14px; }
+.prog-requiere span { font-size:11px;color:#9a3412;font-weight:700; }
+
+/* Divider */
+.prog-divider { height:1px;background:#f3f4f6;margin:0 0 14px; }
+
+/* CTA */
+.prog-cta { padding:0 18px 18px; }
+.prog-btn { display:block;border-radius:14px;padding:14px;text-align:center;font-size:14px;font-weight:800;text-decoration:none;letter-spacing:.01em; }
+.prog-btn.blue { background:var(--primary);color:#fff; }
+.prog-btn.green { background:#059669;color:#fff; }
+.prog-btn.amber { background:#d97706;color:#fff; }
+
+/* Borde especial */
+.card-required { border-top:4px solid var(--primary); }
+.card-premium { border-top:4px solid #059669; }
+.card-elite { border-top:4px solid #d97706; }
+</style>
 </head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="navhead blue">
-    <a class="navback" href="pagos.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Programas UNION</div></div>
+<div class="phone"><div class="screen" style="background:#f0f4f8;">
+<div class="prog-wrap">
+
+  <!-- Hero -->
+  <div class="prog-hero">
+    <div class="prog-hero-top">
+      <div class="prog-hero-logo">
+        <div class="prog-hero-logo-c"><img src="/assets/logo-union-blue.png" alt="UMA"></div>
+        <div class="prog-hero-brand">UNION<br>MARTIAL ARTS</div>
+      </div>
+      <a href="home.html" class="prog-hero-back"><i class="ti ti-arrow-left" style="font-size:18px;"></i></a>
+    </div>
+    <div class="prog-hero-title">Programas UNION</div>
+    <div class="prog-hero-sub">Tu camino de avance en UNION</div>
+
+    <!-- Ruta de progreso -->
+    <div class="prog-ruta">
+      <div class="ruta-step" onclick="document.getElementById('card-basico').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
+        <div class="ruta-num">01</div>
+        <div class="ruta-ic active"><i class="ti ti-star"></i></div>
+        <div class="ruta-lbl">Básico</div>
+        <div class="ruta-sub">Empiezas aquí</div>
+      </div>
+      <div class="ruta-arrow">›</div>
+      <div class="ruta-step" onclick="document.getElementById('card-anual').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
+        <div class="ruta-num">02</div>
+        <div class="ruta-ic"><i class="ti ti-calendar"></i></div>
+        <div class="ruta-lbl">Anual UNION</div>
+        <div class="ruta-sub">Paso requerido</div>
+      </div>
+      <div class="ruta-arrow">›</div>
+      <div class="ruta-step" onclick="document.getElementById('card-club').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
+        <div class="ruta-num">03</div>
+        <div class="ruta-ic"><i class="ti ti-crown"></i></div>
+        <div class="ruta-lbl">Club Cinta</div>
+        <div class="ruta-sub">Más beneficios</div>
+      </div>
+      <div class="ruta-arrow">›</div>
+      <div class="ruta-step" onclick="document.getElementById('card-uacj').scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;">
+        <div class="ruta-num">04</div>
+        <div class="ruta-ic"><i class="ti ti-trophy"></i></div>
+        <div class="ruta-lbl">Camino UACJ</div>
+        <div class="ruta-sub">Ruta competitiva</div>
+      </div>
+    </div>
   </div>
-  <div class="body">
-    <div class="stack-10" id="planes"></div>
-    <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
+
+  <div class="prog-body">
+
+    <!-- BÁSICO -->
+    <div class="prog-card" id="card-basico">
+      <div class="prog-card-top">
+        <div class="prog-card-head">
+          <div class="prog-card-ic blue"><i class="ti ti-star"></i></div>
+          <div class="prog-card-info">
+            <div class="prog-badge azul">Empiezas aquí</div>
+            <div class="prog-nombre">Programa Básico</div>
+            <div class="prog-sub">La base para iniciar en UNION y comenzar tu formación.</div>
+          </div>
+        </div>
+
+        <div class="prog-precio-box">
+          <div>
+            <div class="prog-precio-label">Mensualidad</div>
+            <div class="prog-precio-main" id="precio-mensual">$1,550</div>
+          </div>
+          <div class="prog-precio-side">
+            <div class="prog-precio-label">Inscripción</div>
+            <div class="prog-precio-val" id="precio-insc">$500</div>
+          </div>
+        </div>
+
+        <div class="prog-checks">
+          <div class="prog-check"><i class="ti ti-check"></i><span>Clases base de la semana</span></div>
+          <div class="prog-check"><i class="ti ti-check"></i><span>Combates</span></div>
+          <div class="prog-check"><i class="ti ti-check"></i><span>Sábado de entrenamiento</span></div>
+          <div class="prog-check"><i class="ti ti-check"></i><span>Evaluaciones diarias</span></div>
+        </div>
+
+        <div class="prog-horario-inline">
+          <i class="ti ti-clock"></i>
+          <div class="ht" id="h-basico-bloque">
+            <b>Niños:</b> Lunes, Miércoles y Viernes (4:00, 5:00 o 6:00 pm)<br>
+            <b>Jóvenes y adultos:</b> Lunes, Martes, Jueves y Viernes (7 pm)<br>
+            <b>Combate:</b> Niños martes 6:15 pm · Jóvenes jueves 6:00 pm<br>
+            <b>Sábado:</b> Niños 11 am · Jóvenes 12 pm
+          </div>
+        </div>
+
+        <div class="prog-nota azul">
+          <i class="ti ti-info-circle"></i>
+          <span>Después de 3 meses en Básico, el alumno pasa a <strong>Anual UNION</strong> para continuar su proceso.</span>
+        </div>
+      </div>
+      <div class="prog-divider"></div>
+      <div class="prog-cta">
+        <a class="prog-btn blue" href="pagos.html">Inscribirme</a>
+      </div>
+    </div>
+
+    <!-- ANUAL UNION -->
+    <div class="prog-card card-required" id="card-anual">
+      <div class="prog-card-top">
+        <div class="prog-card-head">
+          <div class="prog-card-ic blue"><i class="ti ti-calendar-check"></i></div>
+          <div class="prog-card-info">
+            <div class="prog-badge azul-solid">Paso requerido</div>
+            <div class="prog-nombre">Anual UNION</div>
+            <div class="prog-sub">La siguiente etapa del alumno en UNION, con más herramientas para avanzar dentro y fuera del tatami.</div>
+          </div>
+        </div>
+
+        <div class="prog-precio-box">
+          <div>
+            <div class="prog-precio-label">Anualidad</div>
+            <div class="prog-precio-main" id="precio-anual">$12,500</div>
+            <div class="prog-precio-note">o 3 pagos</div>
+          </div>
+        </div>
+
+        <div class="anual-cols">
+          <div class="anual-col">
+            <div class="anual-col-hdr"><i class="ti ti-barbell"></i> Entrenamiento</div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Los mismos horarios del Básico</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Seguimiento continuo del alumno</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Mejor costo por clase</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Cobertura anual del programa</span></div>
+          </div>
+          <div class="anual-col">
+            <div class="anual-col-hdr"><i class="ti ti-device-mobile"></i> App</div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Acceso a la app móvil</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Nutrición</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Entrenamiento en casa</span></div>
+            <div class="anual-col-item"><i class="ti ti-check"></i><span>Meditación y visualización</span></div>
+          </div>
+        </div>
+
+        <div class="prog-nota azul">
+          <i class="ti ti-alert-circle"></i>
+          <span>Anual UNION es el paso requerido después de Básico para seguir avanzando en UNION. No es opcional.</span>
+        </div>
+      </div>
+      <div class="prog-divider"></div>
+      <div class="prog-cta">
+        <a class="prog-btn blue" href="pagos.html">Continuar en UNION</a>
+      </div>
+    </div>
+
+    <!-- CLUB CINTA NEGRA -->
+    <div class="prog-card card-premium" id="card-club">
+      <div class="prog-card-top">
+        <div class="prog-card-head">
+          <div class="prog-card-ic green"><i class="ti ti-crown"></i></div>
+          <div class="prog-card-info">
+            <div class="prog-badge verde">Más formación · Más proyección</div>
+            <div class="prog-nombre">Club Cinta Negra</div>
+            <div class="prog-sub">Un programa adicional para alumnos que quieren aprovechar al máximo su crecimiento en UNION.</div>
+          </div>
+        </div>
+
+        <div class="prog-precio-box">
+          <div>
+            <div class="prog-precio-label">Anualidad adicional</div>
+            <div class="prog-precio-main" style="color:#059669;" id="precio-cinta">$9,950</div>
+          </div>
+        </div>
+
+        <div class="prog-requiere" style="background:#ecfdf5;border-color:#bbf7d0;">
+          <i class="ti ti-lock" style="font-size:14px;color:#065f46;"></i>
+          <span style="color:#065f46;">Requiere Anual UNION</span>
+        </div>
+
+        <div class="prog-icons five">
+          <div class="prog-icon-tile green"><i class="ti ti-swords"></i><span>Kobudo</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-users"></i><span>Liderazgo</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-trophy"></i><span>Competencias de federación</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-clock-plus"></i><span>Más horas de entrenamiento</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-clipboard-list"></i><span>Evaluaciones mensuales</span></div>
+          <div class="prog-icon-tile green"><i class="ti ti-shirt"></i><span>Uniforme exclusivo</span></div>
+        </div>
+
+        <div class="prog-horario-inline" style="border-color:#bbf7d0;background:#ecfdf5;">
+          <i class="ti ti-clock" style="color:#059669;"></i>
+          <div class="ht">
+            <b style="color:#059669;">Horario adicional del Club</b><br>
+            <b>Niños:</b> Sábado 10 am a 12 pm<br>
+            <b>Jóvenes:</b> Sábado 12 pm a 2 pm
+          </div>
+        </div>
+
+        <div class="prog-nota verde">
+          <i class="ti ti-star"></i>
+          <span>Club Cinta Negra <strong>se agrega a Anual UNION</strong> y fortalece la formación del alumno.</span>
+        </div>
+      </div>
+      <div class="prog-divider"></div>
+      <div class="prog-cta">
+        <a class="prog-btn green" href="pagos.html">Agregar al plan</a>
+      </div>
+    </div>
+
+    <!-- CAMINO UACJ -->
+    <div class="prog-card card-elite" id="card-uacj">
+      <div class="prog-card-top">
+        <div class="prog-card-head">
+          <div class="prog-card-ic amber"><i class="ti ti-trophy"></i></div>
+          <div class="prog-card-info">
+            <div class="prog-badge amber">Ruta competitiva</div>
+            <div class="prog-nombre">Camino UACJ</div>
+            <div class="prog-sub">Preparación especial para alumnos con visión deportiva y desarrollo competitivo.</div>
+          </div>
+        </div>
+
+        <div class="prog-requiere">
+          <i class="ti ti-lock" style="font-size:14px;color:#9a3412;"></i>
+          <span>Requiere Anual UNION + Club Cinta Negra</span>
+        </div>
+
+        <div class="prog-icons">
+          <div class="prog-icon-tile amber"><i class="ti ti-target"></i><span>Formación competitiva desde etapas tempranas</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-medal"></i><span>Participación en torneos del circuito</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-chart-bar"></i><span>Seguimiento deportivo y desarrollo</span></div>
+          <div class="prog-icon-tile amber"><i class="ti ti-school"></i><span>Preparación con visión a UACJ</span></div>
+        </div>
+
+        <div class="prog-nota">
+          <i class="ti ti-info-circle"></i>
+          <span>Camino UACJ no sustituye los programas anteriores. Es una ruta especial sobre la base de Anual UNION + Club Cinta Negra.</span>
+        </div>
+      </div>
+      <div class="prog-divider"></div>
+      <div class="prog-cta">
+        <a class="prog-btn amber" href="cita.html">Solicitar información</a>
+      </div>
+    </div>
+
+    <div class="brandmark"><img src="assets/logo-union-blue.png" alt=""><span>Tu progreso es nuestro compromiso.</span></div>
+
   </div>
-  <nav class="bottomnav">
-    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
-    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
-    <a class="on" href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
-  </nav>
+</div>
+
+<nav class="bottomnav">
+  <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+  <a href="notificaciones.html"><i data-lucide="bell"></i>Avisos</a>
+  <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+  <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+</nav>
 </div></div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-  const supabase = createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) { window.location.href = 'index.html' }
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const supabase = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+lucide.createIcons()
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
 
+try {
   const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
     .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra',
-      'horario_basico_ninos','horario_jovenes','horario_club_ninos','horario_club_jovenes',
-      'club_descripcion','elite_descripcion'])
+      'horario_basico_ninos','horario_jovenes','horario_club_ninos','horario_club_jovenes'])
   const cfg = {}; (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor })
   const v = k => cfg[k] || null
 
-  const insc       = v('precio_inscripcion')    || '$500 MXN'
-  const mensual    = v('precio_mensual_basico') || '$1,550 / mes'
-  const anual      = v('precio_anual')          || '$12,500 contado'
-  const cintaNegra = v('precio_cinta_negra')    || '$9,950 anualidad'
-  const h0  = v('horario_basico_ninos')   || 'Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM'
-  const h2  = v('horario_jovenes')        || 'Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM'
-  const cn  = v('horario_club_ninos')     || 'Niños · Sáb 10:00 AM–12:00 PM'
-  const cj  = v('horario_club_jovenes')   || 'Jóvenes · Sáb 12:00–2:00 PM'
-  const cdesc = v('club_descripcion')     || 'Programa Kobudo + Liderazgo · Uniforme Club + evaluaciones mensuales'
-  const edesc = v('elite_descripcion')    || 'Construye su currículum deportivo desde primaria, secundaria y prepa'
-
-  const P = [
-    {n:'Programa Básico',icon:'star',insc:'Inscripción ' + insc,precio: mensual,pop:false,
-      items:['5 clases por semana', h0, h2, 'Evaluaciones del día']},
-    {n:'Anual UNION',icon:'calendar',insc:'o 3 pagos · mejor precio por clase',precio: anual,pop:true,
-      items:['Empiezas en Básico y tras 3 meses pasas a este plan','Todo el año cubierto','Mejor precio por clase']},
-    {n:'Club Cinta Negra',icon:'crown',insc:'Programa extra · 8 h de entrenamiento',precio: cintaNegra,pop:false,
-      items:[cdesc, cn, cj, 'Competencias de Federación + Acrogimnasia']},
-    {n:'Programa Élite UACJ',icon:'graduation-cap',insc:'Ruta al equipo representativo universitario',precio:'Camino UACJ',pop:false,elite:true,
-      items:[edesc,'Pre-califica al equipo representativo de Kickboxing de la UACJ','Requiere Anual UNION + Club Cinta Negra','Participar en los torneos del circuito anual']},
-  ]
-  document.getElementById('planes').innerHTML = P.map(p=>`
-    <div class="card" ${p.pop?'style="border:1.5px solid var(--primary);"':p.elite?'style="border:1.5px solid var(--amber-600);background:linear-gradient(180deg,var(--amber-bg),#fff);"':''}>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:42px;height:42px;border-radius:var(--r-md);background:${p.elite?'var(--amber-bg)':'var(--soft)'};color:${p.elite?'var(--amber-600)':'var(--primary)'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="${p.icon}" style="width:21px;height:21px"></i></span>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.3;"><span style="font-size:15px;font-weight:700;">${p.n}</span>${p.pop?'<span class="badge solid">Popular</span>':''}${p.elite?'<span class="badge amber">Élite</span>':''}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">${p.insc}</div>
-        </div>
-      </div>
-      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--primary);margin-bottom:10px;">${p.precio}</div>
-      <div style="display:flex;flex-direction:column;gap:7px;">
-        ${p.items.map(it=>`<div style="display:flex;gap:8px;align-items:flex-start;font-size:13px;"><span style="color:var(--green-600);flex-shrink:0;margin-top:1px;"><i data-lucide="check" style="width:15px;height:15px"></i></span>${it}</div>`).join('')}
-      </div>
-      <a class="btn ${p.pop?'primary':p.elite?'primary':'secondary'} block mt14" href="${p.elite?'cita.html':'pagos.html'}">${p.elite?'Solicitar información':'Inscribirme'}</a>
-    </div>`).join('');
-  lucide.createIcons();
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  if (v('precio_inscripcion'))    document.getElementById('precio-insc').textContent    = v('precio_inscripcion')
+  if (v('precio_mensual_basico')) document.getElementById('precio-mensual').textContent = v('precio_mensual_basico')
+  if (v('precio_anual'))          document.getElementById('precio-anual').textContent   = v('precio_anual')
+  if (v('precio_cinta_negra'))    document.getElementById('precio-cinta').textContent   = v('precio_cinta_negra')
+  if (v('horario_basico_ninos') || v('horario_jovenes')) {
+    const n = v('horario_basico_ninos') || 'Niños: Lunes, Miércoles y Viernes (4, 5 o 6 pm)'
+    const j = v('horario_jovenes') || 'Jóvenes y adultos: Lunes, Martes, Jueves y Viernes (7 pm)'
+    document.getElementById('h-basico-bloque').innerHTML =
+      '<b>Niños:</b> ' + n + '<br><b>Jóvenes y adultos:</b> ' + j +
+      '<br><b>Combate:</b> Niños martes 6:15 pm · Jóvenes jueves 6:00 pm<br><b>Sábado:</b> Niños 11 am · Jóvenes 12 pm'
   }
+} catch(e) {}
 </script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body>
 </html>
-
