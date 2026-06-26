@@ -37,8 +37,9 @@ self.addEventListener('fetch', e => {
       url.hostname.includes('unpkg') || url.hostname.includes('jsdelivr') ||
       url.hostname.includes('cdn.')) return
 
-  // HTML — siempre desde red, sin guardar en caché
-  if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname === '') {
+  // HTML y CSS — siempre desde red, nunca caché
+  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.css') ||
+      url.pathname === '/' || url.pathname === '') {
     e.respondWith(
       fetch(e.request, { cache: 'no-store' })
         .catch(() => caches.match(e.request).then(r => r || caches.match('/home.html')))
@@ -46,7 +47,7 @@ self.addEventListener('fetch', e => {
     return
   }
 
-  // Assets (CSS, JS, imágenes) — network first, cache fallback
+  // Otros assets (JS, imágenes) — network first, cache fallback
   e.respondWith(
     fetch(e.request)
       .then(res => {
