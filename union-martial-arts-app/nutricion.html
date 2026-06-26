@@ -150,6 +150,10 @@
   </div>
 
   <div class="body">
+    <div class="card soft mb14" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;">
+      <i data-lucide="info" style="width:16px;height:16px;color:var(--primary);flex-shrink:0;margin-top:2px;"></i>
+      <span style="font-size:13px;color:var(--text);line-height:1.5;">Sigue los planes de nutrición y registra tus hábitos diarios. El instructor podrá ver tu progreso desde el panel de administración.</span>
+    </div>
 
     <!-- TOAST -->
     <div class="toast" id="toast">✅ Hábito registrado</div>
@@ -352,7 +356,7 @@
       </div>
     </div>
     <div class="card mb14">
-      <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Lo ideal es repartir la energía entre 3 comidas principales y 1 o 2 colaciones, según su horario de escuela y entrenamiento.</p>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Lo ideal es repartir la energía entre 3 comidas principales y 1 o 2 snacks, según su horario de escuela y entrenamiento.</p>
       <div class="comidas-grid">
         <div class="comida-item" data-comida="desayuno" style="cursor:pointer;">
           <span class="comida-emoji">🌅</span><span class="comida-label">Desayuno</span>
@@ -367,11 +371,11 @@
           <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
         </div>
         <div class="comida-item" data-comida="colacion_pre" style="cursor:pointer;">
-          <span class="comida-emoji">⚡</span><span class="comida-label">Colación pre-clase</span>
+          <span class="comida-emoji">⚡</span><span class="comida-label">Snack pre-clase</span>
           <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
         </div>
         <div class="comida-item" data-comida="colacion_post" style="cursor:pointer;">
-          <span class="comida-emoji">💪</span><span class="comida-label">Colación post-clase</span>
+          <span class="comida-emoji">💪</span><span class="comida-label">Snack post-clase</span>
           <span style="font-size:9px;color:var(--primary);font-weight:700;margin-top:3px;">Ver receta</span>
         </div>
       </div>
@@ -483,13 +487,13 @@
       nota: '💡 La cena puede ser ligera — lo importante es no irse a dormir con hambre.'
     },
     colacion_pre: {
-      titulo: '⚡ Colación antes de clase',
+      titulo: '⚡ Snack antes de clase',
       sub: 'Sugerencia del instructor para este mes',
       receta: '• 1 plátano + agua\n• Yogurt natural con granola\n• Pan integral con crema de cacahuate\n• Fruta de temporada',
       nota: '💡 Come al menos 1 hora antes de entrenar para tener energía sin sentirse pesado.'
     },
     colacion_post: {
-      titulo: '💪 Colación después de clase',
+      titulo: '💪 Snack después de clase',
       sub: 'Sugerencia del instructor para este mes',
       receta: '• Licuado de plátano con leche y avena\n• Hot cakes de plátano con avena\n• Huevo cocido + fruta\n• Yogurt griego con miel',
       nota: '💡 Después de entrenar el cuerpo necesita proteína para recuperarse — comer en los siguientes 30-60 min es ideal.'
