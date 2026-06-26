@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Avisos — Union MA</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0047AB">
+<meta name="theme-color" content="#0f2167">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Union MA">
@@ -16,17 +16,16 @@
 .page-bg { background:#f0f2f5; min-height:100%; padding:0 0 90px; }
 
 /* Hero */
-.notif-hero { background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 100%); padding:16px 18px 22px; color:#fff; }
+.notif-hero { background:linear-gradient(135deg,#0f2167 0%,#1440b0 100%); padding:16px 18px 22px; color:#fff; }
 .notif-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .hero-logo { display:flex; align-items:center; gap:10px; }
-.hero-logo-circle { width:40px; height:40px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.hero-logo-circle img { width:28px; height:28px; object-fit:contain; }
+.hero-logo img { width:32px; height:32px; }
 .hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
 .hero-actions { display:flex; align-items:center; gap:10px; }
 .hero-bell { position:relative; }
 .hero-bell-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0047AB; }
-.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0047AB; }
+.hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid #0f2167; }
+.hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#0f2167; }
 .hero-title { font-size:22px; font-weight:800; margin-bottom:3px; }
 .hero-sub { font-size:13px; opacity:.7; }
 
@@ -75,9 +74,10 @@
 .msg-time { font-size:11px; color:#9ca3af; }
 
 /* Eventos */
-.eventos-scroll { display:flex; flex-direction:column; gap:10px; padding:0 16px 16px; }
-.evento-card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid #f3f4f6; display:flex; align-items:center; gap:12px; padding:12px; }
-.evento-img { width:56px; height:56px; flex-shrink:0; background:#0d1a5e; border-radius:10px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.eventos-scroll { display:flex; gap:10px; overflow-x:auto; padding:0 16px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.eventos-scroll::-webkit-scrollbar { display:none; }
+.evento-card { background:#fff; border-radius:14px; width:210px; flex-shrink:0; scroll-snap-align:start; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid #f3f4f6; }
+.evento-img { width:100%; height:100px; background:#0d1a5e; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
 .evento-img img { width:100%; height:100%; object-fit:cover; }
 .evento-img-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:rgba(255,255,255,.6); width:100%; height:100%; }
 .evento-tipo-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,.5); color:#fff; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; backdrop-filter:blur(4px); }
@@ -87,7 +87,7 @@
 .evento-btn { display:block; text-align:center; background:#eff6ff; color:#1d4ed8; font-size:12px; font-weight:700; padding:7px; border-radius:8px; text-decoration:none; margin-top:9px; }
 
 /* Frase */
-.frase-card { background:linear-gradient(135deg,#0047AB,#1a5cc8); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+.frase-card { background:linear-gradient(135deg,#0f2167,#1440b0); border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
 .frase-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .frase-label { font-size:10px; font-weight:700; color:rgba(255,255,255,.6); margin-bottom:3px; letter-spacing:.05em; text-transform:uppercase; }
 .frase-txt { font-size:13px; color:#fff; font-style:italic; line-height:1.5; }
@@ -95,16 +95,19 @@
 /* Empty */
 .empty-sec { padding:24px 16px; text-align:center; color:#9ca3af; }
 .empty-sec p { font-size:13px; margin-top:8px; }
+
+/* Hero tabs */
+.hero-tab { flex:1; padding:8px 6px; border:none; background:rgba(255,255,255,.15); color:rgba(255,255,255,.75); font-size:11.5px; font-weight:700; border-radius:10px; cursor:pointer; font-family:inherit; transition:all .2s; }
+.hero-tab.active { background:#fff; color:#0f2167; }
 </style>
 </head>
 <body>
 <div class="phone"><div class="screen" style="background:#f0f2f5;overflow-y:auto;">
 
   <div class="notif-hero">
-    <div class="notif-hero-top" style="position:relative;">
-      <a href="home.html" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
+    <div class="notif-hero-top">
       <div class="hero-logo">
-        <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+        <img src="/assets/logo-union-white.png" alt="UMA" />
         <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
       </div>
       <div class="hero-actions">
@@ -112,17 +115,30 @@
           <div class="hero-bell-ic"><i class="ti ti-bell" style="font-size:18px;color:#fff;"></i></div>
           <div class="hero-bell-badge" id="bell-count" style="display:none;">0</div>
         </div>
-        <a href="#" onclick="history.back();return false;" style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
+        <div class="hero-avatar" id="hero-initials">—</div>
       </div>
     </div>
-    <div class="hero-title">Avisos</div>
-    <div class="hero-sub">Mensajes, avisos y eventos de la academia</div>
+    <div class="hero-title" id="hero-tab-title">Avisos</div>
+    <div class="hero-sub">Toca una categoría para ver el detalle</div>
+
+    <!-- Tabs dentro del hero -->
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="hero-tab active" data-tab="avisos" onclick="cambiarTab('avisos')">
+        📢 Avisos<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+      </button>
+      <button class="hero-tab" data-tab="mensajes" onclick="cambiarTab('mensajes')">
+        💬 Mensajes<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+      </button>
+      <button class="hero-tab" data-tab="eventos" onclick="cambiarTab('eventos')">
+        🏆 Eventos
+      </button>
+    </div>
   </div>
 
-  <div class="body" style="padding-bottom:80px;">
+  <div class="page-bg">
 
     <!-- 1. AVISOS GENERALES -->
-    <div class="sec-card" style="margin-top:16px;">
+    <div class="sec-card" id="sec-avisos" style="margin-top:16px;">
       <div class="sec-hdr">
         <div class="sec-hdr-ic amber">
           <i class="ti ti-speakerphone" style="font-size:20px;color:#d97706;"></i>
@@ -141,7 +157,7 @@
     </div>
 
     <!-- 2. MENSAJES PRIVADOS -->
-    <div class="sec-card">
+    <div class="sec-card" id="sec-mensajes" style="display:none;">
       <div class="sec-hdr">
         <div class="sec-hdr-ic blue">
           <i class="ti ti-message-dots" style="font-size:20px;color:#1d4ed8;"></i>
@@ -163,7 +179,7 @@
     </div>
 
     <!-- 3. PRÓXIMOS EVENTOS -->
-    <div class="sec-card">
+    <div class="sec-card" id="sec-eventos" style="display:none;">
       <div class="sec-hdr" style="border-bottom:none;padding-bottom:8px;">
         <div class="sec-hdr-ic amber">
           <i class="ti ti-trophy" style="font-size:20px;color:#d97706;"></i>
@@ -179,8 +195,20 @@
       </div>
     </div>
 
+    <!-- 4. FRASE DEL DÍA -->
+    <div style="padding:0 14px 8px;" id="frase-wrap" style="display:none;">
+      <div class="frase-card">
+        <div class="frase-ic">
+          <i class="ti ti-quote" style="font-size:20px;color:#fff;"></i>
+        </div>
+        <div>
+          <div class="frase-label">Frase del día</div>
+          <div class="frase-txt" id="frase-txt"></div>
+        </div>
+      </div>
+    </div>
 
-  </div><!-- end .body -->
+  </div>
 
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
@@ -190,29 +218,10 @@
   </nav>
 </div></div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-
-  async function cargarPadre(supabase, user) {
-    const savedId = localStorage.getItem('uma_padre_id')
-    if (savedId) {
-      const { data } = await supabase.from('padres').select('*').eq('id', savedId).maybeSingle()
-      if (data) return data
-    }
-    const { data: p1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1).maybeSingle()
-    if (p1) { localStorage.setItem('uma_padre_id', p1.id); return p1 }
-    const { data: p2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1).maybeSingle()
-    if (p2) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
-      localStorage.setItem('uma_padre_id', p2.id)
-      return p2
-    }
-    return null
-  }
-
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
@@ -237,8 +246,8 @@
   }
 
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+    const { data: authData } = await supabase.auth.getUser()
+    const user = authData?.user
     if (!user) { window.location.href = 'index.html'; return }
 
     localStorage.setItem('notif_visto', new Date().toISOString())
@@ -246,19 +255,23 @@
     // Padre
     let padre = null
     try {
-      padre = await cargarPadre(supabase, user)
+      const { data: p1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+      if (p1) { padre = p1 }
+      else {
+        const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
+        if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
+      }
     } catch(e) {}
 
+    if (padre?.nombre) document.getElementById('hero-initials').textContent = initials(padre.nombre)
 
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {
-      const { data: avisos, error: avisosErr } = await supabase.from('avisos').select('id,titulo,texto,prioridad,creado_en')
-        .eq('activo', true).order('creado_en', { ascending: false }).limit(5)
-      let confirmados = []
-      try {
-        const { data: cd } = await supabase.from('avisos_confirmaciones').select('aviso_id').eq('user_id', user.id)
-        confirmados = cd || []
-      } catch(_) {}
+      const [{ data: avisos }, { data: confirmados }] = await Promise.all([
+        supabase.from('avisos').select('id,titulo,mensaje,prioridad,creado_en')
+          .eq('activo', true).order('creado_en', { ascending: false }).limit(5),
+        supabase.from('avisos_confirmaciones').select('aviso_id').eq('user_id', user.id)
+      ])
 
       const PMAP = {
         urgente:    { cls:'red',   icon:'ti-alert-circle',  col:'#dc2626' },
@@ -270,131 +283,80 @@
       if (sinConfirmar > 0) {
         document.getElementById('bell-count').textContent = sinConfirmar
         document.getElementById('bell-count').style.display = 'flex'
+        const ht = document.getElementById('ht-avisos')
+        ht.textContent = sinConfirmar; ht.style.display = 'inline'
       }
 
       if (avisos?.length) {
-        const avisosNoConfirmados = avisos.filter(a => !confirmSet.has(a.id))
-        if (!avisosNoConfirmados.length) {
-          document.getElementById('avisos-list').innerHTML = '<div class="empty-sec"><p>Todo al día ✓</p></div>'
-        } else {
-          document.getElementById('avisos-list').innerHTML = avisosNoConfirmados.map(a => {
-            const p = PMAP[a.prioridad] || PMAP.informativo
-            const pr = a.prioridad || 'informativo'
-            const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
-            return `<div class="aviso-row" data-aviso-id="${a.id}">
-              <div class="aviso-top">
-                <div class="aviso-ic ${p.cls}">
-                  <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                  <span class="badge-imp ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>
-                  <div class="aviso-title">${a.titulo}</div>
-                  <div class="aviso-msg">${a.texto}</div>
-                  <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
-                </div>
+        document.getElementById('avisos-list').innerHTML = avisos.map(a => {
+          const p = PMAP[a.prioridad] || PMAP.informativo
+          const pr = a.prioridad || 'informativo'
+          const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+          const yaConfirmo = confirmSet.has(a.id)
+          return `<div class="aviso-row">
+            <div class="aviso-top">
+              <div class="aviso-ic ${p.cls}">
+                <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
               </div>
-              <button class="btn-enterado" data-id="${a.id}" data-padre="${padre?.nombre||''}">
-                <i class="ti ti-circle-check" style="font-size:16px;"></i> Me enteré
-              </button>
-            </div>`
-          }).join('')
-          lucide.createIcons()
-        }
+              <div style="flex:1;min-width:0;">
+                <span class="badge-imp ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>
+                <div class="aviso-title">${a.titulo}</div>
+                <div class="aviso-msg">${a.mensaje}</div>
+                <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
+              </div>
+            </div>
+            <button class="btn-enterado${yaConfirmo?' confirmado':''}" data-id="${a.id}"${yaConfirmo?' disabled':''}>
+              <i class="ti ${yaConfirmo?'ti-circle-check-filled':'ti-circle-check'}" style="font-size:16px;"></i>
+              ${yaConfirmo ? '✓ Ya me enteré' : 'Me enteré'}
+            </button>
+          </div>`
+        }).join('')
+        lucide.createIcons()
       }
     } catch(e) { console.error('avisos:', e) }
 
     // ── MENSAJES PRIVADOS ─────────────────────────────────────
     try {
-      const padreId = padre?.id || '00000000-0000-0000-0000-000000000000'
       const { data: msgs } = await supabase.from('mensajes')
         .select('id, texto, creado_en, leido')
         .eq('para_admin', false)
-        .or('destinatario_id.is.null,destinatario_id.eq.' + padreId + ',destinatario_id.eq.' + user.id)
+        .eq('destinatario_id', padre?.id)
         .order('creado_en', { ascending: false })
-        .limit(20)
+        .limit(3)
 
       const sinLeer = (msgs||[]).filter(m => !m.leido).length
       if (sinLeer > 0) {
         const el = document.getElementById('msgs-count')
         el.textContent = sinLeer; el.style.display = 'inline-block'
+        const ht = document.getElementById('ht-mensajes')
+        ht.textContent = sinLeer; ht.style.display = 'inline'
       }
 
       if (msgs?.length) {
-        const col = avatarColor('Instructor')
-
-        function parseMsgTexto(txt) {
-          if (!txt) return { texto: '', diplomaUrl: null }
-          const match = txt.match(/📜 Diploma: (https?:\/\/\S+)/)
-          if (match) {
-            return { texto: txt.replace(/\n?📜 Diploma: https?:\/\/\S+/, '').trim(), diplomaUrl: match[1] }
-          }
-          return { texto: txt, diplomaUrl: null }
-        }
-
-        document.getElementById('msgs-list').innerHTML = msgs.map((m,i) => {
-          const { texto, diplomaUrl } = parseMsgTexto(m.texto)
-          return `<div class="msg-row" id="msg-card-${i}" style="flex-direction:column;gap:0;padding:0;">
-            <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleMsg(${i})">
-              <div class="msg-dot${m.leido?' read':''}"></div>
-              <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
-              <div class="msg-body">
-                <div class="msg-name">Instructor</div>
-                <div class="msg-preview">${texto}</div>
-                ${diplomaUrl ? '<div style="margin-top:4px;"><span style="font-size:11px;background:#eff6ff;color:#0047AB;border-radius:20px;padding:2px 8px;font-weight:600;">📜 Diploma adjunto</span></div>' : ''}
-              </div>
-              <div class="msg-right">
-                ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
-                <span class="msg-time">${timeAgo(m.creado_en)}</span>
-              </div>
+        document.getElementById('msgs-list').innerHTML = msgs.map(m => {
+          const col = avatarColor('Instructor')
+          return `<div class="msg-row">
+            <div class="msg-dot${m.leido?' read':''}"></div>
+            <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
+            <div class="msg-body">
+              <div class="msg-name">Instructor</div>
+              <div class="msg-preview">${m.texto||''}</div>
             </div>
-            <div id="reply-${i}" style="display:none;padding:0 16px 14px;border-top:1px solid #f3f4f6;">
-              <div style="font-size:13px;color:#374151;margin-bottom:10px;line-height:1.5;">${texto}</div>
-              ${diplomaUrl ? `<a href="${diplomaUrl}" target="_blank" download style="display:flex;align-items:center;justify-content:center;gap:8px;background:#eff6ff;color:#0047AB;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;"><i class="ti ti-file-download" style="font-size:16px;"></i> Ver / Descargar diploma</a>` : ''}
-              <textarea id="reply-txt-${i}" rows="2" placeholder="Escribe tu respuesta…" style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:none;box-sizing:border-box;"></textarea>
-              <div style="display:flex;gap:8px;margin-top:8px;">
-                <button onclick="sendReply(${i})" style="flex:1;background:#0047AB;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">
-                  <i class="ti ti-send"></i> Responder
-                </button>
-                <button onclick="deleteMsg(${i},'${m.id}')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">
-                  <i class="ti ti-trash"></i> Borrar
-                </button>
-              </div>
+            <div class="msg-right">
+              ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
+              <span class="msg-time">${timeAgo(m.creado_en)}</span>
             </div>
           </div>`
         }).join('')
       }
-    } catch(e) { console.error('msgs:', e) }
-
-    window.toggleMsg = function(i) {
-      const d = document.getElementById('reply-' + i)
-      if (d) d.style.display = d.style.display === 'none' ? 'block' : 'none'
-    }
-    window.sendReply = async function(i) {
-      const txt = document.getElementById('reply-txt-' + i)?.value?.trim()
-      if (!txt) return
-      const btn = document.querySelector(`#reply-${i} button`)
-      btn.disabled = true; btn.textContent = 'Enviando…'
-      try {
-        await supabase.from('mensajes').insert({ de_user_id: user.id, texto: txt, para_admin: true })
-        document.getElementById('reply-' + i).innerHTML = '<div style="color:#16a34a;font-size:13px;padding:4px 0;">✅ Mensaje enviado al instructor.</div>'
-      } catch(e) { btn.disabled = false; btn.textContent = 'Enviar respuesta' }
-    }
-    window.deleteMsg = async function(i, id) {
-      if (!confirm('¿Borrar este mensaje?')) return
-      const card = document.getElementById('msg-card-' + i)
-      try {
-        await supabase.from('mensajes').delete().eq('id', id)
-        if (card) { card.style.transition='opacity .3s'; card.style.opacity='0'; setTimeout(()=>card.remove(),300) }
-      } catch(e) { alert('Error al borrar: ' + e.message) }
-    }
+    } catch(e) {}
 
     // ── PRÓXIMOS EVENTOS ──────────────────────────────────────
     try {
       const hoy = new Date().toISOString().split('T')[0]
-      const { data: evs, error: evErr } = await supabase.from('eventos')
-        .select('id,titulo,fecha,lugar,tipo,hora')
+      const { data: evs } = await supabase.from('eventos')
+        .select('id,titulo,fecha,lugar,descripcion,foto_url,tipo,hora')
         .gte('fecha', hoy).order('fecha').limit(5)
-      if (evErr) throw evErr
 
       if (evs?.length) {
         const TIPO_ICON = { torneo:'ti-trophy', examen:'ti-award', actividad:'ti-star', seminario:'ti-school' }
@@ -406,24 +368,28 @@
             : `<div class="evento-img-placeholder"><i class="ti ${ic}" style="font-size:30px;color:rgba(255,255,255,.5);"></i></div>`
           return `<div class="evento-card">
             <div class="evento-img" style="background:#0d1a5e;">
-              ${ev.foto_url ? `<img src="${ev.foto_url}" alt="${ev.titulo}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="ti ${ic}" style="font-size:22px;color:rgba(255,255,255,.7);"></i>`}
+              ${imgHTML}
+              ${ev.tipo ? `<div class="evento-tipo-badge">${ev.tipo.toUpperCase()}</div>` : ''}
             </div>
-            <div style="flex:1;min-width:0;">
-              ${ev.tipo ? `<span style="font-size:10px;font-weight:700;color:#0047AB;text-transform:uppercase;letter-spacing:.04em;">${ev.tipo}</span>` : ''}
-              <div style="font-size:14px;font-weight:700;color:#111827;margin:2px 0;">${ev.titulo}</div>
-              <div style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:4px;"><i class="ti ti-calendar" style="font-size:12px;"></i>${fechaFmt}${ev.hora ? ' · ' + ev.hora : ''}</div>
-              ${ev.lugar ? `<div style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:4px;margin-top:2px;"><i class="ti ti-map-pin" style="font-size:12px;"></i>${ev.lugar}</div>` : ''}
+            <div class="evento-body">
+              <div class="evento-nombre">${ev.titulo}</div>
+              <div class="evento-detail"><i class="ti ti-calendar" style="font-size:13px;color:#9ca3af;"></i>${fechaFmt}</div>
+              ${ev.lugar ? `<div class="evento-detail"><i class="ti ti-map-pin" style="font-size:13px;color:#9ca3af;"></i>${ev.lugar}</div>` : ''}
+              ${ev.hora  ? `<div class="evento-detail"><i class="ti ti-clock" style="font-size:13px;color:#9ca3af;"></i>${ev.hora}</div>` : ''}
+              ${ev.descripcion ? `<div class="evento-detail" style="align-items:flex-start;"><i class="ti ti-info-circle" style="font-size:13px;color:#9ca3af;margin-top:1px;flex-shrink:0;"></i><span style="line-height:1.4;">${ev.descripcion}</span></div>` : ''}
+              <a class="evento-btn" href="torneos.html">Ver detalles</a>
             </div>
           </div>`
         }).join('')
       }
-    } catch(e) { document.getElementById('eventos-list').innerHTML = '<div style="padding:8px 16px 16px;color:#dc2626;font-size:12px;">Error: ' + e.message + '</div>' }
+    } catch(e) {}
 
     // ── FRASE DEL DÍA ─────────────────────────────────────────
     try {
       const { data: frase } = await supabase.from('frases').select('texto').eq('activa', true).maybeSingle()
       if (frase?.texto) {
         document.getElementById('frase-txt').textContent = '"' + frase.texto + '"'
+        document.getElementById('frase-wrap').style.display = 'block'
       }
     } catch(e) {}
 
@@ -441,31 +407,34 @@
           padre_nombre: padre?.nombre || ''
         })
         if (error) throw error
-        // Notificar al admin
-        await supabase.from('mensajes').insert({
-          de_user_id: user.id,
-          texto: `${padre?.nombre || 'Un padre'} se enteró del aviso.`,
-          para_admin: true
-        })
-        // Ocultar la tarjeta del aviso
-        const card = btn.closest('.aviso-row')
-        if (card) { card.style.transition='opacity .3s'; card.style.opacity='0'; setTimeout(()=>card.remove(),300) }
+        btn.classList.add('confirmado')
+        btn.innerHTML = '<i class="ti ti-circle-check-filled" style="font-size:16px;"></i> ✓ Ya me enteré'
         // Actualizar contador
         const countEl = document.getElementById('bell-count')
-        const cur = parseInt(countEl.textContent||'1') - 1
+        const cur = parseInt(countEl.textContent) - 1
         if (cur <= 0) countEl.style.display = 'none'
         else countEl.textContent = cur
       } catch(err) {
         btn.disabled = false
         btn.innerHTML = '<i class="ti ti-circle-check" style="font-size:16px;"></i> Me enteré'
-        alert('Error al confirmar: ' + (err.message || err))
       }
     })
 
     lucide.createIcons()
 
   } catch(e) { console.error('notif error:', e) }
-})();
+
+  // Títulos por tab
+  const tabTitles = { avisos: 'Avisos', mensajes: 'Mensajes', eventos: 'Eventos' }
+
+  window.cambiarTab = function(tab) {
+    document.querySelectorAll('.hero-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
+    document.getElementById('sec-avisos').style.display   = tab === 'avisos'   ? 'block' : 'none'
+    document.getElementById('sec-mensajes').style.display = tab === 'mensajes' ? 'block' : 'none'
+    document.getElementById('sec-eventos').style.display  = tab === 'eventos'  ? 'block' : 'none'
+    document.getElementById('frase-wrap').style.display   = tab === 'avisos'   ? '' : 'none'
+    document.getElementById('hero-tab-title').textContent = tabTitles[tab]
+  }
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -474,5 +443,3 @@
 </script>
 </body>
 </html>
-
-
