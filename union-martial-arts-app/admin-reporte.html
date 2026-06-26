@@ -4,7 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reporte mensual</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" />
 <style>
   @media print {
     .phone { box-shadow: none !important; border: none !important; }
@@ -39,17 +45,10 @@
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="page-hero no-print" style="padding-bottom:18px;">
-    <div class="page-hero-top" style="position:relative;">
-      <a href="admin.html" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-      <div class="hero-logo">
-        <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
-        <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-      </div>
-      <button class="iconbtn-dark" id="btn-print" style="display:none;background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;color:#fff;cursor:pointer;" aria-label="Imprimir"><i data-lucide="printer" style="width:18px;height:18px;"></i></button>
-    </div>
-    <div style="font-size:20px;font-weight:800;margin-top:10px;">Reporte mensual</div>
-    <div style="font-size:13px;opacity:.75;margin-top:2px;">Historial por alumno</div>
+  <div class="navhead dark no-print">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Reporte mensual</div></div>
+    <button class="iconbtn-dark" id="btn-print" style="display:none;" aria-label="Imprimir"><i data-lucide="printer"></i></button>
   </div>
 
   <div class="body">
@@ -59,8 +58,8 @@
         <label class="field"><span class="lab">Alumno</span>
           <select id="al-sel"><option value="">Selecciona alumno…</option></select></label>
         <label class="field"><span class="lab">Mes</span>
-          <input type="month" id="mes" value="2026-06" /></label>
-        <button class="btn primary block gen-btn" id="btn-gen" onclick="generarReporte()"><i data-lucide="file-text"></i> Generar reporte</button>
+          <input type="month" id="mes" /></label>
+        <button class="btn primary block gen-btn" id="btn-gen"><i data-lucide="file-text"></i> Generar reporte</button>
       </div>
     </div>
 
@@ -76,41 +75,30 @@
   </nav>
 </div></div>
 
-<script>
-// Script independiente — carga alumnos sin depender de supabase.min.js
-(async function loadAlumnos() {
-  try {
-    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-    const r = await fetch('https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre,cinturon,grupo', { headers: { 'apikey': KEY } })
-    const data = await r.json()
-    window._alumnos = Array.isArray(data) ? data : []
-    const sel = document.getElementById('al-sel')
-    if (window._alumnos.length) {
-      sel.innerHTML = '<option value="">Selecciona alumno…</option>' + window._alumnos.map(a => `<option value="${a.id}">${a.nombre||a.id}</option>`).join('')
-    } else {
-      sel.innerHTML = '<option value="">Sin alumnos: ' + JSON.stringify(data).slice(0,60) + '</option>'
-    }
-  } catch(e) {
-    document.getElementById('al-sel').innerHTML = '<option value="">Error: ' + e.message + '</option>'
-  }
-})();
-</script>
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-// Sesión: solo redirige si no hay usuario
-(async () => {
-  try {
-    const sb = window.supabase.createClient('https://gdajgennlsuvndanpxiz.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI')
-    const { data: { session } } = await sb.auth.getSession()
-    if (!session?.user) { window.location.href = 'index.html'; return }
-    document.getElementById('mes').value = new Date().toISOString().slice(0,7)
-    lucide.createIcons()
-  } catch(e) { lucide.createIcons() }
-})();
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { window.location.href = 'index.html' }
 
-// Función global — no depende del IIFE de sesión
-window.generarReporte = async function() {
+  // Mes actual por defecto
+  const hoy = new Date()
+  document.getElementById('mes').value = hoy.toISOString().slice(0, 7)
+
+  // Cargar alumnos
+  const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').order('nombre')
+  if (alumnos?.length) {
+    document.getElementById('al-sel').innerHTML =
+      '<option value="">Selecciona alumno…</option>' +
+      alumnos.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('')
+  }
+
+  // Generar
+  document.getElementById('btn-gen').addEventListener('click', async () => {
     const alumnoId = document.getElementById('al-sel').value
     const mes = document.getElementById('mes').value
     if (!alumnoId || !mes) { alert('Selecciona alumno y mes.'); return }
@@ -118,11 +106,7 @@ window.generarReporte = async function() {
     const btn = document.getElementById('btn-gen')
     btn.disabled = true; btn.textContent = 'Cargando…'
 
-    try {
-    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-    const supabase = window.supabase.createClient('https://gdajgennlsuvndanpxiz.supabase.co', KEY)
-
-    const alumno = (window._alumnos || []).find(a => a.id === alumnoId) || { nombre: '—', cinta: '', grupo: '' }
+    const alumno = alumnos.find(a => a.id === alumnoId)
     const [anio, mesNum] = mes.split('-')
     const inicio = `${mes}-01`
     const fin = new Date(parseInt(anio), parseInt(mesNum), 0).toISOString().split('T')[0]
@@ -138,7 +122,7 @@ window.generarReporte = async function() {
       supabase.from('checkins').select('*').eq('alumno_id', alumnoId).gte('fecha', inicio).lte('fecha', fin).order('fecha'),
       supabase.from('evaluaciones').select('*').eq('alumno_id', alumnoId).gte('fecha', inicio).lte('fecha', fin).order('fecha'),
       supabase.from('pagos').select('*').eq('alumno_id', alumnoId).gte('fecha', inicio).lte('fecha', fin).order('fecha'),
-      supabase.from('citas').select('*').gte('fecha_preferida', inicio).lte('fecha_preferida', fin).order('fecha_preferida'),
+      supabase.from('citas').select('*').eq('padre_user_id', user.id).gte('fecha_preferida', inicio).lte('fecha_preferida', fin).order('fecha_preferida'),
     ])
 
     // Cargar padre del alumno
@@ -284,21 +268,18 @@ window.generarReporte = async function() {
       </div>
 
 
-      <div style="text-align:center;padding:16px 0 4px;">
-        <div style="display:inline-flex;align-items:center;gap:10px;background:#f0f4ff;border-radius:12px;padding:10px 18px;">
-          <div style="width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.1);flex-shrink:0;">
-            <img src="/assets/logo-union-blue.png" style="width:26px;height:26px;object-fit:contain;" alt="UMA"/>
-          </div>
-          <div style="text-align:left;">
-            <div style="font-size:11px;font-weight:800;color:#0047AB;letter-spacing:.04em;">UNION MARTIAL ARTS</div>
-            <div style="font-size:10px;color:#6b7280;margin-top:1px;">Generado el ${new Date().toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' })}</div>
-          </div>
-        </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:12px 0 4px;">
+        Generado el ${new Date().toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' })} · Union Martial Arts
       </div>
 
-      <button class="btn primary block mt14 no-print" onclick="window.print()">
-        <i data-lucide="printer"></i> Guardar como PDF
-      </button>
+      <div class="no-print" style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn primary" style="flex:1;" onclick="window.print()">
+          <i data-lucide="file-text"></i> PDF
+        </button>
+        <button class="btn secondary" style="flex:1;background:#f0fdf4;color:#166534;border-color:#bbf7d0;" id="btn-excel" onclick="exportarExcel()">
+          <i data-lucide="table-2"></i> Excel
+        </button>
+      </div>
       <button class="btn secondary block mt10 no-print" onclick="document.getElementById('reporte').style.display='none';document.getElementById('selector').style.display='block';document.getElementById('btn-print').style.display='none';">
         <i data-lucide="arrow-left"></i> Nuevo reporte
       </button>
@@ -309,11 +290,72 @@ window.generarReporte = async function() {
     document.getElementById('btn-print').style.display = 'flex'
     btn.disabled = false; btn.innerHTML = '<i data-lucide="file-text"></i> Generar reporte'
     lucide.createIcons()
-    } catch(err) {
-      btn.disabled = false; btn.innerHTML = '<i data-lucide="file-text"></i> Generar reporte'
-      alert('Error al generar reporte: ' + (err?.message || JSON.stringify(err)))
-    }
+
+    // Guardar datos para exportar a Excel
+    window._repData = { alumno, nombreMes, checkins, evaluaciones, pagos, msgsActividad, evalDiarias, ultimaMensual }
+  })
+
+  document.getElementById('btn-print').addEventListener('click', () => window.print())
+
+  lucide.createIcons()
+</script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+window.exportarExcel = function() {
+  const d = window._repData
+  if (!d) return
+  const wb = XLSX.utils.book_new()
+  const fmt = f => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+
+  // Hoja 1: Asistencia
+  const asistRows = [['Fecha', 'Tipo', 'Hora', 'Estado', 'Motivo']]
+  ;(d.checkins || []).forEach(c => {
+    asistRows.push([fmt(c.fecha), c.tipo || 'Clase', c.hora || '', c.tipo === 'ausencia' ? 'Faltó' : 'Asistió', c.ausencia_motivo || ''])
+  })
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(asistRows), 'Asistencia')
+
+  // Hoja 2: Evaluaciones
+  const evalRows = [['Fecha', 'Puntuación %', 'Actitud', 'Esfuerzo', 'Técnica', 'Participación', 'Nota']]
+  ;(d.evalDiarias || []).forEach(e => {
+    evalRows.push([fmt(e.fecha), e.puntuacion ?? '', e.actitud ? 'Sí' : 'No', e.esfuerzo ? 'Sí' : 'No', e.tecnica ? 'Sí' : 'No', e.participacion ? 'Sí' : 'No', e.nota || ''])
+  })
+  if (d.ultimaMensual) {
+    evalRows.push([])
+    evalRows.push(['EVALUACIÓN MENSUAL'])
+    evalRows.push(['Técnica golpe', d.ultimaMensual.tecnica_golpe])
+    evalRows.push(['Patadas', d.ultimaMensual.patadas])
+    evalRows.push(['Defensa', d.ultimaMensual.defensa])
+    evalRows.push(['Condición física', d.ultimaMensual.condicion_fisica])
+    evalRows.push(['Disciplina', d.ultimaMensual.disciplina])
+    evalRows.push(['Coordinación', d.ultimaMensual.coordinacion])
+    if (d.ultimaMensual.comentarios) evalRows.push(['Comentario', d.ultimaMensual.comentarios])
+  }
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(evalRows), 'Evaluaciones')
+
+  // Hoja 3: Pagos
+  const pagosRows = [['Fecha', 'Concepto', 'Monto', 'Estado']]
+  ;(d.pagos || []).forEach(p => {
+    pagosRows.push([fmt(p.fecha), p.concepto || p.plan || 'Mensualidad', p.monto || 0, p.estado || ''])
+  })
+  const total = (d.pagos || []).reduce((s, p) => s + (p.monto || 0), 0)
+  if (total) pagosRows.push(['', 'TOTAL', total, ''])
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pagosRows), 'Pagos')
+
+  // Hoja 4: Actividades en casa
+  const actRows = [['Fecha', 'Actividad']]
+  ;(d.msgsActividad || []).forEach(m => {
+    actRows.push([new Date(m.creado_en).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }), m.texto])
+  })
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(actRows), 'Actividades casa')
+
+  const nombre = (d.alumno?.nombre || 'alumno').replace(/\s+/g, '_')
+  XLSX.writeFile(wb, `reporte_${nombre}_${d.nombreMes}.xlsx`)
 }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>
