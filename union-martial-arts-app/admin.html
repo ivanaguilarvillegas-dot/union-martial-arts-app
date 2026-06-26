@@ -305,12 +305,13 @@
   const { count: pagosCompCount } = await sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente').not('comprobante_url', 'is', null)
   document.getElementById('st-pendientes').style.color = (pagPendRes.count || 0) > 0 ? '#dc2626' : 'inherit'
 
-  // Badge eventos próximos
-  const { count: eventosCount } = await sb.from('eventos').select('*', { count: 'exact', head: true }).gte('fecha', hoy)
-  if (eventosCount > 0) {
+  // Badge eventos — solo los creados en los últimos 7 días
+  const hace7 = new Date(Date.now() - 7*24*60*60*1000).toISOString()
+  const { count: eventosNuevos } = await sb.from('eventos').select('*', { count: 'exact', head: true }).gte('created_at', hace7)
+  if (eventosNuevos > 0) {
     const be = document.getElementById('badge-eventos')
-    be.textContent = eventosCount; be.style.display = 'flex'
-    document.getElementById('sub-eventos').textContent = eventosCount + ' próximo' + (eventosCount > 1 ? 's' : '')
+    be.textContent = eventosNuevos; be.style.display = 'flex'
+    document.getElementById('sub-eventos').textContent = eventosNuevos + ' nuevo' + (eventosNuevos > 1 ? 's' : '')
   }
 
   // Badge avisos activos sin confirmar por todos
