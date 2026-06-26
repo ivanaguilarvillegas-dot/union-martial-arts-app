@@ -835,6 +835,8 @@
         // Mostrar progreso del mes (ocultar si plan básico mensual)
         if (al.plan_pago === 'mensual') {
           document.getElementById('prog-wrap').style.display = 'none'
+          document.getElementById('menu-entrena').style.display = 'none'
+          document.getElementById('menu-meditacion').style.display = 'none'
         } else {
           document.getElementById('prog-wrap').style.display = 'block'
           cargarProgreso(al.id)

@@ -106,9 +106,14 @@
 
   <div class="notif-hero">
     <div class="notif-hero-top">
-      <div class="hero-logo">
-        <img src="/assets/logo-union-white.png" alt="UMA" />
-        <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="home.html" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.2);flex-shrink:0;">
+          <i class="ti ti-arrow-left" style="font-size:18px;"></i>
+        </a>
+        <div class="hero-logo">
+          <img src="/assets/logo-union-white.png" alt="UMA" />
+          <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
+        </div>
       </div>
       <div class="hero-actions">
         <div class="hero-bell">
@@ -195,18 +200,6 @@
       </div>
     </div>
 
-    <!-- 4. FRASE DEL DÍA -->
-    <div style="padding:0 14px 8px;" id="frase-wrap" style="display:none;">
-      <div class="frase-card">
-        <div class="frase-ic">
-          <i class="ti ti-quote" style="font-size:20px;color:#fff;"></i>
-        </div>
-        <div>
-          <div class="frase-label">Frase del día</div>
-          <div class="frase-txt" id="frase-txt"></div>
-        </div>
-      </div>
-    </div>
 
   </div>
 
@@ -384,14 +377,6 @@
       }
     } catch(e) {}
 
-    // ── FRASE DEL DÍA ─────────────────────────────────────────
-    try {
-      const { data: frase } = await supabase.from('configuracion').select('valor').eq('clave', 'frase_del_dia').maybeSingle()
-      if (frase?.valor) {
-        document.getElementById('frase-txt').textContent = '"' + frase.valor + '"'
-        document.getElementById('frase-wrap').style.display = 'block'
-      }
-    } catch(e) {}
 
     // ── BOTÓN ME ENTERÉ ───────────────────────────────────────
     document.getElementById('avisos-list').addEventListener('click', async e => {
@@ -432,7 +417,6 @@
     document.getElementById('sec-avisos').style.display   = tab === 'avisos'   ? 'block' : 'none'
     document.getElementById('sec-mensajes').style.display = tab === 'mensajes' ? 'block' : 'none'
     document.getElementById('sec-eventos').style.display  = tab === 'eventos'  ? 'block' : 'none'
-    document.getElementById('frase-wrap').style.display   = tab === 'avisos'   ? '' : 'none'
     document.getElementById('hero-tab-title').textContent = tabTitles[tab]
   }
 </script>
