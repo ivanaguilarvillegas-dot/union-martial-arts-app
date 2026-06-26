@@ -74,7 +74,8 @@
       )
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data: padre } = await supabase.from('padres').select('id').eq('user_id', user.id).maybeSingle()
+      const { data: pr } = await supabase.from('padres').select('id').eq('user_id', user.id).limit(1)
+      const padre = pr?.[0] || null
       if (!padre) return
       const { data: msgs } = await supabase.from('mensajes')
         .select('id, texto, creado_en')

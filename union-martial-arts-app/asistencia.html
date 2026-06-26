@@ -105,15 +105,15 @@
   // Cargar padre → alumno
   try {
     let padre = null
-    const { data: p1 } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
-    if (p1) { padre = p1 }
+    const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
+    if (r1?.length) { padre = r1[0] }
     else {
-      const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
-      if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
+      const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
+      if (r2?.length) { await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id); padre = r2[0] }
     }
     alumnoId = padre?.alumno_id
     if (alumnoId) {
-      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).maybeSingle()
+      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).limit(1).then(r => ({ data: r.data?.[0] }))
       alumnoNombre = al?.nombre || ''
       document.getElementById('sub-alumno').textContent = alumnoNombre
     }

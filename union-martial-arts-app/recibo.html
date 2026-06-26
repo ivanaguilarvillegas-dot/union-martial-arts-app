@@ -225,7 +225,8 @@
   if (!user) { window.location.href = 'index.html' }
 
   // Detectar si es admin para ajustar links de vuelta
-  const { data: meAdmin } = await supabase.from('padres').select('es_admin, alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+  const { data: pr } = await supabase.from('padres').select('es_admin, alumno_id, nombre').eq('user_id', user.id).limit(1)
+  const meAdmin = pr?.[0] || null
   const esAdmin = !!meAdmin?.es_admin
   const volverUrl = esAdmin ? 'admin-pagos.html' : 'pagos.html'
   document.getElementById('btn-volver').href = volverUrl

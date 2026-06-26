@@ -80,12 +80,13 @@
     <span style="font-size:13px;font-weight:600;text-align:right;">${v || '—'}</span></div>`
 
   // Cargar datos reales del padre y alumno
-  let { data: padre } = await supabase.from('padres').select('*').eq('user_id', user.id).maybeSingle()
+  const { data: pr1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1)
+  let padre = pr1?.[0] || null
   if (!padre) {
-    const { data: padreByEmail } = await supabase.from('padres').select('*').eq('correo', user.email).maybeSingle()
-    if (padreByEmail) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', padreByEmail.id)
-      padre = padreByEmail
+    const { data: pr2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1)
+    if (pr2?.[0]) {
+      await supabase.from('padres').update({ user_id: user.id }).eq('id', pr2[0].id)
+      padre = pr2[0]
     }
   }
   // Cargar alumno por separado

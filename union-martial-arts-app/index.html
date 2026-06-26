@@ -94,8 +94,8 @@
     const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: pass })
     if (error) { err.textContent = 'Correo o contraseña incorrectos.'; err.style.display = 'block'; return }
 
-    const { data: padre } = await supabase.from('padres').select('es_admin').eq('user_id', data.user.id).single()
-    window.location.href = padre?.es_admin ? 'admin.html' : 'home.html'
+    const { data: pr } = await supabase.from('padres').select('es_admin').eq('user_id', data.user.id).limit(1)
+    window.location.href = pr?.[0]?.es_admin ? 'admin.html' : 'home.html'
   })
 
   document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-entrar').click() })

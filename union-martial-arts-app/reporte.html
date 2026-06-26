@@ -94,11 +94,11 @@
   let alumno = null, padre = null
 
   try {
-    const { data: p1 } = await supabase.from('padres').select('id, nombre, alumno_id, user_id').eq('user_id', user.id).maybeSingle()
-    if (p1) { padre = p1 }
+    const { data: r1 } = await supabase.from('padres').select('id, nombre, alumno_id, user_id').eq('user_id', user.id).limit(1)
+    if (r1?.length) { padre = r1[0] }
     else {
-      const { data: p2 } = await supabase.from('padres').select('id, nombre, alumno_id, user_id').eq('correo', user.email).maybeSingle()
-      if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
+      const { data: r2 } = await supabase.from('padres').select('id, nombre, alumno_id, user_id').eq('correo', user.email).limit(1)
+      if (r2?.length) { await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id); padre = r2[0] }
     }
     if (padre?.alumno_id) {
       const { data: al } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').eq('id', padre.alumno_id).maybeSingle()

@@ -63,7 +63,8 @@ const sb = createClient(
 const { data: { user } } = await sb.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
-const { data: padre } = await sb.from('padres').select('id').eq('user_id', user.id).maybeSingle()
+const { data: padreRows } = await sb.from('padres').select('id').eq('user_id', user.id).limit(1)
+const padre = padreRows?.[0] || null
 
 async function cargarMensajes() {
   if (!padre) return
