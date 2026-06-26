@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reporte mensual</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0047AB">
+  <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" />
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
   @media print {
     .phone { box-shadow: none !important; border: none !important; }
@@ -42,18 +42,10 @@
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="page-hero no-print" style="padding-bottom:18px;">
-    <div class="page-hero-top" style="position:relative;">
-      <a href="#" onclick="history.back();return false;" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-      <div class="hero-logo">
-        <a href="home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-          <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
-          <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-        </a>
-      </div>
-      <button class="iconbtn-dark" id="btn-print" style="display:none;background:rgba(255,255,255,.2);border:none;width:34px;height:34px;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" aria-label="Guardar PDF"><i data-lucide="printer"></i></button>
-    </div>
-    <div class="hero-title">Reporte mensual</div>
+  <div class="navhead blue no-print">
+    <a class="navback" href="home.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Reporte mensual</div></div>
+    <button class="iconbtn-dark" id="btn-print" style="display:none;" aria-label="Guardar PDF"><i data-lucide="printer"></i></button>
   </div>
 
   <div class="body">
@@ -83,35 +75,15 @@
   </nav>
 </div></div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-
-  async function cargarPadre(supabase, user) {
-    const savedId = localStorage.getItem('uma_padre_id')
-    if (savedId) {
-      const { data } = await supabase.from('padres').select('*').eq('id', savedId).maybeSingle()
-      if (data) return data
-    }
-    const { data: p1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1).maybeSingle()
-    if (p1) { localStorage.setItem('uma_padre_id', p1.id); return p1 }
-    const { data: p2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1).maybeSingle()
-    if (p2) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
-      localStorage.setItem('uma_padre_id', p2.id)
-      return p2
-    }
-    return null
-  }
-
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   // Mes actual por defecto
@@ -122,7 +94,12 @@
   let alumno = null, padre = null
 
   try {
-    padre = await cargarPadre(supabase, user)
+    const { data: p1 } = await supabase.from('padres').select('id, nombre, alumno_id, user_id').eq('user_id', user.id).maybeSingle()
+    if (p1) { padre = p1 }
+    else {
+      const { data: p2 } = await supabase.from('padres').select('id, nombre, alumno_id, user_id').eq('correo', user.email).maybeSingle()
+      if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
+    }
     if (padre?.alumno_id) {
       const { data: al } = await supabase.from('alumnos').select('id, nombre, cinta, grupo').eq('id', padre.alumno_id).maybeSingle()
       alumno = al
@@ -199,6 +176,18 @@
           <div class="stat-box"><div class="n" style="color:var(--amber-600,#b45309)">${torneos.length}</div><div class="l">Torneos</div></div>
           <div class="stat-box"><div class="n" style="color:var(--red-text,#c00)">${ausencias.length}</div><div class="l">Ausencias</div></div>
         </div>
+        ${clases.map(c => `
+          <div class="rep-row">
+            <span class="label">${fmt(c.fecha)}</span>
+            <span class="val">${c.tipo || 'Clase'}${c.hora ? ' · ' + c.hora : ''}</span>
+            <span class="badge-green">Asistió</span>
+          </div>`).join('') || '<div class="empty">Sin asistencias registradas.</div>'}
+        ${ausencias.map(c => `
+          <div class="rep-row">
+            <span class="label">${fmt(c.fecha)}</span>
+            <span class="val">${c.ausencia_motivo || 'Ausencia'}</span>
+            <span class="badge-red">Faltó</span>
+          </div>`).join('')}
       </div>
 
       <div class="rep-section">
@@ -208,7 +197,11 @@
           <div class="stat-box"><div class="n">${msgsActividad.filter(m=>m.texto.includes('🧘')).length}</div><div class="l">Meditación</div></div>
           <div class="stat-box"><div class="n">${msgsActividad.filter(m=>m.texto.includes('🥗')).length}</div><div class="l">Nutrición</div></div>
         </div>
-        ${!msgsActividad.length ? '<div class="empty">Sin actividades en casa registradas.</div>' : ''}
+        ${msgsActividad.length ? msgsActividad.map(m => `
+          <div class="rep-row">
+            <span class="label">${new Date(m.creado_en).toLocaleDateString('es-MX',{day:'numeric',month:'short'})}</span>
+            <span class="val">${m.texto}</span>
+          </div>`).join('') : '<div class="empty">Sin actividades en casa registradas.</div>'}
       </div>
 
       <div class="rep-section">
@@ -225,7 +218,11 @@
             <div class="stat-box"><div class="n" style="font-size:16px;">${tec}/${tot}</div><div class="l">Técnica</div></div>
             <div class="stat-box"><div class="n" style="font-size:16px;">${par}/${tot}</div><div class="l">Participación</div></div>
           </div>` +
-          ''
+          evalDiarias.map(e => `
+          <div class="rep-row">
+            <span class="label">${fmt(e.fecha)}</span>
+            <span class="val">${e.puntuacion != null ? e.puntuacion + '%' : '—'}${e.nota ? ' · <span style="color:var(--muted);font-size:12px;">"' + e.nota + '"</span>' : ''}</span>
+          </div>`).join('')
         })() : '<div class="empty">Sin evaluaciones diarias este mes.</div>'}
       </div>
 
@@ -295,7 +292,6 @@
 
   document.getElementById('btn-print').addEventListener('click', () => window.print())
   lucide.createIcons()
-})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -304,4 +300,3 @@
 </script>
 </body>
 </html>
-

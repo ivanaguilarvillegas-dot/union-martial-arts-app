@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Union MA">
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
 .admin-header{background:var(--uma-blue-700,#0d1a5e);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .admin-header .brand{display:flex;flex-direction:column;}
@@ -189,6 +189,15 @@
     </a>
   </div>
 
+  <!-- VENCIDOS -->
+  <div id="sec-vencidos" style="display:none;margin:0 12px 10px;">
+    <div style="background:#fff1f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;">
+      <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px;">⚠️ Pagos vencidos</div>
+      <div id="lista-vencidos" style="font-size:12px;color:#7f1d1d;line-height:1.8;"></div>
+      <a href="admin-alumnos.html" style="font-size:11px;font-weight:700;color:#dc2626;text-decoration:none;margin-top:6px;display:inline-block;">Ver todos los alumnos →</a>
+    </div>
+  </div>
+
   <!-- GESTIÓN -->
   <div class="section-hdr">Gestión</div>
   <div class="manage-list">
@@ -297,6 +306,16 @@
   // Badge pagos pendientes con comprobante
   const { count: pagosCompCount } = await sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente').not('comprobante_url', 'is', null)
   document.getElementById('st-pendientes').style.color = (pagPendRes.count || 0) > 0 ? '#dc2626' : 'inherit'
+
+  // Alumnos con pago vencido
+  const { data: vencidos } = await sb.from('alumnos').select('id, nombre, fecha_proximo_pago, plan_pago').lt('fecha_proximo_pago', hoy).not('fecha_proximo_pago', 'is', null)
+  if (vencidos?.length) {
+    document.getElementById('sec-vencidos').style.display = 'block'
+    document.getElementById('lista-vencidos').innerHTML = vencidos.map(a => {
+      const dias = Math.floor((new Date(hoy) - new Date(a.fecha_proximo_pago)) / 86400000)
+      return `• ${a.nombre} — venció hace ${dias} día${dias !== 1 ? 's' : ''}`
+    }).join('<br>')
+  }
 
   // Badge eventos — solo los creados en los últimos 7 días
   const hace7 = new Date(Date.now() - 7*24*60*60*1000).toISOString()

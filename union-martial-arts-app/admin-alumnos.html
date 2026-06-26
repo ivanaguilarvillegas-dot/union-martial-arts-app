@@ -1,60 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Alumnos</title><link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0047AB">
+  <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" />
-<style>
-.search-bar { display:flex; align-items:center; gap:8px; background:#f3f4f6; border-radius:12px; padding:0 12px; height:42px; margin-bottom:10px; }
-.search-bar input { border:none; background:none; flex:1; font-size:13px; font-family:inherit; outline:none; color:var(--text); }
-.filter-row { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:12px; scrollbar-width:none; }
-.filter-row::-webkit-scrollbar { display:none; }
-.fchip { flex-shrink:0; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid var(--border); background:#fff; color:#374151; cursor:pointer; white-space:nowrap; }
-.fchip.on { background:#0047AB; color:#fff; border-color:#0047AB; }
-.al-card { background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px; box-shadow:0 1px 3px rgba(0,0,0,.06); cursor:pointer; }
-.al-foto { width:46px; height:46px; border-radius:50%; background:#e6f0ff; border:2px solid #b5d0f5; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#1d4ed8; flex-shrink:0; }
-.al-foto img { width:100%; height:100%; object-fit:cover; }
-.al-info { flex:1; min-width:0; }
-.al-nombre { font-size:13.5px; font-weight:700; color:#111827; line-height:1.2; }
-.al-grupo { font-size:11px; color:#6b7280; margin-top:1px; }
-.al-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
-.pago-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; }
-.pago-al-dia { background:#dcfce7; color:#16a34a; }
-.pago-pendiente { background:#fef9c3; color:#92400e; }
-.pago-vencido { background:#fee2e2; color:#dc2626; }
-.al-fecha { font-size:10px; color:#9ca3af; }
-.msg-badge { background:#dc2626; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; }
-</style>
-</head>
+  <link rel="stylesheet" href="css/uma.css?v=18" /></head>
 <body>
-<div class="phone"><div class="screen" style="background:#f0f2f5;">
+<div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="sub" id="sub">Cargando…</div><div class="title">Alumnos</div></div>
     <a class="iconbtn-dark" href="admin-nuevo-alumno.html" aria-label="Agregar"><i data-lucide="user-plus"></i></a></div>
   <div class="body">
-
-    <!-- Buscador -->
-    <div class="search-bar">
-      <i data-lucide="search" style="width:16px;height:16px;color:#9ca3af;flex-shrink:0;"></i>
-      <input id="buscar" placeholder="Buscar alumno…" oninput="filtrar()" />
-    </div>
-
-    <!-- Filtros -->
-    <div class="filter-row" id="filtros">
-      <button class="fchip on" data-f="todos" onclick="setFiltro('todos')">Todos</button>
-      <button class="fchip" data-f="infantil" onclick="setFiltro('infantil')">Infantil</button>
-      <button class="fchip" data-f="juvenil" onclick="setFiltro('juvenil')">Juvenil</button>
-      <button class="fchip" data-f="adultos" onclick="setFiltro('adultos')">Adultos</button>
-      <button class="fchip" data-f="negro" onclick="setFiltro('negro')">Cinta Negra</button>
-      <button class="fchip" data-f="pendiente" onclick="setFiltro('pendiente')">Pago pendiente</button>
-      <button class="fchip" data-f="vencido" onclick="setFiltro('vencido')">Pago vencido</button>
-    </div>
-
-    <div id="list"></div>
-    <a class="btn secondary block mt14" href="admin-nuevo-alumno.html"><i data-lucide="user-plus"></i> Agregar nuevo alumno</a>
+    <a class="btn secondary block mb14" href="admin-nuevo-alumno.html"><i data-lucide="user-plus"></i> Agregar nuevo alumno</a>
+    <div class="label">Lista de alumnos</div>
+    <div class="stack-8" id="list"></div>
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
@@ -69,64 +30,126 @@
   <div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:380px;margin:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
     <div style="font-size:15px;font-weight:700;margin-bottom:12px;">Editar alumno</div>
     <input type="hidden" id="edit-id" />
+
+    <!-- Foto del alumno -->
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:12px;">
       <div id="admin-foto-wrap" style="width:62px;height:62px;border-radius:50%;background:#e6f0ff;border:2.5px solid #b5d0f5;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;cursor:pointer;" onclick="document.getElementById('admin-foto-input').click()">
         <i data-lucide="user" style="width:26px;height:26px;color:#4a7fcb;"></i>
-        <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
+          <i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i>
+        </div>
       </div>
       <div style="flex:1;">
         <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Foto del alumno</div>
         <div style="display:flex;gap:8px;">
-          <button type="button" class="btn secondary" style="font-size:11px;padding:5px 12px;height:auto;" onclick="document.getElementById('admin-foto-input').click()"><i data-lucide="upload" style="width:12px;height:12px;"></i> Subir</button>
-          <button type="button" id="admin-foto-borrar" class="btn" style="font-size:11px;padding:5px 12px;height:auto;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;display:none;" onclick="borrarFotoAdmin()"><i data-lucide="trash-2" style="width:12px;height:12px;"></i> Borrar</button>
+          <button type="button" class="btn secondary" style="font-size:11px;padding:5px 12px;height:auto;" onclick="document.getElementById('admin-foto-input').click()">
+            <i data-lucide="upload" style="width:12px;height:12px;"></i> Subir
+          </button>
+          <button type="button" id="admin-foto-borrar" class="btn" style="font-size:11px;padding:5px 12px;height:auto;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;display:none;" onclick="borrarFotoAdmin()">
+            <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Borrar
+          </button>
         </div>
       </div>
     </div>
     <input type="file" id="admin-foto-input" accept="image/*" style="display:none">
-    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre completo</label><input type="text" id="edit-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">CURP</label><input type="text" id="edit-curp" placeholder="XXXX000000XXXXXXXX00" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;text-transform:uppercase;" /></div>
-    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Fecha de inscripción</label><input type="date" id="edit-fecha-ingreso" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Cinta</label>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre completo</label>
+      <input type="text" id="edit-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Fecha de inscripción</label>
+      <input type="date" id="edit-fecha-ingreso" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Cinta</label>
       <select id="edit-cinta" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
         <option value="">Sin cinta</option>
-        <option value="Blanca">Blanca</option><option value="Amarilla">Amarilla</option><option value="Anaranjada">Anaranjada</option>
-        <option value="Morada">Morada</option><option value="Azul">Azul</option><option value="Verde">Verde</option>
-        <option value="Café I">Café I</option><option value="Café II">Café II</option><option value="Café III">Café III</option>
-        <option value="Roja">Roja</option><option value="Roja-Negra">Roja-Negra</option><option value="Negra">Negra</option>
-        <option value="Negra I grado">Negra I grado</option><option value="Negra II grado">Negra II grado</option>
-        <option value="Negra III grado">Negra III grado</option><option value="Negra IV grado">Negra IV grado</option>
+        <option value="Blanca">Blanca (principiante)</option>
+        <option value="Amarilla">Amarilla</option>
+        <option value="Anaranjada">Anaranjada</option>
+        <option value="Morada">Morada</option>
+        <option value="Azul">Azul</option>
+        <option value="Verde">Verde</option>
+        <option value="Café I">Café I</option>
+        <option value="Café II">Café II</option>
+        <option value="Café III">Café III</option>
+        <option value="Roja">Roja</option>
+        <option value="Roja-Negra">Roja-Negra</option>
+        <option value="Negra">Negra</option>
+        <option value="Negra I grado">Negra I grado</option>
+        <option value="Negra II grado">Negra II grado</option>
+        <option value="Negra III grado">Negra III grado</option>
+        <option value="Negra IV grado">Negra IV grado</option>
         <option value="Negra V grado">Negra V grado</option>
-      </select></div>
-    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Grupo / nivel</label>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Grupo / nivel</label>
       <select id="edit-grupo" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
         <option value="">Sin grupo</option>
         <option value="Infantil (5-12 años)">Infantil (5-12 años)</option>
         <option value="Juvenil (13-17 años)">Juvenil (13-17 años)</option>
         <option value="Adultos (18+ años)">Adultos (18+ años)</option>
-      </select></div>
-    <div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Horario</label>
-      <div id="edit-horario-checks" style="display:flex;flex-direction:column;gap:8px;margin-top:2px;"></div></div>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Horario</label>
+      <div id="edit-horario-checks" style="display:flex;flex-direction:column;gap:8px;margin-top:2px;"></div>
+    </div>
     <div>
       <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Padre / tutor</div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label><input type="text" id="edit-padre-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label><input type="tel" id="edit-telefono" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Correo</label><input type="email" id="edit-correo" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
-          <select id="edit-parentesco" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;"><option value="Madre">Madre</option><option value="Padre">Padre</option><option value="Tutor">Tutor/a</option><option value="Abuelo/a">Abuelo/a</option></select></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Dirección</label><input type="text" id="edit-direccion" placeholder="Calle, número, colonia" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label>
+          <input type="text" id="edit-padre-nombre" placeholder="Nombre del padre/tutor" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+          <input type="tel" id="edit-telefono" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Correo</label>
+          <input type="email" id="edit-correo" placeholder="correo@ejemplo.com" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
+          <select id="edit-parentesco" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
+            <option value="Madre">Madre</option>
+            <option value="Padre">Padre</option>
+            <option value="Tutor">Tutor/a</option>
+            <option value="Abuelo/a">Abuelo/a</option>
+          </select>
+        </div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:4px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Contacto de emergencia</div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label><input type="text" id="edit-emerg-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label><input type="tel" id="edit-emerg-tel" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label><input type="text" id="edit-emerg-parentesco" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label>
+          <input type="text" id="edit-emerg-nombre" placeholder="Nombre de emergencia" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+          <input type="tel" id="edit-emerg-tel" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
+          <input type="text" id="edit-emerg-parentesco" placeholder="Ej: Tío, Abuela…" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Persona autorizada a recoger</div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label><input type="text" id="edit-autoriz-nombre" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:10px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label><input type="tel" id="edit-autoriz-tel" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
-        <div style="margin-bottom:4px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label><input type="text" id="edit-autoriz-parentesco" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" /></div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Nombre</label>
+          <input type="text" id="edit-autoriz-nombre" placeholder="Nombre autorizado" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Teléfono</label>
+          <input type="tel" id="edit-autoriz-tel" placeholder="(656) 000-0000" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
+        <div style="margin-bottom:4px;">
+          <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Parentesco</label>
+          <input type="text" id="edit-autoriz-parentesco" placeholder="Ej: Hermana, Tío…" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+        </div>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:14px;">
@@ -140,7 +163,7 @@
 <div id="modal-borrar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
     <div style="font-size:15px;font-weight:700;margin-bottom:8px;">¿Eliminar alumno?</div>
-    <div style="font-size:13.5px;color:var(--muted);margin-bottom:18px;" id="borrar-nombre-txt"></div>
+    <div style="font-size:13.5px;color:var(--muted);margin-bottom:18px;" id="borrar-nombre-txt">Esta acción no se puede deshacer.</div>
     <div style="display:flex;gap:10px;">
       <button class="btn secondary" style="flex:1;" id="borrar-cancelar">Cancelar</button>
       <button class="btn" style="flex:1;background:var(--red-600);color:#fff;" id="borrar-confirmar"><i data-lucide="trash-2"></i> Eliminar</button>
@@ -148,54 +171,15 @@
   </div>
 </div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
-
-  const CINTAS = {
-    'Blanca':    { color:'#ffffff', border:'#d1d5db', text:'#374151' },
-    'Amarilla':  { color:'#fbbf24', border:'#d97706', text:'#78350f' },
-    'Anaranjada':{ color:'#f97316', border:'#ea580c', text:'#fff' },
-    'Morada':    { color:'#7c3aed', border:'#6d28d9', text:'#fff' },
-    'Azul':      { color:'#1d4ed8', border:'#1e40af', text:'#fff' },
-    'Verde':     { color:'#16a34a', border:'#15803d', text:'#fff' },
-    'Café I':    { color:'#92400e', border:'#78350f', text:'#fff' },
-    'Café II':   { color:'#92400e', border:'#78350f', text:'#fff' },
-    'Café III':  { color:'#92400e', border:'#78350f', text:'#fff' },
-    'Roja':      { color:'#dc2626', border:'#b91c1c', text:'#fff' },
-    'Roja-Negra':{ color:'#dc2626', border:'#111827', text:'#fff', split:true },
-    'Negra':     { color:'#111827', border:'#000', text:'#fff' },
-    'Negra I grado':  { color:'#111827', border:'#000', text:'#fff' },
-    'Negra II grado': { color:'#111827', border:'#000', text:'#fff' },
-    'Negra III grado':{ color:'#111827', border:'#000', text:'#fff' },
-    'Negra IV grado': { color:'#111827', border:'#000', text:'#fff' },
-    'Negra V grado':  { color:'#111827', border:'#000', text:'#fff' },
-  }
-
-  function beltSVG(cinta) {
-    const cfg = CINTAS[cinta] || { color:'#e5e7eb', border:'#d1d5db', text:'#374151' }
-    const m = (cinta||'').match(/(\d+)\s*grado/)
-    const dan = m ? parseInt(m[1]) : 0
-    const fill = cfg.split ? `<defs><linearGradient id="rn" x1="0" y1="0" x2="1" y2="0"><stop offset="50%" stop-color="#dc2626"/><stop offset="50%" stop-color="#111827"/></linearGradient></defs>` : ''
-    const rectFill = cfg.split ? 'url(#rn)' : cfg.color
-    const nudoFill = cfg.split ? '#111827' : cfg.color
-    const stripes = Array.from({length:dan},(_,i)=>`<rect x="${58-i*5}" y="7" width="3" height="8" fill="#fbbf24"/>`).join('')
-    return `<svg width="68" height="22" viewBox="0 0 68 22" xmlns="http://www.w3.org/2000/svg">
-      ${fill}
-      <rect x="0" y="7" width="68" height="8" rx="4" fill="${rectFill}" stroke="${cfg.border}" stroke-width="0.8"/>
-      ${stripes}
-      <rect x="26" y="4" width="16" height="14" rx="3" fill="${nudoFill}" stroke="${cfg.border}" stroke-width="0.8"/>
-      <line x1="34" y1="5" x2="34" y2="17" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
-    </svg>`
-  }
 
   const TODOS_HORARIOS = [
     'Lunes, Miércoles y Viernes · 4:00 PM – 5:00 PM',
@@ -209,134 +193,70 @@
     'Sábado Club Cinta Negra Jóvenes · 12:00 PM – 2:00 PM',
   ]
 
-  function actualizarHorariosEdit(horarioActual) {
-    const sel = (horarioActual||'').split(' | ')
+  function actualizarHorariosEdit(grupoVal, horarioActual) {
+    const seleccionados = (horarioActual || '').split(' | ')
     document.getElementById('edit-horario-checks').innerHTML = TODOS_HORARIOS.map(h => `
       <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1.5px solid var(--border-input);border-radius:8px;cursor:pointer;font-size:12px;line-height:1.3;">
-        <input type="checkbox" value="${h}" ${sel.includes(h)?'checked':''} style="width:15px;height:15px;accent-color:var(--primary);flex-shrink:0;" />${h}</label>`).join('')
+        <input type="checkbox" value="${h}" ${seleccionados.includes(h) ? 'checked' : ''} style="width:15px;height:15px;accent-color:var(--primary);flex-shrink:0;" />
+        ${h}
+      </label>`).join('')
   }
 
   function getHorariosEdit() {
-    return [...document.querySelectorAll('#edit-horario-checks input:checked')].map(i=>i.value).join(' | ')
+    return [...document.querySelectorAll('#edit-horario-checks input:checked')].map(i => i.value).join(' | ')
   }
 
-  let alumnos = [], pagosMap = {}, checkinMap = {}, filtroActivo = 'todos'
+  let alumnos = []
   let borrarId = null
 
   async function cargar() {
-    const hoy = new Date()
-    const hace35 = new Date(hoy - 35*86400000).toISOString().split('T')[0]
-    const hace70 = new Date(hoy - 70*86400000).toISOString().split('T')[0]
-
-    const [{ data: als, count }, { data: pagos }, { data: checkins }] = await Promise.all([
-      supabase.from('alumnos').select('*', { count:'exact' }).order('nombre'),
-      supabase.from('pagos').select('alumno_id, fecha_pago, estado').gte('fecha_pago', hace70).order('fecha_pago', { ascending:false }),
-      supabase.from('checkins').select('alumno_id, fecha').gte('fecha', hace35).order('fecha', { ascending:false }),
-    ])
-
-    alumnos = als || []
-    document.getElementById('sub').textContent = (count||0) + ' alumnos'
-
-    pagosMap = {}
-    for (const p of (pagos||[])) {
-      if (!pagosMap[p.alumno_id]) pagosMap[p.alumno_id] = p
-    }
-    checkinMap = {}
-    for (const c of (checkins||[])) {
-      if (!checkinMap[c.alumno_id]) checkinMap[c.alumno_id] = c.fecha
-    }
-
-    filtrar()
+    const { data, count } = await supabase.from('alumnos').select('*', { count: 'exact' }).order('nombre')
+    alumnos = data || []
+    document.getElementById('sub').textContent = (count || 0) + ' activos'
+    render()
   }
 
-  window.setFiltro = function(f) {
-    filtroActivo = f
-    document.querySelectorAll('.fchip').forEach(b => b.classList.toggle('on', b.dataset.f === f))
-    filtrar()
-  }
-
-  window.filtrar = function() {
-    const q = (document.getElementById('buscar').value||'').toLowerCase()
-    const hoy = new Date().toISOString().split('T')[0]
-    const hace35 = new Date(Date.now()-35*86400000).toISOString().split('T')[0]
-
-    const lista = alumnos.filter(a => {
-      if (q && !a.nombre?.toLowerCase().includes(q)) return false
-      const g = (a.grupo||'').toLowerCase()
-      const c = (a.cinta||'').toLowerCase()
-      const p = pagosMap[a.id]
-      const pagoFecha = p?.fecha_pago || ''
-      const alDia = pagoFecha >= hace35
-      const pendiente = pagoFecha && pagoFecha < hace35
-      const vencido = !pagoFecha
-      if (filtroActivo === 'infantil') return g.includes('infant')
-      if (filtroActivo === 'juvenil') return g.includes('juven')
-      if (filtroActivo === 'adultos') return g.includes('adult')
-      if (filtroActivo === 'negro') return c.includes('negra') || c.includes('negro')
-      if (filtroActivo === 'pendiente') return pendiente
-      if (filtroActivo === 'vencido') return vencido
-      return true
-    })
-
-    render(lista)
-  }
-
-  function render(lista) {
-    const el = document.getElementById('list')
-    if (!lista.length) {
-      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin resultados.</div>'
-      lucide.createIcons(); return
+  function render() {
+    const list = document.getElementById('list')
+    if (!alumnos.length) {
+      list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin alumnos registrados.</div>'
+    } else {
+      list.innerHTML = alumnos.map(a => {
+        const ini = a.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+        const hoyStr = new Date().toISOString().split('T')[0]
+        const vencido = a.fecha_proximo_pago && a.fecha_proximo_pago < hoyStr
+        const sinPago = !a.fecha_proximo_pago
+        return `<div class="row" style="gap:10px;">
+          <a href="admin-evaluacion.html?alumno=${a.id}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit;min-width:0;">
+            <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;${vencido?'background:#dc2626;':''}">${ini}</span>
+            <span class="grow" style="min-width:0;">
+              <span class="t" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre}${vencido ? ' <span style="font-size:10px;font-weight:700;background:#fff1f2;color:#dc2626;border-radius:99px;padding:1px 6px;vertical-align:middle;">Vencido</span>' : sinPago ? ' <span style="font-size:10px;font-weight:700;background:#fef9c3;color:#854d0e;border-radius:99px;padding:1px 6px;vertical-align:middle;">Sin pago</span>' : ''}</span>
+              <span class="s">${a.cinta ? 'Cinta ' + a.cinta : 'Sin cinta'}${a.grupo ? ' · ' + a.grupo : ''}${a.plan_pago ? ' · ' + a.plan_pago : ''}</span>
+            </span>
+          </a>
+          <span style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="iconbtn" data-editar="${a.id}" style="width:32px;height:32px;" title="Editar"><i data-lucide="pencil" style="width:15px;height:15px"></i></button>
+            <button class="iconbtn" data-borrar="${a.id}" style="width:32px;height:32px;color:var(--red-600);" title="Eliminar"><i data-lucide="trash-2" style="width:15px;height:15px"></i></button>
+          </span>
+        </div>`
+      }).join('')
     }
-
-    const hace35 = new Date(Date.now()-35*86400000).toISOString().split('T')[0]
-
-    el.innerHTML = lista.map(a => {
-      const ini = (a.nombre||'').trim().split(/\s+/).slice(0,2).map(p=>p[0]).join('').toUpperCase()||'?'
-      const foto = a.foto_url ? `<img src="${a.foto_url}" />` : ini
-      const p = pagosMap[a.id]
-      const pagoFecha = p?.fecha_pago||''
-      let pagoBadge = ''
-      if (pagoFecha >= hace35) pagoBadge = '<span class="pago-badge pago-al-dia">Al día</span>'
-      else if (pagoFecha) pagoBadge = '<span class="pago-badge pago-pendiente">Pendiente</span>'
-      else pagoBadge = '<span class="pago-badge pago-vencido">Sin pago</span>'
-
-      const ultima = checkinMap[a.id]
-      const fechaStr = ultima ? 'Asistió ' + new Date(ultima+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : 'Sin asistencias'
-
-      return `<div class="al-card" data-id="${a.id}">
-        <div class="al-foto">${foto}</div>
-        <div class="al-info">
-          <div class="al-nombre">${a.nombre||'—'}</div>
-          <div class="al-grupo">${a.grupo||'Sin grupo'}</div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
-            ${beltSVG(a.cinta)}
-          </div>
-        </div>
-        <div class="al-right">
-          ${pagoBadge}
-          <span class="al-fecha">${fechaStr}</span>
-          <div style="display:flex;gap:5px;margin-top:2px;">
-            <button class="iconbtn" data-editar="${a.id}" style="width:28px;height:28px;" title="Editar"><i data-lucide="pencil" style="width:13px;height:13px"></i></button>
-            <button class="iconbtn" data-borrar="${a.id}" style="width:28px;height:28px;color:var(--red-600);" title="Eliminar"><i data-lucide="trash-2" style="width:13px;height:13px"></i></button>
-          </div>
-        </div>
-      </div>`
-    }).join('')
-
     lucide.createIcons()
   }
 
+  // Editar
   document.getElementById('list').addEventListener('click', async e => {
     const editBtn = e.target.closest('[data-editar]')
     if (editBtn) {
       const a = alumnos.find(x => x.id === editBtn.dataset.editar)
       if (!a) return
       document.getElementById('edit-id').value = a.id
-      document.getElementById('edit-nombre').value = a.nombre||''
-      document.getElementById('edit-curp').value = a.curp||''
-      document.getElementById('edit-fecha-ingreso').value = a.fecha_ingreso||''
-      document.getElementById('edit-cinta').value = a.cinta||''
-      document.getElementById('edit-grupo').value = a.grupo||''
+      document.getElementById('edit-nombre').value = a.nombre || ''
+      document.getElementById('edit-fecha-ingreso').value = a.fecha_ingreso || ''
+      document.getElementById('edit-cinta').value = a.cinta || ''
+      document.getElementById('edit-grupo').value = a.grupo || ''
+
+      // Foto en modal
       const fotoWrap = document.getElementById('admin-foto-wrap')
       const fotoBorrar = document.getElementById('admin-foto-borrar')
       if (a.foto_url) {
@@ -347,19 +267,19 @@
         fotoBorrar.style.display = 'none'
       }
       lucide.createIcons()
-      actualizarHorariosEdit(a.horario||'')
-      const { data: p } = await supabase.from('padres').select('nombre,telefono,correo,parentesco,contacto_emergencia_nombre,contacto_emergencia_tel,contacto_emergencia_parentesco,autorizado_nombre,autorizado_tel,autorizado_parentesco').eq('alumno_id', a.id).maybeSingle()
-      document.getElementById('edit-padre-nombre').value = p?.nombre||''
-      document.getElementById('edit-telefono').value = p?.telefono||''
-      document.getElementById('edit-correo').value = p?.correo||''
-      document.getElementById('edit-parentesco').value = p?.parentesco||'Madre'
-      document.getElementById('edit-emerg-nombre').value = p?.contacto_emergencia_nombre||''
-      document.getElementById('edit-emerg-tel').value = p?.contacto_emergencia_tel||''
-      document.getElementById('edit-emerg-parentesco').value = p?.contacto_emergencia_parentesco||''
-      document.getElementById('edit-autoriz-nombre').value = p?.autorizado_nombre||''
-      document.getElementById('edit-autoriz-tel').value = p?.autorizado_tel||''
-      document.getElementById('edit-autoriz-parentesco').value = p?.autorizado_parentesco||''
-      document.getElementById('edit-direccion').value = p?.direccion||''
+      actualizarHorariosEdit(a.grupo || '', a.horario || '')
+      // Cargar datos del padre vinculado
+      const { data: p } = await supabase.from('padres').select('nombre, telefono, correo, parentesco, contacto_emergencia_nombre, contacto_emergencia_tel, contacto_emergencia_parentesco, autorizado_nombre, autorizado_tel, autorizado_parentesco').eq('alumno_id', a.id).maybeSingle()
+      document.getElementById('edit-padre-nombre').value = p?.nombre || ''
+      document.getElementById('edit-telefono').value = p?.telefono || ''
+      document.getElementById('edit-correo').value = p?.correo || ''
+      document.getElementById('edit-parentesco').value = p?.parentesco || 'Madre'
+      document.getElementById('edit-emerg-nombre').value = p?.contacto_emergencia_nombre || ''
+      document.getElementById('edit-emerg-tel').value = p?.contacto_emergencia_tel || ''
+      document.getElementById('edit-emerg-parentesco').value = p?.contacto_emergencia_parentesco || ''
+      document.getElementById('edit-autoriz-nombre').value = p?.autorizado_nombre || ''
+      document.getElementById('edit-autoriz-tel').value = p?.autorizado_tel || ''
+      document.getElementById('edit-autoriz-parentesco').value = p?.autorizado_parentesco || ''
       document.getElementById('modal').style.display = 'flex'
       lucide.createIcons()
       return
@@ -368,42 +288,57 @@
     if (borrarBtn) {
       borrarId = borrarBtn.dataset.borrar
       const a = alumnos.find(x => x.id === borrarId)
-      document.getElementById('borrar-nombre-txt').textContent = '¿Eliminar a ' + (a?.nombre||'este alumno') + '? Esta acción no se puede deshacer.'
+      document.getElementById('borrar-nombre-txt').textContent = '¿Eliminar a ' + (a?.nombre || 'este alumno') + '? Esta acción no se puede deshacer.'
       document.getElementById('modal-borrar').style.display = 'flex'
     }
   })
 
-  document.getElementById('modal-cancelar').addEventListener('click', () => { document.getElementById('modal').style.display='none' })
+  document.getElementById('modal-cancelar').addEventListener('click', () => {
+    document.getElementById('modal').style.display = 'none'
+  })
 
-  document.getElementById('admin-foto-input').addEventListener('change', async e => {
-    const file = e.target.files[0]; if (!file) return
-    const id = document.getElementById('edit-id').value; if (!id) return
+  // Subir foto desde admin
+  document.getElementById('admin-foto-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const id = document.getElementById('edit-id').value
+    if (!id) return
     const ext = file.name.split('.').pop().toLowerCase()
     const path = `${user.id}/alumno-${id}.${ext}`
     const fotoWrap = document.getElementById('admin-foto-wrap')
     fotoWrap.style.opacity = '.5'
-    const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert:true, contentType:file.type })
-    if (error) { alert('Error: '+error.message); fotoWrap.style.opacity='1'; return }
-    const { data:{ publicUrl } } = supabase.storage.from('fotos-alumnos').getPublicUrl(path)
-    const url = publicUrl+'?t='+Date.now()
+    const { error } = await supabase.storage.from('fotos-alumnos').upload(path, file, { upsert: true, contentType: file.type })
+    if (error) { alert('Error: ' + error.message); fotoWrap.style.opacity = '1'; return }
+    const { data: { publicUrl } } = supabase.storage.from('fotos-alumnos').getPublicUrl(path)
+    const url = publicUrl + '?t=' + Date.now()
     await supabase.from('alumnos').update({ foto_url: url }).eq('id', id)
-    const al = alumnos.find(a=>a.id===id); if (al) al.foto_url = url
-    fotoWrap.style.opacity='1'
+    // Actualizar en memoria
+    const al = alumnos.find(a => a.id === id)
+    if (al) al.foto_url = url
+    fotoWrap.style.opacity = '1'
     fotoWrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /><div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>`
-    document.getElementById('admin-foto-borrar').style.display='flex'
-    lucide.createIcons(); filtrar()
+    document.getElementById('admin-foto-borrar').style.display = 'flex'
+    lucide.createIcons()
+    render()
   })
 
+  // Borrar foto desde admin
   window.borrarFotoAdmin = async () => {
-    const id = document.getElementById('edit-id').value; if (!id) return
+    const id = document.getElementById('edit-id').value
+    if (!id) return
     if (!confirm('¿Borrar la foto del alumno?')) return
-    for (const ext of ['jpg','jpeg','png','webp']) await supabase.storage.from('fotos-alumnos').remove([`alumno-${id}.${ext}`])
-    await supabase.from('alumnos').update({ foto_url:null }).eq('id', id)
-    const al = alumnos.find(a=>a.id===id); if (al) al.foto_url = null
+    // Intentar borrar de storage (ambas extensiones comunes)
+    for (const ext of ['jpg','jpeg','png','webp']) {
+      await supabase.storage.from('fotos-alumnos').remove([`alumno-${id}.${ext}`])
+    }
+    await supabase.from('alumnos').update({ foto_url: null }).eq('id', id)
+    const al = alumnos.find(a => a.id === id)
+    if (al) al.foto_url = null
     const fotoWrap = document.getElementById('admin-foto-wrap')
     fotoWrap.innerHTML = `<i data-lucide="user" style="width:26px;height:26px;color:#4a7fcb;"></i><div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#1d4ed8;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"><i data-lucide="camera" style="width:10px;height:10px;color:#fff;"></i></div>`
-    document.getElementById('admin-foto-borrar').style.display='none'
-    lucide.createIcons(); filtrar()
+    document.getElementById('admin-foto-borrar').style.display = 'none'
+    lucide.createIcons()
+    render()
   }
 
   document.getElementById('modal-guardar').addEventListener('click', async () => {
@@ -414,46 +349,58 @@
     const horario = getHorariosEdit()
     if (!nombre) { alert('El nombre es obligatorio'); return }
     const btn = document.getElementById('modal-guardar')
-    btn.disabled=true; btn.textContent='Guardando…'
+    btn.disabled = true; btn.textContent = 'Guardando…'
+
+    const fechaIngreso = document.getElementById('edit-fecha-ingreso').value
     const { error } = await supabase.from('alumnos').update({
-      nombre, cinta:cinta||null, grupo:grupo||null, horario:horario||null, curp:(document.getElementById('edit-curp').value.trim().toUpperCase())||null,
-      fecha_ingreso: document.getElementById('edit-fecha-ingreso').value||null
+      nombre, cinta: cinta || null, grupo: grupo || null, horario: horario || null,
+      fecha_ingreso: fechaIngreso || null
     }).eq('id', id)
+
     if (!error) {
       await supabase.from('padres').update({
-        nombre: document.getElementById('edit-padre-nombre').value.trim()||null,
-        telefono: document.getElementById('edit-telefono').value.trim()||null,
-        correo: document.getElementById('edit-correo').value.trim()||null,
-        parentesco: document.getElementById('edit-parentesco').value||null,
-        contacto_emergencia_nombre: document.getElementById('edit-emerg-nombre').value.trim()||null,
-        contacto_emergencia_tel: document.getElementById('edit-emerg-tel').value.trim()||null,
-        contacto_emergencia_parentesco: document.getElementById('edit-emerg-parentesco').value.trim()||null,
-        autorizado_nombre: document.getElementById('edit-autoriz-nombre').value.trim()||null,
-        autorizado_tel: document.getElementById('edit-autoriz-tel').value.trim()||null,
-        autorizado_parentesco: document.getElementById('edit-autoriz-parentesco').value.trim()||null,
-        direccion: document.getElementById('edit-direccion').value.trim()||null,
+        nombre: document.getElementById('edit-padre-nombre').value.trim() || null,
+        telefono: document.getElementById('edit-telefono').value.trim() || null,
+        correo: document.getElementById('edit-correo').value.trim() || null,
+        parentesco: document.getElementById('edit-parentesco').value || null,
+        contacto_emergencia_nombre: document.getElementById('edit-emerg-nombre').value.trim() || null,
+        contacto_emergencia_tel: document.getElementById('edit-emerg-tel').value.trim() || null,
+        contacto_emergencia_parentesco: document.getElementById('edit-emerg-parentesco').value.trim() || null,
+        autorizado_nombre: document.getElementById('edit-autoriz-nombre').value.trim() || null,
+        autorizado_tel: document.getElementById('edit-autoriz-tel').value.trim() || null,
+        autorizado_parentesco: document.getElementById('edit-autoriz-parentesco').value.trim() || null,
       }).eq('alumno_id', id)
     }
-    btn.disabled=false; btn.innerHTML='<i data-lucide="save"></i> Guardar'; lucide.createIcons()
-    if (error) { alert('❌ '+error.message); return }
-    document.getElementById('modal').style.display='none'
+
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar'; lucide.createIcons()
+    if (error) { alert('❌ Error: ' + error.message); return }
+    document.getElementById('modal').style.display = 'none'
     await cargar()
   })
 
-  document.getElementById('borrar-cancelar').addEventListener('click', () => { document.getElementById('modal-borrar').style.display='none'; borrarId=null })
+  document.getElementById('borrar-cancelar').addEventListener('click', () => {
+    document.getElementById('modal-borrar').style.display = 'none'
+    borrarId = null
+  })
+
   document.getElementById('borrar-confirmar').addEventListener('click', async () => {
     if (!borrarId) return
     const btn = document.getElementById('borrar-confirmar')
-    btn.disabled=true; btn.textContent='Eliminando…'
+    btn.disabled = true; btn.textContent = 'Eliminando…'
     const { error } = await supabase.from('alumnos').delete().eq('id', borrarId)
-    btn.disabled=false; btn.innerHTML='<i data-lucide="trash-2"></i> Eliminar'; lucide.createIcons()
-    if (error) { alert('❌ '+error.message); return }
-    document.getElementById('modal-borrar').style.display='none'
-    borrarId=null; await cargar()
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="trash-2"></i> Eliminar'; lucide.createIcons()
+    if (error) { alert('❌ Error: ' + error.message); return }
+    document.getElementById('modal-borrar').style.display = 'none'
+    borrarId = null
+    await cargar()
   })
 
   cargar()
-})();
 </script>
-<script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(()=>{}) }</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
 </body></html>
+

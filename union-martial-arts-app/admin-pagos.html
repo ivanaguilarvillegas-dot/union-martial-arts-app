@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Union MA">
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
-<link rel="stylesheet" href="css/uma.css" /></head>
+<link rel="stylesheet" href="css/uma.css?v=18" /></head>
 <body>
 <div class="phone"><div class="screen" style="background:#f4f6fb;">
   <div class="navhead dark">
@@ -263,6 +263,13 @@ document.getElementById('modal-confirmar').addEventListener('click', async () =>
     alert('❌ Error: ' + error.message)
     btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons(); return
   }
+
+  // Actualizar fecha_proximo_pago según el plan del alumno
+  const { data: alumnoData } = await supabase.from('alumnos').select('plan_pago').eq('id', pagoSel.alumno_id).maybeSingle()
+  const esAnual = alumnoData?.plan_pago && alumnoData.plan_pago !== 'mensual'
+  const diasSiguiente = esAnual ? 365 : 30
+  const fechaProxima = new Date(); fechaProxima.setDate(fechaProxima.getDate() + diasSiguiente)
+  await supabase.from('alumnos').update({ fecha_proximo_pago: fechaProxima.toISOString().split('T')[0] }).eq('id', pagoSel.alumno_id)
 
   // Obtener padre vinculado al alumno para enviarle mensaje
   const { data: padre } = await supabase.from('padres').select('id').eq('alumno_id', pagoSel.alumno_id).maybeSingle()

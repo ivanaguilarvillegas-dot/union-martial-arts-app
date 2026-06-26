@@ -4,7 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Recibo de Pago — Union Martial Arts</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
   @media print {
     .no-print { display: none !important; }
@@ -207,17 +213,15 @@
   </nav>
 </div></div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   // Detectar si es admin para ajustar links de vuelta
@@ -284,7 +288,11 @@
   document.getElementById('btn-guardar').addEventListener('click', () => window.print())
 
   lucide.createIcons()
-})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>

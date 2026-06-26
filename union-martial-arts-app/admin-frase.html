@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -14,11 +14,6 @@
     <h1>Frase / Mensaje</h1>
   </div>
   <div class="screen-body">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-      <a href="home.html" target="_blank" style="font-size:12px;font-weight:700;color:#0047AB;background:#eef2ff;border-radius:8px;padding:7px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
-        👁 Ver como padre
-      </a>
-    </div>
     <div class="section-title">Nueva frase motivacional</div>
     <div class="card">
       <label>Frase o mensaje</label>
@@ -28,8 +23,7 @@
       <label>Autor (opcional)</label>
       <input type="text" id="autor" placeholder="Ej: Jim Rohn" oninput="actualizarPreview()" />
       <div id="msg-frase" style="font-size:13px; text-align:center; padding:10px; border-radius:8px; display:none; margin-top:8px;"></div>
-      <div id="editing-banner" style="display:none;font-size:12px;background:#fff7ed;color:#92400e;border-radius:8px;padding:8px 12px;margin-bottom:6px;">✏️ Editando frase existente — <button onclick="cancelarEdicion()" style="background:none;border:none;color:#0047AB;font-weight:700;cursor:pointer;font-size:12px;">Cancelar</button></div>
-      <button class="btn-primary" id="btn-publicar" onclick="publicar()">Publicar frase</button>
+      <button class="btn-primary" onclick="publicar()">Publicar frase</button>
     </div>
 
     <div class="section-title">Vista previa</div>
@@ -51,13 +45,8 @@
     <a href="admin-frase.html" class="bnav-item active"><span class="bnav-icon">💬</span>Mensajes</a>
   </div>
 </div>
-<script src="/js/supabase.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
+<script type="module">
+  import { supabase } from './js/supabase.js'
 
   window.actualizarPreview = function() {
     const texto = document.getElementById('texto').value.trim()
@@ -66,63 +55,22 @@
     document.getElementById('preview-autor').textContent = '— ' + (autor || 'Union Martial Arts')
   }
 
-  // Mapa de frases cargadas — evita pasar texto por onclick (se rompe con comillas)
-  const frasesMap = {}
-  let editandoId = null
-
   async function cargarFrases() {
-    const { data, error: errLoad } = await supabase.from('frases').select('*').order('creado_en', { ascending: false }).limit(10)
+    const { data } = await supabase.from('frases').select('*').order('creado_en', { ascending: false }).limit(5)
     const cont = document.getElementById('lista-frases')
-    if (errLoad) {
-      cont.innerHTML = `<div style="color:#c00;font-size:13px;padding:12px;">Error al cargar: ${errLoad.message}</div>`
-      return
-    }
     if (!data || data.length === 0) {
       cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:16px;">Sin frases publicadas aún.</div>'
       return
     }
-    data.forEach(f => { frasesMap[f.id] = f })
     cont.innerHTML = data.map(f => `
       <div class="card" style="margin-bottom:10px;">
         <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;">${f.fecha_envio || ''}</div>
-        <div style="font-size:13px; font-style:italic; color:var(--text-primary); line-height:1.5;">"${f.texto.replace(/</g,'&lt;')}"</div>
+        <div style="font-size:13px; font-style:italic; color:var(--text-primary); line-height:1.5;">"${f.texto}"</div>
         ${f.autor ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">— ${f.autor}</div>` : ''}
-        <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+        <div style="margin-top:8px;">
           <span class="badge ${f.activa ? 'green' : 'gray'}">${f.activa ? 'Activa' : 'Inactiva'}</span>
-          <button data-editar="${f.id}" style="background:none;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;margin-left:auto;">Editar</button>
-          <button data-borrar="${f.id}" style="background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">Borrar</button>
         </div>
       </div>`).join('')
-  }
-
-  document.getElementById('lista-frases').addEventListener('click', e => {
-    const btnEdit = e.target.closest('[data-editar]')
-    const btnDel  = e.target.closest('[data-borrar]')
-    if (btnEdit) editarFrase(btnEdit.dataset.editar)
-    if (btnDel)  borrarFrase(btnDel.dataset.borrar)
-  })
-
-  function editarFrase(id) {
-    const f = frasesMap[id]; if (!f) return
-    editandoId = id
-    document.getElementById('texto').value = f.texto
-    document.getElementById('autor').value = f.autor || ''
-    actualizarPreview()
-    document.getElementById('editing-banner').style.display = 'block'
-    document.getElementById('btn-publicar').textContent = 'Guardar cambios'
-    document.getElementById('msg-frase').style.display = 'none'
-    document.getElementById('texto').scrollIntoView({ behavior: 'smooth', block: 'center' })
-    document.getElementById('texto').focus()
-  }
-
-  window.cancelarEdicion = function() {
-    editandoId = null
-    document.getElementById('texto').value = ''
-    document.getElementById('autor').value = ''
-    actualizarPreview()
-    document.getElementById('editing-banner').style.display = 'none'
-    document.getElementById('btn-publicar').textContent = 'Publicar frase'
-    document.getElementById('msg-frase').style.display = 'none'
   }
 
   window.publicar = async function() {
@@ -136,40 +84,34 @@
       msg.style.display = 'block'; return
     }
 
-    let error
-    const isEditing = !!editandoId
-    if (isEditing) {
-      ;({ error } = await supabase.from('frases').update({ texto, autor }).eq('id', editandoId))
-    } else {
-      await supabase.from('frases').update({ activa: false }).eq('activa', true)
-      ;({ error } = await supabase.from('frases').insert({
-        texto, autor, activa: true,
-        fecha_envio: new Date().toISOString().split('T')[0]
-      }))
-    }
+    await supabase.from('frases').update({ activa: false }).eq('activa', true)
+
+    const { error } = await supabase.from('frases').insert({
+      texto, autor, activa: true,
+      fecha_envio: new Date().toISOString().split('T')[0]
+    })
 
     if (error) {
-      msg.textContent = '❌ Error: ' + error.message
+      msg.textContent = 'Error al publicar. Intenta de nuevo.'
       msg.style.background = '#FFF5F5'; msg.style.color = '#9B2C2C'
-      msg.style.display = 'block'; return
+    } else {
+      msg.textContent = '✅ Frase publicada. Ya aparece en la app de los padres.'
+      msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
+      document.getElementById('texto').value = ''
+      document.getElementById('autor').value = ''
+      actualizarPreview()
+      cargarFrases()
     }
-
-    msg.textContent = isEditing ? '✅ Frase actualizada.' : '✅ Frase publicada. Ya aparece en la app de los padres.'
-    msg.style.background = '#F0FFF4'; msg.style.color = '#276749'
     msg.style.display = 'block'
-    cancelarEdicion()
-    cargarFrases()
-  }
-
-  async function borrarFrase(id) {
-    if (!confirm('¿Borrar esta frase? Si era la activa, la app mostrará una frase automática.')) return
-    const { error } = await supabase.from('frases').delete().eq('id', id)
-    if (error) { alert('Error al borrar: ' + error.message); return }
-    cargarFrases()
   }
 
   cargarFrases()
-})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>
+

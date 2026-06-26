@@ -5,29 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Check-in</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0047AB">
+  <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" />
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 </head>
 <body>
-<div class="phone"><div class="screen" style="background:#f0f2f5;">
-    <div class="page-hero">
-    <div class="page-hero-top" style="position:relative;"><a href="home.html" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-      <div class="hero-logo">
-        <a href="home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-          <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
-          <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-        </a>
-      </div>
-      <a href="#" onclick="history.back();return false;" style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-    </div>
-    <div class="hero-title">Check-in</div>
-    <div class="hero-sub">Registro de asistencia</div>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Check-in</div></div>
   </div>
-<div class="body">
+  <div class="body">
 
     <!-- Selector modo: dos tarjetas grandes -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;" id="modo-tabs">
@@ -89,7 +80,6 @@
     <div class="label">Historial reciente</div>
     <div class="stack-8" id="hist"></div>
   </div>
-    <div class="brandmark"><img src="/assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a class="on" href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
@@ -97,70 +87,46 @@
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-
-  async function cargarPadre(supabase, user) {
-    const savedId = localStorage.getItem('uma_padre_id')
-    if (savedId) {
-      const { data } = await supabase.from('padres').select('*').eq('id', savedId).maybeSingle()
-      if (data) return data
-    }
-    const { data: p1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1).maybeSingle()
-    if (p1) { localStorage.setItem('uma_padre_id', p1.id); return p1 }
-    const { data: p2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1).maybeSingle()
-    if (p2) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
-      localStorage.setItem('uma_padre_id', p2.id)
-      return p2
-    }
-    return null
-  }
-
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html'; }
 
   let padre = null, alumnoId = null, alumnoNombre = ''
   try {
-    padre = await cargarPadre(supabase, user)
+    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+    if (!p) {
+      const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).single()
+      if (pe) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id); padre = pe }
+    } else { padre = p }
     alumnoId = padre?.alumno_id
-
-    // Fallback: buscar alumno donde padre_id = padre.id
-    if (!alumnoId && padre?.id) {
-      const { data: alPorPadre } = await supabase.from('alumnos').select('id, nombre').eq('padre_id', padre.id).maybeSingle()
-      if (alPorPadre) { alumnoId = alPorPadre.id; alumnoNombre = alPorPadre.nombre }
-    }
-
-    if (alumnoId && !alumnoNombre) {
-      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).maybeSingle()
+    if (alumnoId) {
+      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).single()
       alumnoNombre = al?.nombre || 'tu hijo/a'
     }
   } catch(e) {}
-
 
   // Tabs modo
   function activarModo(modo) {
     const asiste = modo === 'asiste'
     const tabA = document.getElementById('tab-asiste')
     const tabB = document.getElementById('tab-ausente')
+    // Tab activo: fondo azul, icono blanco
     tabA.style.background = asiste ? 'var(--primary,#1d4ed8)' : '#fff'
     tabA.style.borderColor = asiste ? 'var(--primary,#1d4ed8)' : '#e5e7eb'
     tabA.style.color = asiste ? '#fff' : '#374151'
-    const iA = tabA.querySelector('i') || tabA.querySelector('svg')
-    if (iA) iA.style.color = asiste ? '#fff' : '#6b7280'
+    tabA.querySelector('i').style.color = asiste ? '#fff' : '#6b7280'
+    // Tab ausente: fondo rojo si activo
     tabB.style.background = !asiste ? '#fef2f2' : '#fff'
     tabB.style.borderColor = !asiste ? '#fca5a5' : '#e5e7eb'
     tabB.style.color = !asiste ? '#991b1b' : '#374151'
-    const iB = tabB.querySelector('i') || tabB.querySelector('svg')
-    if (iB) iB.style.color = !asiste ? '#dc2626' : '#6b7280'
+    tabB.querySelector('i').style.color = !asiste ? '#dc2626' : '#6b7280'
     document.getElementById('panel-asiste').style.display = asiste ? 'block' : 'none'
     document.getElementById('panel-ausente').style.display = asiste ? 'none' : 'block'
   }
@@ -218,87 +184,35 @@
       de_user_id: null,
       texto: respuesta,
       para_admin: false,
-      destinatario_id: padre?.id
+      destinatario_id: user.id
     })
 
     document.getElementById('msg-asiste').style.display = 'flex'
+    document.getElementById('btn-asiste').disabled = true
     lucide.createIcons()
     cargarHistorial()
   })
 
   // Reportar ausencia
   document.getElementById('btn-ausente').addEventListener('click', async () => {
-    try {
-    const errDiv = document.getElementById('msg-ausente')
-    const btn = document.getElementById('btn-ausente')
-
-    if (!alumnoId) {
-      errDiv.style.display = 'flex'
-      errDiv.style.background = '#fef2f2'
-      errDiv.innerHTML = '<span style="color:#991b1b;font-size:13px;">⚠️ No hay alumno vinculado a tu cuenta. Verifica tu perfil.</span>'
-      return
-    }
-
-    btn.disabled = true
+    if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
     const hoy = new Date().toISOString().split('T')[0]
     const motivo = document.querySelector('#motivos .on')?.dataset.motivo || 'Otro'
     const nota = document.getElementById('nota-ausencia').value.trim()
 
-    // Verificar si ya existe un registro hoy
-    const { data: existente } = await supabase.from('checkins')
-      .select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).maybeSingle()
-
-    let errCheckin
-    if (existente) {
-      const res = await supabase.from('checkins').update({
-        tipo: 'ausencia', ausencia_motivo: motivo
-      }).eq('id', existente.id)
-      // Si falla por columna inexistente, intentar sin ausencia_motivo
-      if (res.error && res.error.message.includes('ausencia_motivo')) {
-        const r2 = await supabase.from('checkins').update({ tipo: 'ausencia' }).eq('id', existente.id)
-        errCheckin = r2.error
-      } else {
-        errCheckin = res.error
-      }
-    } else {
-      const res = await supabase.from('checkins').insert({
-        alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
-      })
-      // Si falla por columna inexistente, intentar sin ausencia_motivo
-      if (res.error && res.error.message.includes('ausencia_motivo')) {
-        const r2 = await supabase.from('checkins').insert({
-          alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia'
-        })
-        errCheckin = r2.error
-      } else {
-        errCheckin = res.error
-      }
-    }
-
-    btn.disabled = false
-
-    if (errCheckin) {
-      errDiv.style.display = 'flex'
-      errDiv.style.background = '#fef2f2'
-      errDiv.innerHTML = `<span style="color:#991b1b;font-size:12px;">❌ Error: ${errCheckin.message}</span>`
-      return
-    }
+    await supabase.from('checkins').upsert({
+      alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
+    }, { onConflict: 'alumno_id,fecha' })
 
     // Notificar al instructor
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
-    try { await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true }) } catch(e) {}
+    const { error: errMsg } = await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    if (errMsg) alert('No se pudo notificar al instructor: ' + errMsg.message)
 
-    errDiv.className = 'notice green'
-    errDiv.style.background = '#f0fdf4'
-    errDiv.style.color = '#166534'
-    errDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="check-circle"></i> ✅ Ausencia registrada</span><span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>`
-    errDiv.style.display = 'flex'
+    document.getElementById('msg-ausente').style.display = 'flex'
+    document.getElementById('btn-ausente').disabled = true
     lucide.createIcons()
     cargarHistorial()
-    } catch(ex) {
-      document.getElementById('msg-ausente').style.display = 'flex'
-      document.getElementById('msg-ausente').innerHTML = `<span style="color:#991b1b;">❌ Error: ${ex.message}</span>`
-    }
   })
 
   async function cargarHistorial() {
@@ -322,7 +236,6 @@
 
   cargarHistorial()
   lucide.createIcons()
-})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -331,5 +244,4 @@
 </script>
 </body>
 </html>
-
 

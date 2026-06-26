@@ -1,12 +1,12 @@
 ﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Subir de cinta</title><link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0047AB">
+  <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" /></head>
+  <link rel="stylesheet" href="css/uma.css?v=18" /></head>
 <body>
 <style>
   .belt-option { display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer;
@@ -56,16 +56,6 @@
       <label class="field mb14"><span class="lab">Fecha del examen</span>
         <input type="date" id="fecha-examen" /></label>
 
-      <!-- Diploma -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Diploma (foto o PDF, opcional)</div>
-        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
-          <i data-lucide="file-badge" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
-          <span id="diploma-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir diploma</span>
-          <input type="file" id="diploma-file" accept="image/*,.pdf" hidden />
-        </label>
-      </div>
-
       <button class="btn primary block" id="save"><i data-lucide="award"></i> Confirmar cambio de cinta</button>
     </div>
 
@@ -86,16 +76,14 @@
     <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   // Definición de cintas con colores
@@ -223,12 +211,6 @@
   // Fecha por defecto hoy
   document.getElementById('fecha-examen').value = new Date().toISOString().split('T')[0]
 
-  // Preview diploma
-  document.getElementById('diploma-file').addEventListener('change', e => {
-    const f = e.target.files[0]
-    document.getElementById('diploma-label').textContent = f ? f.name : 'Subir diploma'
-  })
-
   // Guardar
   document.getElementById('save').addEventListener('click', async () => {
     if (!selCinta) { alert('Selecciona la nueva cinta.'); return }
@@ -239,31 +221,13 @@
     const btn = document.getElementById('save')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
-    // Subir diploma si hay
-    let diploma_url = null
-    const diplomaFile = document.getElementById('diploma-file').files[0]
-    if (diplomaFile) {
-      btn.textContent = 'Subiendo diploma…'
-      const ext = diplomaFile.name.split('.').pop()
-      const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
-      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile, { upsert: true, contentType: diplomaFile.type })
-      if (de) {
-        alert('Error al subir diploma: ' + de.message + '\n\nSe continuará sin diploma.')
-      } else {
-        diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
-      }
-    }
-
     const { error } = await supabase.from('alumnos').update({ cinta: selCinta }).eq('id', alumno_id)
     if (error) { alert('Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="award"></i> Confirmar cambio de cinta'; lucide.createIcons(); return }
 
     const alumno = alumnos.find(a => a.id === alumno_id)
-    const textoMsg = diploma_url
-      ? `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante! 📜 Diploma: ${diploma_url}`
-      : `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: textoMsg,
+      texto: `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`,
       para_admin: false
     })
 
@@ -274,7 +238,6 @@
   })
 
   lucide.createIcons()
-})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -282,5 +245,4 @@
   }
 </script>
 </body></html>
-
 

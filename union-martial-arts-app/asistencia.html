@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Asistencia</title>
 <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0047AB">
+  <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" />
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
   .mes-nav { display:flex; align-items:center; justify-content:space-between; padding:10px 0 14px; }
   .mes-nav button { background:none; border:none; cursor:pointer; padding:6px 10px; border-radius:8px; color:var(--primary); font-size:20px; line-height:1; }
@@ -87,42 +87,29 @@
   </nav>
 </div></div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   let alumnoId = null, alumnoNombre = ''
   let anio = new Date().getFullYear()
   let mes  = new Date().getMonth() // 0-based
 
-  // Cargar padre → alumno (respeta hijo activo del localStorage)
+  // Cargar padre → alumno
   try {
     let padre = null
-    const savedId = localStorage.getItem('uma_padre_id')
-    if (savedId) {
-      const { data: ps } = await supabase.from('padres').select('id, alumno_id, nombre').eq('id', savedId).maybeSingle()
-      if (ps) padre = ps
-    }
-    if (!padre) {
-      const { data: lista } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id)
-      if (lista?.length) { padre = lista[0]; localStorage.setItem('uma_padre_id', lista[0].id) }
-    }
-    if (!padre) {
-      const { data: lista2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email)
-      if (lista2?.length) {
-        padre = lista2[0]
-        await supabase.from('padres').update({ user_id: user.id }).eq('id', padre.id)
-        localStorage.setItem('uma_padre_id', padre.id)
-      }
+    const { data: p1 } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).maybeSingle()
+    if (p1) { padre = p1 }
+    else {
+      const { data: p2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).maybeSingle()
+      if (p2) { await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id); padre = p2 }
     }
     alumnoId = padre?.alumno_id
     if (alumnoId) {
@@ -253,7 +240,6 @@
 
   cargar()
   lucide.createIcons()
-})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -262,4 +248,3 @@
 </script>
 </body>
 </html>
-

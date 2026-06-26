@@ -1,37 +1,45 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Meditación</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 </head>
 <body>
-<div class="phone"><div class="screen" style="background:#f0f2f5;">
-  <div class="page-hero">
-    <div class="page-hero-top" style="position:relative;"><a href="home.html" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-      <div class="hero-logo">
-        <a href="home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-          <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
-          <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-        </a>
-      </div>
-      <a href="#" onclick="history.back();return false;" style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-    </div>
-    <div class="hero-title">Meditación</div>
-    <div class="hero-sub">Visualización nocturna</div>
+<div class="phone"><div class="screen">
+  <div class="navhead dark">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Visualización nocturna</div><div class="title">Meditación</div></div>
   </div>
   <div class="body">
-    <div class="card soft mb14" style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-left:3px solid #0047AB;">
-      <i data-lucide="info" style="width:16px;height:16px;color:#0047AB;flex-shrink:0;margin-top:2px;"></i>
-      <p style="font-size:12px;color:#374151;line-height:1.6;margin:0;">Presiona el botón de reproducción para escuchar el audio. Cuando tu hijo termine cada sesión, marca la palomita para notificar al instructor.</p>
+    <div class="card invert mb14 center" style="padding:20px;">
+      <div style="font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Frase del día · 21 jun</div>
+      <div style="font-size:15px;line-height:1.65;font-style:italic;margin-bottom:10px;">“La disciplina es el puente entre las metas y los logros.”</div>
+      <div style="font-size:12px;opacity:.6;">— Jim Rohn</div>
     </div>
+
+    <div class="label">Recordatorio nocturno</div>
+    <div class="card mb18">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="width:38px;height:38px;border-radius:var(--r-md);background:var(--soft);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="moon" style="width:19px;height:19px"></i></span>
+          <div><div style="font-size:14px;font-weight:700;">Meditación nocturna</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">Recordatorio activo</div></div>
+        </div>
+        <span class="badge blue">9:00 PM</span>
+      </div>
+    </div>
+
     <div class="label row"><span>Sesiones de audio</span><span class="badge blue" id="cnt">0/4 hechas</span></div>
     <div class="notice green" id="notif" style="display:none;"><i data-lucide="bell-ring"></i> Se notificó a tu instructor</div>
-    <div class="stack-10 mb14" id="list"></div>
-    <div class="card soft center"><span style="font-size:13px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;"><i data-lucide="moon" class="lucide" style="width:15px;height:15px"></i> Recomienda la <strong>&nbsp;meditación nocturna&nbsp;</strong> antes de dormir.</span></div>
+    <div class="stack-10" id="list"></div>
   </div>
-  <div class="brandmark"><img src="/assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
@@ -39,73 +47,66 @@
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  const S = [
-    ['moon',     'Respiración 4-7-8',        '5 minutos · Relajación profunda'],
-    ['eye',      'Visualización del campeón', '8 minutos · Para atletas jóvenes'],
-    ['heart',    'Gratitud y metas',          '6 minutos · Reflexión positiva'],
-    ['sparkles', 'Sueño reparador',           '10 minutos · Antes de dormir'],
-  ]
-  const done = {}
-  let audiosExtras = []
-  let storageFiles = []
-  let links = {}
-  let total = S.length
-
-  function clave(nombre) {
-    return nombre.toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]/g, '_')
-      .substring(0, 30)
+  // Cargar frase activa del instructor
+  const { data: frase } = await supabase.from('frases').select('texto, fecha_envio').eq('activa', true).single()
+  if (frase) {
+    const fraseEl = document.querySelector('.card.invert')
+    fraseEl.querySelector('div:first-child').textContent = 'Frase del día · ' + (frase.fecha_envio || '')
+    fraseEl.querySelector('div:nth-child(2)').textContent = '"' + frase.texto + '"'
+    fraseEl.querySelector('div:last-child').textContent = '— Tu instructor'
   }
 
+  // Sesiones base
+  const S = [
+    ['Respiración 4-7-8','5 minutos · Relajación profunda'],
+    ['Visualización del campeón','8 minutos · Para atletas jóvenes'],
+    ['Gratitud y metas','6 minutos · Reflexión positiva'],
+    ['Sueño reparador','10 minutos · Antes de dormir']
+  ]
+  const done = {}
+  let audios = []
+  let total = S.length
+
+  // Cargar audios del instructor desde Storage
   async function cargar() {
-    const [storageRes, linksRes] = await Promise.allSettled([
-      supabase.storage.from('media').list('audios', { limit: 20 }),
-      supabase.from('configuracion').select('clave,valor').like('clave', 'media_link_%')
-    ])
-    storageFiles = (storageRes.value?.data || []).map(a => ({
+    const { data } = await supabase.storage.from('media').list('audios', { limit: 20 })
+    audios = (data || []).map(a => ({
       nombre: a.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
       url: supabase.storage.from('media').getPublicUrl('audios/' + a.name).data.publicUrl
     }))
-    links = {}
-    ;(linksRes.value?.data || []).forEach(r => { links[r.clave] = r.valor })
-    audiosExtras = storageFiles.filter(f => !S.some(([, t]) => f.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase())))
-    total = S.length + audiosExtras.length
+    total = S.length + audios.length
     render()
   }
 
   function render() {
-    document.getElementById('list').innerHTML = S.map(([ic, t, s], i) => {
+    const total = S.length + audios.length
+    document.getElementById('list').innerHTML = S.map(([t, s], i) => {
       const on = !!done['s' + i]
-      const linkUrl = links['media_link_' + clave(t)] || ''
-      const storageAud = storageFiles.find(a => a.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase()))
-      const playUrl = linkUrl || storageAud?.url || ''
-      return `<div class="row"><span class="ic"><i data-lucide="${ic}"></i></span>
+      const aud = audios.find(a => a.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase()))
+      return `<div class="row"><span class="ic"><i data-lucide="headphones"></i></span>
         <span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span>
         <span class="trail" style="gap:8px;">
-          ${playUrl ? `<a class="iconbtn" href="${playUrl}" target="_blank" aria-label="Reproducir"><i data-lucide="play"></i></a>` : `<button class="iconbtn" disabled style="opacity:.3;" aria-label="Sin audio"><i data-lucide="play"></i></button>`}
-          <button class="iconbtn" data-k="s${i}" aria-label="Marcar" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
+          ${aud ? `<a class="iconbtn solid" href="${aud.url}" target="_blank" aria-label="Reproducir"><i data-lucide="play"></i></a>` : `<button class="iconbtn solid" disabled style="opacity:.3;"><i data-lucide="play"></i></button>`}
+          <button class="iconbtn" data-k="s${i}" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
             <i data-lucide="check"></i></button>
         </span></div>`
-    }).join('') + audiosExtras.map((a, i) => {
+    }).join('') + audios.filter(a => !S.some(([t]) => a.nombre.toLowerCase().includes(t.toLowerCase().split(' ')[0].toLowerCase()))).map((a, i) => {
       const on = !!done['a' + i]
       return `<div class="row"><span class="ic"><i data-lucide="music"></i></span>
         <span class="grow"><span class="t">${a.nombre}</span><span class="s">Audio del instructor</span></span>
         <span class="trail" style="gap:8px;">
-          <a class="iconbtn" href="${a.url}" target="_blank" aria-label="Reproducir"><i data-lucide="play"></i></a>
-          <button class="iconbtn" data-k="a${i}" aria-label="Marcar" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
+          <a class="iconbtn solid" href="${a.url}" target="_blank"><i data-lucide="play"></i></a>
+          <button class="iconbtn" data-k="a${i}" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
             <i data-lucide="check"></i></button>
         </span></div>`
     }).join('')
@@ -117,17 +118,17 @@
     lucide.createIcons()
   }
 
-  let notifEnviada = false
+  let notifMedEnviada = false
   document.getElementById('list').addEventListener('click', async e => {
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
     const n = Object.values(done).filter(Boolean).length
-    if (n >= total && !notifEnviada) {
-      notifEnviada = true
+    if (n >= total && !notifMedEnviada) {
+      notifMedEnviada = true
       try {
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
-          texto: '🧘 Sesión de meditación completada — ' + n + ' sesiones · ' + new Date().toLocaleDateString('es-MX'),
+          texto: '🧘 Sesión de meditación completada — ' + n + ' ejercicios · ' + new Date().toLocaleDateString('es-MX'),
           para_admin: true
         })
       } catch(e) {}
@@ -135,7 +136,12 @@
   })
 
   cargar()
-})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>
+

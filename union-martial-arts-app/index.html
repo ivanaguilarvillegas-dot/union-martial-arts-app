@@ -1,20 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
-
-<script>if(window.location.hostname==='unionmartialarts.org'||window.location.hostname==='www.unionmartialarts.org'){window.location.replace('/landing.html');}</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Acceso</title>
-<link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0A18EC" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="UNION MA" />
-<link rel="apple-touch-icon" href="/assets/icon-192.png" />
-<link rel="apple-touch-icon" sizes="512x512" href="/assets/icon-512.png" />
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
   .login { flex:1; display:flex; flex-direction:column; padding:0 28px 30px; background:#fff; position:relative; overflow:hidden; }
   .login .logo { width:100%; max-width:330px; display:block; margin:0 auto; }
@@ -54,7 +50,7 @@
       </div>
       <div class="q">¿Necesitas acceso? Contáctanos</div>
       <a href="https://wa.me/526566379191" target="_blank" rel="noopener"><i data-lucide="phone"></i> WhatsApp · (656) 637.9191</a>
-      <a href="https://unionmartialarts.org/landing.html" target="_blank" rel="noopener"><i data-lucide="globe"></i> unionmartialarts.org</a>
+      <a href="mailto:unionmartialarts.jrz@gmail.com"><i data-lucide="mail"></i> unionmartialarts.jrz@gmail.com</a>
       <div class="social">
         <a href="https://www.instagram.com/union_martial_arts/" target="_blank" rel="noopener" aria-label="Instagram" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fd5949 45%,#d6249f 60%,#285AEB 90%);">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
@@ -72,11 +68,10 @@
     </div>
   </div>
 </div></div>
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
@@ -136,8 +131,12 @@
     el.textContent = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
   }
   actualizarReloj(); setInterval(actualizarReloj, 30000)
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})
-})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>
+

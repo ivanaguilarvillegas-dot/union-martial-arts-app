@@ -4,24 +4,21 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Union Martial Arts — Dudas</title>
-<link rel="stylesheet" href="css/uma.css" />
+<link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 </head>
 <body>
-<div class="phone"><div class="screen" style="background:#f0f2f5;">
-    <div class="page-hero">
-    <div class="page-hero-top" style="position:relative;">
-      <a href="home.html" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-      <div class="hero-logo">
-        <a href="home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-          <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
-          <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-        </a>
-      </div>
-      <a href="#" onclick="history.back();return false;" style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-    </div>
-    <div class="hero-title">Área de dudas</div>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Área de dudas</div></div>
   </div>
-<div class="body">
+  <div class="body">
     <div class="label">Preguntas frecuentes</div>
     <div class="stack-8 mb18" id="faqs"></div>
 
@@ -38,6 +35,7 @@
         <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">Tu instructor te responderá pronto.</div>
       </div>
     </div>
+    <div id="mensajes-admin-wrap"></div>
     <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
   </div>
   <nav class="bottomnav">
@@ -68,6 +66,40 @@
     lucide.createIcons();
   }
   document.getElementById('faqs').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;open=open==+b.dataset.i?-1:+b.dataset.i;render();});
+  async function cargarMensajesAdmin() {
+    import('https://esm.sh/@supabase/supabase-js@2').then(async ({ createClient }) => {
+      const supabase = createClient(
+        'https://gdajgennlsuvndanpxiz.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+      )
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: padre } = await supabase.from('padres').select('id').eq('user_id', user.id).maybeSingle()
+      if (!padre) return
+      const { data: msgs } = await supabase.from('mensajes')
+        .select('id, texto, creado_en')
+        .eq('para_admin', false)
+        .eq('destinatario_id', padre.id)
+        .order('creado_en', { ascending: false })
+        .limit(20)
+      const wrap = document.getElementById('mensajes-admin-wrap')
+      if (!msgs?.length) return
+      wrap.innerHTML = '<div class="label" style="margin-bottom:10px;">Mensajes del instructor</div>' +
+        msgs.map(m => {
+          const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+          return `<div class="card mb10" style="border-left:3px solid var(--primary);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;">
+              <span style="font-weight:700;color:var(--primary);">Instructor UNION</span>
+              <span>${fecha}</span>
+            </div>
+            <div style="font-size:13.5px;line-height:1.5;">${m.texto}</div>
+          </div>`
+        }).join('')
+      lucide.createIcons()
+    })
+  }
+  cargarMensajesAdmin()
+
   document.getElementById('enviar').addEventListener('click', async () => {
     const texto = document.querySelector('textarea').value.trim()
     if (!texto) return
@@ -76,8 +108,7 @@
         'https://gdajgennlsuvndanpxiz.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
       )
-      const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+      const { data: { user } } = await supabase.auth.getUser()
       const { data, error } = await supabase.from('mensajes').insert({ de_user_id: user?.id, texto, para_admin: true }).select()
       if (error) { alert('ERROR al guardar: ' + error.message + '\n\nCódigo: ' + error.code); return }
       alert('✅ Guardado OK. ID: ' + data?.[0]?.id)
@@ -87,6 +118,11 @@
     })
   })
   render()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body>
 </html>

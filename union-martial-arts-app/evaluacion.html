@@ -3,116 +3,47 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Evaluación — Union MA</title>
+<title>Union Martial Arts — Evaluación</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0047AB">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Union MA">
-<link rel="apple-touch-icon" href="/assets/icon-192.png">
-<link rel="stylesheet" href="css/uma.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
-.eval-hero { background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 100%); padding:16px 18px 0; color:#fff; }
-.eval-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.hero-logo { display:flex; align-items:center; gap:10px; }
-.hero-logo-circle { width:40px; height:40px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.hero-logo-circle img { width:28px; height:28px; object-fit:contain; }
-.hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
-.hero-avatar { width:38px; height:38px; background:rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
-.hero-title { font-size:22px; font-weight:800; margin-bottom:2px; }
-.hero-sub { font-size:14px; opacity:.75; margin-bottom:14px; }
-.tab-row { display:flex; gap:8px; padding:0 0 16px; }
-.tab-btn { flex:1; background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.25); color:rgba(255,255,255,.75); border-radius:20px; padding:8px 0; font-size:14px; font-weight:700; cursor:pointer; text-align:center; transition:all .18s; }
-.tab-btn.on { background:#fff; color:#0047AB; border-color:#fff; }
-.ev-card { background:#fff; border-radius:16px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 5px rgba(0,0,0,.07); }
-.ev-card-hdr { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid #f3f4f6; }
-.ev-card-ic { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.ev-card-hdr-txt { flex:1; }
-.ev-card-title { font-size:15px; font-weight:700; color:#111827; }
-.ev-card-sub { font-size:13px; color:#6b7280; margin-top:1px; }
-.ev-card-body { padding:14px 16px; }
-.crit-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid #f3f4f6; }
-.crit-row:last-child { border-bottom:none; }
-.crit-ic { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.crit-name { font-size:14px; font-weight:700; color:#111827; }
-.crit-desc { font-size:12px; color:#9ca3af; margin-top:1px; }
-.badge-cumpl { display:inline-flex; align-items:center; gap:4px; background:#f0fdf4; color:#15803d; border:1.5px solid #bbf7d0; border-radius:20px; padding:5px 12px; font-size:12px; font-weight:700; flex-shrink:0; white-space:nowrap; }
-.badge-mejor { display:inline-flex; align-items:center; gap:4px; background:#fffbeb; color:#b45309; border:1.5px solid #fde68a; border-radius:20px; padding:5px 12px; font-size:12px; font-weight:700; flex-shrink:0; white-space:nowrap; }
-.result-badge { font-size:13px; font-weight:800; padding:5px 14px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
-.rb-excelente { background:#dcfce7; color:#15803d; }
-.rb-bien      { background:#dbeafe; color:#1d4ed8; }
-.rb-mejorar   { background:#fef3c7; color:#b45309; }
-.rb-reforzar  { background:#fee2e2; color:#dc2626; }
-.area-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #f3f4f6; }
-.area-row:last-child { border-bottom:none; }
-.area-ic { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.nivel-badge { font-size:12px; font-weight:700; padding:4px 11px; border-radius:20px; flex-shrink:0; }
-.nv-excelente { background:#dcfce7; color:#15803d; }
-.nv-muybien   { background:#dbeafe; color:#1d4ed8; }
-.nv-bien      { background:#e0e7ff; color:#4338ca; }
-.nv-progreso  { background:#fef3c7; color:#b45309; }
-.nv-reforzar  { background:#fee2e2; color:#dc2626; }
-.area-pts { font-size:12px; color:#9ca3af; flex-shrink:0; }
-.resumen-3 { display:grid; grid-template-columns:repeat(3,1fr); background:#f3f4f6; border-radius:16px; overflow:hidden; margin-bottom:12px; gap:1px; }
-.resumen-blk { background:#fff; padding:14px 8px; text-align:center; }
-.resumen-lbl { font-size:10px; font-weight:700; color:#9ca3af; letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px; }
-.resumen-val { font-size:16px; font-weight:800; }
-.rv-azul  { color:#0047AB; }
-.rv-verde { color:#15803d; }
-.rv-ambar { color:#b45309; }
-.rv-rojo  { color:#dc2626; }
-.resumen-sub { font-size:11px; color:#9ca3af; margin-top:3px; }
-.comp-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; }
-.comp-row { display:flex; align-items:center; gap:6px; padding:6px 0; border-bottom:1px solid #f9fafb; }
-.comp-name { font-size:13px; color:#374151; flex:1; min-width:0; }
-.comp-arrow { font-size:15px; font-weight:900; }
-.comp-txt { font-size:12px; font-weight:600; }
-.clr-up   { color:#15803d; }
-.clr-same { color:#6b7280; }
-.clr-down { color:#dc2626; }
-.bullet-list { padding:0; margin:0; list-style:none; }
-.bullet-list li { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:14px; color:#374151; }
-.bullet-list li i { font-size:16px; flex-shrink:0; }
-.ayuda-toggle { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; cursor:pointer; user-select:none; }
-.ayuda-toggle-txt { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#6b7280; }
-.ayuda-body { padding:0 16px 14px; display:none; }
-.ayuda-body.open { display:block; }
-.escala-row { display:flex; align-items:flex-start; gap:10px; padding:5px 0; font-size:13px; color:#374151; line-height:1.5; }
-.escala-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+  .check-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--ink-100); font-size:13px; }
+  .check-item:last-child { border-bottom:none; }
+  .check-item .ic-sm { width:22px; height:22px; border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .check-item .ic-sm.ok { background:var(--green-bg); color:var(--green-text); }
+  .check-item .ic-sm.no { background:var(--red-bg,#fee); color:var(--red-text,#c00); }
+  .check-item .ic-sm svg { width:13px; height:13px; }
+  .eval-card { margin-bottom:12px; }
+  .eval-date { font-size:12px; color:var(--muted); font-weight:500; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
 </style>
 </head>
 <body>
-<div class="phone"><div class="screen" style="background:#f0f2f5;">
-
-  <div class="eval-hero">
-    <div class="eval-hero-top" style="position:relative;">
-      <a href="home.html" class="navback" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
-      <div class="hero-logo">
-        <div class="hero-logo-circle">
-          <img src="/assets/logo-union-blue.png" alt="UMA" />
-        </div>
-        <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-      </div>
-      <a href="#" onclick="history.back();return false;" style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;flex-shrink:0;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></a>
+<div class="phone"><div class="screen">
+  <div class="navhead blue">
+    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub" id="sub-nombre">Progreso</div><div class="title">Evaluación</div></div>
+  </div>
+  <div class="body">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="chip on" data-tab="diaria">Diaria</button>
+      <button class="chip" data-tab="mensual">Mensual</button>
     </div>
-    <div class="hero-title">Evaluación</div>
-    <div class="hero-sub" id="hero-alumno">Cargando…</div>
-    <div class="tab-row">
-      <button class="tab-btn on" data-tab="diaria">Diaria</button>
-      <button class="tab-btn" data-tab="mensual">Mensual</button>
+
+    <!-- Panel diaria -->
+    <div id="diaria">
+      <div id="diaria-list"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div></div>
+    </div>
+
+    <!-- Panel mensual -->
+    <div id="mensual" style="display:none;">
+      <div id="mensual-content"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div></div>
     </div>
   </div>
-
-  <div class="body" style="padding-top:16px;">
-    <div id="tab-diaria">
-      <div id="diaria-list"><div style="text-align:center;color:var(--muted);font-size:14px;padding:32px;">Cargando…</div></div>
-    </div>
-    <div id="tab-mensual" style="display:none;">
-      <div id="mensual-content"><div style="text-align:center;color:var(--muted);font-size:14px;padding:32px;">Cargando…</div></div>
-    </div>
-  </div>
-
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
@@ -120,88 +51,54 @@
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>
 </div></div>
-
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-
-  async function cargarPadre(supabase, user) {
-    const savedId = localStorage.getItem('uma_padre_id')
-    if (savedId) {
-      const { data } = await supabase.from('padres').select('*').eq('id', savedId).maybeSingle()
-      if (data) return data
-    }
-    const { data: p1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1).maybeSingle()
-    if (p1) { localStorage.setItem('uma_padre_id', p1.id); return p1 }
-    const { data: p2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1).maybeSingle()
-    if (p2) {
-      await supabase.from('padres').update({ user_id: user.id }).eq('id', p2.id)
-      localStorage.setItem('uma_padre_id', p2.id)
-      return p2
-    }
-    return null
-  }
-
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  function initials(n) {
-    return (n || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase() || '?'
-  }
-
-  let alumnoId = null, alumnoNombre = ''
+  // Obtener alumno
+  let padre = null, alumnoId = null, alumnoNombre = ''
   try {
-    let padre = await cargarPadre(supabase, user)
+    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).single()
+    if (!p) {
+      const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).single()
+      if (pe) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe.id); padre = pe }
+    } else { padre = p }
     alumnoId = padre?.alumno_id
     if (alumnoId) {
-      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).maybeSingle()
+      const { data: al } = await supabase.from('alumnos').select('nombre, cinta').eq('id', alumnoId).single()
       alumnoNombre = al?.nombre || ''
+      document.getElementById('sub-nombre').textContent = 'Progreso de ' + alumnoNombre
     }
-    document.getElementById('hero-alumno').textContent = alumnoNombre || 'Sin alumno vinculado'
   } catch(e) {}
+
+  const ITEMS = [
+    { k: 'actitud',      label: 'Actitud' },
+    { k: 'esfuerzo',     label: 'Esfuerzo' },
+    { k: 'tecnica',      label: 'Técnica' },
+    { k: 'participacion',label: 'Participación' },
+  ]
 
   const fmtFecha = f => {
     if (!f) return '—'
-    return new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+    const d = new Date(f + 'T12:00:00')
+    return d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
   }
 
-  const CRIT = [
-    { k:'actitud',       label:'Actitud',      desc:'Disposición y comportamiento en clase',  ic:'ti-mood-smile',   bg:'#eff6ff', col:'#1d4ed8' },
-    { k:'esfuerzo',      label:'Esfuerzo',     desc:'Dedicación y entrega en los ejercicios', ic:'ti-barbell',      bg:'#f0fdf4', col:'#15803d' },
-    { k:'tecnica',       label:'Técnica',      desc:'Ejecución y aprendizaje de técnicas',    ic:'ti-target-arrow', bg:'#fef3c7', col:'#b45309' },
-    { k:'participacion', label:'Participación',desc:'Atención y participación en clase',       ic:'ti-users',        bg:'#fdf4ff', col:'#7c3aed' },
-  ]
-
-  function resultDia(n) {
-    if (n === 4) return { txt:'Excelente', cls:'rb-excelente' }
-    if (n === 3) return { txt:'Bien',      cls:'rb-bien' }
-    if (n === 2) return { txt:'Por mejorar', cls:'rb-mejorar' }
-    return { txt:'Reforzar', cls:'rb-reforzar' }
+  function checkHtml(ok) {
+    return `<span class="ic-sm ${ok ? 'ok' : 'no'}"><i data-lucide="${ok ? 'check' : 'x'}"></i></span>`
   }
 
-  function ayudaDiaria() {
-    return '<div class="ev-card" style="margin-top:4px;">' +
-      '<div class="ayuda-toggle" onclick="var b=this.nextElementSibling;b.classList.toggle(\'open\');this.querySelector(\'.ti-chevron-down\').style.transform=b.classList.contains(\'open\')?\'rotate(180deg)\':\'\';">' +
-        '<div class="ayuda-toggle-txt"><i class="ti ti-info-circle" style="font-size:16px;"></i>¿Cómo se interpreta?</div>' +
-        '<i class="ti ti-chevron-down" style="font-size:16px;color:#9ca3af;transition:transform .2s;"></i>' +
-      '</div>' +
-      '<div class="ayuda-body">' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#15803d;"></div><div><b>Cumplió:</b> trabajó adecuadamente en ese aspecto durante la clase.</div></div>' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#b45309;"></div><div><b>Por mejorar:</b> necesita más atención, constancia o apoyo en ese aspecto.</div></div>' +
-      '</div>' +
-    '</div>'
-  }
-
+  // === EVALUACIONES DIARIAS ===
   async function cargarDiarias() {
     if (!alumnoId) {
-      document.getElementById('diaria-list').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:14px;padding:32px;">Sin alumno vinculado.</div>'
+      document.getElementById('diaria-list').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Sin alumno vinculado.</div>'
       return
     }
     const { data: evals } = await supabase.from('evaluaciones')
@@ -211,100 +108,36 @@
 
     const el = document.getElementById('diaria-list')
     if (!evals?.length) {
-      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:14px;padding:32px;">Sin evaluaciones diarias aún.</div>' + ayudaDiaria()
-      lucide.createIcons(); return
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Sin evaluaciones diarias aún.</div>'
+      return
     }
 
-    let html = ''
-    evals.forEach((e, idx) => {
-      const cumplidos = CRIT.filter(c => !!e[c.k]).length
-      const res = resultDia(cumplidos)
-      const critRows = CRIT.map(c =>
-        '<div class="crit-row">' +
-          '<div class="crit-ic" style="background:' + c.bg + ';"><i class="ti ' + c.ic + '" style="font-size:19px;color:' + c.col + ';"></i></div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div class="crit-name">' + c.label + '</div>' +
-            '<div class="crit-desc">' + c.desc + '</div>' +
-          '</div>' +
-          (e[c.k]
-            ? '<span class="badge-cumpl"><i class="ti ti-circle-check" style="font-size:14px;"></i>Cumplió</span>'
-            : '<span class="badge-mejor"><i class="ti ti-circle" style="font-size:14px;"></i>Por mejorar</span>') +
-        '</div>'
-      ).join('')
-      html += '<div style="font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;' + (idx > 0 ? 'margin-top:20px;' : '') + '">' +
-        '<i class="ti ti-calendar" style="font-size:14px;vertical-align:-2px;"></i> ' + fmtFecha(e.fecha) +
-      '</div>' +
-      '<div class="ev-card">' +
-        '<div class="ev-card-hdr">' +
-          '<div class="ev-card-ic" style="background:#f0fdf4;"><i class="ti ti-clipboard-check" style="font-size:20px;color:#15803d;"></i></div>' +
-          '<div class="ev-card-hdr-txt">' +
-            '<div class="ev-card-title">Evaluación del día</div>' +
-            '<div class="ev-card-sub">' + cumplidos + ' de 4 criterios cumplidos</div>' +
-          '</div>' +
-          '<span class="result-badge ' + res.cls + '">' + res.txt + '</span>' +
-        '</div>' +
-        '<div class="ev-card-body" style="padding-bottom:8px;">' + critRows + '</div>' +
-      '</div>'
-      if (e.nota) {
-        html += '<div class="ev-card">' +
-          '<div class="ev-card-hdr">' +
-            '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-message-dots" style="font-size:20px;color:#0047AB;"></i></div>' +
-            '<div class="ev-card-hdr-txt"><div class="ev-card-title">Comentario del instructor</div></div>' +
-          '</div>' +
-          '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">&ldquo;' + e.nota + '&rdquo;</div>' +
-        '</div>'
-      }
-    })
-    html += ayudaDiaria()
-    el.innerHTML = html
+    el.innerHTML = evals.map(e => {
+      const pct = e.puntuacion ?? 0
+      const badgeColor = pct >= 80 ? 'green' : pct >= 50 ? 'blue' : ''
+      const itemsHtml = ITEMS.map(it => `
+        <div class="check-item">
+          ${checkHtml(!!e[it.k])}
+          <span style="flex:1;">${it.label}</span>
+          <span style="font-size:12px;color:${e[it.k] ? 'var(--green-text)' : 'var(--muted)'};">${e[it.k] ? 'Cumplió' : 'Por mejorar'}</span>
+        </div>`).join('')
+
+      return `<div class="card eval-card">
+        <div class="eval-date">
+          <span>${fmtFecha(e.fecha)}</span>
+          <span class="badge ${badgeColor}">${pct}%</span>
+        </div>
+        ${itemsHtml}
+        ${e.nota ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--ink-100);">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">NOTA DEL INSTRUCTOR</div>
+          <div style="font-size:13.5px;font-style:italic;line-height:1.5;">"${e.nota}"</div>
+        </div>` : ''}
+      </div>`
+    }).join('')
     lucide.createIcons()
   }
 
-  const AREAS = [
-    { k:'tecnica_golpe',    label:'Técnica de golpe', ic:'ti-target-arrow',   bg:'#fef3c7', col:'#b45309' },
-    { k:'patadas',          label:'Patadas',           ic:'ti-run',            bg:'#fee2e2', col:'#dc2626' },
-    { k:'defensa',          label:'Defensa',           ic:'ti-shield-half',    bg:'#eff6ff', col:'#1d4ed8' },
-    { k:'condicion_fisica', label:'Condición física',  ic:'ti-activity',       bg:'#f0fdf4', col:'#15803d' },
-    { k:'disciplina',       label:'Disciplina',        ic:'ti-star',           bg:'#fdf4ff', col:'#7c3aed' },
-    { k:'coordinacion',     label:'Coordinación',      ic:'ti-arrows-shuffle', bg:'#fff7ed', col:'#c2410c' },
-  ]
-
-  function nivelLabel(v) {
-    if (v >= 9) return { txt:'Excelente',   cls:'nv-excelente' }
-    if (v >= 8) return { txt:'Muy bien',    cls:'nv-muybien' }
-    if (v >= 6) return { txt:'Bien',        cls:'nv-bien' }
-    if (v >= 4) return { txt:'En progreso', cls:'nv-progreso' }
-    return       { txt:'Reforzar',          cls:'nv-reforzar' }
-  }
-
-  function nivelResumen(v) {
-    if (v >= 9) return { txt:'Excelente',   cls:'rv-verde' }
-    if (v >= 8) return { txt:'Muy bien',    cls:'rv-azul' }
-    if (v >= 6) return { txt:'Bien',        cls:'rv-azul' }
-    if (v >= 4) return { txt:'En progreso', cls:'rv-ambar' }
-    return       { txt:'Reforzar',          cls:'rv-rojo' }
-  }
-
-  function ayudaMensual() {
-    return '<div class="ev-card" style="margin-top:4px;">' +
-      '<div class="ayuda-toggle" onclick="var b=this.nextElementSibling;b.classList.toggle(\'open\');this.querySelector(\'.ti-chevron-down\').style.transform=b.classList.contains(\'open\')?\'rotate(180deg)\':\'\';">' +
-        '<div class="ayuda-toggle-txt"><i class="ti ti-info-circle" style="font-size:16px;"></i>¿Cómo se interpreta?</div>' +
-        '<i class="ti ti-chevron-down" style="font-size:16px;color:#9ca3af;transition:transform .2s;"></i>' +
-      '</div>' +
-      '<div class="ayuda-body">' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#15803d;"></div><div><b>Excelente (9-10):</b> desempeño sobresaliente y constante.</div></div>' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#1d4ed8;"></div><div><b>Muy bien (8):</b> buen avance y dominio del área.</div></div>' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#4338ca;"></div><div><b>Bien (6-7):</b> va por buen camino, puede mejorar.</div></div>' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#b45309;"></div><div><b>En progreso (4-5):</b> necesita más práctica y seguimiento.</div></div>' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#dc2626;"></div><div><b>Reforzar (0-3):</b> requiere mayor apoyo en esta área.</div></div>' +
-        '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;font-size:12px;color:#9ca3af;display:flex;gap:6px;">' +
-          '<i class="ti ti-info-circle" style="font-size:14px;flex-shrink:0;"></i>' +
-          'La evaluación mensual aplica únicamente a ciertos programas de Union Martial Arts.' +
-        '</div>' +
-      '</div>' +
-    '</div>'
-  }
-
+  // === EVALUACIÓN MENSUAL ===
   async function cargarMensual() {
     if (!alumnoId) return
     const { data: evals } = await supabase.from('evaluaciones')
@@ -314,148 +147,57 @@
 
     const el = document.getElementById('mensual-content')
     if (!evals?.length) {
-      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:14px;padding:32px;">Sin evaluaciones mensuales aún.</div>' + ayudaMensual()
-      lucide.createIcons(); return
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Sin evaluaciones mensuales aún.</div>'
+      return
     }
 
-    const e  = evals[0]
-    const ep = evals[1] || null
-    const campos = AREAS.filter(a => e[a.k] != null)
-    const prom = campos.length ? campos.reduce((s,a) => s + e[a.k], 0) / campos.length : 0
-    const promFmt = prom.toFixed(1)
-    const resumen = nivelResumen(prom)
-    const sorted = [...campos].sort((a,b) => e[b.k] - e[a.k])
-    const fortaleza = sorted.length ? sorted[0].label : '—'
-    const aReforzar = sorted.length > 1 ? sorted[sorted.length-1].label : '—'
-    const fuertes = campos.filter(a => e[a.k] >= 7)
-    const debiles = campos.filter(a => e[a.k] < 6)
+    const AREAS = [
+      { k: 'tecnica_golpe',   label: 'Técnica de golpe' },
+      { k: 'patadas',         label: 'Patadas' },
+      { k: 'defensa',         label: 'Defensa' },
+      { k: 'condicion_fisica',label: 'Condición física' },
+      { k: 'disciplina',      label: 'Disciplina' },
+      { k: 'coordinacion',    label: 'Coordinación' },
+    ]
 
-    const areasHtml = campos.map(a => {
-      const nv = nivelLabel(e[a.k])
-      return '<div class="area-row">' +
-        '<div class="area-ic" style="background:' + a.bg + ';"><i class="ti ' + a.ic + '" style="font-size:18px;color:' + a.col + ';"></i></div>' +
-        '<span style="flex:1;font-size:14px;font-weight:600;color:#111827;">' + a.label + '</span>' +
-        '<span class="nivel-badge ' + nv.cls + '">' + nv.txt + '</span>' +
-        '<span class="area-pts">' + e[a.k] + '/10</span>' +
-      '</div>'
+    el.innerHTML = evals.map((e, idx) => {
+      const campos = AREAS.filter(a => e[a.k] != null)
+      const prom = campos.length ? (campos.reduce((s,a)=>s+e[a.k],0)/campos.length).toFixed(1) : null
+      return `
+        ${idx > 0 ? '<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:16px 0 8px;">Evaluación anterior</div>' : ''}
+        <div class="card mb14">
+          <div class="eval-date">
+            <span>${fmtFecha(e.fecha)}</span>
+            ${prom ? `<span class="badge blue">Prom. ${prom}/10</span>` : ''}
+          </div>
+          ${campos.map(a => `
+            <div class="prog" style="margin-bottom:12px;">
+              <div class="head" style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+                <span>${a.label}</span><b style="color:var(--primary);">${e[a.k]}/10</b>
+              </div>
+              <div class="track"><div class="fill" style="width:${e[a.k]*10}%"></div></div>
+            </div>`).join('')}
+          ${e.comentarios ? `<div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--ink-100);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;">COMENTARIO</div>
+            <div style="font-size:13.5px;font-style:italic;line-height:1.5;">"${e.comentarios}"</div>
+          </div>` : ''}
+        </div>`
     }).join('')
-
-    let compHtml = ''
-    if (ep) {
-      const compCampos = AREAS.filter(a => e[a.k] != null && ep[a.k] != null)
-      if (compCampos.length) {
-        const compRows = compCampos.map(a => {
-          const diff = e[a.k] - ep[a.k]
-          const cls  = diff > 0 ? 'clr-up' : diff < 0 ? 'clr-down' : 'clr-same'
-          const arr  = diff > 0 ? 'sube' : diff < 0 ? 'baja' : 'igual'
-          const sym  = diff > 0 ? '&#8593;' : diff < 0 ? '&#8595;' : '&#8594;'
-          const txt  = diff > 0 ? 'Mejoró' : diff < 0 ? 'Bajó' : 'Igual'
-          return '<div class="comp-row"><span class="comp-name">' + a.label + '</span><span class="comp-arrow clr-' + (diff>0?'up':diff<0?'down':'same') + '">' + sym + '</span><span class="comp-txt clr-' + (diff>0?'up':diff<0?'down':'same') + '">' + txt + '</span></div>'
-        }).join('')
-        compHtml = '<div class="ev-card">' +
-          '<div class="ev-card-hdr">' +
-            '<div class="ev-card-ic" style="background:#f0fdf4;"><i class="ti ti-trending-up" style="font-size:20px;color:#15803d;"></i></div>' +
-            '<div class="ev-card-hdr-txt"><div class="ev-card-title">Comparación con el mes anterior</div></div>' +
-          '</div>' +
-          '<div class="ev-card-body" style="padding-bottom:8px;"><div class="comp-grid">' + compRows + '</div></div>' +
-        '</div>'
-      }
-    }
-
-    const fortList = fuertes.length
-      ? '<ul class="bullet-list">' + fuertes.map(a => '<li><i class="ti ti-circle-check" style="color:#15803d;"></i>' + a.label + '</li>').join('') + '</ul>'
-      : '<p style="font-size:13px;color:#9ca3af;margin:0;">Sin áreas destacadas aún</p>'
-    const refList = debiles.length
-      ? '<ul class="bullet-list">' + debiles.map(a => '<li><i class="ti ti-circle" style="color:#b45309;"></i>' + a.label + '</li>').join('') + '</ul>'
-      : '<p style="font-size:13px;color:#9ca3af;margin:0;">Excelente en todas</p>'
-
-    const dualCard = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
-      '<div class="ev-card" style="margin-bottom:0;">' +
-        '<div class="ev-card-hdr" style="border-bottom:none;padding-bottom:6px;">' +
-          '<div class="ev-card-ic" style="background:#f0fdf4;"><i class="ti ti-star" style="font-size:18px;color:#15803d;"></i></div>' +
-          '<div class="ev-card-hdr-txt"><div class="ev-card-title" style="font-size:14px;color:#15803d;">Fortalezas</div></div>' +
-        '</div>' +
-        '<div class="ev-card-body" style="padding-top:2px;">' + fortList + '</div>' +
-      '</div>' +
-      '<div class="ev-card" style="margin-bottom:0;">' +
-        '<div class="ev-card-hdr" style="border-bottom:none;padding-bottom:6px;">' +
-          '<div class="ev-card-ic" style="background:#fffbeb;"><i class="ti ti-target" style="font-size:18px;color:#b45309;"></i></div>' +
-          '<div class="ev-card-hdr-txt"><div class="ev-card-title" style="font-size:14px;color:#b45309;">A reforzar</div></div>' +
-        '</div>' +
-        '<div class="ev-card-body" style="padding-top:2px;">' + refList + '</div>' +
-      '</div>' +
-    '</div>'
-
-    const comentCard = e.comentarios
-      ? '<div class="ev-card">' +
-          '<div class="ev-card-hdr">' +
-            '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-message-dots" style="font-size:20px;color:#0047AB;"></i></div>' +
-            '<div class="ev-card-hdr-txt"><div class="ev-card-title">Comentario del instructor</div></div>' +
-          '</div>' +
-          '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">' + e.comentarios + '</div>' +
-        '</div>'
-      : ''
-
-    const objItems = debiles.length
-      ? debiles.map(a => '<li><i class="ti ti-circle-arrow-right" style="color:#0047AB;"></i>Reforzar ' + a.label.toLowerCase() + '</li>').join('')
-      : '<li><i class="ti ti-circle-arrow-right" style="color:#0047AB;"></i>Mantener el buen nivel en todas las áreas</li>'
-
-    const objetivoCard = '<div class="ev-card">' +
-      '<div class="ev-card-hdr">' +
-        '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-target" style="font-size:20px;color:#0047AB;"></i></div>' +
-        '<div class="ev-card-hdr-txt"><div class="ev-card-title">Objetivo del próximo mes</div></div>' +
-      '</div>' +
-      '<div class="ev-card-body"><ul class="bullet-list">' + objItems + '</ul></div>' +
-    '</div>'
-
-    el.innerHTML =
-      '<div style="font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;">' +
-        '<i class="ti ti-calendar" style="font-size:14px;vertical-align:-2px;"></i> ' + fmtFecha(e.fecha) +
-      '</div>' +
-      '<div class="resumen-3">' +
-        '<div class="resumen-blk">' +
-          '<div class="resumen-lbl">Resultado</div>' +
-          '<div class="resumen-val ' + resumen.cls + '">' + resumen.txt + '</div>' +
-          '<div class="resumen-sub">Prom. ' + promFmt + '/10</div>' +
-        '</div>' +
-        '<div class="resumen-blk" style="border-left:1px solid #f3f4f6;border-right:1px solid #f3f4f6;">' +
-          '<div class="resumen-lbl">Fortaleza</div>' +
-          '<i class="ti ti-star" style="font-size:22px;color:#15803d;display:block;margin:4px 0;"></i>' +
-          '<div style="font-size:11px;font-weight:700;color:#15803d;line-height:1.3;">' + fortaleza + '</div>' +
-        '</div>' +
-        '<div class="resumen-blk">' +
-          '<div class="resumen-lbl">A reforzar</div>' +
-          '<i class="ti ti-target" style="font-size:22px;color:#b45309;display:block;margin:4px 0;"></i>' +
-          '<div style="font-size:11px;font-weight:700;color:#b45309;line-height:1.3;">' + aReforzar + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="ev-card">' +
-        '<div class="ev-card-hdr">' +
-          '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-chart-bar" style="font-size:20px;color:#0047AB;"></i></div>' +
-          '<div class="ev-card-hdr-txt">' +
-            '<div class="ev-card-title">Evaluación por áreas</div>' +
-            '<div class="ev-card-sub">Promedio ' + promFmt + '/10</div>' +
-          '</div>' +
-        '</div>' +
-        areasHtml +
-      '</div>' +
-      compHtml + dualCard + comentCard + objetivoCard + ayudaMensual()
 
     lucide.createIcons()
   }
 
+  // Tabs
   document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('[data-tab]').forEach(c => c.classList.remove('on'))
-    b.classList.add('on')
+    document.querySelectorAll('[data-tab]').forEach(c => c.classList.remove('on')); b.classList.add('on')
     const d = b.dataset.tab === 'diaria'
-    document.getElementById('tab-diaria').style.display  = d ? 'block' : 'none'
-    document.getElementById('tab-mensual').style.display = d ? 'none'  : 'block'
+    document.getElementById('diaria').style.display = d ? 'block' : 'none'
+    document.getElementById('mensual').style.display = d ? 'none' : 'block'
   }))
 
   cargarDiarias()
   cargarMensual()
   lucide.createIcons()
-})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {

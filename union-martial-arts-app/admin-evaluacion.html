@@ -1,55 +1,28 @@
 ﻿<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Evaluaciones — Admin</title>
-<link rel="stylesheet" href="css/uma.css" />
-<style>
-.eval-hist-item { display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid #f3f4f6; cursor:pointer; transition:background .12s; }
-.eval-hist-item:last-child { border-bottom:none; }
-.eval-hist-item:active { background:#f9fafb; }
-.eval-hist-fecha { font-size:13px; font-weight:700; color:#111827; flex:1; }
-.eval-hist-sub { font-size:12px; color:#6b7280; margin-top:1px; }
-.eval-edit-btn { font-size:12px; font-weight:700; color:#0047AB; background:#eff6ff; border:none; border-radius:20px; padding:5px 12px; cursor:pointer; flex-shrink:0; }
-.edit-mode-banner { background:#fffbeb; border:1.5px solid #fde68a; border-radius:12px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#b45309; }
-</style>
-</head>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Registrar evaluación</title><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css?v=18" /></head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead dark">
-    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="sub">Admin</div><div class="title">Evaluaciones</div></div>
-  </div>
+  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="sub">Evaluación del día</div><div class="title">Registrar evaluación</div></div></div>
   <div class="body">
-
-    <!-- Selector y modo -->
-    <div class="card mb14"><div class="stack">
-      <label class="field"><span class="lab">Alumno</span>
-        <select id="al-sel"><option value="">Cargando...</option></select></label>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="chip on" data-tipo="diaria">Evaluación del día</button>
-        <button class="chip" data-tipo="mensual">Evaluación mensual</button>
-      </div>
-    </div></div>
-
-    <!-- Historial reciente -->
-    <div id="historial-wrap" style="display:none;">
-      <div class="label row" style="margin-bottom:6px;">
-        <span id="hist-label">Evaluaciones recientes</span>
-        <button class="btn-link" id="btn-nueva" style="font-size:13px;font-weight:700;color:#0047AB;background:none;border:none;cursor:pointer;">+ Nueva</button>
-      </div>
-      <div class="card flush mb14" id="historial-list"></div>
-    </div>
-
-    <!-- Formulario -->
     <div id="form">
-      <div id="edit-banner" class="edit-mode-banner" style="display:none;">
-        <i data-lucide="pencil" style="width:16px;height:16px;flex-shrink:0;"></i>
-        <span id="edit-banner-txt">Editando evaluación del día</span>
-        <button onclick="resetForm()" style="margin-left:auto;font-size:12px;color:#b45309;background:none;border:none;cursor:pointer;font-weight:700;">Cancelar</button>
-      </div>
+      <div class="card mb14"><div class="stack">
+        <label class="field"><span class="lab">Alumno</span>
+          <select id="al-sel"><option value="">Cargando...</option></select></label>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="chip on" data-tipo="diaria">Evaluación del día</button>
+          <button class="chip" data-tipo="mensual">Evaluación mensual</button>
+        </div>
+      </div></div>
 
-      <!-- Diaria -->
+      <!-- Evaluación diaria: checklist -->
       <div id="panel-diaria">
         <div class="label row"><span>Áreas del día</span><span class="badge" id="cnt">0/9</span></div>
         <div class="card flush mb14" id="list"></div>
@@ -57,7 +30,7 @@
           <textarea id="nota-diaria" rows="3" placeholder="Comentario para los padres…"></textarea></label>
       </div>
 
-      <!-- Mensual -->
+      <!-- Evaluación mensual: calificaciones 1-10 -->
       <div id="panel-mensual" style="display:none;">
         <div class="card mb14"><div class="stack">
           <div style="font-size:12px;font-weight:500;color:var(--muted);">Califica del 1 al 10</div>
@@ -67,30 +40,18 @@
         </div></div>
       </div>
 
-      <!-- Diploma -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Diploma del examen (foto o PDF, opcional)</div>
-        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
-          <i data-lucide="file-badge" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
-          <span id="diploma-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir diploma</span>
-          <input type="file" id="diploma-file" accept="image/*,.pdf" hidden />
-        </label>
-      </div>
-
       <div id="err" class="notice red" style="display:none;"></div>
       <button class="btn primary block" id="save"><i data-lucide="save"></i> Guardar evaluación</button>
     </div>
 
-    <!-- Confirmación -->
     <div id="ok" style="display:none;">
       <div class="card green center">
         <div style="display:inline-flex;margin-bottom:6px;color:var(--green-600);"><i data-lucide="check-circle" style="width:26px;height:26px"></i></div>
-        <div style="font-size:15px;font-weight:700;color:var(--green-text);" id="ok-msg">Evaluación guardada</div>
-        <div style="font-size:13px;color:var(--green-text);margin-top:4px;" id="ok-sub">Se notificó a la familia del alumno.</div>
+        <div style="font-size:15px;font-weight:700;color:var(--green-text);">Evaluación guardada</div>
+        <div style="font-size:13px;color:var(--green-text);margin-top:4px;">Se notificó a la familia del alumno.</div>
       </div>
       <button class="btn secondary block mt14" onclick="location.reload()"><i data-lucide="plus"></i> Nueva evaluación</button>
     </div>
-
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
@@ -99,56 +60,42 @@
     <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
   </nav>
 </div></div>
-
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
-
-  const fmtFecha = f => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short', year:'numeric' }) : '—'
 
   // Cargar alumnos
   const { data: alumnos } = await supabase.from('alumnos').select('id, nombre, cinta').order('nombre')
   const alSel = document.getElementById('al-sel')
   if (alumnos?.length) {
-    alSel.innerHTML = '<option value="">— Seleccionar alumno —</option>' +
-      alumnos.map(a => '<option value="' + a.id + '">' + a.nombre + (a.cinta ? ' — Cinta ' + a.cinta : '') + '</option>').join('')
+    alSel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.nombre}${a.cinta ? ' — Cinta ' + a.cinta : ''}</option>`).join('')
   }
 
-  // ── Estado global ──────────────────────────────────
+  // Tabs tipo
   let tipo = 'diaria'
-  let editId = null   // null = nueva, string = editando este ID
-
-  // ── Tabs tipo ──────────────────────────────────────
   document.querySelectorAll('[data-tipo]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tipo]').forEach(c => c.classList.remove('on')); b.classList.add('on')
     tipo = b.dataset.tipo
-    document.getElementById('panel-diaria').style.display  = tipo === 'diaria'  ? 'block' : 'none'
+    document.getElementById('panel-diaria').style.display = tipo === 'diaria' ? 'block' : 'none'
     document.getElementById('panel-mensual').style.display = tipo === 'mensual' ? 'block' : 'none'
-    resetForm()
-    cargarHistorial()
   }))
 
-  // ── Al cambiar alumno, cargar historial ────────────
-  alSel.addEventListener('change', () => { resetForm(); cargarHistorial() })
-
-  // ── DIARIA ─────────────────────────────────────────
+  // === DIARIA ===
   const ITEMS = ['Actitud','Esfuerzo','Técnica','Participación','Trabajo en equipo','Uniforme completo','Higiene y limpieza','Respeto','Llegó a tiempo']
   const st = {}
 
   function render() {
     document.getElementById('list').innerHTML = ITEMS.map((d, i) =>
-      '<button class="checkitem ' + (st[i] ? 'done' : '') + '" data-i="' + i + '">' +
-        '<span class="box"><i data-lucide="check"></i></span>' +
-        '<span class="txt">' + d + '</span>' +
-      '</button>').join('')
+      `<button class="checkitem ${st[i]?'done':''}" data-i="${i}">
+        <span class="box"><i data-lucide="check"></i></span>
+        <span class="txt">${d}</span>
+      </button>`).join('')
     const n = Object.values(st).filter(Boolean).length
     document.getElementById('cnt').textContent = n + '/' + ITEMS.length
     document.getElementById('cnt').className = 'badge ' + (n === ITEMS.length ? 'green' : n > 0 ? 'blue' : '')
@@ -160,121 +107,37 @@
   })
   render()
 
-  // ── MENSUAL ────────────────────────────────────────
+  // === MENSUAL ===
   const AREAS = [
-    { k:'tecnica_golpe',    label:'Técnica de golpe' },
-    { k:'patadas',          label:'Patadas' },
-    { k:'defensa',          label:'Defensa' },
-    { k:'condicion_fisica', label:'Condición física' },
-    { k:'disciplina',       label:'Disciplina' },
-    { k:'coordinacion',     label:'Coordinación' },
+    { k: 'tecnica_golpe', label: 'Técnica de golpe' },
+    { k: 'patadas',       label: 'Patadas' },
+    { k: 'defensa',       label: 'Defensa' },
+    { k: 'condicion_fisica', label: 'Condición física' },
+    { k: 'disciplina',    label: 'Disciplina' },
+    { k: 'coordinacion',  label: 'Coordinación' },
   ]
   const vals = {}
   AREAS.forEach(a => { vals[a.k] = 7 })
 
   function renderSliders() {
-    document.getElementById('sliders').innerHTML = AREAS.map(a =>
-      '<div class="prog" style="margin-bottom:16px;">' +
-        '<div class="head" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:13px;">' +
-          '<span>' + a.label + '</span><b style="color:var(--primary);">' + vals[a.k] + ' / 10</b>' +
-        '</div>' +
-        '<input type="range" min="1" max="10" value="' + vals[a.k] + '" data-k="' + a.k + '" style="width:100%;accent-color:var(--primary);" />' +
-      '</div>'
-    ).join('')
+    document.getElementById('sliders').innerHTML = AREAS.map(a => `
+      <div class="prog" style="margin-bottom:16px;">
+        <div class="head" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:13px;">
+          <span>${a.label}</span><b style="color:var(--primary);">${vals[a.k]} / 10</b>
+        </div>
+        <input type="range" min="1" max="10" value="${vals[a.k]}" data-k="${a.k}"
+          style="width:100%;accent-color:var(--primary);" />
+      </div>`).join('')
     document.querySelectorAll('#sliders input[type=range]').forEach(inp => {
-      inp.addEventListener('input', () => { vals[inp.dataset.k] = parseInt(inp.value); renderSliders() })
+      inp.addEventListener('input', () => {
+        vals[inp.dataset.k] = parseInt(inp.value)
+        renderSliders()
+      })
     })
   }
   renderSliders()
 
-  // ── Historial ──────────────────────────────────────
-  async function cargarHistorial() {
-    const alumno_id = alSel.value
-    const wrap = document.getElementById('historial-wrap')
-    if (!alumno_id) { wrap.style.display = 'none'; return }
-
-    const col = tipo === 'diaria' ? 'actitud' : 'tecnica_golpe'
-    const { data: evals } = await supabase.from('evaluaciones')
-      .select('id, fecha, puntuacion, nota, comentarios, actitud, esfuerzo, tecnica, participacion, tecnica_golpe, patadas, defensa, condicion_fisica, disciplina, coordinacion')
-      .eq('alumno_id', alumno_id)
-      .not(col, 'is', null)
-      .order('fecha', { ascending: false }).limit(10)
-
-    const listEl = document.getElementById('historial-list')
-    document.getElementById('hist-label').textContent = tipo === 'diaria' ? 'Evaluaciones diarias recientes' : 'Evaluaciones mensuales recientes'
-
-    if (!evals?.length) {
-      listEl.innerHTML = '<div style="padding:14px;font-size:13px;color:var(--muted);text-align:center;">Sin evaluaciones aún</div>'
-    } else {
-      listEl.innerHTML = evals.map(e => {
-        const sub = tipo === 'diaria'
-          ? [e.actitud && 'Actitud', e.esfuerzo && 'Esfuerzo', e.tecnica && 'Técnica', e.participacion && 'Participación'].filter(Boolean).join(', ') || 'Sin criterios'
-          : 'Prom: ' + ((e.tecnica_golpe + e.patadas + e.defensa + e.condicion_fisica + e.disciplina + e.coordinacion) / 6).toFixed(1) + '/10'
-        return '<div class="eval-hist-item" data-eid="' + e.id + '">' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div class="eval-hist-fecha">' + fmtFecha(e.fecha) + '</div>' +
-            '<div class="eval-hist-sub">' + sub + '</div>' +
-          '</div>' +
-          '<button class="eval-edit-btn" data-eid="' + e.id + '">Editar</button>' +
-        '</div>'
-      }).join('')
-    }
-
-    // Click en editar
-    listEl.addEventListener('click', e => {
-      const btn = e.target.closest('[data-eid]'); if (!btn) return
-      const eid = btn.dataset.eid
-      const rec = evals.find(x => x.id === eid)
-      if (rec) cargarEnForm(rec)
-    }, { once: true })
-
-    wrap.style.display = 'block'
-    lucide.createIcons()
-  }
-
-  function cargarEnForm(rec) {
-    editId = rec.id
-    const banner = document.getElementById('edit-banner')
-    banner.style.display = 'flex'
-    document.getElementById('edit-banner-txt').textContent = tipo === 'diaria'
-      ? 'Editando evaluación del ' + fmtFecha(rec.fecha)
-      : 'Editando evaluación mensual del ' + fmtFecha(rec.fecha)
-    document.getElementById('save').innerHTML = '<i data-lucide="save"></i> Actualizar evaluación'
-
-    if (tipo === 'diaria') {
-      // Restaurar solo los 4 campos que se guardan en DB
-      st[0] = !!rec.actitud; st[1] = !!rec.esfuerzo; st[2] = !!rec.tecnica; st[3] = !!rec.participacion
-      // Items 4-8 no están en DB, quedan como estaban
-      render()
-      document.getElementById('nota-diaria').value = rec.nota || ''
-    } else {
-      AREAS.forEach(a => { if (rec[a.k] != null) vals[a.k] = rec[a.k] })
-      renderSliders()
-      document.getElementById('nota-mensual').value = rec.comentarios || ''
-    }
-
-    lucide.createIcons()
-    // Scroll al formulario
-    document.getElementById('form').scrollIntoView({ behavior:'smooth', block:'start' })
-  }
-
-  window.resetForm = function() {
-    editId = null
-    document.getElementById('edit-banner').style.display = 'none'
-    document.getElementById('save').innerHTML = '<i data-lucide="save"></i> Guardar evaluación'
-    // Reset diaria
-    ITEMS.forEach((_, i) => { st[i] = false }); render()
-    document.getElementById('nota-diaria').value = ''
-    // Reset mensual
-    AREAS.forEach(a => { vals[a.k] = 7 }); renderSliders()
-    document.getElementById('nota-mensual').value = ''
-    document.getElementById('err').style.display = 'none'
-    lucide.createIcons()
-  }
-
-  document.getElementById('btn-nueva').addEventListener('click', resetForm)
-
-  // ── GUARDAR / ACTUALIZAR ────────────────────────────
+  // === GUARDAR ===
   document.getElementById('save').addEventListener('click', async () => {
     const alumno_id = alSel.value
     const errEl = document.getElementById('err')
@@ -284,75 +147,48 @@
     const btn = document.getElementById('save')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
-    // Subir diploma si hay
-    let diploma_url = null
-    const diplomaFile = document.getElementById('diploma-file').files[0]
-    if (diplomaFile) {
-      const ext = diplomaFile.name.split('.').pop()
-      const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
-      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile)
-      if (!de) diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
-    }
-
     const fecha = new Date().toISOString().split('T')[0]
     const alumno = alumnos?.find(a => a.id === alumno_id)
-    let payload = {}
+    let payload = { alumno_id, fecha }
     let notifTexto = ''
-    let isEdit = !!editId
 
     if (tipo === 'diaria') {
       const nota = document.getElementById('nota-diaria').value.trim()
       const areas = ITEMS.filter((_, i) => st[i])
       const puntuacion = Math.round((areas.length / ITEMS.length) * 100)
-      payload = { puntuacion, actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2], participacion: !!st[3], nota }
-      if (!isEdit) payload = { ...payload, alumno_id, fecha }
-      notifTexto = (isEdit ? '✏️ Evaluación actualizada' : '📋 Evaluación del día') + ' ' + fecha + ' — ' + (alumno?.nombre || '') + ': ' + areas.length + '/' + ITEMS.length + ' áreas' + (nota ? '\n"' + nota + '"' : '')
+      payload = { ...payload, puntuacion,
+        actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2],
+        participacion: !!st[3], nota }
+      notifTexto = `📋 Evaluación del día ${fecha} — ${alumno?.nombre}: ${areas.length}/${ITEMS.length} áreas${nota ? '\n"' + nota + '"' : ''}`
     } else {
       const nota = document.getElementById('nota-mensual').value.trim()
-      const prom = (Object.values(vals).reduce((s,v) => s+v, 0) / AREAS.length).toFixed(1)
-      payload = { ...vals, comentarios: nota, puntuacion: Math.round(parseFloat(prom) * 10) }
-      if (!isEdit) payload = { ...payload, alumno_id, fecha }
-      notifTexto = (isEdit ? '✏️ Evaluación mensual actualizada' : '📊 Evaluación mensual') + ' — ' + (alumno?.nombre || '') + ': Promedio ' + prom + '/10' + (nota ? '\n"' + nota + '"' : '')
+      const prom = (Object.values(vals).reduce((s,v)=>s+v,0)/AREAS.length).toFixed(1)
+      payload = { ...payload, ...vals, comentarios: nota, puntuacion: Math.round(parseFloat(prom)*10) }
+      notifTexto = `📊 Evaluación mensual — ${alumno?.nombre}: Promedio ${prom}/10${nota ? '\n"' + nota + '"' : ''}`
     }
 
-    let error
-    if (isEdit) {
-      const res = await supabase.from('evaluaciones').update(payload).eq('id', editId)
-      error = res.error
-    } else {
-      const res = await supabase.from('evaluaciones').insert(payload)
-      error = res.error
-    }
-
+    const { error } = await supabase.from('evaluaciones').insert(payload)
     if (error) {
-      errEl.textContent = 'Error: ' + error.message
+      errEl.textContent = 'Error al guardar: ' + error.message
       errEl.style.display = 'flex'
-      btn.disabled = false
-      btn.innerHTML = isEdit ? '<i data-lucide="save"></i> Actualizar evaluación' : '<i data-lucide="save"></i> Guardar evaluación'
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar evaluación'
       lucide.createIcons(); return
     }
 
-    // Notificar padres solo en evaluaciones nuevas (no en ediciones silenciosas)
-    if (!isEdit) {
-      const textoFinal = diploma_url ? notifTexto + `\n📜 Diploma: ${diploma_url}` : notifTexto
-      await supabase.from('mensajes').insert({ de_user_id: user.id, texto: textoFinal, para_admin: false })
-    }
+    // Notificar a los padres
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto: notifTexto, para_admin: false })
 
-    // Preview diploma label reset
-    document.getElementById('diploma-label').textContent = 'Subir diploma'
-    document.getElementById('diploma-file').value = ''
-
-    document.getElementById('ok-msg').textContent = isEdit ? 'Evaluación actualizada' : 'Evaluación guardada'
-    document.getElementById('ok-sub').textContent = isEdit ? 'Los cambios se guardaron correctamente.' : 'Se notificó a la familia del alumno.'
     document.getElementById('form').style.display = 'none'
-    document.getElementById('historial-wrap').style.display = 'none'
     document.getElementById('ok').style.display = 'block'
     lucide.createIcons()
   })
 
   lucide.createIcons()
-})();
 </script>
-</body>
-</html>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body></html>
 

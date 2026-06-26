@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css" />
+  <link rel="stylesheet" href="css/uma.css?v=18" />
 </head>
 <body>
 <div class="phone"><div class="screen">
@@ -58,6 +58,14 @@
             <option value="Infantil (5-12 años)">Infantil (5 — 12 años)</option>
             <option value="Juvenil (13-17 años)">Juvenil (13 — 17 años)</option>
             <option value="Adultos (18+ años)">Adultos (18+ años)</option>
+          </select></label>
+
+        <label class="field"><span class="lab">Plan de pago</span>
+          <select id="plan-pago">
+            <option value="mensual">Básico mensual</option>
+            <option value="anual">Anual UNION</option>
+            <option value="club">Club Cinta Negra</option>
+            <option value="elite">Élite UACJ</option>
           </select></label>
 
         <div class="field"><span class="lab">Horarios (selecciona todos los que apliquen)</span>
@@ -214,7 +222,7 @@
     // 2. Insertar alumno
     const { data: alumno, error: errAlumno } = await supabase
       .from('alumnos')
-      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario })
+      .insert({ nombre: nombreAlumno, fecha_nacimiento: fechaNac || null, fecha_ingreso: fechaIngreso || null, cinta, grupo, horario, plan_pago: document.getElementById('plan-pago').value })
       .select().single()
 
     if (errAlumno) {
