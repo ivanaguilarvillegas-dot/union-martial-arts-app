@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Actividad de alumnos — UNION Admin</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css"/>
+<style>
+.act-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.act-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.act-avatar{width:36px;height:36px;border-radius:50%;background:#eef2ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.act-nombre{font-size:13px;font-weight:700;color:var(--text);}
+.act-fecha{font-size:11px;color:var(--muted);}
+.act-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.act-chip{font-size:11px;font-weight:600;border-radius:99px;padding:4px 10px;}
+.act-chip.green{background:#f0fdf4;color:#059669;}
+.act-chip.blue{background:#eef2ff;color:#1d4ed8;}
+.act-chip.amber{background:#fffbeb;color:#d97706;}
+.act-chip.purple{background:#f5f3ff;color:#7c3aed;}
+.tab-bar{display:flex;gap:4px;padding:10px 12px 0;background:#f4f6fb;}
+.tab{flex:1;padding:8px;border:none;background:none;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px;font-family:inherit;}
+.tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.resumen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.res-tile{background:#fff;border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.res-tile .rv{font-size:22px;font-weight:800;color:var(--uma-blue-700,#0d1a5e);}
+.res-tile .rl{font-size:10px;color:var(--muted);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Actividad de alumnos</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" data-tab="habitos" onclick="tab('habitos')">Hábitos</button>
+    <button class="tab" data-tab="nutricion" onclick="tab('nutricion')">Nutrición</button>
+    <button class="tab" data-tab="meditacion" onclick="tab('meditacion')">Meditación</button>
+  </div>
+
+  <div class="body" id="act-body">
+    <div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div>
+  </div>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const sb = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+
+const { data: { user } } = await sb.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
+
+let tabActual = 'habitos'
+let datos = {}
+
+window.tab = function(t) {
+  tabActual = t
+  document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === t))
+  render()
+}
+
+async function cargar() {
+  const hoy = new Date().toISOString().split('T')[0]
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]
+
+  const [habRes, nutRes, medRes, alumRes] = await Promise.all([
+    sb.from('habitos_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
+    sb.from('nutricion_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
+    sb.from('meditacion_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
+    sb.from('alumnos').select('id, nombre').eq('activo', true).order('nombre'),
+  ])
+
+  datos = {
+    habitos: habRes.data || [],
+    nutricion: nutRes.data || [],
+    meditacion: medRes.data || [],
+    alumnos: alumRes.data || []
+  }
+  render()
+}
+
+function render() {
+  const body = document.getElementById('act-body')
+  const lista = datos[tabActual] || []
+  const alumnos = datos.alumnos || []
+
+  // Resumen
+  const unicos = new Set(lista.map(r => r.alumno_id)).size
+  const totalHoy = lista.filter(r => r.fecha === new Date().toISOString().split('T')[0]).length
+  const pct = alumnos.length ? Math.round(unicos / alumnos.length * 100) : 0
+
+  const iconos = { habitos: '🏋️', nutricion: '🥗', meditacion: '🧘' }
+  const labels = { habitos: 'ejercicio', nutricion: 'nutrición', meditacion: 'meditación' }
+
+  if (!lista.length) {
+    body.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">
+      <div style="font-size:36px;margin-bottom:8px;">${iconos[tabActual]}</div>
+      Sin registros de ${labels[tabActual]} en los últimos 30 días.
+    </div>`
+    return
+  }
+
+  // Agrupar por alumno
+  const porAlumno = {}
+  lista.forEach(r => {
+    const nom = r.alumnos?.nombre || 'Alumno'
+    if (!porAlumno[nom]) porAlumno[nom] = []
+    porAlumno[nom].push(r)
+  })
+
+  body.innerHTML = `
+    <div class="resumen-grid">
+      <div class="res-tile"><div class="rv">${unicos}</div><div class="rl">Alumnos activos</div></div>
+      <div class="res-tile"><div class="rv">${totalHoy}</div><div class="rl">Registros hoy</div></div>
+      <div class="res-tile"><div class="rv">${pct}%</div><div class="rl">Participación</div></div>
+    </div>
+    ${Object.entries(porAlumno).map(([nom, regs]) => {
+      const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
+      const ultimo = regs[0]
+      const fecha = new Date(ultimo.fecha || ultimo.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short' })
+      return `<div class="act-card">
+        <div class="act-header">
+          <div class="act-avatar">${ini}</div>
+          <div style="flex:1;">
+            <div class="act-nombre">${nom}</div>
+            <div class="act-fecha">Último registro: ${fecha} · ${regs.length} en 30 días</div>
+          </div>
+          <span class="act-chip green">✓ Activo</span>
+        </div>
+        <div class="act-chips">
+          ${regs.slice(0,5).map(r => `<span class="act-chip ${tabActual==='habitos'?'blue':tabActual==='nutricion'?'green':'purple'}">
+            ${r.tipo || r.categoria || r.ejercicio || labels[tabActual]}
+          </span>`).join('')}
+          ${regs.length > 5 ? `<span class="act-chip amber">+${regs.length-5} más</span>` : ''}
+        </div>
+      </div>`
+    }).join('')}
+  `
+  lucide.createIcons()
+}
+
+cargar()
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
+</body>
+</html>
