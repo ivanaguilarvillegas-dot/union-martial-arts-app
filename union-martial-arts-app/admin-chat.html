@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Chat — UNION Admin</title>
+<link rel="stylesheet" href="css/uma.css"/>
+<style>
+.chat-list-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--ink-100);cursor:pointer;background:#fff;transition:background .15s;}
+.chat-list-item:active{background:var(--soft);}
+.chat-avatar{width:42px;height:42px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
+.chat-info{flex:1;min-width:0;}
+.chat-name{font-size:14px;font-weight:700;color:var(--text);}
+.chat-preview{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.chat-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.chat-time{font-size:11px;color:var(--muted);}
+.badge{background:var(--primary);color:#fff;font-size:10px;font-weight:800;border-radius:99px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+
+/* Chat window */
+#chat-window{position:absolute;inset:0;background:#f4f6fb;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);z-index:50;}
+#chat-window.open{transform:translateX(0);}
+.chat-header{background:var(--primary);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.chat-header .back{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0;line-height:1;}
+.chat-header .chat-title{flex:1;font-size:15px;font-weight:700;}
+.chat-header .chat-sub{font-size:11px;opacity:.7;}
+.messages{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px;}
+.msg{max-width:78%;padding:9px 13px;border-radius:18px;font-size:13.5px;line-height:1.45;word-break:break-word;}
+.msg.from-admin{background:var(--primary);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.msg.from-padre{background:#fff;color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.msg-time{font-size:10px;opacity:.6;margin-top:3px;text-align:right;}
+.msg-label{font-size:10px;color:var(--muted);text-align:center;margin:4px 0;}
+.input-bar{background:#fff;border-top:1px solid var(--ink-100);padding:8px 10px;padding-bottom:max(8px,env(safe-area-inset-bottom,8px));display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.input-bar textarea{flex:1;border:1.5px solid var(--ink-200);border-radius:20px;padding:8px 14px;font-size:14px;font-family:var(--font);resize:none;outline:none;max-height:100px;line-height:1.4;}
+.input-bar textarea:focus{border-color:var(--primary);}
+.send-btn{background:var(--primary);border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity .15s;}
+.send-btn:active{opacity:.7;}
+.send-btn svg{width:18px;height:18px;fill:#fff;}
+.empty-state{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:24px;}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen" style="position:relative;overflow:hidden;">
+
+  <!-- Lista de conversaciones -->
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Mensajes</div></div>
+    <button onclick="abrirNuevo()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;"><i data-lucide="edit"></i></button>
+  </div>
+  <div class="body" style="padding:0;" id="lista-body">
+    <div style="padding:12px 16px 8px;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Conversaciones</div>
+    <div id="lista-padres"><div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">Cargando...</div></div>
+  </div>
+
+  <!-- Ventana de chat -->
+  <div id="chat-window">
+    <div class="chat-header">
+      <button class="back" onclick="cerrarChat()">‹</button>
+      <div>
+        <div class="chat-title" id="cw-nombre">—</div>
+        <div class="chat-sub" id="cw-sub">Padre / Tutor</div>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-bar">
+      <textarea id="msg-input" rows="1" placeholder="Escribe un mensaje…" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="enviarMensaje()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Selector de nuevo destinatario -->
+  <div id="nuevo-panel" style="display:none;position:absolute;inset:0;background:#fff;z-index:60;flex-direction:column;">
+    <div class="navhead dark">
+      <button onclick="cerrarNuevo()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">‹</button>
+      <div class="grow"><div class="title">Nuevo mensaje</div></div>
+    </div>
+    <div style="padding:12px 16px 8px;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Selecciona un padre</div>
+    <div id="nuevo-lista" style="overflow-y:auto;flex:1;"></div>
+  </div>
+
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const sb = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await sb.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
+
+let currentPadreId = null
+let currentPadreNombre = null
+let pollTimer = null
+
+// ── CARGAR LISTA DE PADRES CON ÚLTIMO MENSAJE ──
+async function cargarLista() {
+  const { data: padres } = await sb.from('padres').select('id, nombre, user_id').eq('es_admin', false).order('nombre')
+  if (!padres?.length) { document.getElementById('lista-padres').innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay padres registrados.</div>'; return }
+
+  // Último mensaje por padre
+  const { data: msgs } = await sb.from('mensajes').select('id, texto, creado_en, para_admin, destinatario_id, de_user_id, leido').order('creado_en', { ascending: false })
+  const ultimoMap = {}
+  const noLeidoMap = {}
+  msgs?.forEach(m => {
+    const pid = m.destinatario_id || m.de_user_id
+    // match padre
+    const padre = padres.find(p => p.id === m.destinatario_id || p.user_id === m.de_user_id)
+    if (!padre) return
+    if (!ultimoMap[padre.id]) ultimoMap[padre.id] = m
+    if (!m.leido && m.para_admin) noLeidoMap[padre.id] = (noLeidoMap[padre.id] || 0) + 1
+  })
+
+  document.getElementById('lista-padres').innerHTML = padres.map(p => {
+    const ultimo = ultimoMap[p.id]
+    const preview = ultimo ? ultimo.texto.substring(0, 50) : 'Sin mensajes aún'
+    const hora = ultimo ? new Date(ultimo.creado_en).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' }) : ''
+    const badge = noLeidoMap[p.id] ? `<div class="badge">${noLeidoMap[p.id]}</div>` : ''
+    const iniciales = p.nombre ? p.nombre.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : '?'
+    return `<div class="chat-list-item" onclick="abrirChat('${p.id}','${p.nombre?.replace(/'/g,"\\'")}')">
+      <div class="chat-avatar">${iniciales}</div>
+      <div class="chat-info">
+        <div class="chat-name">${p.nombre || 'Padre'}</div>
+        <div class="chat-preview">${preview}</div>
+      </div>
+      <div class="chat-meta">
+        <span class="chat-time">${hora}</span>
+        ${badge}
+      </div>
+    </div>`
+  }).join('')
+  lucide.createIcons()
+}
+
+// ── ABRIR CHAT ──
+window.abrirChat = async function(padreId, nombre) {
+  currentPadreId = padreId
+  currentPadreNombre = nombre
+  document.getElementById('cw-nombre').textContent = nombre
+  document.getElementById('chat-window').classList.add('open')
+  await cargarMensajes()
+  // Marcar como leídos
+  await sb.from('mensajes').update({ leido: true }).eq('destinatario_id', padreId).eq('leido', false)
+  clearInterval(pollTimer)
+  pollTimer = setInterval(cargarMensajes, 4000)
+}
+
+window.cerrarChat = function() {
+  document.getElementById('chat-window').classList.remove('open')
+  clearInterval(pollTimer)
+  cargarLista()
+}
+
+// ── CARGAR MENSAJES DEL HILO ──
+async function cargarMensajes() {
+  const { data: padreRow } = await sb.from('padres').select('user_id').eq('id', currentPadreId).maybeSingle()
+  const padreUserId = padreRow?.user_id
+
+  const { data: msgs } = await sb.from('mensajes')
+    .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id')
+    .or(`and(para_admin.eq.true,de_user_id.eq.${padreUserId}),and(para_admin.eq.false,destinatario_id.eq.${currentPadreId})`)
+    .order('creado_en', { ascending: true })
+
+  const box = document.getElementById('messages')
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
+
+  if (!msgs?.length) {
+    box.innerHTML = '<div class="empty-state">Sin mensajes aún.<br>Inicia la conversación.</div>'
+    return
+  }
+
+  let lastDate = ''
+  box.innerHTML = msgs.map(m => {
+    const isAdmin = !m.para_admin && m.de_user_id === user.id || (!m.para_admin && m.destinatario_id === currentPadreId)
+    const fromAdmin = m.de_user_id === user.id
+    const dt = new Date(m.creado_en)
+    const dateStr = dt.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
+    const timeStr = dt.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+    let label = ''
+    if (dateStr !== lastDate) { label = `<div class="msg-label">${dateStr}</div>`; lastDate = dateStr }
+    return `${label}<div class="msg ${fromAdmin ? 'from-admin' : 'from-padre'}">
+      ${m.texto}
+      <div class="msg-time">${timeStr}</div>
+    </div>`
+  }).join('')
+
+  if (atBottom) box.scrollTop = box.scrollHeight
+}
+
+// ── ENVIAR MENSAJE ──
+window.enviarMensaje = async function() {
+  const ta = document.getElementById('msg-input')
+  const texto = ta.value.trim()
+  if (!texto || !currentPadreId) return
+  ta.value = ''; ta.style.height = 'auto'
+  await sb.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: currentPadreId, leido: false })
+  await cargarMensajes()
+}
+
+// ── NUEVO MENSAJE ──
+window.abrirNuevo = async function() {
+  const panel = document.getElementById('nuevo-panel')
+  panel.style.display = 'flex'
+  const { data: padres } = await sb.from('padres').select('id, nombre').eq('es_admin', false).order('nombre')
+  document.getElementById('nuevo-lista').innerHTML = padres?.map(p => {
+    const ini = p.nombre?.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?'
+    return `<div class="chat-list-item" onclick="selNuevo('${p.id}','${p.nombre?.replace(/'/g,"\\'")}')">
+      <div class="chat-avatar">${ini}</div>
+      <div class="chat-info"><div class="chat-name">${p.nombre}</div></div>
+    </div>`
+  }).join('') || '<div style="padding:24px;text-align:center;color:var(--muted);">No hay padres.</div>'
+}
+
+window.cerrarNuevo = function() { document.getElementById('nuevo-panel').style.display = 'none' }
+
+window.selNuevo = function(id, nombre) {
+  document.getElementById('nuevo-panel').style.display = 'none'
+  abrirChat(id, nombre)
+}
+
+// ── ENTER para enviar ──
+window.autoResize = function(ta) {
+  ta.style.height = 'auto'
+  ta.style.height = Math.min(ta.scrollHeight, 100) + 'px'
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && document.getElementById('chat-window').classList.contains('open')) {
+    e.preventDefault(); window.enviarMensaje()
+  }
+})
+
+cargarLista()
+lucide.createIcons()
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
+</body></html>
