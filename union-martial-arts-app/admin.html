@@ -255,24 +255,37 @@
   const hoy = new Date().toISOString().split('T')[0]
   const primerDia = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
 
-  const [alumnosRes, pagPendRes, asistRes, msgRes, cobradoRes, checksRes] = await Promise.all([
+  const [alumnosRes, pagPendRes, asistRes, msgRes, cobradoRes, checksRes, ausenciasRes] = await Promise.all([
     sb.from('alumnos').select('*', { count: 'exact', head: true }),
     sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
     sb.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
     sb.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
     sb.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDia),
     sb.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(12),
+    sb.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy).in('tipo', ['ausente','ausencia']),
   ])
+
+  const totalHoy = asistRes.count || 0
+  const ausencias = ausenciasRes.count || 0
+  const asistencias = totalHoy - ausencias
 
   const cobrado = (cobradoRes.data || []).reduce((s, p) => s + (Number(p.monto) || 0), 0)
   document.getElementById('st-alumnos').textContent = alumnosRes.count || 0
   document.getElementById('st-cobrado').textContent = '$' + (cobrado/1000).toFixed(1) + 'k'
   document.getElementById('st-pendientes').textContent = pagPendRes.count || 0
-  document.getElementById('st-hoy').textContent = asistRes.count || 0
-  document.getElementById('sub-checkin').textContent = (asistRes.count || 0) + ' asistencias hoy'
-  if ((asistRes.count || 0) > 0) {
+  document.getElementById('st-hoy').textContent = totalHoy
+
+  const subCheckin = asistencias > 0 && ausencias > 0
+    ? `✓ ${asistencias} asist. · ✗ ${ausencias} ausencias`
+    : ausencias > 0 ? `✗ ${ausencias} ausencias hoy`
+    : `✓ ${asistencias} asistencias hoy`
+  document.getElementById('sub-checkin').textContent = subCheckin
+
+  if (totalHoy > 0) {
     const bc = document.getElementById('badge-checkin')
-    bc.textContent = asistRes.count; bc.style.display = 'flex'
+    bc.textContent = ausencias > 0 ? ausencias : asistencias
+    bc.style.background = ausencias > 0 ? '#dc2626' : '#059669'
+    bc.style.display = 'flex'
   }
 
   const msgCount = msgRes.count || 0
