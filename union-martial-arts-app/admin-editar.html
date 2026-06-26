@@ -1,6 +1,12 @@
 ﻿<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Editar contenido</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Editar contenido</title><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f2167">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Union MA">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <div class="phone"><div class="screen">
   <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
@@ -29,16 +35,14 @@
   </div>
 </div>
 
-<script src="/js/supabase.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
   )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
   // Grupos de contenido con claves para guardar en Supabase
@@ -48,16 +52,8 @@
       { clave: 'precio_mensual_basico', default: 'Mensualidad Básico — $1,550' },
       { clave: 'precio_anual',          default: 'Anual UNION — $12,500' },
       { clave: 'precio_cinta_negra',    default: 'Club Cinta Negra — $9,950' },
-      { clave: 'precio_examen',         default: 'Examen (Cambio de Cinta) — $350' },
-      { clave: 'precio_torneo',         default: 'Torneo (Categorías) — $250' },
     ]},
-    { titulo: 'Horarios', ic: 'clock', items: [
-      { clave: 'horario_basico_ninos',  default: 'Básico niños: L, M y V de 4:00 a 5:00 / 5:00 a 6:00 / 6:00 a 7:00 pm' },
-      { clave: 'horario_martes_jueves', default: 'Martes 6:15 a 7:00 pm · Sábado 11:00 am a 12:00 pm' },
-      { clave: 'horario_jovenes',       default: 'Jóvenes/adultos: L, M y V 7:00 a 8:00 pm' },
-      { clave: 'horario_jueves_sabado', default: 'Jueves 6:30 a 7:30 pm · Sábado 12:00 a 1:00 pm' },
-    ]},
-    { titulo: 'Tienda en línea', ic: 'shopping-bag', items: [
+{ titulo: 'Tienda en línea', ic: 'shopping-bag', items: [
       { clave: null, default: 'Productos, precios y fotos', href: 'admin-tienda.html' },
     ]},
     { titulo: 'Programas y precios', ic: 'crown', items: [
@@ -143,7 +139,11 @@
     document.body.appendChild(toast)
     setTimeout(() => toast.remove(), 2500)
   })
-})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
 </script>
 </body></html>
 

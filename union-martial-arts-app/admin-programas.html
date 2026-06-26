@@ -1,107 +1,235 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Editar programas</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Programas y precios — Admin</title><link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+.prog-card{border-radius:14px;padding:16px;margin-bottom:12px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);position:relative;}
+.prog-card.popular{border:2px solid var(--primary);}
+.prog-card.elite{border:2px solid #d97706;background:linear-gradient(180deg,#fffbeb,#fff);}
+.prog-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.prog-precio{font-size:22px;font-weight:800;color:var(--primary);margin:10px 0 8px;}
+.prog-item{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-bottom:6px;}
+.prog-item i{width:15px;height:15px;color:#059669;flex-shrink:0;margin-top:1px;}
+.edit-btn{position:absolute;top:12px;right:12px;background:#eef2ff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;color:#1d4ed8;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.edit-btn i{width:12px;height:12px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;}
+</style>
+</head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="navhead dark"><a class="navback" href="admin-editar.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="title">Editar programas</div></div></div>
-  <div class="body">
-
-    <div class="label">Precios</div>
-    <div class="card mb14"><div class="stack">
-      <label class="field"><span class="lab">Inscripción</span>
-        <input id="precio_inscripcion" placeholder="Ej: $500 MXN" /></label>
-      <label class="field"><span class="lab">Mensualidad Básico</span>
-        <input id="precio_mensual_basico" placeholder="Ej: $1,550 / mes" /></label>
-      <label class="field"><span class="lab">Plan Anual UNION</span>
-        <input id="precio_anual" placeholder="Ej: $12,500 contado" /></label>
-      <label class="field"><span class="lab">Club Cinta Negra (anualidad)</span>
-        <input id="precio_cinta_negra" placeholder="Ej: $9,950 anualidad" /></label>
-    </div></div>
-
-    <div class="label">Horarios — Programa Básico</div>
-    <div class="card mb14"><div class="stack">
-      <label class="field"><span class="lab">Niños</span>
-        <textarea id="horario_basico_ninos" rows="2" placeholder="Ej: Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM"></textarea></label>
-      <label class="field"><span class="lab">Jóvenes y Adultos</span>
-        <textarea id="horario_jovenes" rows="2" placeholder="Ej: Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM"></textarea></label>
-    </div></div>
-
-    <div class="label">Club Cinta Negra</div>
-    <div class="card mb14"><div class="stack">
-      <label class="field"><span class="lab">Horario niños</span>
-        <input id="horario_club_ninos" placeholder="Ej: Niños · Sáb 10:00 AM–12:00 PM" /></label>
-      <label class="field"><span class="lab">Horario jóvenes</span>
-        <input id="horario_club_jovenes" placeholder="Ej: Jóvenes · Sáb 12:00–2:00 PM" /></label>
-      <label class="field"><span class="lab">Descripción extra (opcional)</span>
-        <textarea id="club_descripcion" rows="2" placeholder="Ej: Programa Kobudo + Liderazgo · Uniformes Club"></textarea></label>
-    </div></div>
-
-    <div class="label">Programa Élite UACJ</div>
-    <div class="card mb14"><div class="stack">
-      <label class="field"><span class="lab">Descripción / requisitos</span>
-        <textarea id="elite_descripcion" rows="3" placeholder="Ej: Ruta al equipo representativo universitario..."></textarea></label>
-    </div></div>
-
-    <div id="msg" class="notice" style="display:none;margin-bottom:12px;"></div>
-    <button class="btn primary block" id="guardar"><i data-lucide="save"></i> Guardar cambios</button>
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead dark">
+    <a class="navback" href="admin-editar.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Programas y precios</div></div>
+  </div>
+  <div class="body" id="planes-wrap">
+    <div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div>
   </div>
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
     <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
     <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Chat</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
+
+<!-- Modal editar programa -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-edit-title">Editar programa</div>
+    <div id="modal-edit-fields"></div>
+    <div id="modal-msg" style="display:none;" class="notice mb12"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn primary" style="flex:1;" id="modal-guardar"><i data-lucide="save"></i> Guardar</button>
+      <button class="btn secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) { window.location.href = 'index.html' }
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const sb = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await sb.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
 
-  const CLAVES = ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra',
-    'horario_basico_ninos','horario_jovenes','horario_club_ninos','horario_club_jovenes',
-    'club_descripcion','elite_descripcion']
+const CLAVES = ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra',
+  'horario_basico_ninos','horario_jovenes','horario_club_ninos','horario_club_jovenes',
+  'club_descripcion','elite_descripcion']
 
-  // Cargar valores actuales
-  const { data: rows } = await supabase.from('configuracion').select('clave, valor').in('clave', CLAVES)
-  ;(rows || []).forEach(r => {
-    const el = document.getElementById(r.clave)
-    if (el) el.value = r.valor || ''
-  })
+const PROGRAMAS = [
+  {
+    id: 'basico',
+    nombre: 'Programa Básico',
+    icon: 'star',
+    cls: '',
+    badge: '',
+    campos: [
+      { clave: 'precio_mensual_basico', label: 'Precio mensual', placeholder: '$1,550 / mes' },
+      { clave: 'precio_inscripcion',    label: 'Inscripción',    placeholder: '$500 MXN' },
+      { clave: 'horario_basico_ninos',  label: 'Horario niños',  placeholder: 'L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sáb 11–12 PM', tipo: 'textarea' },
+      { clave: 'horario_jovenes',       label: 'Horario jóvenes/adultos', placeholder: 'L, M, J y V · 7:00–8:00 PM · Sáb 12–1 PM', tipo: 'textarea' },
+    ]
+  },
+  {
+    id: 'anual',
+    nombre: 'Anual UNION',
+    icon: 'calendar',
+    cls: 'popular',
+    badge: 'Popular',
+    campos: [
+      { clave: 'precio_anual', label: 'Precio anual', placeholder: '$12,500 contado' },
+    ]
+  },
+  {
+    id: 'club',
+    nombre: 'Club Cinta Negra',
+    icon: 'crown',
+    cls: '',
+    badge: '',
+    campos: [
+      { clave: 'precio_cinta_negra',   label: 'Precio (anualidad)', placeholder: '$9,950 anualidad' },
+      { clave: 'horario_club_ninos',   label: 'Horario niños',      placeholder: 'Sáb 10:00 AM–12:00 PM' },
+      { clave: 'horario_club_jovenes', label: 'Horario jóvenes',    placeholder: 'Sáb 12:00–2:00 PM' },
+      { clave: 'club_descripcion',     label: 'Descripción',        placeholder: 'Programa Kobudo + Liderazgo…', tipo: 'textarea' },
+    ]
+  },
+  {
+    id: 'elite',
+    nombre: 'Programa Élite UACJ',
+    icon: 'graduation-cap',
+    cls: 'elite',
+    badge: 'Élite',
+    campos: [
+      { clave: 'elite_descripcion', label: 'Descripción / requisitos', placeholder: 'Ruta al equipo representativo universitario…', tipo: 'textarea' },
+    ]
+  },
+]
 
-  document.getElementById('guardar').addEventListener('click', async () => {
-    const btn = document.getElementById('guardar')
-    btn.disabled = true; btn.textContent = 'Guardando…'
+let cfg = {}
 
-    const upserts = CLAVES.map(c => ({
-      clave: c,
-      valor: document.getElementById(c)?.value?.trim() || ''
-    })).filter(r => r.valor)
+async function cargar() {
+  const { data: rows } = await sb.from('configuracion').select('clave, valor').in('clave', CLAVES)
+  cfg = {};(rows || []).forEach(r => { cfg[r.clave] = r.valor })
+  render()
+}
 
-    const { error } = await supabase.from('configuracion').upsert(upserts, { onConflict: 'clave' })
+function v(clave, def) { return cfg[clave] || def || '' }
 
-    const msg = document.getElementById('msg')
-    if (error) {
-      msg.textContent = '❌ Error: ' + error.message
-      msg.className = 'notice red'; msg.style.display = 'flex'
-    } else {
-      msg.textContent = '✅ Cambios guardados — los padres ya ven los nuevos datos.'
-      msg.className = 'notice green'; msg.style.display = 'flex'
-    }
-    btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar cambios'
-    lucide.createIcons()
-    setTimeout(() => msg.style.display = 'none', 3000)
-  })
+function render() {
+  const insc    = v('precio_inscripcion', '$500 MXN')
+  const mensual = v('precio_mensual_basico', '$1,550 / mes')
+  const anual   = v('precio_anual', '$12,500 contado')
+  const club    = v('precio_cinta_negra', '$9,950 anualidad')
+  const h0  = v('horario_basico_ninos', 'Niños: L, M y V · 4:00–7:00 PM · Martes 6:15 PM · Sábado 11:00 AM–12:00 PM')
+  const h2  = v('horario_jovenes', 'Jóvenes/Adultos: L, M, J y V · 7:00–8:00 PM · Sábado 12:00–1:00 PM')
+  const cn  = v('horario_club_ninos', 'Niños · Sáb 10:00 AM–12:00 PM')
+  const cj  = v('horario_club_jovenes', 'Jóvenes · Sáb 12:00–2:00 PM')
+  const cdesc = v('club_descripcion', 'Programa Kobudo + Liderazgo · Uniforme Club + evaluaciones mensuales')
+  const edesc = v('elite_descripcion', 'Construye su currículum deportivo desde primaria, secundaria y prepa')
 
+  const planes = [
+    { prog: PROGRAMAS[0], precio: mensual, infoExtra: 'Inscripción ' + insc,
+      items: ['5 clases por semana', h0, h2, 'Evaluaciones del día'] },
+    { prog: PROGRAMAS[1], precio: anual, infoExtra: 'o 3 pagos · mejor precio por clase',
+      items: ['Empiezas en Básico y tras 3 meses pasas a este plan', 'Todo el año cubierto', 'Mejor precio por clase'] },
+    { prog: PROGRAMAS[2], precio: club, infoExtra: 'Programa extra · 8 h de entrenamiento',
+      items: [cdesc, cn, cj, 'Competencias de Federación + Acrogimnasia'] },
+    { prog: PROGRAMAS[3], precio: 'Camino UACJ', infoExtra: 'Ruta al equipo representativo universitario',
+      items: [edesc, 'Pre-califica al equipo de Kickboxing de la UACJ', 'Requiere Anual UNION + Club Cinta Negra'] },
+  ]
+
+  document.getElementById('planes-wrap').innerHTML = planes.map(({ prog, precio, infoExtra, items }) => `
+    <div class="prog-card ${prog.cls}">
+      <button class="edit-btn" data-prog="${prog.id}"><i data-lucide="pencil"></i> Editar</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+        <div class="prog-icon" style="background:${prog.cls==='elite'?'#fffbeb':'#eef2ff'};color:${prog.cls==='elite'?'#d97706':'#1d4ed8'};">
+          <i data-lucide="${prog.icon}" style="width:21px;height:21px;"></i>
+        </div>
+        <div style="flex:1;padding-right:64px;">
+          <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            ${prog.nombre}
+            ${prog.badge ? `<span class="badge ${prog.cls==='elite'?'amber':'solid'}">${prog.badge}</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${infoExtra}</div>
+        </div>
+      </div>
+      <div class="prog-precio">${precio}</div>
+      <div>
+        ${items.map(it => `<div class="prog-item"><i data-lucide="check"></i>${it}</div>`).join('')}
+      </div>
+    </div>
+  `).join('')
   lucide.createIcons()
-})();
-</script>
-</body></html>
+}
 
+// Abrir modal de edición
+document.getElementById('planes-wrap').addEventListener('click', e => {
+  const btn = e.target.closest('[data-prog]'); if (!btn) return
+  const progId = btn.dataset.prog
+  const prog = PROGRAMAS.find(p => p.id === progId)
+  if (!prog) return
+
+  document.getElementById('modal-edit-title').textContent = 'Editar — ' + prog.nombre
+  document.getElementById('modal-edit-fields').innerHTML = prog.campos.map(c => `
+    <label class="field" style="margin-bottom:10px;">
+      <span class="lab">${c.label}</span>
+      ${c.tipo === 'textarea'
+        ? `<textarea id="ef-${c.clave}" rows="2" placeholder="${c.placeholder}" style="resize:vertical;">${cfg[c.clave] || ''}</textarea>`
+        : `<input id="ef-${c.clave}" placeholder="${c.placeholder}" value="${cfg[c.clave] || ''}" />`
+      }
+    </label>`).join('')
+
+  document.getElementById('modal-edit').classList.add('open')
+  document.getElementById('modal-msg').style.display = 'none'
+  document.getElementById('modal-guardar').dataset.prog = progId
+  lucide.createIcons()
+})
+
+document.getElementById('modal-guardar').addEventListener('click', async () => {
+  const progId = document.getElementById('modal-guardar').dataset.prog
+  const prog = PROGRAMAS.find(p => p.id === progId)
+  const btn = document.getElementById('modal-guardar')
+  btn.disabled = true; btn.textContent = 'Guardando…'
+
+  const upserts = prog.campos.map(c => ({
+    clave: c.clave,
+    valor: document.getElementById('ef-' + c.clave)?.value?.trim() || ''
+  })).filter(r => r.valor)
+
+  const { error } = await sb.from('configuracion').upsert(upserts, { onConflict: 'clave' })
+
+  const msg = document.getElementById('modal-msg')
+  if (error) {
+    msg.textContent = '❌ Error: ' + error.message
+    msg.className = 'notice red mb12'; msg.style.display = 'flex'
+  } else {
+    upserts.forEach(u => { cfg[u.clave] = u.valor })
+    cerrarModal()
+    render()
+  }
+  btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar'
+  lucide.createIcons()
+})
+
+window.cerrarModal = function() {
+  document.getElementById('modal-edit').classList.remove('open')
+}
+document.getElementById('modal-edit').addEventListener('click', e => {
+  if (e.target === e.currentTarget) cerrarModal()
+})
+
+cargar()
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
+</body></html>

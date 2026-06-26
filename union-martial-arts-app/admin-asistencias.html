@@ -1,117 +1,190 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Confirmar asistencias</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Asistencias — Admin</title><link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" />
+<style>
+.asis-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-100);}
+.asis-row:last-child{border-bottom:none;}
+.asis-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.asis-motivo{font-size:11px;color:var(--red-text,#9b2c2c);margin-top:2px;line-height:1.3;}
+.asis-nota{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;}
+.asis-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+.st-ok{background:var(--green-bg);color:var(--green-text);}
+.st-aus{background:var(--red-bg,#fff5f5);color:var(--red-text,#9b2c2c);}
+.st-none{background:var(--ink-100);color:var(--muted);}
+.mark-btn{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;border:none;cursor:pointer;flex-shrink:0;}
+</style>
+</head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="sub">Clase de hoy · 6:00 PM</div><div class="title">Confirmar asistencias</div></div></div>
-  <div class="body">
-    <div class="label row"><span>Lista de hoy</span><span class="badge green" id="cnt">2/6 confirmados</span></div>
-    <div class="stack-8" id="list"></div>
-    <button class="btn primary block mt16" onclick="location.href='admin.html'"><i data-lucide="save"></i> Guardar asistencias</button>
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow">
+      <div class="sub" id="fecha-sub">Hoy</div>
+      <div class="title">Asistencias</div>
+    </div>
+    <input type="date" id="fecha-picker" style="opacity:0;position:absolute;right:12px;top:12px;width:36px;height:36px;cursor:pointer;" />
+    <button style="background:none;border:none;color:#fff;cursor:pointer;" onclick="document.getElementById('fecha-picker').showPicker?.() || document.getElementById('fecha-picker').click()">
+      <i data-lucide="calendar"></i>
+    </button>
   </div>
+
+  <div class="body">
+    <!-- Resumen -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;" id="resumen">
+      <div class="card" style="text-align:center;padding:10px;">
+        <div style="font-size:20px;font-weight:800;color:var(--green-text);" id="cnt-ok">—</div>
+        <div style="font-size:11px;color:var(--muted);">Asistieron</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;">
+        <div style="font-size:20px;font-weight:800;color:var(--red-text,#9b2c2c);" id="cnt-aus">—</div>
+        <div style="font-size:11px;color:var(--muted);">Faltaron</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;">
+        <div style="font-size:20px;font-weight:800;color:var(--muted);" id="cnt-none">—</div>
+        <div style="font-size:11px;color:var(--muted);">Sin reporte</div>
+      </div>
+    </div>
+
+    <!-- Ausencias con motivo -->
+    <div id="sec-aus" style="display:none;">
+      <div class="label">Faltaron hoy</div>
+      <div class="card flush mb14" id="list-aus"></div>
+    </div>
+
+    <!-- Asistencias confirmadas -->
+    <div id="sec-ok" style="display:none;">
+      <div class="label">Asistieron</div>
+      <div class="card flush mb14" id="list-ok"></div>
+    </div>
+
+    <!-- Sin reporte / el profe puede marcar -->
+    <div id="sec-none" style="display:none;">
+      <div class="label">Sin reporte del padre — marcar manualmente</div>
+      <div class="card flush mb14" id="list-none"></div>
+    </div>
+  </div>
+
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
     <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
     <a href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Chat</a>
   </nav>
 </div></div>
-<script src="/js/supabase.min.js"></script>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  const hoy = new Date().toISOString().split('T')[0]
-  let alumnos = []
-  let marcados = new Set()
-  let ausentes = new Set()
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const sb = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await sb.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
 
-  if (!user) { window.location.href = 'index.html'; return }
+let fecha = new Date().toISOString().split('T')[0]
+const picker = document.getElementById('fecha-picker')
+picker.value = fecha
+picker.addEventListener('change', () => { fecha = picker.value; cargar() })
 
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+function ini(nombre) {
+  return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+}
+function colorBg(nombre) {
+  const cols = ['#1d4ed8','#059669','#7c3aed','#dc2626','#d97706','#0891b2']
+  let h = 0; for (const c of (nombre||'')) h = (h * 31 + c.charCodeAt(0)) % cols.length
+  return cols[h]
+}
 
-  async function cargar() {
-    const r = await fetch(
-      'https://gdajgennlsuvndanpxiz.supabase.co/rest/v1/alumnos?select=id,nombre',
-      { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + (session?.access_token || ANON_KEY) } }
-    )
-    const data = await r.json()
-    alumnos = Array.isArray(data) ? data : []
+async function cargar() {
+  const fechaLabel = new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
+  document.getElementById('fecha-sub').textContent = fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)
 
-    // Checkins de hoy registrados por padres
-    const { data: checks } = await supabase.from('checkins').select('alumno_id,tipo').eq('fecha', hoy)
-    marcados = new Set(checks?.filter(c => c.tipo !== 'ausencia').map(c => c.alumno_id) || [])
-    ausentes = new Set(checks?.filter(c => c.tipo === 'ausencia').map(c => c.alumno_id) || [])
-    render()
-  }
+  const [{ data: alumnos }, { data: checks }] = await Promise.all([
+    sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
+    sb.from('checkins').select('alumno_id, tipo, hora, ausencia_motivo, ausencia_nota').eq('fecha', fecha)
+  ])
 
-  function iniciales(nombre) {
-    return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
-  }
+  const checkMap = {}
+  ;(checks || []).forEach(c => { checkMap[c.alumno_id] = c })
 
-  function render() {
-    document.getElementById('list').innerHTML = alumnos.map((a) => {
-      const ok = marcados.has(a.id)
-      const ausente = ausentes.has(a.id)
-      if (ausente) {
-        return `<div class="row">
-          <span class="avatar" style="width:34px;height:34px;font-size:12px;background:#fee2e2;color:#991b1b;">${iniciales(a.nombre)}</span>
-          <span class="grow"><span class="t">${a.nombre}</span><span class="s" style="color:#dc2626;">No asistirá hoy</span></span>
-          <span class="trail"><span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:var(--r-full);background:#fee2e2;color:#991b1b;font-weight:600;font-size:12px;border:1px solid #fca5a5;">
-            <i data-lucide="x" style="width:14px;height:14px"></i> Ausente
-          </span></span>
-        </div>`
-      }
-      return `<div class="row">
-        <span class="avatar" style="width:34px;height:34px;font-size:12px;">${iniciales(a.nombre)}</span>
-        <span class="grow"><span class="t">${a.nombre}</span><span class="s">Clase de hoy</span></span>
-        <span class="trail"><button data-id="${a.id}" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${ok?'var(--green-600)':'var(--sunken)'};color:${ok?'#fff':'var(--muted)'};">
-          <i data-lucide="${ok?'check':'plus'}" style="width:14px;height:14px"></i> ${ok?'Asistió':'Marcar'}
-        </button></span>
-      </div>`
-    }).join('')
-    document.getElementById('cnt').textContent = marcados.size + '/' + alumnos.length + ' confirmados'
-    lucide.createIcons()
-  }
+  const ausentes = []
+  const asistieron = []
+  const sinReporte = []
 
-  const errEl = document.createElement('div')
-  errEl.className = 'notice red'
-  errEl.style.cssText = 'display:none;margin:8px 0;'
-  document.getElementById('list').before(errEl)
-
-  document.getElementById('list').addEventListener('click', async e => {
-    const b = e.target.closest('[data-id]'); if (!b) return
-    const id = b.dataset.id
-    errEl.style.display = 'none'
-
-    if (marcados.has(id)) {
-      const { error } = await supabase.from('checkins').delete().eq('alumno_id', id).eq('fecha', hoy)
-      if (error) { errEl.textContent = 'Error al quitar: ' + error.message; errEl.style.display = 'flex'; return }
-      marcados.delete(id)
-    } else {
-      const { error } = await supabase.from('checkins').upsert(
-        { alumno_id: id, fecha: hoy, tipo: 'presencial' },
-        { onConflict: 'alumno_id,fecha', ignoreDuplicates: true }
-      )
-      if (error) { errEl.textContent = 'Error al guardar: ' + error.message; errEl.style.display = 'flex'; return }
-      marcados.add(id)
-    }
-    render()
+  ;(alumnos || []).forEach(a => {
+    const c = checkMap[a.id]
+    if (!c) { sinReporte.push(a); return }
+    const tipo = (c.tipo || '').toLowerCase()
+    if (tipo === 'ausente' || tipo === 'ausencia') ausentes.push({ ...a, check: c })
+    else asistieron.push({ ...a, check: c })
   })
 
-  document.querySelector('.btn.primary').addEventListener('click', () => {
-    alert('✅ ' + marcados.size + ' asistencias guardadas para hoy: ' + hoy)
-    window.location.href = 'admin.html'
-  })
+  document.getElementById('cnt-ok').textContent = asistieron.length
+  document.getElementById('cnt-aus').textContent = ausentes.length
+  document.getElementById('cnt-none').textContent = sinReporte.length
 
-  cargar()
-})();
+  // Ausencias
+  document.getElementById('sec-aus').style.display = ausentes.length ? 'block' : 'none'
+  document.getElementById('list-aus').innerHTML = ausentes.map(a => `
+    <div class="asis-row" style="padding:10px 14px;">
+      <div class="asis-avatar" style="background:${colorBg(a.nombre)}">${ini(a.nombre)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${a.nombre}</div>
+        ${a.check.ausencia_motivo ? `<div class="asis-motivo">🔴 ${a.check.ausencia_motivo}</div>` : ''}
+        ${a.check.ausencia_nota ? `<div class="asis-nota">"${a.check.ausencia_nota}"</div>` : ''}
+      </div>
+      <span class="asis-status st-aus">Faltó</span>
+    </div>`).join('')
+
+  // Asistencias
+  document.getElementById('sec-ok').style.display = asistieron.length ? 'block' : 'none'
+  document.getElementById('list-ok').innerHTML = asistieron.map(a => `
+    <div class="asis-row" style="padding:10px 14px;">
+      <div class="asis-avatar" style="background:${colorBg(a.nombre)}">${ini(a.nombre)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${a.nombre}</div>
+        <div style="font-size:11px;color:var(--muted);">${a.check.tipo || 'Clase'}${a.check.hora ? ' · ' + a.check.hora : ''}</div>
+      </div>
+      <span class="asis-status st-ok">Asistió</span>
+    </div>`).join('')
+
+  // Sin reporte — profe puede marcar
+  document.getElementById('sec-none').style.display = sinReporte.length ? 'block' : 'none'
+  document.getElementById('list-none').innerHTML = sinReporte.map(a => `
+    <div class="asis-row" style="padding:10px 14px;" id="row-${a.id}">
+      <div class="asis-avatar" style="background:${colorBg(a.nombre)}">${ini(a.nombre)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${a.nombre}</div>
+        <div style="font-size:11px;color:var(--muted);">Sin reporte</div>
+      </div>
+      <button class="mark-btn" style="background:var(--green-bg);color:var(--green-text);" data-marcar="${a.id}" data-tipo="clase">
+        ✓ Asistió
+      </button>
+      <button class="mark-btn" style="background:var(--red-bg,#fff5f5);color:var(--red-text,#9b2c2c);margin-left:4px;" data-marcar="${a.id}" data-tipo="ausente">
+        ✗ Faltó
+      </button>
+    </div>`).join('')
+
+  lucide.createIcons()
+}
+
+document.getElementById('list-none').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-marcar]'); if (!btn) return
+  const alumnoId = btn.dataset.marcar
+  const tipo = btn.dataset.tipo
+  btn.disabled = true; btn.textContent = '...'
+  await sb.from('checkins').upsert({ alumno_id: alumnoId, fecha, tipo, hora: new Date().toTimeString().slice(0,5) }, { onConflict: 'alumno_id,fecha' })
+  await cargar()
+})
+
+cargar()
 </script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body></html>
-

@@ -229,12 +229,6 @@
     <i data-lucide="external-link" class="vp-arrow"></i>
   </a>
 
-  <!-- Check-ins de hoy -->
-  <div class="section-hdr">Check-ins de hoy</div>
-  <div class="checkin-list" id="checkin-hoy">
-    <div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Cargando...</div>
-  </div>
-
   <div style="height:20px;"></div>
 
 </div></div>
@@ -255,13 +249,12 @@
   const hoy = new Date().toISOString().split('T')[0]
   const primerDia = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
 
-  const [alumnosRes, pagPendRes, asistRes, msgRes, cobradoRes, checksRes, ausenciasRes] = await Promise.all([
+  const [alumnosRes, pagPendRes, asistRes, msgRes, cobradoRes, ausenciasRes] = await Promise.all([
     sb.from('alumnos').select('*', { count: 'exact', head: true }),
     sb.from('pagos').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
     sb.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy),
     sb.from('mensajes').select('*', { count: 'exact', head: true }).eq('para_admin', true).eq('leido', false),
     sb.from('pagos').select('monto').eq('estado', 'pagado').gte('fecha_pago', primerDia),
-    sb.from('checkins').select('*, alumnos(nombre)').eq('fecha', hoy).order('hora', { ascending: false }).limit(12),
     sb.from('checkins').select('*', { count: 'exact', head: true }).eq('fecha', hoy).in('tipo', ['ausente','ausencia']),
   ])
 
@@ -327,27 +320,6 @@
     }
   }
 
-  const checks = checksRes.data || []
-  const listEl = document.getElementById('checkin-hoy')
-  if (checks.length) {
-    listEl.innerHTML = checks.map(c => {
-      const nom = c.alumnos?.nombre || 'Alumno'
-      const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
-      const ausente = c.tipo === 'ausente' || c.tipo === 'ausencia'
-      return `<div class="checkin-row">
-        <div class="checkin-avatar" style="${ausente ? 'background:#fff1f2;color:#dc2626;' : ''}">${ini}</div>
-        <div style="flex:1;">
-          <div class="checkin-nombre">${nom}</div>
-          <div class="checkin-hora">${c.justificacion || c.hora || ''}</div>
-        </div>
-        <span style="font-size:10px;font-weight:700;border-radius:99px;padding:3px 8px;background:${ausente ? '#fff1f2' : '#f0fdf4'};color:${ausente ? '#dc2626' : '#059669'};">
-          ${ausente ? '✗ Ausente' : '✓ Asistió'}
-        </span>
-      </div>`
-    }).join('')
-  } else {
-    listEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px;">Sin check-ins hoy.</div>'
-  }
 
   lucide.createIcons()
 
