@@ -146,8 +146,11 @@ document.getElementById('tab-lista').addEventListener('click', async e => {
   if (!btn) return
   if (!confirm('¿Borrar este evento? Los padres ya no lo verán.')) return
   btn.disabled = true; btn.textContent = 'Borrando…'
-  const { error } = await supabase.from('eventos').delete().eq('id', btn.dataset.borrar)
-  if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; return }
+  const id = btn.dataset.borrar
+  // Borrar confirmaciones vinculadas primero para no violar FK
+  await supabase.from('confirmaciones_torneo').delete().eq('evento_id', id)
+  const { error } = await supabase.from('eventos').delete().eq('id', id)
+  if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="trash-2" style="width:13px;height:13px;"></i> Borrar'; lucide.createIcons(); return }
   await cargarEventos()
 })
 
