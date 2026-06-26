@@ -1,59 +1,66 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Gestionar pagos</title><link rel="stylesheet" href="css/uma.css" /></head>
+<title>Gestionar pagos</title><link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css" /></head>
 <body>
-<div class="phone"><div class="screen">
-  <div class="navhead dark"><a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="sub">Junio 2025</div><div class="title">Gestionar pagos</div></div></div>
-  <div class="body">
-    <div class="label">Mensualidad por alumno</div>
-    <div class="stack-8" id="list"></div>
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead dark">
+    <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
+    <div class="grow"><div class="title">Pagos</div></div>
   </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:2px;padding:10px 12px 0;background:#f4f6fb;position:sticky;top:0;z-index:10;">
+    <button class="tab active" data-tab="revisar" onclick="cambiarTab('revisar')">
+      Por revisar<span id="cnt-revisar" style="display:none;margin-left:4px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px;"></span>
+    </button>
+    <button class="tab" data-tab="pendientes" onclick="cambiarTab('pendientes')">Pendientes</button>
+    <button class="tab" data-tab="pagados" onclick="cambiarTab('pagados')">Pagados</button>
+  </div>
+
+  <div class="body" id="pagos-body">
+    <div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div>
+  </div>
+
   <nav class="bottomnav">
     <a href="admin.html"><i data-lucide="layout-dashboard"></i>Panel</a>
     <a href="admin-alumnos.html"><i data-lucide="users"></i>Alumnos</a>
     <a class="on" href="admin-pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
-    <a href="admin-mensaje.html"><i data-lucide="message-square"></i>Mensajes</a>
+    <a href="admin-chat.html"><i data-lucide="message-square"></i>Chat</a>
   </nav>
 </div></div>
 
-<!-- Modal nuevo pago -->
-<div id="modal-nuevo-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Nuevo pago</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;" id="nuevo-pago-alumno-nombre">Alumno</div>
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Mes / Concepto</label>
-      <input type="text" id="nuevo-pago-mes" placeholder="Ej: Julio 2026" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
-    </div>
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Monto (MXN)</label>
-      <div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;height:46px;">
-        <span style="font-size:18px;font-weight:700;color:var(--muted);">$</span>
-        <input type="number" id="nuevo-pago-monto" min="1" style="flex:1;border:none;outline:none;font-size:18px;font-weight:700;font-family:inherit;" />
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn secondary" style="flex:1;" id="nuevo-pago-cancelar">Cancelar</button>
-      <button class="btn primary" style="flex:1;" id="nuevo-pago-crear"><i data-lucide="plus"></i> Crear</button>
-    </div>
-  </div>
-</div>
+<!-- Modal confirmar pago -->
+<div id="modal-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:22px;width:100%;max-width:430px;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Confirmar pago</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;" id="modal-alumno-nombre"></div>
 
-<!-- Modal confirmar pago con monto editable -->
-<div id="modal-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Confirmar pago</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;" id="modal-alumno-nombre">Alumno</div>
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Monto recibido (MXN)</label>
+    <!-- Comprobante preview -->
+    <div id="modal-comp-wrap" style="display:none;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Comprobante del padre</div>
+      <a id="modal-comp-link" href="#" target="_blank">
+        <img id="modal-comp-img" src="" style="width:100%;border-radius:10px;max-height:160px;object-fit:contain;background:#f4f6fb;" />
+      </a>
+      <a id="modal-comp-fallback" href="#" target="_blank" class="btn secondary sm" style="margin-top:6px;display:none;">
+        <i data-lucide="external-link" style="width:13px;height:13px"></i> Abrir comprobante
+      </a>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Monto recibido (MXN)</label>
       <div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;height:46px;">
         <span style="font-size:18px;font-weight:700;color:var(--muted);">$</span>
         <input type="number" id="modal-monto" min="1" style="flex:1;border:none;outline:none;font-size:18px;font-weight:700;font-family:inherit;" />
       </div>
     </div>
-    <div style="margin-bottom:16px;">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Forma de pago</label>
+    <div style="margin-bottom:18px;">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Forma de pago</label>
       <select id="modal-forma" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;background:#fff;outline:none;">
         <option value="efectivo">Efectivo</option>
         <option value="transferencia">Transferencia bancaria</option>
@@ -67,181 +74,234 @@
   </div>
 </div>
 
-<script src="/js/supabase.min.js"></script>
+<!-- Modal nuevo pago -->
+<div id="modal-nuevo-pago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:22px;width:100%;max-width:430px;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Nuevo cargo</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;" id="nuevo-pago-alumno-nombre"></div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Mes / Concepto</label>
+      <input type="text" id="nuevo-pago-mes" placeholder="Ej: Julio 2026" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;" />
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Monto (MXN)</label>
+      <div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;height:46px;">
+        <span style="font-size:18px;font-weight:700;color:var(--muted);">$</span>
+        <input type="number" id="nuevo-pago-monto" min="1" style="flex:1;border:none;outline:none;font-size:18px;font-weight:700;font-family:inherit;" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn secondary" style="flex:1;" id="nuevo-pago-cancelar">Cancelar</button>
+      <button class="btn primary" style="flex:1;" id="nuevo-pago-crear"><i data-lucide="plus"></i> Crear</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.tab{flex:1;padding:8px;border:none;background:none;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px;font-family:inherit;}
+.tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.pago-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.pago-card.highlight{border:2px solid #f59e0b;background:#fffdf5;}
+</style>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-(async () => {
-  const supabase = window.supabase.createClient(
-    'https://gdajgennlsuvndanpxiz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-  )
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
-  if (!user) { window.location.href = 'index.html' }
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const supabase = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
 
-  const mes = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' })
-  document.querySelector('.sub').textContent = mes.charAt(0).toUpperCase() + mes.slice(1)
+let pagos = [], tabActual = 'revisar', pagoSel = null, nuevoPagoAlumnoId = null
 
-  let pagos = []
-  let pagoSeleccionado = null
+function iniciales(n) { return (n||'?').split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() }
 
-  function iniciales(nombre) {
-    return nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+async function cargar() {
+  const { data } = await supabase
+    .from('pagos')
+    .select('*, alumnos(nombre), padres(id, nombre)')
+    .order('creado_en', { ascending: false })
+  pagos = data || []
+
+  const porRevisar = pagos.filter(p => p.estado === 'pendiente' && p.comprobante_url).length
+  const cnt = document.getElementById('cnt-revisar')
+  if (porRevisar > 0) { cnt.textContent = porRevisar; cnt.style.display = 'inline' }
+  else cnt.style.display = 'none'
+
+  render()
+}
+
+window.cambiarTab = function(tab) {
+  tabActual = tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
+  render()
+}
+
+function render() {
+  const filtro = tabActual === 'revisar'
+    ? pagos.filter(p => p.estado === 'pendiente' && p.comprobante_url)
+    : tabActual === 'pendientes'
+    ? pagos.filter(p => p.estado === 'pendiente' && !p.comprobante_url)
+    : pagos.filter(p => p.estado === 'pagado')
+
+  const body = document.getElementById('pagos-body')
+
+  if (!filtro.length) {
+    const msgs = {
+      revisar: '✅ Sin comprobantes pendientes.',
+      pendientes: 'Sin pagos pendientes.',
+      pagados: 'Sin pagos confirmados aún.'
+    }
+    body.innerHTML = `<div style="text-align:center;color:var(--muted);font-size:13px;padding:32px;">${msgs[tabActual]}</div>`
+    return
   }
 
-  async function cargar() {
-    const { data } = await supabase
-      .from('pagos')
-      .select('*, alumnos(nombre)')
-      .order('creado_en', { ascending: false })
-    pagos = data || []
-    render()
-  }
+  body.innerHTML = filtro.map(p => {
+    const nombre = p.alumnos?.nombre || 'Alumno'
+    const ini = iniciales(nombre)
+    const ok = p.estado === 'pagado'
+    const tieneComp = !!p.comprobante_url
+    const esImagen = tieneComp && /\.(jpg|jpeg|png|gif|webp)$/i.test(p.comprobante_url)
 
-  function render() {
-    const list = document.getElementById('list')
-    if (!pagos.length) {
-      list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin registros de pago.</div>'
-      return
+    return `<div class="pago-card ${tabActual === 'revisar' ? 'highlight' : ''}">
+      ${tabActual === 'revisar' ? `<div style="font-size:11px;font-weight:700;color:#d97706;margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+        <i data-lucide="alert-circle" style="width:13px;height:13px"></i> Comprobante recibido — pendiente de confirmar
+      </div>` : ''}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${tieneComp && !ok ? 10 : 0}px;">
+        <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
+        <span class="grow">
+          <span class="t" style="font-size:13.5px;font-weight:600;">${nombre}</span>
+          <span class="s">$${Number(p.monto||0).toLocaleString('es-MX')} MXN · ${p.mes||'—'}${p.forma_pago?' · '+p.forma_pago:''}</span>
+        </span>
+        ${ok
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;background:var(--green-bg);color:var(--green-text);font-size:11px;font-weight:700;"><i data-lucide="check" style="width:12px;height:12px"></i> Pagado</span>`
+          : `<button data-id="${p.id}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:99px;border:none;cursor:pointer;font-weight:700;font-size:11px;background:${tieneComp?'#f59e0b':'var(--red-bg)'};color:${tieneComp?'#fff':'var(--red-text)'};flex-shrink:0;">
+              <i data-lucide="${tieneComp?'check-circle':'clock'}" style="width:12px;height:12px"></i> ${tieneComp?'Confirmar':'Pendiente'}
+            </button>`
+        }
+      </div>
+      ${tieneComp && esImagen ? `<img src="${p.comprobante_url}" style="width:100%;border-radius:10px;max-height:120px;object-fit:contain;background:#f4f6fb;margin-bottom:8px;" onerror="this.style.display='none'" />` : ''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${tieneComp ? `<a href="${p.comprobante_url}" target="_blank" class="btn secondary sm"><i data-lucide="file-image" style="width:12px;height:12px"></i> Ver comprobante</a>` : ''}
+        ${ok ? `<a href="recibo.html?id=${p.id}" target="_blank" class="btn secondary sm"><i data-lucide="file-text" style="width:12px;height:12px"></i> Ver recibo</a>` : ''}
+        ${ok ? `<button class="btn secondary sm" data-nuevo-pago="${p.alumno_id}" data-nuevo-nombre="${nombre}"><i data-lucide="plus" style="width:12px;height:12px"></i> Nuevo cargo</button>` : ''}
+        ${ok ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;" data-desmarcar="${p.id}">Desmarcar</button>` : ''}
+      </div>
+    </div>`
+  }).join('')
+  lucide.createIcons()
+}
+
+document.getElementById('pagos-body').addEventListener('click', async e => {
+  // Confirmar pago
+  const btnConf = e.target.closest('[data-id]')
+  if (btnConf) {
+    const p = pagos.find(x => x.id === btnConf.dataset.id)
+    if (!p) return
+    pagoSel = p
+    document.getElementById('modal-alumno-nombre').textContent = (p.alumnos?.nombre||'Alumno') + ' · ' + (p.mes||'')
+    document.getElementById('modal-monto').value = p.monto || ''
+    document.getElementById('modal-forma').value = p.forma_pago || (p.comprobante_url ? 'transferencia' : 'efectivo')
+    const compWrap = document.getElementById('modal-comp-wrap')
+    if (p.comprobante_url) {
+      compWrap.style.display = 'block'
+      const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(p.comprobante_url)
+      document.getElementById('modal-comp-img').style.display = isImg ? 'block' : 'none'
+      document.getElementById('modal-comp-fallback').style.display = isImg ? 'none' : 'inline-flex'
+      document.getElementById('modal-comp-img').src = p.comprobante_url
+      document.getElementById('modal-comp-link').href = p.comprobante_url
+      document.getElementById('modal-comp-fallback').href = p.comprobante_url
+    } else {
+      compWrap.style.display = 'none'
     }
-    list.innerHTML = pagos.map(p => {
-      const ok = p.estado === 'pagado'
-      const nombre = p.alumnos?.nombre || 'Alumno'
-      const ini = iniciales(nombre)
-      const tieneComp = !!p.comprobante_url
-      return `<div class="card mb10">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
-          <span class="grow">
-            <span class="t" style="font-size:13.5px;font-weight:600;">${nombre}</span>
-            <span class="s">$${Number(p.monto).toLocaleString('es-MX')} MXN · ${p.mes||'—'}${p.forma_pago ? ' · '+p.forma_pago : ''}</span>
-          </span>
-          <button data-id="${p.id}" data-ok="${ok}" data-monto="${p.monto||0}" data-forma="${p.forma_pago||'efectivo'}" data-nombre="${nombre}"
-            style="display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:var(--r-full);border:none;cursor:pointer;font-weight:600;font-size:12px;background:${ok?'var(--green-bg)':'var(--red-bg)'};color:${ok?'var(--green-text)':'var(--red-text)'};flex-shrink:0;">
-            <i data-lucide="${ok?'check':'clock'}" style="width:13px;height:13px"></i> ${ok?'Pagado':'Pendiente'}
-          </button>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-          ${tieneComp ? `<button class="btn secondary sm" data-comp="${encodeURIComponent(p.comprobante_url)}" style="font-size:12px;"><i data-lucide="file-image" style="width:13px;height:13px"></i> Ver comprobante</button>` : ''}
-          ${ok ? `<button class="btn secondary sm" data-recibo="${p.id}" style="font-size:12px;"><i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</button>` : ''}
-          ${ok ? `<button class="btn secondary sm" data-nuevo-pago="${p.alumno_id}" data-nuevo-nombre="${nombre}" style="font-size:12px;"><i data-lucide="plus" style="width:13px;height:13px"></i> Nuevo pago</button>` : ''}
-        </div>
-      </div>`
-    }).join('')
-    lucide.createIcons()
-  }
-
-  document.getElementById('list').addEventListener('click', e => {
-    const comp = e.target.closest('[data-comp]')
-    if (comp) {
-      const url = decodeURIComponent(comp.dataset.comp)
-      if (!url || url === 'null' || url === 'undefined') { alert('No hay comprobante disponible.'); return }
-      window.open(url, '_blank'); return
-    }
-    const rec = e.target.closest('[data-recibo]')
-    if (rec) { window.open('recibo.html?id=' + rec.dataset.recibo, '_blank'); return }
-
-    const btn = e.target.closest('[data-id]')
-    if (!btn) return
-
-    const yaOk = btn.dataset.ok === 'true'
-
-    if (yaOk) {
-      // Desmarcar como pendiente directamente
-      if (!confirm('¿Marcar este pago como pendiente?')) return
-      supabase.from('pagos').update({ estado: 'pendiente', fecha_pago: null }).eq('id', btn.dataset.id).then(() => cargar())
-      return
-    }
-
-    // Abrir modal para confirmar con monto editable
-    pagoSeleccionado = { id: btn.dataset.id, nombre: btn.dataset.nombre }
-    document.getElementById('modal-alumno-nombre').textContent = btn.dataset.nombre + ' · ' + (pagos.find(p=>p.id===btn.dataset.id)?.mes||'')
-    document.getElementById('modal-monto').value = btn.dataset.monto || ''
-    document.getElementById('modal-forma').value = btn.dataset.forma || 'efectivo'
     document.getElementById('modal-pago').style.display = 'flex'
-    lucide.createIcons()
-  })
+    lucide.createIcons(); return
+  }
 
-  // Nuevo pago
-  let nuevoPagoAlumnoId = null
-  document.getElementById('list').addEventListener('click', e => {
-    const np = e.target.closest('[data-nuevo-pago]')
-    if (!np) return
-    nuevoPagoAlumnoId = np.dataset.nuevoPago
+  // Nuevo cargo
+  const btnNP = e.target.closest('[data-nuevo-pago]')
+  if (btnNP) {
+    nuevoPagoAlumnoId = btnNP.dataset.nuevoPago
     const mesActual = new Date().toLocaleString('es-MX', { month: 'long', year: 'numeric' })
-    document.getElementById('nuevo-pago-alumno-nombre').textContent = np.dataset.nuevoNombre
+    document.getElementById('nuevo-pago-alumno-nombre').textContent = btnNP.dataset.nuevoNombre
     document.getElementById('nuevo-pago-mes').value = mesActual.charAt(0).toUpperCase() + mesActual.slice(1)
     document.getElementById('nuevo-pago-monto').value = ''
     document.getElementById('modal-nuevo-pago').style.display = 'flex'
-    lucide.createIcons()
-  }, true)
+    lucide.createIcons(); return
+  }
 
-  document.getElementById('nuevo-pago-cancelar').addEventListener('click', () => {
-    document.getElementById('modal-nuevo-pago').style.display = 'none'
-    nuevoPagoAlumnoId = null
-  })
-
-  document.getElementById('nuevo-pago-crear').addEventListener('click', async () => {
-    if (!nuevoPagoAlumnoId) return
-    const mes = document.getElementById('nuevo-pago-mes').value.trim()
-    const monto = parseInt(document.getElementById('nuevo-pago-monto').value) || 0
-    if (!mes) { alert('Escribe el mes'); return }
-    if (monto < 1) { alert('Escribe el monto'); return }
-    const btn = document.getElementById('nuevo-pago-crear')
-    btn.disabled = true; btn.textContent = 'Creando…'
-    const { error } = await supabase.from('pagos').insert({
-      alumno_id: nuevoPagoAlumnoId,
-      mes,
-      monto,
-      estado: 'pendiente'
-    })
-    btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Crear'; lucide.createIcons()
-    if (error) { alert('❌ Error: ' + error.message); return }
-    document.getElementById('modal-nuevo-pago').style.display = 'none'
-    nuevoPagoAlumnoId = null
+  // Desmarcar pagado
+  const btnD = e.target.closest('[data-desmarcar]')
+  if (btnD) {
+    if (!confirm('¿Marcar como pendiente?')) return
+    await supabase.from('pagos').update({ estado: 'pendiente', fecha_pago: null }).eq('id', btnD.dataset.desmarcar)
     await cargar()
+  }
+})
+
+document.getElementById('modal-cancelar').addEventListener('click', () => {
+  document.getElementById('modal-pago').style.display = 'none'; pagoSel = null
+})
+
+document.getElementById('modal-confirmar').addEventListener('click', async () => {
+  if (!pagoSel) return
+  const monto = parseInt(document.getElementById('modal-monto').value) || 0
+  const forma = document.getElementById('modal-forma').value
+  if (monto < 1) { alert('Ingresa el monto recibido'); return }
+
+  const btn = document.getElementById('modal-confirmar')
+  btn.disabled = true; btn.textContent = 'Guardando…'
+
+  const hoy = new Date().toISOString().split('T')[0]
+  const { error } = await supabase.from('pagos').update({
+    estado: 'pagado', monto, forma_pago: forma, fecha_pago: hoy
+  }).eq('id', pagoSel.id)
+
+  if (error) {
+    alert('❌ Error: ' + error.message)
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons(); return
+  }
+
+  // Obtener padre vinculado al alumno para enviarle mensaje
+  const { data: padre } = await supabase.from('padres').select('id').eq('alumno_id', pagoSel.alumno_id).maybeSingle()
+  const nombre = pagoSel.alumnos?.nombre || 'tu hijo/a'
+
+  await supabase.from('mensajes').insert({
+    de_user_id: user.id,
+    texto: `✅ Pago confirmado — ${nombre} · ${pagoSel.mes||''} · $${monto.toLocaleString('es-MX')} MXN (${forma}). Puedes ver tu recibo en la app.`,
+    para_admin: false,
+    destinatario_id: padre?.id || null
   })
 
-  document.getElementById('modal-cancelar').addEventListener('click', () => {
-    document.getElementById('modal-pago').style.display = 'none'
-    pagoSeleccionado = null
-  })
+  document.getElementById('modal-pago').style.display = 'none'
+  pagoSel = null
+  btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons()
+  await cargar()
+})
 
-  document.getElementById('modal-confirmar').addEventListener('click', async () => {
-    if (!pagoSeleccionado) return
-    const monto = parseInt(document.getElementById('modal-monto').value) || 0
-    const forma = document.getElementById('modal-forma').value
-    if (monto < 1) { alert('Ingresa el monto recibido'); return }
+document.getElementById('nuevo-pago-cancelar').addEventListener('click', () => {
+  document.getElementById('modal-nuevo-pago').style.display = 'none'; nuevoPagoAlumnoId = null
+})
 
-    const btn = document.getElementById('modal-confirmar')
-    btn.disabled = true; btn.textContent = 'Guardando…'
+document.getElementById('nuevo-pago-crear').addEventListener('click', async () => {
+  if (!nuevoPagoAlumnoId) return
+  const mes = document.getElementById('nuevo-pago-mes').value.trim()
+  const monto = parseInt(document.getElementById('nuevo-pago-monto').value) || 0
+  if (!mes) { alert('Escribe el mes'); return }
+  if (monto < 1) { alert('Escribe el monto'); return }
+  const btn = document.getElementById('nuevo-pago-crear')
+  btn.disabled = true; btn.textContent = 'Creando…'
+  const { error } = await supabase.from('pagos').insert({ alumno_id: nuevoPagoAlumnoId, mes, monto, estado: 'pendiente' })
+  btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Crear'; lucide.createIcons()
+  if (error) { alert('❌ Error: ' + error.message); return }
+  document.getElementById('modal-nuevo-pago').style.display = 'none'
+  nuevoPagoAlumnoId = null
+  await cargar()
+})
 
-    const hoy = new Date().toISOString().split('T')[0]
-    const { error } = await supabase.from('pagos').update({
-      estado: 'pagado',
-      monto,
-      forma_pago: forma,
-      fecha_pago: hoy
-    }).eq('id', pagoSeleccionado.id)
-
-    if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons(); return }
-
-    // Notificar al padre
-    const pago = pagos.find(p => p.id === pagoSeleccionado.id)
-    await supabase.from('mensajes').insert({
-      de_user_id: user.id,
-      texto: `✅ Pago confirmado · ${pago?.alumnos?.nombre||'tu hijo/a'} · ${pago?.mes||''} · $${monto.toLocaleString('es-MX')} MXN · ${forma} · Fecha: ${hoy}`,
-      para_admin: false
-    })
-
-    document.getElementById('modal-pago').style.display = 'none'
-    pagoSeleccionado = null
-    btn.disabled = false; btn.innerHTML = '<i data-lucide="check"></i> Confirmar'; lucide.createIcons()
-    await cargar()
-  })
-
-  cargar()
-})();
+cargar()
 </script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})</script>
 </body></html>
-
