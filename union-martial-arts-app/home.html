@@ -794,8 +794,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
     let al = null
     try {
-      const { data: alData } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).maybeSingle()
-      al = alData
+      const { data: alRows } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).limit(1)
+      al = alRows?.[0] || null
       if (al) {
         document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
         document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
@@ -904,10 +904,17 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
     try {
       const { data: evals } = await supabase.from('evaluaciones')
-        .select('puntuacion').eq('alumno_id', padre.alumno_id).gte('fecha', primerDia)
+        .select('actitud,esfuerzo,tecnica,participacion').eq('alumno_id', padre.alumno_id)
+        .not('actitud', 'is', null)
         .order('fecha', { ascending: false }).limit(1)
-      const pts = evals?.[0]?.puntuacion
-      document.getElementById('stat-eval').textContent = pts != null ? pts + '%' : '—'
+      const ev = evals?.[0]
+      if (ev) {
+        const cumplidos = ['actitud','esfuerzo','tecnica','participacion'].filter(k => !!ev[k]).length
+        const textos = ['','Reforzar','Por mejorar','Bien','Excelente']
+        document.getElementById('stat-eval').textContent = textos[cumplidos] || '—'
+      } else {
+        document.getElementById('stat-eval').textContent = '—'
+      }
     } catch(e) {
       document.getElementById('stat-eval').textContent = '—'
     }
