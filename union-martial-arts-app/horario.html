@@ -114,12 +114,19 @@
     const user = authData?.user
     if (!user) { window.location.href = 'index.html'; return }
 
-    // Cargar padre — intenta por user_id primero, luego por correo
+    // Cargar padre — respeta localStorage si viene de home
     let padre = null
-    const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
-    if (r1?.[0]?.alumno_id) {
-      padre = r1[0]
-    } else {
+    const savedId = localStorage.getItem('uma_padre_id')
+    if (savedId) {
+      const { data: ps } = await supabase.from('padres').select('id, alumno_id, nombre').eq('id', savedId).limit(1)
+      if (ps?.[0]) padre = ps[0]
+    }
+    if (!padre) {
+      const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id)
+      const lista = (r1 || []).filter(p => p.alumno_id)
+      padre = lista[0] || r1?.[0] || null
+    }
+    if (!padre) {
       const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
       if (r2?.[0]) {
         await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id)
