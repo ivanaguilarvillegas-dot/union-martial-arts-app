@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Subir de cinta</title><link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f2167">
+  <meta name="theme-color" content="#0047AB">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
-  <link rel="stylesheet" href="css/uma.css?v=18" /></head>
+  <link rel="stylesheet" href="css/uma.css" /></head>
 <body>
 <style>
   .belt-option { display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer;
@@ -35,7 +35,7 @@
           <select id="al-sel"><option value="">Cargando...</option></select></label>
         <div id="cinta-actual" style="display:flex;align-items:center;gap:10px;padding:10px 0;">
           <span class="preview-label" style="min-width:80px;">Cinta actual</span>
-          <div id="strip-actual" class="belt-strip" style="width:62px;background:#ccc;"><div class="knot"></div></div>
+          <div id="strip-actual" style="width:62px;"></div>
           <span id="nombre-cinta-actual" style="font-size:13px;font-weight:600;color:var(--muted);">—</span>
         </div>
       </div></div>
@@ -50,11 +50,22 @@
           <div class="preview-label">Promoverá a</div>
           <div class="preview-name" id="preview-nombre">—</div>
         </div>
-        <div id="strip-nueva" class="belt-strip" style="width:62px;background:#ccc;"><div class="knot"></div></div>
+        <div id="strip-nueva" style="width:62px;"></div>
       </div>
 
       <label class="field mb14"><span class="lab">Fecha del examen</span>
         <input type="date" id="fecha-examen" /></label>
+
+      <!-- Diploma -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Diploma (foto o PDF, opcional)</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px dashed var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--soft);">
+          <i data-lucide="file-badge" style="width:18px;height:18px;color:var(--primary);flex-shrink:0;"></i>
+          <span id="diploma-label" style="font-size:13px;color:var(--primary);font-weight:600;">Subir diploma</span>
+          <input type="file" id="diploma-file" accept="image/*,.pdf" hidden />
+        </label>
+        <div id="diploma-err" style="display:none;font-size:12px;color:#dc2626;margin-top:6px;padding:8px 10px;background:#fef2f2;border-radius:8px;"></div>
+      </div>
 
       <button class="btn primary block" id="save"><i data-lucide="award"></i> Confirmar cambio de cinta</button>
     </div>
@@ -86,25 +97,24 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
-  // Definición de cintas con colores
   const BELTS = [
-    { nombre: 'Blanca',         color: '#E8EDF5', stripes: 0 },
-    { nombre: 'Amarilla',       color: '#F5C518', stripes: 0 },
-    { nombre: 'Anaranjada',     color: '#F2872E', stripes: 0 },
-    { nombre: 'Morada',         color: '#7C3AED', stripes: 0 },
-    { nombre: 'Azul',           color: '#1B3FE0', stripes: 0 },
-    { nombre: 'Verde',          color: '#2F9E62', stripes: 0 },
-    { nombre: 'Café I',         color: '#7A4A24', stripes: 1 },
-    { nombre: 'Café II',        color: '#7A4A24', stripes: 2 },
-    { nombre: 'Café III',       color: '#7A4A24', stripes: 3 },
-    { nombre: 'Roja',           color: '#D64545', stripes: 0 },
-    { nombre: 'Roja-Negra',     color: '#D64545', stripes: 0, split: '#14172B' },
-    { nombre: 'Negra',          color: '#14172B', stripes: 0 },
-    { nombre: 'Negra I grado',  color: '#14172B', stripes: 1, stripeColor: '#F5C518' },
-    { nombre: 'Negra II grado', color: '#14172B', stripes: 2, stripeColor: '#F5C518' },
-    { nombre: 'Negra III grado',color: '#14172B', stripes: 3, stripeColor: '#F5C518' },
-    { nombre: 'Negra IV grado', color: '#14172B', stripes: 4, stripeColor: '#F5C518' },
-    { nombre: 'Negra V grado',  color: '#14172B', stripes: 5, stripeColor: '#F5C518' },
+    { nombre: 'Blanca',          color: '#E8EDF5', stripes: 0 },
+    { nombre: 'Amarilla',        color: '#F5C518', stripes: 0 },
+    { nombre: 'Anaranjada',      color: '#F2872E', stripes: 0 },
+    { nombre: 'Morada',          color: '#7C3AED', stripes: 0 },
+    { nombre: 'Azul',            color: '#1B3FE0', stripes: 0 },
+    { nombre: 'Verde',           color: '#2F9E62', stripes: 0 },
+    { nombre: 'Café I',          color: '#7A4A24', stripes: 1 },
+    { nombre: 'Café II',         color: '#7A4A24', stripes: 2 },
+    { nombre: 'Café III',        color: '#7A4A24', stripes: 3 },
+    { nombre: 'Roja',            color: '#D64545', stripes: 0 },
+    { nombre: 'Roja-Negra',      color: '#D64545', stripes: 0, split: '#14172B' },
+    { nombre: 'Negra',           color: '#14172B', stripes: 0 },
+    { nombre: 'Negra I grado',   color: '#14172B', stripes: 1, stripeColor: '#F5C518' },
+    { nombre: 'Negra II grado',  color: '#14172B', stripes: 2, stripeColor: '#F5C518' },
+    { nombre: 'Negra III grado', color: '#14172B', stripes: 3, stripeColor: '#F5C518' },
+    { nombre: 'Negra IV grado',  color: '#14172B', stripes: 4, stripeColor: '#F5C518' },
+    { nombre: 'Negra V grado',   color: '#14172B', stripes: 5, stripeColor: '#F5C518' },
   ]
 
   function beltHtml(b, ancho = 62) {
@@ -117,23 +127,18 @@
       </svg>`
     }
     const sc = b.stripeColor || '#ffffff'
-    // Stripes: posiciones de derecha a izquierda
     const stripeXs = [62, 57, 52, 47, 42]
     const stripeSvg = b.stripes > 0
       ? Array.from({length: Math.min(b.stripes, 5)}, (_, i) =>
-          `<line x1="${stripeXs[i]}" y1="9" x2="${stripeXs[i]}" y2="17" stroke="${sc}" stroke-width="1.5" stroke-linecap="round"/>`
-        ).join('')
+          `<line x1="${stripeXs[i]}" y1="9" x2="${stripeXs[i]}" y2="17" stroke="${sc}" stroke-width="1.5" stroke-linecap="round"/>`)
+        .join('')
       : ''
-    // Para cinta bicolor (Roja-Negra)
     const bodyFill = b.split
       ? `<defs><clipPath id="cp${uid}"><rect x="0" y="8" width="72" height="10" rx="5"/></clipPath></defs>
          <rect x="0" y="8" width="36" height="10" fill="${b.color}" clip-path="url(#cp${uid})"/>
          <rect x="36" y="8" width="36" height="10" fill="${b.split}" clip-path="url(#cp${uid})"/>
          <rect x="0" y="8" width="72" height="10" rx="5" fill="none" stroke="rgba(0,0,0,.08)" stroke-width=".5"/>`
       : `<rect x="0" y="8" width="72" height="10" rx="5" fill="${b.color}"/>`
-    // Nudo: mismo color que lado izquierdo
-    const nudoColor = b.color
-
     return `<svg width="${ancho}" height="${h}" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="cg${uid}" x1="0" y1="0" x2="0" y2="1">
@@ -149,7 +154,7 @@
       ${bodyFill}
       <rect x="0" y="8" width="72" height="10" rx="5" fill="url(#cg${uid})"/>
       <rect x="1" y="8.8" width="70" height="1" rx=".5" fill="rgba(255,255,255,.15)"/>
-      <rect x="28" y="6" width="16" height="14" rx="3" fill="${nudoColor}"/>
+      <rect x="28" y="6" width="16" height="14" rx="3" fill="${b.color}"/>
       <rect x="28" y="6" width="16" height="14" rx="3" fill="url(#ng${uid})"/>
       <rect x="29" y="6.8" width="14" height="1" rx=".5" fill="rgba(255,255,255,.18)"/>
       <line x1="36" y1="7" x2="36" y2="19" stroke="rgba(0,0,0,.1)" stroke-width="1"/>
@@ -161,7 +166,6 @@
     return BELTS.find(b => b.nombre === nombre) || null
   }
 
-  // Cargar alumnos
   let alumnos = []
   let selCinta = null
 
@@ -178,14 +182,12 @@
   function actualizarActual() {
     const a = alumnos.find(x => x.id === alSel.value)
     const belt = a?.cinta ? beltByName(a.cinta) : null
-    document.getElementById('strip-actual').outerHTML = beltHtml(belt, 62)
-      .replace('class="belt-strip"', 'class="belt-strip" id="strip-actual"')
+    document.getElementById('strip-actual').innerHTML = beltHtml(belt, 62)
     document.getElementById('nombre-cinta-actual').textContent = a?.cinta ? 'Cinta ' + a.cinta : '—'
   }
   alSel.addEventListener('change', actualizarActual)
   actualizarActual()
 
-  // Render lista de cintas
   document.getElementById('belt-list').innerHTML = BELTS.map(b => `
     <div class="belt-option" data-nombre="${b.nombre}">
       ${beltHtml(b, 52)}
@@ -202,16 +204,18 @@
     const belt = beltByName(selCinta)
     document.getElementById('preview').style.display = 'flex'
     document.getElementById('preview-nombre').textContent = 'Cinta ' + selCinta
-    const stripNueva = document.getElementById('strip-nueva')
-    if (stripNueva) stripNueva.outerHTML = beltHtml(belt, 62)
-      .replace('class="belt-strip"', 'class="belt-strip" id="strip-nueva"')
+    document.getElementById('strip-nueva').innerHTML = beltHtml(belt, 62)
     lucide.createIcons()
   })
 
-  // Fecha por defecto hoy
   document.getElementById('fecha-examen').value = new Date().toISOString().split('T')[0]
 
-  // Guardar
+  document.getElementById('diploma-file').addEventListener('change', e => {
+    const f = e.target.files[0]
+    document.getElementById('diploma-label').textContent = f ? f.name : 'Subir diploma'
+    document.getElementById('diploma-err').style.display = 'none'
+  })
+
   document.getElementById('save').addEventListener('click', async () => {
     if (!selCinta) { alert('Selecciona la nueva cinta.'); return }
     const alumno_id = alSel.value
@@ -221,13 +225,38 @@
     const btn = document.getElementById('save')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
+    // Subir diploma si hay
+    let diploma_url = null
+    const diplomaFile = document.getElementById('diploma-file').files[0]
+    if (diplomaFile) {
+      btn.textContent = 'Subiendo diploma…'
+      const ext = diplomaFile.name.split('.').pop()
+      const path = `diplomas/${alumno_id}-${Date.now()}.${ext}`
+      const { error: de } = await supabase.storage.from('eventos').upload(path, diplomaFile)
+      if (de) {
+        document.getElementById('diploma-err').textContent = 'Error al subir diploma: ' + de.message + ' — Se continuará sin diploma.'
+        document.getElementById('diploma-err').style.display = 'block'
+      } else {
+        diploma_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+      }
+    }
+
     const { error } = await supabase.from('alumnos').update({ cinta: selCinta }).eq('id', alumno_id)
-    if (error) { alert('Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="award"></i> Confirmar cambio de cinta'; lucide.createIcons(); return }
+    if (error) {
+      alert('Error: ' + error.message)
+      btn.disabled = false
+      btn.innerHTML = '<i data-lucide="award"></i> Confirmar cambio de cinta'
+      lucide.createIcons(); return
+    }
 
     const alumno = alumnos.find(a => a.id === alumno_id)
+    const textoMsg = diploma_url
+      ? `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante! 📜 Diploma: ${diploma_url}`
+      : `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`
+
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`,
+      texto: textoMsg,
       para_admin: false
     })
 
@@ -245,4 +274,3 @@
   }
 </script>
 </body></html>
-
