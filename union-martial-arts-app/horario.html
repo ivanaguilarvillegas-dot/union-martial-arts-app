@@ -138,11 +138,12 @@
     }
 
     // Cargar alumno
-    const { data: al, error: alErr } = await supabase.from('alumnos')
-      .select('nombre, horario, cinta').eq('id', padre.alumno_id).maybeSingle()
+    const { data: alRows } = await supabase.from('alumnos')
+      .select('nombre, horario, cinta').eq('id', padre.alumno_id).limit(1)
+    const al = alRows?.[0] || null
 
-    if (alErr || !al) {
-      showErr('No se pudo cargar el alumno.' + (alErr ? ' (' + alErr.message + ')' : ''))
+    if (!al) {
+      showErr('No se pudo cargar el alumno. Verifica con el instructor.')
       lucide.createIcons(); return
     }
 
