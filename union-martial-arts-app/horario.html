@@ -40,19 +40,16 @@
 <div class="phone"><div class="screen" style="background:#f0f2f5;">
 
   <!-- Hero -->
-  <div class="hor-hero">
-    <div class="hor-hero-top">
-      <div class="hero-logo">
-        <div class="hero-logo-circle">
-          <img src="/assets/logo-union-blue.png" alt="UMA" />
-        </div>
-        <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-      </div>
-      <div class="hero-avatar" id="hero-initials">—</div>
+  <div class="navhead blue uma-hdr">
+    <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
-    <div class="hero-title">Horario</div>
-    <div class="hero-sub" id="hero-alumno">Cargando…</div>
+    <div class="grow"><div class="title">Horario</div></div>
   </div>
+  <div style="display:none;" id="hero-initials"></div>
+  <div style="display:none;" id="hero-alumno"></div>
 
   <div class="body">
 
@@ -110,6 +107,10 @@
   }
 
   try {
+    const _to = setTimeout(() => {
+      document.getElementById('segs-wrap').innerHTML = '<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay clases asignadas por el momento.</div>';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }, 8000);
     const { data: authData } = await supabase.auth.getUser()
     const user = authData?.user
     if (!user) { window.location.href = 'index.html'; return }
@@ -222,6 +223,7 @@
     }
 
     lucide.createIcons()
+    clearTimeout(_to);
   } catch(e) {
     showErr('Error: ' + e.message)
     lucide.createIcons()

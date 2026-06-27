@@ -104,40 +104,32 @@
 <body>
 <div class="phone"><div class="screen" style="background:#f0f2f5;overflow-y:auto;">
 
-  <div class="notif-hero">
-    <div class="notif-hero-top">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <a href="home.html" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.2);flex-shrink:0;">
-          <i class="ti ti-arrow-left" style="font-size:18px;"></i>
-        </a>
-        <div class="hero-logo">
-          <img src="/assets/logo-union-white.png" alt="UMA" />
-          <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-        </div>
-      </div>
-      <div class="hero-actions">
-        <div class="hero-bell">
-          <div class="hero-bell-ic"><i class="ti ti-bell" style="font-size:18px;color:#fff;"></i></div>
-          <div class="hero-bell-badge" id="bell-count" style="display:none;">0</div>
-        </div>
-        <div class="hero-avatar" id="hero-initials">—</div>
-      </div>
+  <div class="navhead blue uma-hdr">
+    <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
-    <div class="hero-title" id="hero-tab-title">Avisos</div>
-    <div class="hero-sub">Toca una categoría para ver el detalle</div>
-
-    <!-- Tabs dentro del hero -->
-    <div style="display:flex;gap:8px;margin-top:14px;">
-      <button class="hero-tab active" data-tab="avisos" onclick="cambiarTab('avisos')">
-        📢 Avisos<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
-      </button>
-      <button class="hero-tab" data-tab="mensajes" onclick="cambiarTab('mensajes')">
-        💬 Mensajes<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
-      </button>
-      <button class="hero-tab" data-tab="eventos" onclick="cambiarTab('eventos')">
-        🏆 Eventos
-      </button>
+    <div class="grow"><div class="title" id="hero-tab-title">Notificaciones</div></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <div style="position:relative;">
+        <i data-lucide="bell" style="width:20px;height:20px;color:#fff;"></i>
+        <div class="hero-bell-badge" id="bell-count" style="display:none;">0</div>
+      </div>
+      <div style="display:none;" id="hero-initials"></div>
     </div>
+  </div>
+  <!-- Tabs -->
+  <div style="background:var(--uma-blue-600);padding:0 14px 12px;display:flex;gap:8px;">
+    <button class="hero-tab active" data-tab="avisos" onclick="cambiarTab('avisos')">
+      📢 Avisos<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+    </button>
+    <button class="hero-tab" data-tab="mensajes" onclick="cambiarTab('mensajes')">
+      💬 Mensajes<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+    </button>
+    <button class="hero-tab" data-tab="eventos" onclick="cambiarTab('eventos')">
+      🏆 Eventos
+    </button>
   </div>
 
   <div class="page-bg">

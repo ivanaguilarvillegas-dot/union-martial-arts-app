@@ -85,24 +85,23 @@
 <body>
 <div class="phone"><div class="screen" style="background:#f0f2f5;">
 
-  <div class="eval-hero">
-    <div class="eval-hero-top">
-      <div class="hero-logo">
-        <div class="hero-logo-circle">
-          <img src="/assets/logo-union-blue.png" alt="UMA" />
-        </div>
-        <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
-      </div>
-      <div class="hero-avatar" id="hero-initials">—</div>
+  <div class="navhead blue uma-hdr">
+    <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
-    <div class="hero-title">Evaluación</div>
-    <div class="hero-sub" id="hero-alumno">Cargando…</div>
+    <div class="grow"><div class="title">Evaluación</div></div>
+  </div>
+  <div style="background:#0047AB;padding:0 18px 14px;color:#fff;">
+    <div style="font-size:13px;opacity:.75;margin-bottom:10px;" id="hero-alumno">Cargando…</div>
     <div class="tab-row">
       <button class="tab-btn on" data-tab="diaria">Diaria</button>
       <button class="tab-btn" data-tab="mensual">Mensual</button>
     </div>
   </div>
 
+  <div style="display:none;" id="hero-initials"></div>
   <div class="body" style="padding-top:16px;">
     <div id="tab-diaria">
       <div id="diaria-list"><div style="text-align:center;color:var(--muted);font-size:14px;padding:32px;">Cargando…</div></div>

@@ -31,13 +31,13 @@ body{height:100dvh;overflow:hidden;}
 <body>
 <div class="phone"><div class="screen">
 <div class="chat-wrap">
-  <div class="chat-header">
-    <a href="home.html">‹</a>
-    <div class="info">
-      <div class="chat-title">Instructor UNION</div>
-      <div class="chat-sub">Responde en horario de oficina</div>
+  <div class="navhead blue uma-hdr">
+    <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
-    <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;">U</div>
+    <div class="grow"><div class="title">Chat con Instructor</div></div>
   </div>
 
   <div class="messages" id="messages">
@@ -53,6 +53,8 @@ body{height:100dvh;overflow:hidden;}
 </div>
 </div></div>
 
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded',()=>lucide.createIcons())</script>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const sb = createClient(

@@ -14,9 +14,13 @@
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead dark">
-    <a class="navback" href="home.html" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
-    <div class="grow"><div class="sub">Visualización nocturna</div><div class="title">Meditación</div></div>
+  <div class="navhead blue uma-hdr">
+    <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
+    </div>
+    <div class="grow"><div class="title">Meditación</div></div>
   </div>
   <div class="body">
     <div class="card soft mb14" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;">
@@ -55,15 +59,6 @@
   )
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
-
-  // Cargar frase activa del instructor
-  const { data: frase } = await supabase.from('frases').select('texto, fecha_envio').eq('activa', true).single()
-  if (frase) {
-    const fraseEl = document.querySelector('.card.invert')
-    fraseEl.querySelector('div:first-child').textContent = 'Frase del día · ' + (frase.fecha_envio || '')
-    fraseEl.querySelector('div:nth-child(2)').textContent = '"' + frase.texto + '"'
-    fraseEl.querySelector('div:last-child').textContent = '— Tu instructor'
-  }
 
   // Sesiones base
   const S = [
