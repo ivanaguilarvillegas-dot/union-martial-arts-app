@@ -151,10 +151,14 @@
     wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;"><i data-lucide="loader" style="width:18px;height:18px;"></i> Cargando…</div>'
     lucide.createIcons()
 
-    const { data: avisos } = await supabase.from('avisos')
+    const { data: avisos, error: errAv } = await supabase.from('avisos')
       .select('id, titulo, mensaje, prioridad, creado_en, activo')
       .order('creado_en', { ascending: false })
 
+    if (errAv) {
+      wrap.innerHTML = `<div style="padding:16px;color:red;font-size:13px;">❌ Error cargando avisos: ${errAv.message} (${errAv.code})</div>`
+      return
+    }
     if (!avisos?.length) {
       wrap.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">Sin avisos. Crea el primero con el botón "Nuevo".</div>'
       lucide.createIcons()
@@ -246,15 +250,18 @@
     const btn = document.getElementById('btn-guardar')
     btn.disabled = true; btn.textContent = 'Guardando…'
 
-    try {
-      if (editId) {
-        await supabase.from('avisos').update({ titulo, mensaje, prioridad }).eq('id', editId)
-      } else {
-        await supabase.from('avisos').insert({ titulo, mensaje, prioridad, activo: true, creado_por: user.id })
-      }
-      document.getElementById('modal').classList.remove('open')
-      await cargar()
-    } catch(e) { alert('Error: ' + e.message) }
+    let result
+    if (editId) {
+      result = await supabase.from('avisos').update({ titulo, mensaje, prioridad }).eq('id', editId)
+    } else {
+      result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, activo: true })
+    }
+    if (result.error) {
+      alert('❌ Error al guardar: ' + result.error.message + ' (código: ' + result.error.code + ')')
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar aviso'; lucide.createIcons(); return
+    }
+    document.getElementById('modal').classList.remove('open')
+    await cargar()
 
     btn.disabled = false; btn.innerHTML = '<i data-lucide="save"></i> Guardar aviso'; lucide.createIcons()
   })
