@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -13,7 +13,6 @@
 <link rel="stylesheet" href="css/uma.css?v=18" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
 <style>
-/* Hero — igual que avisos */
 .hor-hero { background:linear-gradient(135deg,#0047AB 0%,#1a5cc8 100%); padding:16px 18px 22px; color:#fff; }
 .hor-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .hero-logo { display:flex; align-items:center; gap:10px; }
@@ -23,29 +22,21 @@
 .hero-avatar { width:38px; height:38px; background:rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
 .hero-title { font-size:22px; font-weight:800; margin-bottom:2px; }
 .hero-sub { font-size:13px; opacity:.75; }
-
-/* Cards */
 .seg-card { background:#fff; border-radius:16px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06); }
 .horario-row { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #f3f4f6; }
 .horario-row:last-child { border-bottom:none; }
 .dia-chip { background:#eff6ff; color:#0047AB; border-radius:8px; padding:5px 12px; font-size:12px; font-weight:700; min-width:72px; text-align:center; flex-shrink:0; }
 .hora-txt { font-size:13px; color:#374151; font-weight:500; }
-
-/* Próxima clase */
 .prox-card { background:#fff; border-radius:16px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06); margin-bottom:12px; }
 .prox-ic { width:44px; height:44px; background:#eff6ff; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 </style>
 </head>
 <body>
 <div class="phone"><div class="screen" style="background:#f0f2f5;">
-
-  <!-- Hero -->
   <div class="hor-hero">
     <div class="hor-hero-top">
       <div class="hero-logo">
-        <div class="hero-logo-circle">
-          <img src="/assets/logo-union-blue.png" alt="UMA" />
-        </div>
+        <div class="hero-logo-circle"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
         <div class="hero-logo-txt">UNION<br>MARTIAL ARTS</div>
       </div>
       <div class="hero-avatar" id="hero-initials">—</div>
@@ -53,10 +44,7 @@
     <div class="hero-title">Horario</div>
     <div class="hero-sub" id="hero-alumno">Cargando…</div>
   </div>
-
   <div class="body">
-
-    <!-- Clases asignadas -->
     <div class="label">Clases asignadas</div>
     <div id="segs-wrap">
       <div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">
@@ -64,15 +52,11 @@
         Cargando horario…
       </div>
     </div>
-
-    <!-- Próxima clase -->
     <div id="proxima-section" style="display:none;">
       <div class="label" style="margin-top:4px;">Próxima clase</div>
       <div class="prox-card">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div class="prox-ic">
-            <i class="ti ti-calendar-clock" style="font-size:22px;color:#0047AB;"></i>
-          </div>
+          <div class="prox-ic"><i class="ti ti-calendar-clock" style="font-size:22px;color:#0047AB;"></i></div>
           <div>
             <div style="font-size:14px;font-weight:700;color:#111827;" id="prox-dia">—</div>
             <div style="font-size:12px;color:#6b7280;margin-top:2px;" id="prox-hora"></div>
@@ -80,9 +64,7 @@
         </div>
       </div>
     </div>
-
   </div>
-
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
     <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
@@ -90,7 +72,6 @@
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>
 </div></div>
-
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -114,17 +95,15 @@
     const user = authData?.user
     if (!user) { window.location.href = 'index.html'; return }
 
-    // Cargar padre — respeta localStorage si viene de home
     let padre = null
     const savedId = localStorage.getItem('uma_padre_id')
     if (savedId) {
       const { data: ps } = await supabase.from('padres').select('id, alumno_id, nombre').eq('id', savedId).limit(1)
-      if (ps?.[0]) padre = ps[0]
+      if (ps?.[0]?.alumno_id) padre = ps[0]
     }
     if (!padre) {
-      const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id)
-      const lista = (r1 || []).filter(p => p.alumno_id)
-      padre = lista[0] || r1?.[0] || null
+      const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
+      if (r1?.[0]?.alumno_id) padre = r1[0]
     }
     if (!padre) {
       const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
@@ -144,7 +123,6 @@
       lucide.createIcons(); return
     }
 
-    // Cargar alumno
     const { data: alRows } = await supabase.from('alumnos')
       .select('nombre, horario, cinta').eq('id', padre.alumno_id).limit(1)
     const al = alRows?.[0] || null
@@ -167,41 +145,27 @@
       lucide.createIcons(); return
     }
 
-    // Parsear horario
-    // Soporta: "Lunes·6pm | Miércoles·6pm" o "Lunes 6pm, Miércoles 6pm" o "Lunes - 6pm"
     const segmentos = al.horario.split(/\s*[|,;]\s*/).map(s => s.trim()).filter(Boolean)
-
     const rows = segmentos.map(seg => {
-      // Separadores: ·, -, :, espacio doble, o primera palabra = día
       let diaStr = seg, horaStr = ''
       const m = seg.match(/^(.+?)[\s]*[·\-–]\s*(.+)$/)
-      if (m) {
-        diaStr = m[1].trim()
-        horaStr = m[2].trim()
-      } else {
-        // Intenta dividir por primer espacio si la segunda parte parece hora
+      if (m) { diaStr = m[1].trim(); horaStr = m[2].trim() }
+      else {
         const parts = seg.split(/\s+/)
         if (parts.length >= 2 && /\d/.test(parts[parts.length - 1])) {
-          horaStr = parts.pop()
-          diaStr = parts.join(' ')
+          horaStr = parts.pop(); diaStr = parts.join(' ')
         }
       }
       return { diaStr, horaStr }
     })
 
     wrap.innerHTML = `<div class="seg-card">` +
-      rows.map(r => `
-        <div class="horario-row">
-          <div class="dia-chip">${r.diaStr}</div>
-          <div class="hora-txt">${r.horaStr || '—'}</div>
-        </div>`).join('') +
-      `</div>`
+      rows.map(r => `<div class="horario-row">
+        <div class="dia-chip">${r.diaStr}</div>
+        <div class="hora-txt">${r.horaStr || '—'}</div>
+      </div>`).join('') + `</div>`
 
-    // Calcular próxima clase
-    const DIAS_MAP = {
-      'domingo':0,'lunes':1,'martes':2,'miércoles':3,'miercoles':3,
-      'jueves':4,'viernes':5,'sábado':6,'sabado':6
-    }
+    const DIAS_MAP = { 'domingo':0,'lunes':1,'martes':2,'miércoles':3,'miercoles':3,'jueves':4,'viernes':5,'sábado':6,'sabado':6 }
     const hoy = new Date()
     const diaHoy = hoy.getDay()
     let proximoDia = null, proximaHora = '', diasHasta = 99
@@ -221,9 +185,8 @@
     if (proximoDia) {
       const proxFecha = new Date(hoy)
       proxFecha.setDate(hoy.getDate() + diasHasta)
-      const opcFecha = { weekday:'long', day:'numeric', month:'long' }
       document.getElementById('prox-dia').textContent =
-        proximoDia + ' · ' + proxFecha.toLocaleDateString('es-MX', opcFecha)
+        proximoDia + ' · ' + proxFecha.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
       document.getElementById('prox-hora').textContent = proximaHora
       document.getElementById('proxima-section').style.display = 'block'
     }
@@ -234,10 +197,6 @@
     lucide.createIcons()
   }
 </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
-  }
-</script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})</script>
 </body>
 </html>
