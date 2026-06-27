@@ -164,7 +164,7 @@
     // Cargar confirmaciones de todos los avisos
     const ids = avisos.map(a => a.id)
     const { data: confs } = await supabase.from('avisos_confirmaciones')
-      .select('aviso_id, padre_nombre, confirmado_en').in('aviso_id', ids)
+      .select('aviso_id, padre_nombre, created_at').in('aviso_id', ids)
 
     const confMap = {}
     for (const c of (confs||[])) {
@@ -197,7 +197,7 @@
           ${pendientes > 0 ? `<div class="confirm-pendiente">${pendientes} padre${pendientes>1?'s':''} sin confirmar</div>` : '<div style="font-size:11px;color:#16a34a;margin-top:5px;">✓ Todos confirmaron</div>'}
 
           ${lista.length ? `<div class="who-wrap">${lista.slice(0,5).map(c => {
-            const t = new Date(c.confirmado_en).toLocaleDateString('es-MX',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+            const t = new Date(c.created_at).toLocaleDateString('es-MX',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
             return `<div class="who-row"><div class="who-dot"></div><div class="who-name">${c.padre_nombre||'Padre'}</div><div class="who-time">${t}</div></div>`
           }).join('')}${lista.length>5?`<div style="font-size:11px;color:#9ca3af;padding:4px 14px;">+${lista.length-5} más…</div>`:''}</div>` : ''}
         </div>
