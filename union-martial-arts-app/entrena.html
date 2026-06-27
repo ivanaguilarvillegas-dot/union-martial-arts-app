@@ -62,14 +62,26 @@
   let lvl = 'principiante'
   const done = {}
   let videos = []
+  let links = {}
 
-  // Cargar videos subidos por el instructor
+  function clave(nombre) {
+    return nombre.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+      .substring(0, 40)
+  }
+
+  // Cargar videos y vínculos del instructor
   async function cargarVideos() {
-    const { data } = await supabase.storage.from('media').list('videos', { limit: 20 })
-    videos = (data || []).map(v => ({
+    const [vidRes, linkRes] = await Promise.allSettled([
+      supabase.storage.from('media').list('videos', { limit: 100 }),
+      supabase.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle()
+    ])
+    videos = (vidRes.value?.data || []).map(v => ({
       nombre: v.name.replace(/^\d+_/, '').replace(/\.[^.]+$/, ''),
       url: supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
     }))
+    try { links = JSON.parse(linkRes.value?.data?.valor || '{}') } catch { links = {} }
     render()
   }
 
@@ -77,13 +89,14 @@
     const items = LEVELS[lvl]
     document.getElementById('list').innerHTML = items.map((it, i) => {
       const k = lvl + i, on = !!done[k]
-      // Buscar video del instructor que coincida con el nombre
+      const nombreClave = clave(it[1])
       const vid = videos.find(v => v.nombre.toLowerCase().includes(it[1].toLowerCase().split(' ')[0].toLowerCase()))
-      const nombreClave = it[1].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'_').substring(0,30)
+      const lnk = links[nombreClave] || null
+      const playUrl = vid?.url || lnk || null
       return `<div class="row"><span class="ic amber"><i data-lucide="${it[0]}"></i></span>
         <span class="grow"><span class="t">${it[1]}</span><span class="s">${it[2]}</span></span>
         <span class="trail" style="gap:8px;">
-          ${vid ? `<a class="iconbtn" href="${vid.url}" target="_blank" aria-label="Ver video"><i data-lucide="play"></i></a>` : `<button class="iconbtn" disabled style="opacity:.3;" aria-label="Sin video"><i data-lucide="play"></i></button>`}
+          ${playUrl ? `<a class="iconbtn" href="${playUrl}" target="_blank" aria-label="Ver video"><i data-lucide="play"></i></a>` : `<button class="iconbtn" disabled style="opacity:.3;" aria-label="Sin video"><i data-lucide="play"></i></button>`}
           ${esAdmin ? `<label class="iconbtn" title="Subir video" style="cursor:pointer;"><i data-lucide="upload" style="width:14px;height:14px"></i><input type="file" accept="video/*" hidden data-ejercicio="${nombreClave}" /></label>` : ''}
           <button class="iconbtn" data-k="${k}" aria-label="Marcar" style="background:${on?'var(--green-600)':'var(--sunken)'};color:${on?'#fff':'var(--faint)'};">
             <i data-lucide="check"></i></button>
