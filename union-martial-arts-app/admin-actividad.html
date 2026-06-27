@@ -39,7 +39,8 @@
   </div>
 
   <div class="tab-bar">
-    <button class="tab active" data-tab="habitos" onclick="tab('habitos')">Hábitos</button>
+    <button class="tab active" data-tab="registro" onclick="tab('registro')">Registro</button>
+    <button class="tab" data-tab="habitos" onclick="tab('habitos')">Hábitos</button>
     <button class="tab" data-tab="nutricion" onclick="tab('nutricion')">Nutrición</button>
     <button class="tab" data-tab="meditacion" onclick="tab('meditacion')">Meditación</button>
   </div>
@@ -60,8 +61,15 @@ const sb = createClient(
 const { data: { user } } = await sb.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
-let tabActual = 'habitos'
+let tabActual = 'registro'
 let datos = {}
+
+const TIPO_META = {
+  checkin:      { ic: 'calendar-check', col: 'green',  label: 'Check-in' },
+  ausencia:     { ic: 'calendar-x',     col: 'red',    label: 'Ausencia' },
+  pago:         { ic: 'credit-card',    col: 'blue',   label: 'Pago' },
+  cambio_cinta: { ic: 'award',          col: 'purple', label: 'Cinta' },
+}
 
 window.tab = function(t) {
   tabActual = t
@@ -70,10 +78,10 @@ window.tab = function(t) {
 }
 
 async function cargar() {
-  const hoy = new Date().toISOString().split('T')[0]
   const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]
 
-  const [habRes, nutRes, medRes, alumRes] = await Promise.all([
+  const [regRes, habRes, nutRes, medRes, alumRes] = await Promise.all([
+    sb.from('activity_log').select('*, alumnos(nombre)').gte('created_at', hace30 + 'T00:00:00Z').order('created_at', { ascending: false }).limit(200),
     sb.from('habitos_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
     sb.from('nutricion_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
     sb.from('meditacion_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
@@ -81,20 +89,75 @@ async function cargar() {
   ])
 
   datos = {
-    habitos: habRes.data || [],
-    nutricion: nutRes.data || [],
-    meditacion: medRes.data || [],
-    alumnos: alumRes.data || []
+    registro:   regRes.data  || [],
+    habitos:    habRes.data  || [],
+    nutricion:  nutRes.data  || [],
+    meditacion: medRes.data  || [],
+    alumnos:    alumRes.data || []
   }
   render()
 }
 
+function renderRegistro(lista, alumnos) {
+  const body = document.getElementById('act-body')
+  if (!lista.length) {
+    body.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">
+      <div style="font-size:36px;margin-bottom:8px;">📋</div>
+      Sin actividad registrada en los últimos 30 días.
+    </div>`
+    return
+  }
+
+  const hoyStr = new Date().toISOString().split('T')[0]
+  const checkins = lista.filter(r => r.tipo === 'checkin').length
+  const ausencias = lista.filter(r => r.tipo === 'ausencia').length
+  const pagos = lista.filter(r => r.tipo === 'pago').length
+  const cintas = lista.filter(r => r.tipo === 'cambio_cinta').length
+
+  body.innerHTML = `
+    <div class="resumen-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="res-tile"><div class="rv" style="font-size:18px;">${checkins}</div><div class="rl">Check-ins</div></div>
+      <div class="res-tile"><div class="rv" style="font-size:18px;color:#dc2626;">${ausencias}</div><div class="rl">Ausencias</div></div>
+      <div class="res-tile"><div class="rv" style="font-size:18px;color:#1d4ed8;">${pagos}</div><div class="rl">Pagos</div></div>
+      <div class="res-tile"><div class="rv" style="font-size:18px;color:#7c3aed;">${cintas}</div><div class="rl">Cintas</div></div>
+    </div>
+    ${lista.map(r => {
+      const m = TIPO_META[r.tipo] || { ic: 'activity', col: 'blue', label: r.tipo }
+      const nom = r.alumnos?.nombre || 'Alumno'
+      const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
+      const dt = new Date(r.created_at)
+      const fechaStr = dt.toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+      const horaStr = dt.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+      return `<div class="act-card" style="padding:11px 14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="act-avatar" style="background:${m.col==='green'?'#f0fdf4':m.col==='red'?'#fef2f2':m.col==='blue'?'#eff6ff':'#f5f3ff'};color:${m.col==='green'?'#059669':m.col==='red'?'#dc2626':m.col==='blue'?'#1d4ed8':'#7c3aed'};">
+            <i data-lucide="${m.ic}" style="width:15px;height:15px;"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <span class="act-chip ${m.col}" style="font-size:10px;padding:2px 7px;">${m.label}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--text);">${nom}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);">${r.descripcion || ''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:11px;color:var(--muted);">${fechaStr}</div>
+            <div style="font-size:11px;color:var(--muted);">${horaStr}</div>
+          </div>
+        </div>
+      </div>`
+    }).join('')}
+  `
+  lucide.createIcons()
+}
+
 function render() {
   const body = document.getElementById('act-body')
+  if (tabActual === 'registro') { renderRegistro(datos.registro || [], datos.alumnos || []); return }
+
   const lista = datos[tabActual] || []
   const alumnos = datos.alumnos || []
 
-  // Resumen
   const unicos = new Set(lista.map(r => r.alumno_id)).size
   const totalHoy = lista.filter(r => r.fecha === new Date().toISOString().split('T')[0]).length
   const pct = alumnos.length ? Math.round(unicos / alumnos.length * 100) : 0
@@ -110,7 +173,6 @@ function render() {
     return
   }
 
-  // Agrupar por alumno
   const porAlumno = {}
   lista.forEach(r => {
     const nom = r.alumnos?.nombre || 'Alumno'
@@ -127,13 +189,13 @@ function render() {
     ${Object.entries(porAlumno).map(([nom, regs]) => {
       const ini = nom.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase()
       const ultimo = regs[0]
-      const fecha = new Date(ultimo.fecha || ultimo.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short' })
+      const fecha = new Date(ultimo.fecha || ultimo.creado_en || ultimo.created_at).toLocaleDateString('es-MX', { day:'numeric', month:'short' })
       return `<div class="act-card">
         <div class="act-header">
           <div class="act-avatar">${ini}</div>
           <div style="flex:1;">
             <div class="act-nombre">${nom}</div>
-            <div class="act-fecha">Último registro: ${fecha} · ${regs.length} en 30 días</div>
+            <div class="act-fecha">Último: ${fecha} · ${regs.length} en 30 días</div>
           </div>
           <span class="act-chip green">✓ Activo</span>
         </div>
