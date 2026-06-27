@@ -26,6 +26,20 @@
       <div id="panel-diaria">
         <div class="label row"><span>Áreas del día</span><span class="badge" id="cnt">0/9</span></div>
         <div class="card flush mb14" id="list"></div>
+        <div class="card mb14" style="padding:14px 16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;">Métrica adicional (opcional)</div>
+          <label class="field" style="margin-bottom:10px;">
+            <span class="lab">Nombre de la métrica</span>
+            <input type="text" id="otros-diaria-nombre" placeholder="Ej. Puntualidad, Concentración…" />
+          </label>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 0;">
+            <span style="font-size:14px;font-weight:600;flex:1;" id="otros-diaria-label-preview">—</span>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="otros-diaria-val" style="width:18px;height:18px;accent-color:var(--primary);" />
+              <span style="font-size:13px;color:var(--muted);">Cumplió</span>
+            </label>
+          </div>
+        </div>
         <label class="field mb14"><span class="lab">Nota del día (opcional)</span>
           <textarea id="nota-diaria" rows="3" placeholder="Comentario para los padres…"></textarea></label>
       </div>
@@ -35,6 +49,21 @@
         <div class="card mb14"><div class="stack">
           <div style="font-size:12px;font-weight:500;color:var(--muted);">Califica del 1 al 10</div>
           <div id="sliders"></div>
+          <div style="border-top:1px solid var(--ink-100);padding-top:14px;margin-top:4px;">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;">Métrica adicional (opcional)</div>
+            <label class="field" style="margin-bottom:12px;">
+              <span class="lab">Nombre de la métrica</span>
+              <input type="text" id="otros-mensual-nombre" placeholder="Ej. Liderazgo, Flexibilidad…" />
+            </label>
+            <div class="prog" id="otros-mensual-wrap" style="margin-bottom:4px;">
+              <div class="head" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:13px;">
+                <span id="otros-mensual-label-preview">Otra métrica</span>
+                <b style="color:var(--primary);" id="otros-mensual-val-display">7 / 10</b>
+              </div>
+              <input type="range" min="1" max="10" value="7" id="otros-mensual-val"
+                style="width:100%;accent-color:var(--primary);" />
+            </div>
+          </div>
           <label class="field"><span class="lab">Comentario para los padres</span>
             <textarea id="nota-mensual" rows="3" placeholder="Resumen del mes…"></textarea></label>
         </div></div>
@@ -107,6 +136,21 @@
   })
   render()
 
+  // Preview nombre métrica diaria
+  document.getElementById('otros-diaria-nombre').addEventListener('input', e => {
+    const v = e.target.value.trim()
+    document.getElementById('otros-diaria-label-preview').textContent = v || '—'
+  })
+
+  // Preview nombre métrica mensual
+  document.getElementById('otros-mensual-nombre').addEventListener('input', e => {
+    const v = e.target.value.trim()
+    document.getElementById('otros-mensual-label-preview').textContent = v || 'Otra métrica'
+  })
+  document.getElementById('otros-mensual-val').addEventListener('input', e => {
+    document.getElementById('otros-mensual-val-display').textContent = e.target.value + ' / 10'
+  })
+
   // === MENSUAL ===
   const AREAS = [
     { k: 'tecnica_golpe', label: 'Técnica de golpe' },
@@ -156,15 +200,30 @@
       const nota = document.getElementById('nota-diaria').value.trim()
       const areas = ITEMS.filter((_, i) => st[i])
       const puntuacion = Math.round((areas.length / ITEMS.length) * 100)
+      const otrosNombre = document.getElementById('otros-diaria-nombre').value.trim()
+      const otrosVal = document.getElementById('otros-diaria-val').checked
       payload = { ...payload, puntuacion,
         actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2],
         participacion: !!st[3], nota }
-      notifTexto = `📋 Evaluación del día ${fecha} — ${alumno?.nombre}: ${areas.length}/${ITEMS.length} áreas${nota ? '\n"' + nota + '"' : ''}`
+      if (otrosNombre) {
+        payload.otros_nombre = otrosNombre
+        payload.otros_valor = otrosVal
+      }
+      notifTexto = `📋 Evaluación del día ${fecha} — ${alumno?.nombre}: ${areas.length}/${ITEMS.length} áreas${otrosNombre ? '\n' + otrosNombre + ': ' + (otrosVal ? '✓ Cumplió' : '— Por mejorar') : ''}${nota ? '\n"' + nota + '"' : ''}`
     } else {
       const nota = document.getElementById('nota-mensual').value.trim()
-      const prom = (Object.values(vals).reduce((s,v)=>s+v,0)/AREAS.length).toFixed(1)
+      const otrosNombre = document.getElementById('otros-mensual-nombre').value.trim()
+      const otrosVal = parseInt(document.getElementById('otros-mensual-val').value)
+      const todosVals = { ...vals }
+      if (otrosNombre) todosVals.otros = otrosVal
+      const claves = Object.values(todosVals)
+      const prom = (claves.reduce((s,v)=>s+v,0)/claves.length).toFixed(1)
       payload = { ...payload, ...vals, comentarios: nota, puntuacion: Math.round(parseFloat(prom)*10) }
-      notifTexto = `📊 Evaluación mensual — ${alumno?.nombre}: Promedio ${prom}/10${nota ? '\n"' + nota + '"' : ''}`
+      if (otrosNombre) {
+        payload.otros_nombre = otrosNombre
+        payload.otros = otrosVal
+      }
+      notifTexto = `📊 Evaluación mensual — ${alumno?.nombre}: Promedio ${prom}/10${otrosNombre ? '\n' + otrosNombre + ': ' + otrosVal + '/10' : ''}${nota ? '\n"' + nota + '"' : ''}`
     }
 
     const { error } = await supabase.from('evaluaciones').insert(payload)
