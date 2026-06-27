@@ -267,7 +267,8 @@
 
     if (editar) {
       const id = editar.dataset.id
-      const { data: a } = await supabase.from('avisos').select('*').eq('id', id).maybeSingle()
+      const { data: aRows } = await supabase.from('avisos').select('*').eq('id', id).limit(1)
+      const a = aRows?.[0]
       if (!a) return
       editId = id
       document.getElementById('modal-title').textContent = 'Editar aviso'
