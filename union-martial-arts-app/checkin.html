@@ -168,6 +168,7 @@
     const ahora = new Date()
     const hora = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
     await supabase.from('checkins').insert({ alumno_id: alumnoId, fecha: hoy, tipo, hora })
+    try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'checkin', descripcion: `Check-in: ${tipo} a las ${hora}`, metadata: { fecha: hoy, tipo } }) } catch(e) {}
 
     // Notificar al instructor
     await supabase.from('mensajes').insert({
@@ -206,6 +207,7 @@
     await supabase.from('checkins').upsert({
       alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
     }, { onConflict: 'alumno_id,fecha' })
+    try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'ausencia', descripcion: `Ausencia reportada: ${motivo}`, metadata: { fecha: hoy, motivo } }) } catch(e) {}
 
     // Notificar al instructor
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`

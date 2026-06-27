@@ -242,6 +242,9 @@
     }
 
     const { error } = await supabase.from('alumnos').update({ cinta: selCinta }).eq('id', alumno_id)
+    if (!error) {
+      try { await supabase.from('activity_log').insert({ alumno_id, tipo: 'cambio_cinta', descripcion: `Cambio de cinta a ${selCinta}`, metadata: { cinta: selCinta, fecha } }) } catch(e) {}
+    }
     if (error) {
       alert('Error: ' + error.message)
       btn.disabled = false

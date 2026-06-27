@@ -328,6 +328,7 @@
       if (pagoId) {
         await supabase.from('pagos').update({ monto: montoFinal, forma_pago: 'efectivo' }).eq('id', pagoId)
       }
+      try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'pago', descripcion: `Pago en efectivo: $${montoFinal.toLocaleString('es-MX')}`, metadata: { monto: montoFinal, forma_pago: 'efectivo' } }) } catch(e) {}
       await supabase.from('mensajes').insert({
         de_user_id: user.id,
         texto: `${padre?.nombre || 'Un padre'} avisó que pagará $${montoFinal.toLocaleString('es-MX')} en efectivo en la academia.`,
@@ -364,6 +365,7 @@
     if (pagoId) {
       await supabase.from('pagos').update({ monto: montoFinal, forma_pago: metodoPago, comprobante_url: url }).eq('id', pagoId)
     }
+    try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'pago', descripcion: `Comprobante enviado: $${montoFinal.toLocaleString('es-MX')} (${metodoPago})`, metadata: { monto: montoFinal, forma_pago: metodoPago, comprobante_url: url } }) } catch(e) {}
 
     document.getElementById('comprobante-area').style.display = 'none'
     document.getElementById('btn-pagar').style.display = 'none'
