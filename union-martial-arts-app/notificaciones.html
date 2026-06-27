@@ -313,9 +313,9 @@
       const { data: msgs } = await supabase.from('mensajes')
         .select('id, texto, creado_en, leido')
         .eq('para_admin', false)
-        .eq('destinatario_id', padre?.id)
+        .or('destinatario_id.eq.' + (padre?.id || 'null') + ',destinatario_id.is.null')
         .order('creado_en', { ascending: false })
-        .limit(3)
+        .limit(10)
 
       const sinLeer = (msgs||[]).filter(m => !m.leido).length
       if (sinLeer > 0) {
@@ -326,21 +326,42 @@
       }
 
       if (msgs?.length) {
-        document.getElementById('msgs-list').innerHTML = msgs.map(m => {
-          const col = avatarColor('Instructor')
-          return `<a class="msg-row" href="chat.html" style="text-decoration:none;cursor:pointer;">
-            <div class="msg-dot${m.leido?' read':''}"></div>
-            <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
-            <div class="msg-body">
-              <div class="msg-name">Instructor</div>
-              <div class="msg-preview">${m.texto||''}</div>
+        const col = avatarColor('Instructor')
+
+        function parseMsgTexto(txt) {
+          if (!txt) return { texto: '', diplomaUrl: null }
+          const match = txt.match(/📜 Diploma: (https?:\/\/\S+)/)
+          if (match) return { texto: txt.replace(/\n?📜 Diploma: https?:\/\/\S+/, '').trim(), diplomaUrl: match[1] }
+          return { texto: txt, diplomaUrl: null }
+        }
+
+        document.getElementById('msgs-list').innerHTML = msgs.map((m, i) => {
+          const { texto, diplomaUrl } = parseMsgTexto(m.texto)
+          return `<div class="msg-row" id="msg-card-${i}" style="flex-direction:column;gap:0;padding:0;">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleMsg(${i})">
+              <div class="msg-dot${m.leido?' read':''}"></div>
+              <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
+              <div class="msg-body">
+                <div class="msg-name">Instructor</div>
+                <div class="msg-preview">${texto}</div>
+                ${diplomaUrl ? '<div style="margin-top:4px;"><span style="font-size:11px;background:#eff6ff;color:#0047AB;border-radius:20px;padding:2px 8px;font-weight:600;">📜 Diploma adjunto</span></div>' : ''}
+              </div>
+              <div class="msg-right">
+                ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
+                <span class="msg-time">${timeAgo(m.creado_en)}</span>
+              </div>
             </div>
-            <div class="msg-right">
-              ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
-              <span class="msg-time">${timeAgo(m.creado_en)}</span>
+            <div id="reply-${i}" style="display:none;padding:0 16px 14px;border-top:1px solid #f3f4f6;">
+              <div style="font-size:13px;color:#374151;margin-bottom:10px;line-height:1.5;">${texto}</div>
+              ${diplomaUrl ? `<a href="${diplomaUrl}" target="_blank" download style="display:flex;align-items:center;justify-content:center;gap:8px;background:#eff6ff;color:#0047AB;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;"><i class="ti ti-file-download" style="font-size:16px;"></i> Ver / Descargar diploma</a>` : ''}
             </div>
-          </a>`
+          </div>`
         }).join('')
+      }
+
+      window.toggleMsg = function(i) {
+        const d = document.getElementById('reply-' + i)
+        if (d) d.style.display = d.style.display === 'none' ? 'block' : 'none'
       }
     } catch(e) {}
 
