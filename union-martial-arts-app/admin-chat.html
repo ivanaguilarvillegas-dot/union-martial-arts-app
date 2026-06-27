@@ -174,8 +174,8 @@ window.cerrarChat = function() {
 
 // ── CARGAR MENSAJES DEL HILO ──
 async function cargarMensajes() {
-  const { data: padreRow } = await sb.from('padres').select('user_id').eq('id', currentPadreId).maybeSingle()
-  const padreUserId = padreRow?.user_id
+  const { data: padreRows } = await sb.from('padres').select('user_id').eq('id', currentPadreId).limit(1)
+  const padreUserId = padreRows?.[0]?.user_id
 
   const { data: msgs } = await sb.from('mensajes')
     .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id')
