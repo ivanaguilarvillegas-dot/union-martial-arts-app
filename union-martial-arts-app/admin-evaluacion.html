@@ -202,7 +202,7 @@
       const puntuacion = Math.round((areas.length / ITEMS.length) * 100)
       const otrosNombre = document.getElementById('otros-diaria-nombre').value.trim()
       const otrosVal = document.getElementById('otros-diaria-val').checked
-      payload = { ...payload, puntuacion,
+      payload = { ...payload,
         actitud: !!st[0], esfuerzo: !!st[1], tecnica: !!st[2],
         participacion: !!st[3], nota }
       if (otrosNombre) {
@@ -218,7 +218,7 @@
       if (otrosNombre) todosVals.otros = otrosVal
       const claves = Object.values(todosVals)
       const prom = (claves.reduce((s,v)=>s+v,0)/claves.length).toFixed(1)
-      payload = { ...payload, ...vals, comentarios: nota, puntuacion: Math.round(parseFloat(prom)*10) }
+      payload = { ...payload, ...vals, nota }
       if (otrosNombre) {
         payload.otros_nombre = otrosNombre
         payload.otros = otrosVal
