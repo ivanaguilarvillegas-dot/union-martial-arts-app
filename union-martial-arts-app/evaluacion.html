@@ -138,9 +138,17 @@
   let alumnoId = null, alumnoNombre = ''
   try {
     let padre = null
-    const { data: p } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).limit(1)
-    if (p?.[0]) { padre = p[0] }
-    else {
+    const savedId = localStorage.getItem('uma_padre_id')
+    if (savedId) {
+      const { data: ps } = await supabase.from('padres').select('id, alumno_id, nombre').eq('id', savedId).limit(1)
+      if (ps?.[0]) padre = ps[0]
+    }
+    if (!padre) {
+      const { data: p } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id)
+      const lista = (p || []).filter(x => x.alumno_id)
+      padre = lista[0] || p?.[0] || null
+    }
+    if (!padre) {
       const { data: pe } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
       if (pe?.[0]) { await supabase.from('padres').update({ user_id: user.id }).eq('id', pe[0].id); padre = pe[0] }
     }
