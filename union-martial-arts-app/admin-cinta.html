@@ -254,10 +254,15 @@
       ? `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante! 📜 Diploma: ${diploma_url}`
       : `🥋 ¡Felicidades! ${alumno?.nombre || 'Tu hijo/a'} ha ascendido a Cinta ${selCinta} el ${fecha}. ¡Sigue adelante!`
 
+    // Buscar al padre vinculado a este alumno para mandarle el mensaje directamente
+    const { data: padreRows } = await supabase.from('padres').select('id').eq('alumno_id', alumno_id).limit(1)
+    const destinatario_id = padreRows?.[0]?.id || null
+
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
       texto: textoMsg,
-      para_admin: false
+      para_admin: false,
+      destinatario_id
     })
 
     document.getElementById('form').style.display = 'none'
