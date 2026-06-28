@@ -230,6 +230,18 @@
     return colors[h]
   }
 
+  // Tab switcher: definido antes de las consultas para que los botones siempre respondan
+  const tabTitles = { avisos: 'Avisos', mensajes: 'Mensajes', eventos: 'Eventos' }
+  window.cambiarTab = function(tab) {
+    document.querySelectorAll('.hero-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
+    document.getElementById('sec-avisos').style.display   = tab === 'avisos'   ? 'block' : 'none'
+    document.getElementById('sec-mensajes').style.display = tab === 'mensajes' ? 'block' : 'none'
+    document.getElementById('sec-eventos').style.display  = tab === 'eventos'  ? 'block' : 'none'
+    document.getElementById('hero-tab-title').textContent = tabTitles[tab]
+    const sec = document.getElementById('sec-' + tab)
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   try {
     const { data: authData } = await supabase.auth.getUser()
     const user = authData?.user
@@ -430,18 +442,7 @@
 
   } catch(e) { console.error('notif error:', e) }
 
-  // Títulos por tab
-  const tabTitles = { avisos: 'Avisos', mensajes: 'Mensajes', eventos: 'Eventos' }
 
-  window.cambiarTab = function(tab) {
-    document.querySelectorAll('.hero-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
-    document.getElementById('sec-avisos').style.display   = tab === 'avisos'   ? 'block' : 'none'
-    document.getElementById('sec-mensajes').style.display = tab === 'mensajes' ? 'block' : 'none'
-    document.getElementById('sec-eventos').style.display  = tab === 'eventos'  ? 'block' : 'none'
-    document.getElementById('hero-tab-title').textContent = tabTitles[tab]
-    const sec = document.getElementById('sec-' + tab)
-    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 </script>
 <script>
   if ('serviceWorker' in navigator) {
