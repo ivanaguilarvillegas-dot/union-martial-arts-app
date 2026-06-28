@@ -74,6 +74,11 @@
 .msg-time { font-size:11px; color:#9ca3af; }
 
 /* Eventos */
+.notif-categories { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:0 16px 16px; }
+.notif-cat { display:flex; gap:10px; align-items:flex-start; background:#f9fafb; border-radius:16px; padding:12px 14px; text-decoration:none; color:#111827; border:1px solid #e5e7eb; }
+.notif-cat div:first-child { flex-shrink:0; }
+.notif-cat div:last-child { min-width:0; }
+.notif-cat:hover { background:#fff; box-shadow:0 4px 16px rgba(15,23,42,.08); }
 .eventos-scroll { display:flex; gap:10px; overflow-x:auto; padding:0 16px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
 .eventos-scroll::-webkit-scrollbar { display:none; }
 .evento-card { background:#fff; border-radius:14px; width:210px; flex-shrink:0; scroll-snap-align:start; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid #f3f4f6; }
@@ -122,7 +127,7 @@
   <!-- Tabs -->
   <div style="background:var(--uma-blue-600);padding:0 14px 12px;display:flex;gap:8px;">
     <button class="hero-tab active" data-tab="avisos" onclick="cambiarTab('avisos')">
-      📢 Notificaciones<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+      📢 Avisos<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
     </button>
     <button class="hero-tab" data-tab="mensajes" onclick="cambiarTab('mensajes')">
       💬 Chat privado<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
@@ -141,9 +146,39 @@
           <i class="ti ti-speakerphone" style="font-size:20px;color:#d97706;"></i>
         </div>
         <div class="sec-hdr-txt">
-          <div class="sec-hdr-title">Notificaciones generales</div>
-          <div class="sec-hdr-sub">Información importante para todos los alumnos.</div>
+          <div class="sec-hdr-title">Avisos generales</div>
+          <div class="sec-hdr-sub">Información importante y categorías clave para tu familia.</div>
         </div>
+      </div>
+      <div class="notif-categories">
+        <a class="notif-cat" href="pagos.html">
+          <div style="font-size:18px;">💳</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111827;">Pagos</div>
+            <div style="font-size:12px;color:#6b7280;">Ver recibos y estados.</div>
+          </div>
+        </a>
+        <a class="notif-cat" href="cita.html">
+          <div style="font-size:18px;">📅</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111827;">Citas</div>
+            <div style="font-size:12px;color:#6b7280;">Solicita seguimientos con el instructor.</div>
+          </div>
+        </a>
+        <a class="notif-cat" href="asistencia.html">
+          <div style="font-size:18px;">❗</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111827;">Ausencias</div>
+            <div style="font-size:12px;color:#6b7280;">Registra faltas y notas del alumno.</div>
+          </div>
+        </a>
+        <a class="notif-cat" href="checkin.html">
+          <div style="font-size:18px;">✔️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111827;">Check-in</div>
+            <div style="font-size:12px;color:#6b7280;">Controla asistencias desde la app.</div>
+          </div>
+        </a>
       </div>
       <div id="avisos-list">
         <div class="empty-sec">
@@ -197,7 +232,7 @@
 
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
-    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a class="on" href="notificaciones.html"><i data-lucide="bell"></i>Notificaciones</a>
     <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
     <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
   </nav>

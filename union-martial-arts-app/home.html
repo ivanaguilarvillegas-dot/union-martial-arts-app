@@ -299,11 +299,16 @@
 .hub-section { margin-top: 26px; }
 .hub-section-title { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 18px; padding-left: 12px; position: relative; }
 .hub-section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 20px; border-radius: 2px; background: var(--primary); }
-.hub-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
-.hub-card { background: rgba(239, 246, 255, 0.96); border-radius: 22px; border: 1px solid rgba(59, 130, 246, .10); padding: 14px 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 120px; box-shadow: 0 12px 26px rgba(59, 130, 246, .10); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.hub-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.hub-card { background: rgba(239, 246, 255, 0.96); border-radius: 22px; border: 1px solid rgba(59, 130, 246, .10); padding: 12px 10px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 110px; box-shadow: 0 12px 26px rgba(59, 130, 246, .10); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
 .hub-card:hover { transform: translateY(-2px); border-color: rgba(59, 130, 246, .18); box-shadow: 0 16px 32px rgba(59, 130, 246, .14); }
-.hub-card .menu-ic { width: 76px; height: 76px; box-shadow: 0 14px 28px rgba(59, 130, 246, .16); }
-.hub-card .menu-ic i { font-size: 36px; }
+.hub-card .menu-ic { width: 64px; height: 64px; box-shadow: 0 10px 24px rgba(59, 130, 246, .14); }
+.hub-card .menu-ic i { font-size: 30px; }
+@media (max-width: 420px) {
+  .hub-grid { grid-template-columns: 1fr; }
+  .menu-section-subtitle { margin-bottom: 16px; }
+  .hub-card { min-height: auto; }
+}
 .bottomnav a { font-size: 12px; }
 .bottomnav svg { width: 26px; height: 26px; }
 </style>
