@@ -264,7 +264,7 @@
     if (proximoDia) {
       const proxFecha = new Date(hoy)
       proxFecha.setDate(hoy.getDate() + diasHasta)
-      const opcFecha = { weekday:'long', day:'numeric', month:'long' }
+      const opcFecha = { day:'numeric', month:'long' }
       document.getElementById('prox-dia').textContent =
         proximoDia + ' · ' + proxFecha.toLocaleDateString('es-MX', opcFecha)
       document.getElementById('prox-hora').textContent = proximaHora
