@@ -283,22 +283,27 @@
 .ver-evento { background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3); color: #fff; border-radius: 20px; font-size: 11px; padding: 7px 13px; text-decoration: none; white-space: nowrap; flex-shrink: 0; font-weight: 700; }
 
 /* ── MENÚ ── */
-.menu-card { background: #fff; border-radius: 16px; padding: 16px 10px 10px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.06); border: 1.5px solid #f0f2f5; }
-.menu-section-hdr { font-size: 28px; font-weight: 800; color: #111827; letter-spacing: .04em; text-transform: uppercase; padding: 0 0 8px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
+.menu-card { background: #fff; border-radius: 16px; padding: 16px 10px 14px; margin-bottom: 12px; box-shadow: 0 1px 10px rgba(15, 23, 42, .04); border: 1px solid rgba(59, 130, 246, .08); }
+.menu-section-hdr { font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: .08em; text-transform: uppercase; padding: 0; margin-bottom: 10px; position: relative; }
+.menu-section-hdr::after { content: ''; display: block; width: 54px; height: 3px; border-radius: 99px; background: var(--primary); margin-top: 10px; }
+.menu-section-subtitle { font-size: 12px; color: #64748b; line-height: 1.6; padding: 0 4px 16px; margin-top: 6px; margin-bottom: 22px; }
 .menu-section-hdr:not(:first-child) { padding-top: 14px; }
-.menu-section-divider { height: 1px; background: #f3f4f6; margin: 4px 0; }
+.menu-section-divider { height: 1px; background: #e5e7eb; margin: 4px 0 12px; }
 .menu-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; }
 .menu-item { text-align: center; padding: 8px 4px; text-decoration: none; display: block; }
-.menu-ic { width: 68px; height: 68px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
-.menu-ic.cobalt { background: #eef2ff; }
-.menu-ic.amber { background: #fffbeb; }
-.menu-label { font-size: 18px; font-weight: 700; color: #111827; line-height: 1.2; }
-.menu-sub { font-size: 14px; color: #6b7280; margin-top: 6px; line-height: 1.5; }
-.hub-section { margin-top: 18px; }
-.hub-section-title { font-size: 20px; font-weight: 700; color: #374151; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
-.hub-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-.hub-card { background: #fff; border-radius: 18px; border: 1px solid rgba(59, 130, 246, .12); padding: 20px 14px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 14px; min-height: 170px; box-shadow: 0 18px 40px rgba(15, 23, 42, .07); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-.hub-card:hover { transform: translateY(-2px); border-color: rgba(59, 130, 246, .25); box-shadow: 0 22px 48px rgba(15, 23, 42, .10); }
+.menu-ic { width: 70px; height: 70px; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+.menu-ic.cobalt { background: rgba(59, 130, 246, .18); }
+.menu-ic.amber { background: rgba(251, 191, 36, .16); }
+.menu-label { font-size: 19px; font-weight: 700; color: #111827; line-height: 1.2; }
+.menu-sub { font-size: 14px; color: #475569; margin-top: 6px; line-height: 1.5; }
+.hub-section { margin-top: 26px; }
+.hub-section-title { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 18px; padding-left: 12px; position: relative; }
+.hub-section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 20px; border-radius: 2px; background: var(--primary); }
+.hub-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.hub-card { background: rgba(239, 246, 255, 0.96); border-radius: 22px; border: 1px solid rgba(59, 130, 246, .10); padding: 14px 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 120px; box-shadow: 0 12px 26px rgba(59, 130, 246, .10); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.hub-card:hover { transform: translateY(-2px); border-color: rgba(59, 130, 246, .18); box-shadow: 0 16px 32px rgba(59, 130, 246, .14); }
+.hub-card .menu-ic { width: 76px; height: 76px; box-shadow: 0 14px 28px rgba(59, 130, 246, .16); }
+.hub-card .menu-ic i { font-size: 36px; }
 .bottomnav a { font-size: 12px; }
 .bottomnav svg { width: 26px; height: 26px; }
 </style>
@@ -540,7 +545,7 @@
         </div>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:800;color:#fff;">Beneficios UNION</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">Básico · Anual · Club · UACJ</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">Descubre todo lo incluido en tu membresía.</div>
         </div>
         <i class="ti ti-chevron-right" style="font-size:18px;color:rgba(255,255,255,.6);"></i>
       </a>
@@ -553,17 +558,17 @@
         <div class="hub-section-title">Comunicación</div>
         <div class="hub-grid">
           <a class="hub-card" href="chat.html">
-            <div class="menu-ic cobalt"><i class="ti ti-message-2" style="font-size:28px;color:var(--primary);"></i></div>
+            <div class="menu-ic cobalt"><i class="ti ti-message-2" style="font-size:34px;color:var(--primary);"></i></div>
             <div class="menu-label">Chat privado</div>
-            <div class="menu-sub">Comunicación directa con el instructor</div>
+            <div class="menu-sub">Habla directamente con tu instructor.</div>
           </a>
           <a class="hub-card" href="cita.html">
-            <div class="menu-ic cobalt"><i class="ti ti-calendar-plus" style="font-size:28px;color:var(--primary);"></i></div>
+            <div class="menu-ic cobalt"><i class="ti ti-calendar-plus" style="font-size:36px;color:var(--primary);"></i></div>
             <div class="menu-label">Agendar cita</div>
             <div class="menu-sub">Reserva un seguimiento personalizado</div>
           </a>
           <a class="hub-card" href="dudas.html">
-            <div class="menu-ic cobalt"><i class="ti ti-message-question" style="font-size:28px;color:var(--primary);"></i></div>
+            <div class="menu-ic cobalt"><i class="ti ti-message-question" style="font-size:36px;color:var(--primary);"></i></div>
             <div class="menu-label">Centro de ayuda</div>
             <div class="menu-sub">Resuelve dudas y consulta guías</div>
           </a>
@@ -573,17 +578,17 @@
         <div class="hub-section-title">Recursos</div>
         <div class="hub-grid">
           <a class="hub-card" href="entrena.html">
-            <div class="menu-ic amber"><i class="ti ti-activity" style="font-size:28px;color:#d97706;"></i></div>
-            <div class="menu-label">Aprende en casa</div>
-            <div class="menu-sub">Ejercicios y rutinas para practicar</div>
+            <div class="menu-ic amber"><i class="ti ti-activity" style="font-size:34px;color:#d97706;"></i></div>
+            <div class="menu-label">Entrenamiento en casa</div>
+            <div class="menu-sub">Rutinas pensadas para entrenar fuera del dojo.</div>
           </a>
           <a class="hub-card" href="tienda.html">
-            <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:28px;color:#d97706;"></i></div>
+            <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:36px;color:#d97706;"></i></div>
             <div class="menu-label">Tienda</div>
             <div class="menu-sub">Compra equipo y accesorios UNION</div>
           </a>
           <a class="hub-card" href="juegos.html">
-            <div class="menu-ic cobalt" style="background:#fdf4ff;"><i class="ti ti-device-gamepad-2" style="font-size:28px;color:#9333ea;"></i></div>
+            <div class="menu-ic cobalt" style="background:#fdf4ff;"><i class="ti ti-device-gamepad-2" style="font-size:36px;color:#9333ea;"></i></div>
             <div class="menu-label">Zona de Juegos</div>
             <div class="menu-sub">Retos y actividades para el hogar</div>
           </a>
