@@ -232,6 +232,16 @@
       return { diaStr, horaStr }
     })
 
+    // Propagar la hora a segmentos anteriores vacíos si el siguiente segmento contiene hora
+    for (let i = 0; i < rows.length; i++) {
+      const hora = rows[i].horaStr && rows[i].horaStr.trim()
+      if (hora) {
+        for (let j = i - 1; j >= 0 && (!rows[j].horaStr || !rows[j].horaStr.trim()); j--) {
+          rows[j].horaStr = rows[i].horaStr
+        }
+      }
+    }
+
     wrap.innerHTML = `<div class="seg-card">` +
       rows.map(r => `
         <div class="horario-row">
