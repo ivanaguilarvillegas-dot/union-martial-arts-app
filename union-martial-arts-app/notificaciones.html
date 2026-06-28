@@ -299,6 +299,7 @@
       }
       const p = pMap[a.prioridad] || pMap.informativo
       const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+      const autor = a.autor || 'UNION MARTIAL ARTS'
       const yaConfirmo = a.yaConfirmo
       return `<div class="aviso-row">
             <div class="aviso-top">
@@ -310,6 +311,7 @@
                 <div class="aviso-title">${a.titulo}</div>
                 <div class="aviso-msg">${a.mensaje}</div>
                 <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
+                <div style="font-size:12px;color:#6b7280;margin-top:6px;">Publicado por: ${autor}</div>
               </div>
             </div>
             <button class="btn-enterado${yaConfirmo ? ' confirmado' : ''}" data-id="${a.id}"${yaConfirmo ? ' disabled' : ''}>
@@ -345,7 +347,7 @@
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {
       const { data: avisos, error: errAv } = await supabase.from('avisos')
-        .select('id,titulo,mensaje,prioridad,creado_en')
+        .select('id,titulo,mensaje,prioridad,creado_en,autor')
         .eq('activo', true).order('creado_en', { ascending: false }).limit(20)
       if (errAv) { document.getElementById('avisos-list').innerHTML = `<div style="padding:16px;color:red;font-size:13px;">❌ ${errAv.message} (${errAv.code})</div>`; }
 

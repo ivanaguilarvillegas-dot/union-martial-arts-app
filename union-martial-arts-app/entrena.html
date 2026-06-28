@@ -20,22 +20,22 @@
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
       <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
-    <div class="grow"><div class="title">Entrena en Casa</div></div>
+    <div class="grow"><div class="title">Biblioteca UNION</div></div>
   </div>
   <div class="body">
     <div class="card soft mb14" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;">
       <i data-lucide="info" style="width:16px;height:16px;color:var(--primary);flex-shrink:0;margin-top:2px;"></i>
-      <span style="font-size:13px;color:var(--text);line-height:1.5;">Selecciona tu nivel y completa al menos 3 rutinas por semana. Cuando termines cada ejercicio, marca la palomita ✓ para notificar al instructor tu progreso.</span>
+      <span style="font-size:13px;color:var(--text);line-height:1.5;">Accede a videos, técnicas, combinaciones y material educativo del instructor. Marca lo revisado y guarda tu progreso en la biblioteca.</span>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:14px;" id="tabs">
-      <button class="chip on" data-lvl="principiante">Principiante</button>
-      <button class="chip" data-lvl="intermedio">Intermedio</button>
-      <button class="chip" data-lvl="avanzado">Avanzado</button>
+      <button class="chip on" data-lvl="videos">Videos</button>
+      <button class="chip" data-lvl="tecnicas">Técnicas</button>
+      <button class="chip" data-lvl="estrategias">Estrategias</button>
     </div>
-    <div class="label row"><span>Rutina de hoy</span><span class="badge blue" id="cnt">0/5 hechos</span></div>
+    <div class="label row"><span>Recursos disponibles</span><span class="badge blue" id="cnt">0/5 vistos</span></div>
     <div class="notice green" id="notif" style="display:none;"><i data-lucide="bell-ring"></i> Se notificó a tu instructor</div>
     <div class="stack-10 mb14" id="list"></div>
-    <div class="card soft center"><span style="font-size:13px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;"><i data-lucide="lightbulb" class="lucide" style="width:15px;height:15px"></i> Entrena mínimo <strong>&nbsp;3 veces por semana&nbsp;</strong> en casa.</span></div>
+    <div class="card soft center"><span style="font-size:13px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;"><i data-lucide="lightbulb" class="lucide" style="width:15px;height:15px"></i> Solo contenido educativo del instructor: videos, técnicas y manuales.</span></div>
   </div>
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
@@ -57,11 +57,11 @@
   const { data: meAdmin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).maybeSingle()
   const esAdmin = !!meAdmin?.es_admin
 
-  // Rutinas estáticas por nivel (se muestran siempre)
+  // Contenido educativo y recursos del instructor
   const LEVELS = {
-    principiante:[['flame','Calentamiento básico','10 min · Sin equipo · Estiramientos'],['dumbbell','Sentadillas y Planchas','15 min · 3 series de 10'],['target','Combinación de golpes','10 min · Frente al espejo'],['footprints','Cardio saltar cuerda','5 min · Ritmo moderado'],['leaf','Enfriamiento estiramiento','5 min · Siempre al final']],
-    intermedio:[['flame','Calentamiento dinámico','10 min · Movilidad articular'],['activity','Patadas al aire — series','20 min · 4 series'],['zap','Circuito de fuerza','20 min · Burpees, lagartijas'],['target','Combos avanzados','15 min · Golpe + patada']],
-    avanzado:[['flame','HIIT Kickboxing','30 min · Alta intensidad'],['trophy','Simulación de combate','15 min · Shadowboxing'],['zap','Fuerza explosiva','20 min · Pliométricos'],['leaf','Recuperación activa','10 min · Foam roller']],
+    videos:[['flame','Calentamiento básico','Video instruccional para activar tu cuerpo'],['dumbbell','Patadas y fuerza','Video de técnica y postura'],['target','Combinación de golpes','Video de combos y desplazamientos'],['footprints','Estrategia de movimiento','Video de juego de pies'],['leaf','Enfriamiento y recuperación','Video de estiramientos y control']],
+    tecnicas:[['activity','Técnica de golpeo','Guía de puños y agarres'],['zap','Técnica de patadas','Instrucciones paso a paso'],['target','Combinaciones básicas','Secuencias para practicar'],['dumbbell','Defensa y bloqueo','Métodos para reaccionar']],
+    estrategias:[['trophy','Clases y tácticas','Material de estrategia de combate'],['leaf','Combinaciones avanzadas','Cómo enlazar golpes y patadas'],['flame','Rutina mental','Técnicas de concentración'],['zap','Plan de entrenamiento','Manuales para entrenar en casa']],
   }
   let lvl = 'principiante'
   const done = {}

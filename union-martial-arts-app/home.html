@@ -306,6 +306,11 @@
 .hub-card .menu-ic i { font-size: 30px; }
 @media (max-width: 760px) {
   .hub-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .hub-grid > a:nth-child(3) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: min(100%, calc((100% - 14px) / 2));
+  }
 }
 @media (max-width: 520px) {
   .hub-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
