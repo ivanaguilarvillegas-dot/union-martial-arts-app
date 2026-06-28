@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Horario — Union MA</title>
 <link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/assets/icon-192.png">
 <meta name="theme-color" content="#0047AB">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -109,13 +110,12 @@
   async function initHorario() {
     try {
     const _to = setTimeout(() => {
-      console.log('TIMEOUT HORARIO')
       document.getElementById('segs-wrap').innerHTML = '<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay clases asignadas por el momento.</div>';
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }, 8000);
     const { data: authData } = await supabase.auth.getUser()
     const user = authData?.user
-    console.log('getUser', user?.id, user?.email)
+    
     if (!user) { window.location.href = 'index.html'; return }
 
     // Cargar padre — intenta por user_id primero, luego por correo
@@ -124,7 +124,7 @@
       .select('id, alumno_id, nombre')
       .eq('user_id', user.id)
       .limit(1)
-    console.log('padres by user_id', { data: r1, error: err1 })
+    
     if (err1) {
       showErr(err1.message)
       lucide.createIcons(); return
@@ -136,7 +136,7 @@
         .select('id, alumno_id, nombre')
         .eq('correo', user.email)
         .limit(1)
-      console.log('padres by correo', { data: r2, error: err2 })
+      
       if (err2) {
         showErr(err2.message)
         lucide.createIcons(); return
@@ -168,13 +168,13 @@
       lucide.createIcons(); return
     }
 
-    console.log('before alumno query', { padre, alumno_id: padre.alumno_id })
+    
     // Cargar alumno
     const { data: alRows, error: errAl } = await supabase.from('alumnos')
       .select('nombre, horario, cinta')
       .eq('id', padre.alumno_id)
       .limit(1)
-    console.log('alumnos', { data: alRows, error: errAl })
+    
     if (errAl) {
       showErr(errAl.message)
       lucide.createIcons(); return
