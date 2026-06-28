@@ -180,6 +180,8 @@
       lucide.createIcons(); return
     }
 
+    const al = alRows?.[0] || null
+
     if (padre?.nombre) {
       document.getElementById('hero-initials').textContent = initials(padre.nombre)
     }
@@ -189,17 +191,6 @@
       showErr('No hay un alumno vinculado a tu cuenta. Contacta al instructor.')
       lucide.createIcons(); return
     }
-
-    // Cargar alumno
-    const { data: alRows, error: errAl } = await supabase.from('alumnos')
-      .select('nombre, horario, cinta')
-      .eq('id', padre.alumno_id)
-      .limit(1)
-    if (errAl) {
-      showErr(errAl.message)
-      lucide.createIcons(); return
-    }
-    const al = alRows?.[0] || null
 
     if (!al) {
       showErr('No se pudo cargar el alumno. Verifica con el instructor.')
