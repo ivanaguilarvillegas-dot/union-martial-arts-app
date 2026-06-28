@@ -133,6 +133,12 @@ function render() {
   document.getElementById('cnt-none').textContent = cntNone
 }
 
+function reconteo() {
+  document.getElementById('cnt-ok').textContent = document.querySelectorAll('.al-row.ok').length
+  document.getElementById('cnt-aus').textContent = document.querySelectorAll('.al-row.aus').length
+  document.getElementById('cnt-none').textContent = alumnos.length - document.querySelectorAll('.al-row.ok').length - document.querySelectorAll('.al-row.aus').length
+}
+
 // Click en ✓ o ✗ — actualiza UI inmediatamente, luego guarda
 document.getElementById('lista-alumnos').addEventListener('click', async e => {
   const btn = e.target.closest('[data-accion]'); if (!btn) return
@@ -140,57 +146,38 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
   const accion = btn.dataset.accion
   const row = document.getElementById('row-' + alumnoId)
 
-  // Si ya está activo ese botón → desmarcar
   const yaActivo = btn.classList.contains('activo')
+  const tipo = accion === 'clase' ? 'clase' : 'ausencia'
 
-  // Actualizar UI inmediatamente (optimistic)
   row.querySelectorAll('[data-accion]').forEach(b => b.classList.remove('activo'))
   row.classList.remove('ok', 'aus')
   if (!yaActivo) {
     btn.classList.add('activo')
     row.classList.add(accion === 'clase' ? 'ok' : 'aus')
-    document.getElementById('sub-' + alumnoId).textContent = accion === 'clase' ? 'Clase · ' + new Date().toTimeString().slice(0,5) : 'Faltó'
+    document.getElementById('sub-' + alumnoId).textContent = accion === 'clase' ? 'Clase · ' + new Date().toTimeString().slice(0,5) : 'Faltó · sin justificar'
   } else {
     document.getElementById('sub-' + alumnoId).textContent = 'Sin marcar'
   }
 
-  // Reconteo inmediato
   reconteo()
 
-  // Guardar en BD
   if (yaActivo) {
     await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
     delete checkMap[alumnoId]
   } else {
-    const { error } = await sb.from('checkins').upsert(
-      { alumno_id: alumnoId, fecha, tipo: accion, hora: new Date().toTimeString().slice(0,5) },
-      { onConflict: 'alumno_id,fecha' }
-    )
+    const registro = { alumno_id: alumnoId, fecha, tipo }
+    if (tipo === 'clase') registro.hora = new Date().toTimeString().slice(0,5)
+    if (tipo === 'ausencia') registro.ausencia_motivo = 'sin justificar'
+
+    const { error } = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
     if (error) {
-      // Revertir si falla
       btn.classList.remove('activo'); row.classList.remove('ok','aus')
       document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + error.message
       reconteo(); return
     }
-    checkMap[alumnoId] = { tipo: accion }
+    checkMap[alumnoId] = registro
   }
 })
-
-function reconteo() {
-  let ok = 0, aus = 0, none = 0
-  alumnos.forEach(a => {
-    const c = checkMap[a.id]
-    const t = c?.tipo?.toLowerCase() || ''
-    if (!t) none++
-    else if (t === 'ausente' || t === 'ausencia') aus++
-    else ok++
-  })
-  // También verificar los que fueron actualizados en UI
-  document.querySelectorAll('[data-accion].activo').forEach(b => {})
-  document.getElementById('cnt-ok').textContent = document.querySelectorAll('.al-row.ok').length
-  document.getElementById('cnt-aus').textContent = document.querySelectorAll('.al-row.aus').length
-  document.getElementById('cnt-none').textContent = alumnos.length - document.querySelectorAll('.al-row.ok').length - document.querySelectorAll('.al-row.aus').length
-}
 
 cargar()
 </script>

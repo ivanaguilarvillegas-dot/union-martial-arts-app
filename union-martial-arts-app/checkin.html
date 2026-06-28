@@ -50,6 +50,17 @@
               <button class="chip" data-tipo="actividad">Actividad extra</button>
             </div>
           </div>
+          <div id="extra-torneo" style="display:none;">
+            <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Selecciona torneo activo</div>
+            <select id="torneo-select" style="width:100%;border:1px solid var(--ink-200);border-radius:12px;padding:12px;background:#fff;">
+              <option value="">Selecciona un torneo</option>
+            </select>
+            <div id="torneo-empty" style="display:none;margin-top:8px;font-size:13px;color:#dc2626;">No hay torneo disponible para registrar asistencia.</div>
+          </div>
+          <div id="extra-actividad" style="display:none;">
+            <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Describe la actividad extra</div>
+            <input id="actividad-text" type="text" placeholder="Ej. Clase de fuerza, yoga, movilidad…" style="width:100%;border:1px solid var(--ink-200);border-radius:12px;padding:12px;background:#fff;" />
+          </div>
           <div class="notice green" id="msg-asiste" style="display:none;flex-direction:column;align-items:flex-start;">
             <span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="shield-check"></i> ¡Llegada registrada!</span>
             <span style="font-weight:500;margin-top:4px;">El instructor fue notificado. 🥋</span>
@@ -139,10 +150,48 @@
   })
   activarModo('asiste')
 
+  const torneoSelect = document.getElementById('torneo-select')
+  const torneoEmpty = document.getElementById('torneo-empty')
+  const actividadText = document.getElementById('actividad-text')
+  let torneosActivos = []
+
+  async function cargarTorneos() {
+    const hoy = new Date().toISOString().split('T')[0]
+    const { data: torneos } = await supabase.from('eventos')
+      .select('id,titulo,fecha,hora,tipo')
+      .gte('fecha', hoy)
+      .ilike('tipo', '%torneo%')
+      .order('fecha')
+    torneosActivos = torneos || []
+    torneoSelect.innerHTML = '<option value="">Selecciona un torneo</option>'
+    if (!torneosActivos.length) {
+      torneoEmpty.style.display = 'block'
+      torneoSelect.disabled = true
+    } else {
+      torneoEmpty.style.display = 'none'
+      torneoSelect.disabled = false
+      torneosActivos.forEach(t => {
+        const fecha = new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+        const hora = t.hora ? ' · ' + t.hora : ''
+        torneoSelect.insertAdjacentHTML('beforeend', `<option value="${t.id}">${t.titulo} — ${fecha}${hora}</option>`)
+      })
+    }
+  }
+
+  function actualizarCamposExtra() {
+    const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'clase'
+    document.getElementById('extra-torneo').style.display = tipo === 'torneo' ? 'block' : 'none'
+    document.getElementById('extra-actividad').style.display = tipo === 'actividad' ? 'block' : 'none'
+    if (tipo !== 'torneo') torneoSelect.selectedIndex = 0
+    if (tipo !== 'actividad') actividadText.value = ''
+    document.getElementById('btn-asiste').disabled = tipo === 'torneo' && !torneosActivos.length
+  }
+
   // Tipo de asistencia
   document.getElementById('tipos').addEventListener('click', e => {
     const b = e.target.closest('[data-tipo]'); if (!b) return
     ;[...document.getElementById('tipos').children].forEach(c => c.classList.remove('on')); b.classList.add('on')
+    actualizarCamposExtra()
   })
 
   // Motivo de ausencia
@@ -156,46 +205,70 @@
     if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
     const hoy = new Date().toISOString().split('T')[0]
     const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'clase'
+    const torneoId = torneoSelect.value
+    const actividad = actividadText.value.trim()
 
-    const { data: existe } = await supabase.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', hoy).eq('tipo', tipo).maybeSingle()
+    if (tipo === 'torneo') {
+      if (!torneoId) { alert('Selecciona un torneo activo para registrar asistencia.'); return }
+    }
+    if (tipo === 'actividad') {
+      if (!actividad) { alert('Describe la actividad extra antes de confirmar.'); return }
+    }
+
+    const { data: existe } = await supabase.from('checkins').select('id,tipo').eq('alumno_id', alumnoId).eq('fecha', hoy).maybeSingle()
     if (existe) {
       const m = document.getElementById('msg-asiste')
       m.style.display = 'flex'
-      m.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste ' + tipo + ' de hoy.</span>'
+      m.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste ${existe.tipo || 'asistencia'} de hoy.</span>`
       lucide.createIcons(); return
     }
 
     const ahora = new Date()
     const hora = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
-    await supabase.from('checkins').insert({ alumno_id: alumnoId, fecha: hoy, tipo, hora })
+    const registro = { alumno_id: alumnoId, fecha: hoy, tipo, hora }
+    if (tipo === 'torneo') {
+      registro.evento_id = torneoId
+      const torneo = torneosActivos.find(t => t.id === torneoId)
+      if (torneo) registro.torneo_titulo = torneo.titulo
+    }
+    if (tipo === 'actividad') {
+      registro.tipo = 'actividad extra'
+      registro.actividad_extra = actividad
+    }
+
+    let insertResult = await supabase.from('checkins').insert(registro)
+    if (insertResult.error && insertResult.error.code === '42703') {
+      const safeRegistro = { alumno_id: alumnoId, fecha: hoy, tipo, hora }
+      insertResult = await supabase.from('checkins').insert(safeRegistro)
+    }
+    if (insertResult.error) {
+      alert('No se pudo guardar la asistencia: ' + insertResult.error.message)
+      return
+    }
+
     try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'checkin', descripcion: `Check-in: ${tipo} a las ${hora}`, metadata: { fecha: hoy, tipo } }) } catch(e) {}
 
-    // Notificar al instructor
-    await supabase.from('mensajes').insert({
-      de_user_id: user.id,
-      texto: `✅ Check-in: ${alumnoNombre} llegó a ${tipo} el ${hoy} a las ${hora}`,
-      para_admin: true
-    })
+    const texto = tipo === 'torneo'
+      ? `✅ Check-in: ${alumnoNombre} llegó a torneo (${torneoSelect.selectedOptions[0]?.textContent || 'torneo'}) el ${hoy} a las ${hora}`
+      : `✅ Check-in: ${alumnoNombre} llegó a ${tipo} el ${hoy} a las ${hora}`
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
 
-    // Auto-respuesta del sistema al padre
     const frases = [
       `🥋 Recibido. ${alumnoNombre} está en clase. ¡Gracias por avisar, que tenga un excelente entrenamiento!`,
       `✅ Confirmado. Recibimos a ${alumnoNombre} en ${tipo}. ¡Éxito en el entrenamiento!`,
       `🙏 Gracias. ${alumnoNombre} ya está con nosotros. ¡Nos vemos al terminar la clase!`,
     ]
     const respuesta = frases[Math.floor(Math.random() * frases.length)]
-    await supabase.from('mensajes').insert({
-      de_user_id: null,
-      texto: respuesta,
-      para_admin: false,
-      destinatario_id: user.id
-    })
+    await supabase.from('mensajes').insert({ de_user_id: null, texto: respuesta, para_admin: false, destinatario_id: user.id })
 
     document.getElementById('msg-asiste').style.display = 'flex'
     document.getElementById('btn-asiste').disabled = true
     lucide.createIcons()
     cargarHistorial()
   })
+
+  cargarTorneos()
+  actualizarCamposExtra()
 
   // Reportar ausencia
   document.getElementById('btn-ausente').addEventListener('click', async () => {

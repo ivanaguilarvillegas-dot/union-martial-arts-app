@@ -84,19 +84,21 @@ async function cargarMensajes() {
   if (!padre) return
   const { data: msgs } = await sb.from('mensajes')
     .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id')
+    .not('de_user_id', 'is', null)
     .or(`and(para_admin.eq.true,de_user_id.eq.${user.id}),and(para_admin.eq.false,destinatario_id.eq.${padre.id})`)
     .order('creado_en', { ascending: true })
 
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
 
-  if (!msgs?.length) {
-    box.innerHTML = '<div class="empty-state"><span>💬</span>Escribe tu primera pregunta<br>al instructor.</div>'
+  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null)
+  if (!chatMsgs.length) {
+    box.innerHTML = '<div class="empty-state"><span>💬</span>Escribe tu primer mensaje<br>al instructor.</div>'
     return
   }
 
   let lastDate = ''
-  box.innerHTML = msgs.map(m => {
+  box.innerHTML = chatMsgs.map(m => {
     const fromMe = m.de_user_id === user.id
     const dt = new Date(m.creado_en)
     const dateStr = dt.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })

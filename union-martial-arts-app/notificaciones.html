@@ -21,11 +21,19 @@
 .hero-logo { display:flex; align-items:center; gap:10px; }
 .hero-logo img { width:32px; height:32px; }
 .hero-logo-txt { font-size:11px; font-weight:800; letter-spacing:.04em; line-height:1.2; opacity:.9; }
-.hero-actions { display:flex; align-items:center; gap:10px; }
+.hero-actions { display:flex; align-items:center; gap:12px; }
+.uma-hdr { align-items:center; gap:10px; }
+.uma-hdr-brand { display:flex; align-items:center; gap:8px; min-width:0; }
+.uma-hdr .grow { min-width:0; }
 .hero-bell { position:relative; }
 .hero-bell-ic { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; }
 .hero-bell-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid var(--uma-blue-700); }
 .hero-avatar { width:38px; height:38px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:var(--uma-blue-700); }
+@media (max-width: 440px) {
+  .uma-hdr { align-items:flex-start; flex-wrap:wrap; padding-bottom:8px; }
+  .uma-hdr-brand { min-width:0; }
+  .hero-title { font-size:18px; }
+}
 .hero-title { font-size:22px; font-weight:800; margin-bottom:3px; }
 .hero-sub { font-size:13px; opacity:.7; }
 
@@ -259,7 +267,12 @@
     checkin:  ['check-in','check in','asistencia','entrada','registro']
   }
   let currentCategory = 'pagos'
+  let alumnoNombre = 'Tu hijo/a'
   let avisosCache = []
+  let pagosCache = []
+  let citasCache = []
+  let checkinsCache = []
+  let eventosCache = []
 
   function normalizeText(text) {
     return (text || '').toLowerCase()
@@ -268,30 +281,94 @@
   window.filterAvisos = function(category) {
     currentCategory = category
     document.querySelectorAll('.notif-cat').forEach(btn => btn.classList.toggle('active', btn.dataset.category === category))
-    renderAvisos(avisosCache, category)
+    renderCategory(category)
   }
 
-  function renderAvisos(avisos, category) {
+  function renderCategory(category) {
+    if (category === 'pagos') return renderPagos()
+    if (category === 'citas') return renderCitas()
+    if (category === 'ausencias') return renderAusencias()
+    if (category === 'checkin') return renderCheckin()
+    return renderAvisos(avisosCache)
+  }
+
+  function formatDate(iso) {
+    if (!iso) return ''
+    return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+  }
+
+  function renderPagos() {
+    const box = document.getElementById('avisos-list')
+    const pagos = pagosCache || []
+    if (!pagos.length) {
+      box.innerHTML = '<div class="empty-sec"><p>No hay pagos registrados por el momento.</p></div>'
+      return
+    }
+    box.innerHTML = pagos.map(p => {
+      const fecha = formatDate(p.fecha_pago || p.creado_en)
+      const estado = p.estado ? p.estado.charAt(0).toUpperCase() + p.estado.slice(1) : 'Pendiente'
+      return `<div class="aviso-row"><div class="aviso-top"><div class="aviso-ic blue"><i class="ti ti-credit-card" style="font-size:18px;color:var(--primary);"></i></div><div style="flex:1;min-width:0;"><div class="aviso-title">Pago ${p.monto ? '$' + p.monto : ''}</div><div class="aviso-msg">${p.descripcion || 'Registro de pago.'}</div><div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div><div style="font-size:12px;color:#6b7280;margin-top:6px;">Estado: ${estado}</div></div></div></div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  function renderCitas() {
+    const box = document.getElementById('avisos-list')
+    const citas = citasCache || []
+    if (!citas.length) {
+      box.innerHTML = '<div class="empty-sec"><p>No hay citas registradas por el momento.</p></div>'
+      return
+    }
+    box.innerHTML = citas.map(c => {
+      const fecha = formatDate(c.fecha_preferida || c.created_at)
+      const estado = c.estado ? c.estado.charAt(0).toUpperCase() + c.estado.slice(1) : 'Pendiente'
+      return `<div class="aviso-row"><div class="aviso-top"><div class="aviso-ic amber"><i class="ti ti-calendar-event" style="font-size:18px;color:#d97706;"></i></div><div style="flex:1;min-width:0;"><div class="aviso-title">Cita ${estado}</div><div class="aviso-msg">${c.motivo || 'Solicitud de cita con instructor.'}</div><div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div></div></div></div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  function renderCheckin() {
+    const box = document.getElementById('avisos-list')
+    const checkins = (checkinsCache || []).filter(c => c.tipo && c.tipo !== 'ausencia')
+    if (!checkins.length) {
+      box.innerHTML = '<div class="empty-sec"><p>No hay registros de llegada para tu hijo/a aún.</p></div>'
+      return
+    }
+    box.innerHTML = checkins.map(c => {
+      const fecha = formatDate(c.fecha)
+      const tipo = c.tipo?.toLowerCase()
+      const label = tipo === 'torneo' ? 'Torneo' : tipo === 'actividad extra' || tipo === 'actividad' ? 'Actividad extra' : 'Clase'
+      const detail = c.hora ? `${label} · ${c.hora}` : label
+      const alumno = c.alumno_nombre || alumnoNombre || 'Tu hijo/a'
+      return `<div class="aviso-row"><div class="aviso-top"><div class="aviso-ic blue"><i class="ti ti-calendar-check" style="font-size:18px;color:var(--primary);"></i></div><div style="flex:1;min-width:0;"><div class="aviso-title">Asistencia registrada</div><div class="aviso-msg">${alumno} — ${detail}</div><div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div></div></div></div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  function renderAusencias() {
+    const box = document.getElementById('avisos-list')
+    const ausencias = (checkinsCache || []).filter(c => c.tipo?.toLowerCase() === 'ausencia')
+    if (!ausencias.length) {
+      box.innerHTML = '<div class="empty-sec"><p>No hay ausencias registradas por el momento.</p></div>'
+      return
+    }
+    box.innerHTML = ausencias.map(c => {
+      const fecha = formatDate(c.fecha)
+      const alumno = c.alumno_nombre || alumnoNombre || 'Tu hijo/a'
+      const motivo = c.ausencia_motivo || 'Sin motivo especificado'
+      return `<div class="aviso-row"><div class="aviso-top"><div class="aviso-ic red"><i class="ti ti-calendar-x" style="font-size:18px;color:#dc2626;"></i></div><div style="flex:1;min-width:0;"><div class="aviso-title">Ausencia reportada</div><div class="aviso-msg">${alumno} — ${motivo}</div><div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div></div></div></div>`
+    }).join('')
+    lucide.createIcons()
+  }
+
+  function renderAvisos(avisos) {
     const box = document.getElementById('avisos-list')
     if (!avisos?.length) {
       box.innerHTML = '<div class="empty-sec"><p>No hay avisos generales por el momento.</p></div>'
       return
     }
 
-    const filtered = category && CATEGORY_FILTERS[category]
-      ? avisos.filter(a => {
-          const text = normalizeText(a.titulo + ' ' + a.mensaje)
-          return CATEGORY_FILTERS[category].some(keyword => text.includes(keyword))
-        })
-      : avisos
-
-    if (!filtered.length) {
-      const label = category.charAt(0).toUpperCase() + category.slice(1).replace('checkin', 'Check-in')
-      box.innerHTML = `<div class="empty-sec"><p>No hay avisos para ${label} en este momento.</p></div>`
-      return
-    }
-
-    box.innerHTML = filtered.map(a => {
+    box.innerHTML = avisos.map(a => {
       const pMap = {
         urgente:    { cls:'red',   icon:'ti-alert-circle',  col:'#dc2626' },
         importante: { cls:'amber', icon:'ti-calendar-event',col:'#d97706' },
@@ -340,22 +417,56 @@
         const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
         if (r2?.length) { await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id); padre = r2[0] }
       }
+      if (padre?.alumno_id) {
+        const { data: alumnoData } = await supabase.from('alumnos').select('nombre').eq('id', padre.alumno_id).limit(1)
+        if (alumnoData?.[0]?.nombre) alumnoNombre = alumnoData[0].nombre
+      }
     } catch(e) {}
 
     if (padre?.nombre) document.getElementById('hero-initials').textContent = initials(padre.nombre)
 
     // ── AVISOS GENERALES con confirmación ─────────────────────
     try {
-      const { data: avisos, error: errAv } = await supabase.from('avisos')
+      let avisos = null
+      let errAv = null
+      const avRes = await supabase.from('avisos')
         .select('id,titulo,mensaje,prioridad,creado_en,autor')
         .eq('activo', true).order('creado_en', { ascending: false }).limit(20)
-      if (errAv) { document.getElementById('avisos-list').innerHTML = `<div style="padding:16px;color:red;font-size:13px;">❌ ${errAv.message} (${errAv.code})</div>`; }
+      avisos = avRes.data; errAv = avRes.error
+      if (errAv && errAv.code === '42703') {
+        const fallback = await supabase.from('avisos')
+          .select('id,titulo,mensaje,prioridad,creado_en')
+          .eq('activo', true).order('creado_en', { ascending: false }).limit(20)
+        avisos = fallback.data; errAv = fallback.error
+      }
+      if (errAv) {
+        document.getElementById('avisos-list').innerHTML = `<div style="padding:16px;color:red;font-size:13px;">❌ ${errAv.message} (${errAv.code})</div>`
+        return
+      }
 
       const { data: confirmados } = await supabase.from('avisos_confirmaciones')
         .select('aviso_id').eq('user_id', user.id)
 
       const confirmSet = new Set((confirmados||[]).map(c => c.aviso_id))
       avisosCache = (avisos || []).map(a => ({ ...a, yaConfirmo: confirmSet.has(a.id) }))
+
+      const { data: pagos } = await supabase.from('pagos')
+        .select('*').eq('alumno_id', padre?.alumno_id).order('creado_en', { ascending: false }).limit(20)
+      pagosCache = pagos || []
+
+      const { data: citas } = await supabase.from('citas')
+        .select('*').eq('padre_user_id', user.id).order('fecha_preferida', { ascending: false }).limit(20)
+      citasCache = citas || []
+
+      const { data: checkins } = await supabase.from('checkins')
+        .select('*').eq('alumno_id', padre?.alumno_id).order('fecha', { ascending: false }).limit(20)
+      checkinsCache = checkins || []
+
+      const hoy = new Date().toISOString().split('T')[0]
+      const { data: eventos } = await supabase.from('eventos')
+        .select('id,titulo,fecha,hora,lugar,tipo').gte('fecha', hoy).order('fecha').limit(10)
+      eventosCache = eventos || []
+
       filterAvisos(currentCategory)
 
       const sinConfirmar = avisosCache.filter(a => !a.yaConfirmo).length
