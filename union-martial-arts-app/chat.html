@@ -87,11 +87,17 @@ async function cargarMensajes() {
     .not('de_user_id', 'is', null)
     .or(`and(para_admin.eq.true,de_user_id.eq.${user.id}),and(para_admin.eq.false,destinatario_id.eq.${padre.id})`)
     .order('creado_en', { ascending: true })
+  function isSystemMessage(text) {
+    if (!text) return false
+    return /(✅ Check-in|❌ Ausencia|\bPago\b|Recibo|Comprobante|📜 Diploma:|\bDiploma\b|\bCita\b|\btorneo\b|\bevento\b|\baviso\b)/i.test(text.toString())
+  }
+
+  const hideSystem = true // padres ven chat limpio por defecto
 
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
 
-  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null)
+  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null && (!hideSystem || !isSystemMessage(m.texto)))
   if (!chatMsgs.length) {
     box.innerHTML = '<div class="empty-state"><span>💬</span>Escribe tu primer mensaje<br>al instructor.</div>'
     return
@@ -120,6 +126,12 @@ async function cargarMensajes() {
   await sb.from('mensajes').update({ leido: true }).eq('destinatario_id', padre.id).eq('leido', false)
   if (atBottom) box.scrollTop = box.scrollHeight
 }
+
+// Asegurar que el input no quede oculto en móvil: desplazar mensajes al enfocar
+try {
+  const ta = document.getElementById('msg-input')
+  if (ta) ta.addEventListener('focus', () => setTimeout(() => { const b = document.getElementById('messages'); if (b) b.scrollTop = b.scrollHeight }, 300))
+} catch(e) {}
 
 window.enviar = async function() {
   const ta = document.getElementById('msg-input')

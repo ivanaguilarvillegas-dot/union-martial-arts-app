@@ -55,6 +55,10 @@
         <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando…</div>
       </div>
     </div>
+    <div class="card flush" style="margin:10px 12px;">
+      <div style="padding:12px 14px;border-bottom:1px solid #f3f4f6;font-weight:800;color:#111827;">Historial de registros</div>
+      <div id="historial-admin" style="padding:10px 14px;color:var(--muted);font-size:13px;">Cargando historial…</div>
+    </div>
   </div>
 
   <nav class="bottomnav">
@@ -96,14 +100,75 @@ async function cargar() {
   const label = new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' })
   document.getElementById('fecha-sub').textContent = label.charAt(0).toUpperCase() + label.slice(1)
 
+  // Cargar alumnos y registros del día
   const [{ data: als }, { data: checks }] = await Promise.all([
     sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
-    sb.from('checkins').select('alumno_id, tipo, ausencia_motivo, ausencia_nota').eq('fecha', fecha)
+    sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, created_at').eq('fecha', fecha)
   ])
   alumnos = als || []
+
+  // Cargar padres relacionados para detectar si el registro fue hecho por un padre
+  const alumnoIds = (alumnos || []).map(a => a.id)
+  let padres = []
+  try {
+    const { data: p } = await sb.from('padres').select('id, alumno_id, user_id, nombre').in('alumno_id', alumnoIds)
+    padres = p || []
+  } catch(e) { padres = [] }
+  const padreByAlumno = {}
+  padres.forEach(p => { if (p.alumno_id) padreByAlumno[p.alumno_id] = p })
+
+  // Mensajes de padres hoy (heurística para saber si fue registrado por padre)
+  const parentUserIds = parentsToArray(padres)
+  let parentMsgs = []
+  try {
+    if (parentUserIds.length) {
+      const { data: pm } = await sb.from('mensajes')
+        .select('id,de_user_id,texto,creado_en,para_admin')
+        .in('de_user_id', parentUserIds)
+        .gte('creado_en', fecha)
+        .lte('creado_en', fecha + 'T23:59:59')
+      parentMsgs = pm || []
+    }
+  } catch(e) { parentMsgs = [] }
+
+  const parentMsgByUser = {}
+  parentMsgs.forEach(m => { parentMsgByUser[m.de_user_id] = parentMsgByUser[m.de_user_id] || []; parentMsgByUser[m.de_user_id].push(m) })
+
+  // Mapear checkMap con fuente (padre/admin)
   checkMap = {}
-  ;(checks || []).forEach(c => { checkMap[c.alumno_id] = c })
+  ;(checks || []).forEach(c => {
+    const padre = padreByAlumno[c.alumno_id]
+    const tieneMsgPadre = padre && padre.user_id && parentMsgByUser[padre.user_id]
+    checkMap[c.alumno_id] = Object.assign({}, c, { registered_by: tieneMsgPadre ? 'padre' : 'admin' })
+  })
+
   render()
+
+  // Cargar historial reciente (últimos 30 registros)
+  try {
+    const { data: recent } = await sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, created_at').order('created_at', { ascending: false }).limit(30)
+    renderHistorial(recent || [])
+  } catch(e) {
+    document.getElementById('historial-admin').textContent = 'No se pudo cargar historial.'
+  }
+}
+
+function parentsToArray(padres) {
+  const ids = []
+  (padres || []).forEach(p => { if (p.user_id) ids.push(p.user_id) })
+  return ids
+}
+
+function renderHistorial(rows) {
+  const el = document.getElementById('historial-admin')
+  if (!rows.length) { el.innerHTML = '<div style="padding:8px 0;color:var(--muted);">Sin historial reciente.</div>'; return }
+  el.innerHTML = rows.map(r => {
+    const fecha = new Date(r.created_at).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+    const tipo = r.tipo === 'ausencia' ? 'Ausencia' : (r.tipo || 'Clase') + (r.hora ? ' · ' + r.hora : '')
+    const alumno = (alumnos || []).find(x => x.id === r.alumno_id)
+    const nombre = alumno ? alumno.nombre : r.alumno_id
+    return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px;"><div style="font-size:13px;color:#374151;">${nombre} — ${tipo}</div><div style="font-size:12px;color:#9ca3af;">${fecha}</div></div>`
+  }).join('')
 }
 
 function render() {
@@ -117,15 +182,28 @@ function render() {
     const rowClass = esOk ? 'ok' : esAus ? 'aus' : ''
     const subTxt = esOk ? (c.tipo || 'Clase') + (c.hora ? ' · ' + c.hora : '') : esAus ? '' : 'Sin marcar'
     const motivoHtml = esAus && c?.ausencia_motivo ? `<div class="al-motivo">🔴 ${c.ausencia_motivo}${c.ausencia_nota ? ' — ' + c.ausencia_nota : ''}</div>` : ''
+    const registradoPor = c?.registered_by ? `<div style="font-size:11px;color:#6b7280;margin-top:6px;">Registrado por: ${c.registered_by === 'padre' ? 'Padre' : 'Admin'}</div>` : ''
+    // Bloqueos: si el registro fue hecho por padre, evitar sobrescribir (usar Corregir)
+    const bloquearAus = c && c.registered_by === 'padre' && esOk
+    const bloquearOk  = c && c.registered_by === 'padre' && esAus
+    const btnOkCls = esOk ? 'activo' : ''
+    const btnAusCls = esAus ? 'activo' : ''
+    const btnOkDisabled = bloquearOk ? 'disabled' : ''
+    const btnAusDisabled = bloquearAus ? 'disabled' : ''
+    const corregirBtn = c && c.registered_by === 'padre' ? `<button class="btn-aus" style="width:auto;padding:6px 10px;border-radius:10px;margin-left:8px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;font-size:12px;" data-correct="${a.id}">Corregir</button>` : ''
     return `<div class="al-row ${rowClass}" id="row-${a.id}">
       <div class="al-avatar" style="background:${colorAvatar(a.nombre)}">${ini(a.nombre)}</div>
       <div class="al-info">
         <div class="al-nombre">${a.nombre}</div>
         <div class="al-sub" id="sub-${a.id}">${subTxt}</div>
         ${motivoHtml}
+        ${registradoPor}
       </div>
-      <button class="btn-ok ${esOk?'activo':''}" data-id="${a.id}" data-accion="clase" title="Asistió">✓</button>
-      <button class="btn-aus ${esAus?'activo':''}" data-id="${a.id}" data-accion="ausente" title="Faltó">✗</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn-ok ${btnOkCls}" data-id="${a.id}" data-accion="clase" title="Asistió" ${btnOkDisabled}>✓</button>
+        <button class="btn-aus ${btnAusCls}" data-id="${a.id}" data-accion="ausente" title="Faltó" ${btnAusDisabled}>✗</button>
+        ${corregirBtn}
+      </div>
     </div>`
   }).join('')
   document.getElementById('cnt-ok').textContent = cntOk
@@ -141,13 +219,45 @@ function reconteo() {
 
 // Click en ✓ o ✗ — actualiza UI inmediatamente, luego guarda
 document.getElementById('lista-alumnos').addEventListener('click', async e => {
-  const btn = e.target.closest('[data-accion]'); if (!btn) return
+  const btnAccion = e.target.closest('[data-accion]')
+  const btnCorregir = e.target.closest('[data-correct]')
+  if (btnCorregir) {
+    const alumnoId = btnCorregir.dataset.correct
+    if (!confirm('¿Confirmas que deseas CORREGIR/ELIMINAR el registro hecho por el padre para este alumno en la fecha seleccionada?')) return
+    btnCorregir.disabled = true
+    try {
+      await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
+      delete checkMap[alumnoId]
+      document.getElementById('row-' + alumnoId)?.classList.remove('ok','aus')
+      document.getElementById('sub-' + alumnoId).textContent = 'Sin marcar'
+      reconteo();
+      await cargar()
+    } catch(err) {
+      alert('No se pudo corregir: ' + (err?.message || err))
+      btnCorregir.disabled = false
+    }
+    return
+  }
+  if (!btnAccion) return
+  const btn = btnAccion
   const alumnoId = btn.dataset.id
   const accion = btn.dataset.accion
   const row = document.getElementById('row-' + alumnoId)
 
   const yaActivo = btn.classList.contains('activo')
   const tipo = accion === 'clase' ? 'clase' : 'ausencia'
+
+  // Bloqueo si el registro fue hecho por padre: evitar sobrescribir
+  const existing = checkMap[alumnoId]
+  if (existing && existing.registered_by === 'padre') {
+    // Si el admin intenta marcar lo contrario, bloquear y pedir usar "Corregir"
+    const esOk = existing.tipo && existing.tipo !== 'ausente' && existing.tipo !== 'ausencia'
+    const esAus = existing.tipo === 'ausente' || existing.tipo === 'ausencia'
+    if ((esOk && tipo === 'ausencia') || (esAus && tipo === 'clase')) {
+      alert('Este alumno ya registró su estado hoy (por el padre). Usa "Corregir" para modificarlo.')
+      return
+    }
+  }
 
   row.querySelectorAll('[data-accion]').forEach(b => b.classList.remove('activo'))
   row.classList.remove('ok', 'aus')
@@ -168,11 +278,19 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
     const registro = { alumno_id: alumnoId, fecha, tipo }
     if (tipo === 'clase') registro.hora = new Date().toTimeString().slice(0,5)
     if (tipo === 'ausencia') registro.ausencia_motivo = 'sin justificar'
+    // Intentar guardar quien registró (registrado_por / creado_por). Si la columna no existe, reintentar sin esas claves.
+    registro.registrado_por = 'admin'
+    registro.creado_por = user.id
 
-    const { error } = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
-    if (error) {
+    let res = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
+    if (res.error && res.error.code === '42703') {
+      // columnas no existentes -> retry without metadata
+      delete registro.registrado_por; delete registro.creado_por
+      res = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
+    }
+    if (res.error) {
       btn.classList.remove('activo'); row.classList.remove('ok','aus')
-      document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + error.message
+      document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + res.error.message
       reconteo(); return
     }
     checkMap[alumnoId] = registro

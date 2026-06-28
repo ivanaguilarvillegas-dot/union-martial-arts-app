@@ -60,6 +60,22 @@
         <input id="lugar" placeholder="Ej. Gimnasio Municipal" /></label>
       <label class="field"><span class="lab">Descripción</span>
         <textarea id="desc" rows="3" placeholder="Detalles del evento…"></textarea></label>
+      <div style="margin-bottom:12px;">
+        <span class="field-lbl">Imagen del evento (opcional)</span>
+        <input type="file" id="foto-evento" accept="image/*" />
+      </div>
+      <div style="margin-bottom:12px;">
+        <span class="field-lbl">Convocatoria (PDF) — opcional</span>
+        <input type="file" id="pdf-evento" accept="application/pdf" />
+      </div>
+      <div id="existing-preview" style="display:none;margin-bottom:12px;border:1px dashed var(--ink-200);padding:12px;border-radius:12px;background:#ffffff;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">Vista previa actual</div>
+        <div id="preview-img" style="margin-bottom:10px;"></div>
+        <div id="preview-pdf" style="margin-bottom:10px;"></div>
+        <div id="preview-link" style="font-size:13px;color:var(--muted);"></div>
+      </div>
+      <label class="field"><span class="lab">Link externo de convocatoria (opcional)</span>
+        <input id="link-convocatoria" placeholder="https://..." /></label>
       <div id="err-msg" class="notice red" style="display:none;"></div>
       <button class="btn primary block" id="save"><i data-lucide="plus"></i> Publicar evento</button>
     </div></div>
@@ -92,6 +108,10 @@ const supabase = createClient(
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
+let editingEventId = null
+let editingOriginalFoto = null
+let editingOriginalPdf = null
+
 document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
 
 window.cambiarTab = function(tab) {
@@ -118,23 +138,28 @@ async function cargarEventos() {
   el.innerHTML = data.map(ev => {
     const pasado = ev.fecha < hoy
     const fechaFmt = new Date(ev.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'long', year:'numeric' })
-    return `<div class="ev-card" style="${pasado ? 'opacity:.6;' : ''}">
-      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
-        <div style="flex:1;">
-          <div class="ev-tipo">${ev.tipo || 'Evento'}${pasado ? ' · Pasado' : ''}</div>
-          <div class="ev-titulo">${ev.titulo}</div>
+    const thumb = ev.foto_url ? `<div style="width:84px;height:84px;border-radius:8px;overflow:hidden;flex-shrink:0;margin-right:8px;"><img src="${ev.foto_url}" style="width:100%;height:100%;object-fit:cover" alt="${ev.titulo}"></div>` : ''
+    const convocatoriaBtn = (ev.convocatoria_pdf_url || ev.convocatoria_link) ? `<a class="btn sm" href="${ev.convocatoria_pdf_url || ev.convocatoria_link}" target="_blank" style="margin-right:8px;background:#eff6ff;color:#0047AB;border-radius:8px;padding:6px 10px;text-decoration:none;font-weight:700;">📎 Ver convocatoria</a>` : ''
+    return `<div class="ev-card" style="display:flex;align-items:flex-start;gap:12px;${pasado ? 'opacity:.6;' : ''}">
+      ${thumb}
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div>
+            <div class="ev-tipo">${ev.tipo || 'Evento'}${pasado ? ' · Pasado' : ''}</div>
+            <div class="ev-titulo">${ev.titulo}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${convocatoriaBtn}
+            <button class="btn sm" style="background:#fff;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:8px;" data-editar="${ev.id}"><i data-lucide="edit" style="width:14px;height:14px"></i> Editar</button>
+            <button class="btn sm" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:6px 10px;border-radius:8px;" data-borrar="${ev.id}"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Desactivar</button>
+          </div>
         </div>
-      </div>
-      <div class="ev-meta">
-        <span><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fechaFmt}</span>
-        ${ev.hora ? `<span><i data-lucide="clock" style="width:12px;height:12px;"></i>${ev.hora}</span>` : ''}
-        ${ev.lugar ? `<span><i data-lucide="map-pin" style="width:12px;height:12px;"></i>${ev.lugar}</span>` : ''}
-      </div>
-      ${ev.descripcion ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;">${ev.descripcion}</div>` : ''}
-      <div class="ev-actions">
-        <button class="btn sm" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;cursor:pointer;font-size:12px;padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:4px;" data-borrar="${ev.id}">
-          <i data-lucide="trash-2" style="width:13px;height:13px;"></i> Borrar
-        </button>
+        <div class="ev-meta" style="margin-top:8px;">
+          <span><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fechaFmt}</span>
+          ${ev.hora ? `<span><i data-lucide="clock" style="width:12px;height:12px;"></i>${ev.hora}</span>` : ''}
+          ${ev.lugar ? `<span><i data-lucide="map-pin" style="width:12px;height:12px;"></i>${ev.lugar}</span>` : ''}
+        </div>
+        ${ev.descripcion ? `<div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;">${ev.descripcion}</div>` : ''}
       </div>
     </div>`
   }).join('')
@@ -142,16 +167,57 @@ async function cargarEventos() {
 }
 
 document.getElementById('tab-lista').addEventListener('click', async e => {
-  const btn = e.target.closest('[data-borrar]')
-  if (!btn) return
-  if (!confirm('¿Borrar este evento? Los padres ya no lo verán.')) return
-  btn.disabled = true; btn.textContent = 'Borrando…'
-  const id = btn.dataset.borrar
-  // Borrar confirmaciones vinculadas primero para no violar FK
-  await supabase.from('confirmaciones_torneo').delete().eq('evento_id', id)
-  const { error } = await supabase.from('eventos').delete().eq('id', id)
-  if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="trash-2" style="width:13px;height:13px;"></i> Borrar'; lucide.createIcons(); return }
-  await cargarEventos()
+  const borrarBtn = e.target.closest('[data-borrar]')
+  const editarBtn = e.target.closest('[data-editar]')
+  if (editarBtn) {
+    const id = editarBtn.dataset.editar
+    const { data } = await supabase.from('eventos').select('*').eq('id', id).limit(1)
+    const ev = data?.[0]
+    if (!ev) return alert('Evento no encontrado')
+    // Llenar formulario
+    editingEventId = ev.id
+    editingOriginalFoto = ev.foto_url || null
+    editingOriginalPdf = ev.convocatoria_pdf_url || null
+    // tipo
+    ;[...document.getElementById('tipos').children].forEach(c => c.classList.toggle('on', c.dataset.tipo === (ev.tipo || 'Torneo')))
+    document.getElementById('titulo').value = ev.titulo || ''
+    document.getElementById('fecha').value = ev.fecha || new Date().toISOString().split('T')[0]
+    document.getElementById('hora').value = ev.hora || ''
+    document.getElementById('lugar').value = ev.lugar || ''
+    document.getElementById('desc').value = ev.descripcion || ''
+    document.getElementById('link-convocatoria').value = ev.convocatoria_link || ''
+    const previewWrap = document.getElementById('existing-preview')
+    if (previewWrap) {
+      const imgHtml = ev.foto_url ? `<img src="${ev.foto_url}" alt="${ev.titulo}" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px;" />` : ''
+      const pdfHtml = ev.convocatoria_pdf_url ? `<a class="btn sm" href="${ev.convocatoria_pdf_url}" target="_blank" style="background:#eff6ff;color:#0047AB;padding:6px 10px;border-radius:8px;text-decoration:none;font-weight:700;">📎 PDF actual</a>` : ''
+      const linkHtml = ev.convocatoria_link ? `Link actual: <a href="${ev.convocatoria_link}" target="_blank" style="color:#0f4fff;">${ev.convocatoria_link}</a>` : ''
+      document.getElementById('preview-img').innerHTML = imgHtml
+      document.getElementById('preview-pdf').innerHTML = pdfHtml
+      document.getElementById('preview-link').innerHTML = linkHtml
+      previewWrap.style.display = (imgHtml || pdfHtml || linkHtml) ? 'block' : 'none'
+    }
+    cambiarTab('nuevo')
+    const btn = document.getElementById('save')
+    btn.innerHTML = '<i data-lucide="save"></i> Actualizar evento'
+    lucide.createIcons()
+    window.scrollTo(0,0)
+    return
+  }
+  if (borrarBtn) {
+    if (!confirm('¿Desactivar este evento? Los padres ya no lo verán.')) return
+    borrarBtn.disabled = true; borrarBtn.textContent = 'Guardando…'
+    const id = borrarBtn.dataset.borrar
+    // Borrar confirmaciones vinculadas primero para no violar FK
+    await supabase.from('confirmaciones_torneo').delete().eq('evento_id', id)
+    let result = await supabase.from('eventos').update({ activo: false }).eq('id', id)
+    if (result.error && result.error.code === '42703') {
+      // La columna activo no existe; el evento se borra en su lugar
+      result = await supabase.from('eventos').delete().eq('id', id)
+    }
+    if (result.error) { alert('❌ Error: ' + result.error.message); borrarBtn.disabled = false; borrarBtn.innerHTML = '<i data-lucide="trash-2" style="width:13px;height:13px;"></i> Desactivar'; lucide.createIcons(); return }
+    await cargarEventos()
+    return
+  }
 })
 
 // Tipos
@@ -168,6 +234,9 @@ document.getElementById('save').addEventListener('click', async () => {
   const hora = document.getElementById('hora').value || null
   const lugar = document.getElementById('lugar').value.trim() || null
   const descripcion = document.getElementById('desc').value.trim() || null
+  const fotoFile = document.getElementById('foto-evento')?.files?.[0]
+  const pdfFile = document.getElementById('pdf-evento')?.files?.[0]
+  const convocatoriaLink = document.getElementById('link-convocatoria')?.value.trim() || null
   const errEl = document.getElementById('err-msg')
 
   if (!titulo) { errEl.textContent = 'Escribe el nombre del evento.'; errEl.style.display = 'flex'; return }
@@ -176,26 +245,64 @@ document.getElementById('save').addEventListener('click', async () => {
 
   const btn = document.getElementById('save')
   btn.disabled = true; btn.textContent = 'Publicando…'
-
-  const { error } = await supabase.from('eventos').insert({ tipo, titulo, fecha, hora, lugar, descripcion })
+  let registro = { tipo, titulo, fecha, hora, lugar, descripcion }
+  try {
+    if (fotoFile) {
+      const ext = fotoFile.name.split('.').pop().toLowerCase()
+      const path = `${user.id}/evento-foto-${Date.now()}.${ext}`
+      const up = await supabase.storage.from('eventos').upload(path, fotoFile, { upsert: true, contentType: fotoFile.type })
+      if (!up.error) {
+        registro.foto_url = supabase.storage.from('eventos').getPublicUrl(path).data.publicUrl
+      }
+    }
+    if (pdfFile) {
+      const ext2 = pdfFile.name.split('.').pop().toLowerCase()
+      const path2 = `${user.id}/evento-pdf-${Date.now()}.${ext2}`
+      const up2 = await supabase.storage.from('eventos').upload(path2, pdfFile, { upsert: true, contentType: pdfFile.type })
+      if (!up2.error) {
+        registro.convocatoria_pdf_url = supabase.storage.from('eventos').getPublicUrl(path2).data.publicUrl
+      }
+    }
+    if (convocatoriaLink) registro.convocatoria_link = convocatoriaLink
+    // If editing and no new files uploaded, preserve existing URLs
+    if (editingEventId) {
+      if (!fotoFile && editingOriginalFoto) registro.foto_url = editingOriginalFoto
+      if (!pdfFile && editingOriginalPdf) registro.convocatoria_pdf_url = editingOriginalPdf
+    }
+  } catch (e) {}
+  let error = null
+  if (editingEventId) {
+    const res = await supabase.from('eventos').update(registro).eq('id', editingEventId)
+    error = res.error
+  } else {
+    const res = await supabase.from('eventos').insert(registro)
+    error = res.error
+  }
   if (error) {
     errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'flex'
     btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Publicar evento'
     lucide.createIcons(); return
   }
-
   const horaStr = hora ? ' a las ' + hora : ''
+  let textoMsg = `📅 ${tipo}: ${titulo} — ${fecha}${horaStr}${lugar ? ' · ' + lugar : ''}${descripcion ? '\n' + descripcion : ''}`
+  if (registro.convocatoria_link) textoMsg += '\nConvocatoria: ' + registro.convocatoria_link
   await supabase.from('mensajes').insert({
     de_user_id: user.id,
-    texto: `📅 ${tipo}: ${titulo} — ${fecha}${horaStr}${lugar ? ' · ' + lugar : ''}${descripcion ? '\n' + descripcion : ''}`,
+    texto: textoMsg,
     para_admin: false
   })
 
   document.getElementById('form-wrap') // no-op, just keep ref
   document.querySelector('#tab-nuevo .card').style.display = 'none'
   document.getElementById('ok').style.display = 'block'
-  document.getElementById('ok-msg').textContent = '✅ ' + titulo + ' publicado'
+  document.getElementById('ok-msg').textContent = (editingEventId ? '✅ ' + titulo + ' actualizado' : '✅ ' + titulo + ' publicado')
   lucide.createIcons()
+  // reset editing state
+  editingEventId = null
+  editingOriginalFoto = null
+  editingOriginalPdf = null
+  const btnReset = document.getElementById('save')
+  btnReset.disabled = false; btnReset.innerHTML = '<i data-lucide="plus"></i> Publicar evento'
 })
 
 window.resetForm = function() {
@@ -206,6 +313,12 @@ window.resetForm = function() {
   document.getElementById('lugar').value = ''
   document.getElementById('desc').value = ''
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
+  editingEventId = null
+  editingOriginalFoto = null
+  editingOriginalPdf = null
+  document.getElementById('foto-evento').value = ''
+  document.getElementById('pdf-evento').value = ''
+  document.getElementById('link-convocatoria').value = ''
   ;[...document.getElementById('tipos').children].forEach((c,i) => c.classList.toggle('on', i===0))
   const btn = document.getElementById('save')
   btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Publicar evento'

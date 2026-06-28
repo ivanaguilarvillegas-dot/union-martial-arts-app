@@ -42,6 +42,7 @@
   <div class="navhead dark">
     <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Mensajes</div></div>
+    <button id="btn-toggle-system" title="Ocultar mensajes del sistema" style="background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ocultar sist.</button>
     <button onclick="abrirNuevo()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;"><i data-lucide="edit"></i></button>
   </div>
   <div class="body" style="padding:0;" id="lista-body">
@@ -101,11 +102,17 @@ async function cargarLista() {
   const { data: padres } = await sb.from('padres').select('id, nombre, user_id').eq('es_admin', false).order('nombre')
   if (!padres?.length) { document.getElementById('lista-padres').innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay padres registrados.</div>'; return }
 
-  // Último mensaje por padre
+  // Último mensaje por padre (excluyendo mensajes automáticos si el toggle está ON)
   const { data: msgs } = await sb.from('mensajes').select('id, texto, creado_en, para_admin, destinatario_id, de_user_id, leido').order('creado_en', { ascending: false })
+  const hideSystem = localStorage.getItem('uma_hide_system') !== 'false'
+  function isSystemMessage(text) {
+    if (!text) return false
+    return /(✅ Check-in|❌ Ausencia|\bPago\b|Recibo|Comprobante|📜 Diploma:|\bDiploma\b|\bCita\b|\btorneo\b|\bevento\b|\baviso\b)/i.test(text.toString())
+  }
   const ultimoMap = {}
   const noLeidoMap = {}
   msgs?.forEach(m => {
+    if (hideSystem && isSystemMessage(m.texto)) return
     const pid = m.destinatario_id || m.de_user_id
     // match padre
     const padre = padres.find(p => p.id === m.destinatario_id || p.user_id === m.de_user_id)
@@ -252,6 +259,20 @@ document.addEventListener('keydown', e => {
 
 cargarLista()
 lucide.createIcons()
+// Inicializar estado del toggle ocultar mensajes del sistema
+try {
+  const btn = document.getElementById('btn-toggle-system')
+  if (btn) {
+    const cur = localStorage.getItem('uma_hide_system')
+    if (cur === 'false') btn.textContent = 'Mostrar sist.'
+    btn.addEventListener('click', () => {
+      const newVal = localStorage.getItem('uma_hide_system') === 'false' ? 'true' : 'false'
+      localStorage.setItem('uma_hide_system', newVal)
+      btn.textContent = newVal === 'false' ? 'Mostrar sist.' : 'Ocultar sist.'
+      cargarLista()
+    })
+  }
+} catch(e) {}
 </script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body></html>

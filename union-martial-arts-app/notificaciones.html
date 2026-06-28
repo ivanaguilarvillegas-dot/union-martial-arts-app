@@ -482,7 +482,7 @@
     try {
       const hoy = new Date().toISOString().split('T')[0]
       const { data: evs } = await supabase.from('eventos')
-        .select('id,titulo,fecha,lugar,descripcion,foto_url,tipo,hora')
+        .select('id,titulo,fecha,lugar,descripcion,foto_url,tipo,hora,convocatoria_pdf_url,convocatoria_link')
         .gte('fecha', hoy).order('fecha').limit(5)
 
       if (evs?.length) {
@@ -504,7 +504,10 @@
               ${ev.lugar ? `<div class="evento-detail"><i class="ti ti-map-pin" style="font-size:13px;color:#9ca3af;"></i>${ev.lugar}</div>` : ''}
               ${ev.hora  ? `<div class="evento-detail"><i class="ti ti-clock" style="font-size:13px;color:#9ca3af;"></i>${ev.hora}</div>` : ''}
               ${ev.descripcion ? `<div class="evento-detail" style="align-items:flex-start;"><i class="ti ti-info-circle" style="font-size:13px;color:#9ca3af;margin-top:1px;flex-shrink:0;"></i><span style="line-height:1.4;">${ev.descripcion}</span></div>` : ''}
-              <a class="evento-btn" href="torneos.html">Ver detalles</a>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <a class="evento-btn" href="torneos.html">Ver detalles</a>
+                ${ev.convocatoria_pdf_url || ev.convocatoria_link ? `<a class="evento-btn" href="${ev.convocatoria_pdf_url || ev.convocatoria_link}" target="_blank" style="background:#eff6ff;color:#0047AB;">📎 Ver convocatoria</a>` : ''}
+              </div>
             </div>
           </div>`
         }).join('')
