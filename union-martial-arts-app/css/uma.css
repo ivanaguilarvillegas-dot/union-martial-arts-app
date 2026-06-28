@@ -91,8 +91,8 @@ body {
 /* ——— Bottom nav ——— */
 .bottomnav { display:flex; background:#fff; border-top:1px solid var(--border); padding:8px 0 10px; flex-shrink:0; }
 .bottomnav a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
-  text-decoration:none; color:var(--faint); font-size:10px; font-weight:500; }
-.bottomnav a.on { color:var(--primary); font-weight:700; }
+  text-decoration:none; color:var(--ink-500); font-size:11px; font-weight:600; }
+.bottomnav a.on { color:var(--uma-blue-electric); font-weight:700; }
 .bottomnav svg { width:22px; height:22px; }
 
 /* ——— Section label ——— */

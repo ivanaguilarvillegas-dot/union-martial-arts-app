@@ -75,7 +75,8 @@
 
 /* Eventos */
 .notif-categories { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:0 16px 16px; }
-.notif-cat { display:flex; gap:10px; align-items:flex-start; background:#f9fafb; border-radius:16px; padding:12px 14px; text-decoration:none; color:#111827; border:1px solid #e5e7eb; }
+.notif-cat { display:flex; gap:10px; align-items:flex-start; background:#f9fafb; border-radius:16px; padding:12px 14px; color:#111827; border:1px solid #e5e7eb; cursor:pointer; }
+.notif-cat.active { background:#fff; border-color:#c7d2fe; box-shadow:0 4px 16px rgba(99,102,241,.12); }
 .notif-cat div:first-child { flex-shrink:0; }
 .notif-cat div:last-child { min-width:0; }
 .notif-cat:hover { background:#fff; box-shadow:0 4px 16px rgba(15,23,42,.08); }
@@ -129,9 +130,6 @@
     <button class="hero-tab active" data-tab="avisos" onclick="cambiarTab('avisos')">
       📢 Avisos<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
     </button>
-    <button class="hero-tab" data-tab="mensajes" onclick="cambiarTab('mensajes')">
-      💬 Chat privado<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
-    </button>
     <button class="hero-tab" data-tab="eventos" onclick="cambiarTab('eventos')">
       🏆 Eventos
     </button>
@@ -151,34 +149,34 @@
         </div>
       </div>
       <div class="notif-categories">
-        <a class="notif-cat" href="pagos.html">
+        <button type="button" class="notif-cat active" data-category="pagos" onclick="filterAvisos('pagos')">
           <div style="font-size:18px;">💳</div>
           <div>
             <div style="font-size:13px;font-weight:700;color:#111827;">Pagos</div>
-            <div style="font-size:12px;color:#6b7280;">Ver recibos y estados.</div>
+            <div style="font-size:12px;color:#6b7280;">Filtra avisos relacionados con pagos.</div>
           </div>
-        </a>
-        <a class="notif-cat" href="cita.html">
+        </button>
+        <button type="button" class="notif-cat" data-category="citas" onclick="filterAvisos('citas')">
           <div style="font-size:18px;">📅</div>
           <div>
             <div style="font-size:13px;font-weight:700;color:#111827;">Citas</div>
-            <div style="font-size:12px;color:#6b7280;">Solicita seguimientos con el instructor.</div>
+            <div style="font-size:12px;color:#6b7280;">Filtra avisos de seguimientos y citas.</div>
           </div>
-        </a>
-        <a class="notif-cat" href="asistencia.html">
+        </button>
+        <button type="button" class="notif-cat" data-category="ausencias" onclick="filterAvisos('ausencias')">
           <div style="font-size:18px;">❗</div>
           <div>
             <div style="font-size:13px;font-weight:700;color:#111827;">Ausencias</div>
-            <div style="font-size:12px;color:#6b7280;">Registra faltas y notas del alumno.</div>
+            <div style="font-size:12px;color:#6b7280;">Filtra avisos de faltas y registros.</div>
           </div>
-        </a>
-        <a class="notif-cat" href="checkin.html">
+        </button>
+        <button type="button" class="notif-cat" data-category="checkin" onclick="filterAvisos('checkin')">
           <div style="font-size:18px;">✔️</div>
           <div>
             <div style="font-size:13px;font-weight:700;color:#111827;">Check-in</div>
-            <div style="font-size:12px;color:#6b7280;">Controla asistencias desde la app.</div>
+            <div style="font-size:12px;color:#6b7280;">Filtra avisos de inscripción y asistencia.</div>
           </div>
-        </a>
+        </button>
       </div>
       <div id="avisos-list">
         <div class="empty-sec">
@@ -188,30 +186,8 @@
       </div>
     </div>
 
-    <!-- 2. MENSAJES PRIVADOS -->
-    <div class="sec-card" id="sec-mensajes" style="display:none;">
-      <div class="sec-hdr">
-        <div class="sec-hdr-ic blue">
-          <i class="ti ti-message-dots" style="font-size:20px;color:var(--primary);"></i>
-        </div>
-        <div class="sec-hdr-txt">
-          <div class="sec-hdr-title">Chat privado</div>
-          <div class="sec-hdr-sub">Comunicación directa con el instructor.</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span class="sec-hdr-count" id="msgs-count" style="display:none;">0</span>
-        </div>
-      </div>
-      <div id="msgs-list">
-        <div class="empty-sec">
-          <i class="ti ti-message-off" style="font-size:28px;display:block;margin:0 auto;opacity:.3;"></i>
-          <p>No tienes mensajes privados por el momento.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. PRÓXIMOS EVENTOS -->
-    <div class="sec-card" id="sec-eventos" style="display:none;">
+    <!-- 2. PRÓXIMOS EVENTOS -->
+    <div class="sec-card" id="sec-eventos" style="margin-top:16px;">
       <div class="sec-hdr" style="border-bottom:none;padding-bottom:8px;">
         <div class="sec-hdr-ic amber">
           <i class="ti ti-trophy" style="font-size:20px;color:#d97706;"></i>
@@ -266,15 +242,83 @@
   }
 
   // Tab switcher: definido antes de las consultas para que los botones siempre respondan
-  const tabTitles = { avisos: 'Notificaciones', mensajes: 'Chat privado', eventos: 'Eventos' }
+  const tabTitles = { avisos: 'Notificaciones', eventos: 'Eventos' }
   window.cambiarTab = function(tab) {
     document.querySelectorAll('.hero-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
     document.getElementById('sec-avisos').style.display   = tab === 'avisos'   ? 'block' : 'none'
-    document.getElementById('sec-mensajes').style.display = tab === 'mensajes' ? 'block' : 'none'
     document.getElementById('sec-eventos').style.display  = tab === 'eventos'  ? 'block' : 'none'
     document.getElementById('hero-tab-title').textContent = tabTitles[tab]
     const sec = document.getElementById('sec-' + tab)
     if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const CATEGORY_FILTERS = {
+    pagos:    ['pago','recibo','mensualidad','cuota','tarifa','saldo'],
+    citas:    ['cita','agendar','seguimiento','consulta','entrevista'],
+    ausencias:['ausencia','ausent','falta','inasist','inasistencia'],
+    checkin:  ['check-in','check in','asistencia','entrada','registro']
+  }
+  let currentCategory = 'pagos'
+  let avisosCache = []
+
+  function normalizeText(text) {
+    return (text || '').toLowerCase()
+  }
+
+  window.filterAvisos = function(category) {
+    currentCategory = category
+    document.querySelectorAll('.notif-cat').forEach(btn => btn.classList.toggle('active', btn.dataset.category === category))
+    renderAvisos(avisosCache, category)
+  }
+
+  function renderAvisos(avisos, category) {
+    const box = document.getElementById('avisos-list')
+    if (!avisos?.length) {
+      box.innerHTML = '<div class="empty-sec"><p>No hay avisos generales por el momento.</p></div>'
+      return
+    }
+
+    const filtered = category && CATEGORY_FILTERS[category]
+      ? avisos.filter(a => {
+          const text = normalizeText(a.titulo + ' ' + a.mensaje)
+          return CATEGORY_FILTERS[category].some(keyword => text.includes(keyword))
+        })
+      : avisos
+
+    if (!filtered.length) {
+      const label = category.charAt(0).toUpperCase() + category.slice(1).replace('checkin', 'Check-in')
+      box.innerHTML = `<div class="empty-sec"><p>No hay avisos para ${label} en este momento.</p></div>`
+      return
+    }
+
+    box.innerHTML = filtered.map(a => {
+      const pMap = {
+        urgente:    { cls:'red',   icon:'ti-alert-circle',  col:'#dc2626' },
+        importante: { cls:'amber', icon:'ti-calendar-event',col:'#d97706' },
+        informativo:{ cls:'blue',  icon:'ti-info-circle',   col:'var(--primary)' }
+      }
+      const p = pMap[a.prioridad] || pMap.informativo
+      const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+      const yaConfirmo = a.yaConfirmo
+      return `<div class="aviso-row">
+            <div class="aviso-top">
+              <div class="aviso-ic ${p.cls}">
+                <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <span class="badge-imp ${a.prioridad || 'informativo'}">${(a.prioridad || 'informativo').charAt(0).toUpperCase() + (a.prioridad || 'informativo').slice(1)}</span>
+                <div class="aviso-title">${a.titulo}</div>
+                <div class="aviso-msg">${a.mensaje}</div>
+                <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
+              </div>
+            </div>
+            <button class="btn-enterado${yaConfirmo ? ' confirmado' : ''}" data-id="${a.id}"${yaConfirmo ? ' disabled' : ''}>
+              <i class="ti ${yaConfirmo ? 'ti-circle-check-filled' : 'ti-circle-check'}" style="font-size:16px;"></i>
+              ${yaConfirmo ? '✓ Ya me enteré' : 'Me enteré'}
+            </button>
+          </div>`
+    }).join('')
+    lucide.createIcons()
   }
 
   async function initNotificaciones() {
@@ -302,116 +346,24 @@
     try {
       const { data: avisos, error: errAv } = await supabase.from('avisos')
         .select('id,titulo,mensaje,prioridad,creado_en')
-        .eq('activo', true).order('creado_en', { ascending: false }).limit(5)
+        .eq('activo', true).order('creado_en', { ascending: false }).limit(20)
       if (errAv) { document.getElementById('avisos-list').innerHTML = `<div style="padding:16px;color:red;font-size:13px;">❌ ${errAv.message} (${errAv.code})</div>`; }
 
       const { data: confirmados } = await supabase.from('avisos_confirmaciones')
         .select('aviso_id').eq('user_id', user.id)
 
-      const PMAP = {
-        urgente:    { cls:'red',   icon:'ti-alert-circle',  col:'#dc2626' },
-        importante: { cls:'amber', icon:'ti-calendar-event',col:'#d97706' },
-        informativo:{ cls:'blue',  icon:'ti-info-circle',   col:'var(--primary)' },
-      }
       const confirmSet = new Set((confirmados||[]).map(c => c.aviso_id))
-      const sinConfirmar = (avisos||[]).filter(a => !confirmSet.has(a.id)).length
+      avisosCache = (avisos || []).map(a => ({ ...a, yaConfirmo: confirmSet.has(a.id) }))
+      filterAvisos(currentCategory)
+
+      const sinConfirmar = avisosCache.filter(a => !a.yaConfirmo).length
       if (sinConfirmar > 0) {
         document.getElementById('bell-count').textContent = sinConfirmar
         document.getElementById('bell-count').style.display = 'flex'
         const ht = document.getElementById('ht-avisos')
         ht.textContent = sinConfirmar; ht.style.display = 'inline'
       }
-
-      if (avisos?.length) {
-        document.getElementById('avisos-list').innerHTML = avisos.map(a => {
-          const p = PMAP[a.prioridad] || PMAP.informativo
-          const pr = a.prioridad || 'informativo'
-          const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
-          const yaConfirmo = confirmSet.has(a.id)
-          return `<div class="aviso-row">
-            <div class="aviso-top">
-              <div class="aviso-ic ${p.cls}">
-                <i class="ti ${p.icon}" style="font-size:18px;color:${p.col};"></i>
-              </div>
-              <div style="flex:1;min-width:0;">
-                <span class="badge-imp ${pr}">${pr.charAt(0).toUpperCase()+pr.slice(1)}</span>
-                <div class="aviso-title">${a.titulo}</div>
-                <div class="aviso-msg">${a.mensaje}</div>
-                <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
-              </div>
-            </div>
-            <button class="btn-enterado${yaConfirmo?' confirmado':''}" data-id="${a.id}"${yaConfirmo?' disabled':''}>
-              <i class="ti ${yaConfirmo?'ti-circle-check-filled':'ti-circle-check'}" style="font-size:16px;"></i>
-              ${yaConfirmo ? '✓ Ya me enteré' : 'Me enteré'}
-            </button>
-          </div>`
-        }).join('')
-        lucide.createIcons()
-      }
     } catch(e) { console.error('avisos:', e) }
-
-    // ── MENSAJES PRIVADOS ─────────────────────────────────────
-    try {
-      let msgs = []
-      if (padre?.id) {
-        const res = await supabase.from('mensajes')
-          .select('id, texto, creado_en, leido')
-          .eq('para_admin', false)
-          .eq('destinatario_id', padre.id)
-          .order('creado_en', { ascending: false })
-          .limit(10)
-        msgs = res.data || []
-      } else {
-        msgs = []
-      }
-
-      const sinLeer = (msgs||[]).filter(m => !m.leido).length
-      if (sinLeer > 0) {
-        const el = document.getElementById('msgs-count')
-        el.textContent = sinLeer; el.style.display = 'inline-block'
-        const ht = document.getElementById('ht-mensajes')
-        ht.textContent = sinLeer; ht.style.display = 'inline'
-      }
-
-      if (msgs?.length) {
-        const col = avatarColor('Instructor')
-
-        function parseMsgTexto(txt) {
-          if (!txt) return { texto: '', diplomaUrl: null }
-          const match = txt.match(/📜 Diploma: (https?:\/\/\S+)/)
-          if (match) return { texto: txt.replace(/\n?📜 Diploma: https?:\/\/\S+/, '').trim(), diplomaUrl: match[1] }
-          return { texto: txt, diplomaUrl: null }
-        }
-
-        document.getElementById('msgs-list').innerHTML = msgs.map((m, i) => {
-          const { texto, diplomaUrl } = parseMsgTexto(m.texto)
-          return `<div class="msg-row" id="msg-card-${i}" style="flex-direction:column;gap:0;padding:0;">
-            <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;" onclick="toggleMsg(${i})">
-              <div class="msg-dot${m.leido?' read':''}"></div>
-              <div class="msg-avatar" style="background:${col};color:#fff;">${initials('Instructor')}</div>
-              <div class="msg-body">
-                <div class="msg-name">Instructor</div>
-                <div class="msg-preview">${texto}</div>
-                ${diplomaUrl ? '<div style="margin-top:4px;"><span style="font-size:11px;background:#eff6ff;color:#0047AB;border-radius:20px;padding:2px 8px;font-weight:600;">📜 Diploma adjunto</span></div>' : ''}
-              </div>
-              <div class="msg-right">
-                ${!m.leido ? '<span class="msg-nuevo">Nuevo</span>' : ''}
-                <span class="msg-time">${timeAgo(m.creado_en)}</span>
-              </div>
-            </div>
-            <div id="reply-${i}" style="display:none;padding:0 16px 14px;border-top:1px solid #f3f4f6;">
-              <div style="font-size:13px;color:#374151;margin-bottom:10px;line-height:1.5;">${texto}</div>
-              ${diplomaUrl ? `<a href="${diplomaUrl}" target="_blank" download style="display:flex;align-items:center;justify-content:center;gap:8px;background:#eff6ff;color:#0047AB;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;"><i class="ti ti-file-download" style="font-size:16px;"></i> Ver / Descargar diploma</a>` : ''}
-            </div>
-          </div>`
-        }).join('')
-      }
-
-      window.toggleMsg = function(i) {
-        const d = document.getElementById('reply-' + i)
-        if (d) d.style.display = d.style.display === 'none' ? 'block' : 'none'
-      }
-    } catch(e) {}
 
     // ── PRÓXIMOS EVENTOS ──────────────────────────────────────
     try {

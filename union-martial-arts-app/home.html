@@ -299,14 +299,17 @@
 .hub-section { margin-top: 26px; }
 .hub-section-title { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 18px; padding-left: 12px; position: relative; }
 .hub-section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 20px; border-radius: 2px; background: var(--primary); }
-.hub-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
-.hub-card { background: rgba(239, 246, 255, 0.96); border-radius: 22px; border: 1px solid rgba(59, 130, 246, .10); padding: 12px 10px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 110px; box-shadow: 0 12px 26px rgba(59, 130, 246, .10); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-.hub-card:hover { transform: translateY(-2px); border-color: rgba(59, 130, 246, .18); box-shadow: 0 16px 32px rgba(59, 130, 246, .14); }
-.hub-card .menu-ic { width: 64px; height: 64px; box-shadow: 0 10px 24px rgba(59, 130, 246, .14); }
+.hub-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.hub-card { background: rgba(239, 246, 255, 0.96); border-radius: 22px; border: 1px solid rgba(59, 130, 246, .10); padding: 12px 10px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 95px; box-shadow: 0 10px 22px rgba(59, 130, 246, .10); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.hub-card:hover { transform: translateY(-2px); border-color: rgba(59, 130, 246, .18); box-shadow: 0 14px 28px rgba(59, 130, 246, .14); }
+.hub-card .menu-ic { width: 62px; height: 62px; box-shadow: 0 10px 20px rgba(59, 130, 246, .14); }
 .hub-card .menu-ic i { font-size: 30px; }
-@media (max-width: 420px) {
-  .hub-grid { grid-template-columns: 1fr; }
-  .menu-section-subtitle { margin-bottom: 16px; }
+@media (max-width: 760px) {
+  .hub-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 520px) {
+  .hub-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .menu-section-subtitle { margin-bottom: 12px; }
   .hub-card { min-height: auto; }
 }
 .bottomnav a { font-size: 12px; }
@@ -544,15 +547,15 @@
     <div class="menu-card">
 
       <!-- Programas: banner llamativo -->
-      <a href="programas.html" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--uma-blue-700) 0%,var(--primary) 100%);border-radius:14px;padding:14px 16px;text-decoration:none;margin-bottom:14px;">
-        <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ti-crown" style="font-size:26px;color:#fff;"></i>
+      <a href="programas.html" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--uma-blue-700) 0%,var(--primary) 100%);border-radius:14px;padding:12px 14px;text-decoration:none;margin-bottom:12px;">
+        <div style="width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ti-crown" style="font-size:24px;color:#fff;"></i>
         </div>
         <div style="flex:1;">
-          <div style="font-size:14px;font-weight:800;color:#fff;">Beneficios UNION</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">Descubre todo lo incluido en tu membresía.</div>
+          <div style="font-size:13px;font-weight:800;color:#fff;">Beneficios UNION</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;">Descubre todo lo incluido en tu membresía.</div>
         </div>
-        <i class="ti ti-chevron-right" style="font-size:18px;color:rgba(255,255,255,.6);"></i>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:rgba(255,255,255,.6);"></i>
       </a>
 
       <div class="menu-section-divider"></div>
@@ -583,9 +586,9 @@
         <div class="hub-section-title">Recursos</div>
         <div class="hub-grid">
           <a class="hub-card" href="entrena.html">
-            <div class="menu-ic amber"><i class="ti ti-activity" style="font-size:34px;color:#d97706;"></i></div>
-            <div class="menu-label">Entrenamiento en casa</div>
-            <div class="menu-sub">Rutinas pensadas para entrenar fuera del dojo.</div>
+            <div class="menu-ic amber"><i class="ti ti-activity" style="font-size:32px;color:#d97706;"></i></div>
+            <div class="menu-label">Biblioteca UNION</div>
+            <div class="menu-sub">Videos, guías y apoyo para practicar.</div>
           </a>
           <a class="hub-card" href="tienda.html">
             <div class="menu-ic amber"><i class="ti ti-shirt" style="font-size:36px;color:#d97706;"></i></div>
