@@ -106,26 +106,78 @@
     return name.trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase()
   }
 
-  try {
+  async function initHorario() {
+    try {
     const _to = setTimeout(() => {
+      console.log('TIMEOUT HORARIO')
       document.getElementById('segs-wrap').innerHTML = '<div class="seg-card" style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay clases asignadas por el momento.</div>';
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }, 8000);
     const { data: authData } = await supabase.auth.getUser()
     const user = authData?.user
+    console.log('getUser', user?.id, user?.email)
     if (!user) { window.location.href = 'index.html'; return }
 
     // Cargar padre — intenta por user_id primero, luego por correo
     let padre = null
-    const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
+    const { data: r1, error: err1 } = await supabase.from('padres')
+      .select('id, alumno_id, nombre')
+      .eq('user_id', user.id)
+      .limit(1)
+    console.log('padres by user_id', { data: r1, error: err1 })
+    if (err1) {
+      showErr(err1.message)
+      lucide.createIcons(); return
+    }
     if (r1?.[0]?.alumno_id) {
       padre = r1[0]
     } else {
-      const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
+      const { data: r2, error: err2 } = await supabase.from('padres')
+        .select('id, alumno_id, nombre')
+        .eq('correo', user.email)
+        .limit(1)
+      console.log('padres by correo', { data: r2, error: err2 })
+      if (err2) {
+        showErr(err2.message)
+        lucide.createIcons(); return
+      }
       if (r2?.[0]) {
-        await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id)
+        const { error: errUpd } = await supabase.from('padres')
+          .update({ user_id: user.id })
+          .eq('id', r2[0].id)
+        if (errUpd) {
+          showErr(errUpd.message)
+          lucide.createIcons(); return
+        }
         padre = r2[0]
       }
+    }
+
+    if (!padre) {
+      showErr('No se encontró el padre para este usuario.')
+      lucide.createIcons(); return
+    }
+
+    if (padre?.nombre) {
+      document.getElementById('hero-initials').textContent = initials(padre.nombre)
+    }
+
+    if (!padre?.alumno_id) {
+      document.getElementById('hero-alumno').textContent = 'Sin alumno vinculado'
+      showErr('No hay un alumno vinculado a tu cuenta. Contacta al instructor.')
+      lucide.createIcons(); return
+    }
+
+    console.log('before alumno query', { padre, alumno_id: padre.alumno_id })
+    // Cargar alumno
+    const { data: alRows, error: errAl } = await supabase.from('alumnos')
+      .select('nombre, horario, cinta')
+      .eq('id', padre.alumno_id)
+      .limit(1)
+    console.log('alumnos', { data: alRows, error: errAl })
+    if (errAl) {
+      showErr(errAl.message)
+      lucide.createIcons(); return
     }
 
     if (padre?.nombre) {
@@ -139,8 +191,14 @@
     }
 
     // Cargar alumno
-    const { data: alRows } = await supabase.from('alumnos')
-      .select('nombre, horario, cinta').eq('id', padre.alumno_id).limit(1)
+    const { data: alRows, error: errAl } = await supabase.from('alumnos')
+      .select('nombre, horario, cinta')
+      .eq('id', padre.alumno_id)
+      .limit(1)
+    if (errAl) {
+      showErr(errAl.message)
+      lucide.createIcons(); return
+    }
     const al = alRows?.[0] || null
 
     if (!al) {
@@ -224,10 +282,13 @@
 
     lucide.createIcons()
     clearTimeout(_to);
-  } catch(e) {
-    showErr('Error: ' + e.message)
-    lucide.createIcons()
+    } catch(e) {
+      showErr('Error: ' + e.message)
+      lucide.createIcons()
+    }
   }
+
+  initHorario();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
