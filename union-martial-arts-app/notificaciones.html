@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Avisos — Union MA</title>
+<title>Notificaciones — Union MA</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1818C4">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -122,10 +122,10 @@
   <!-- Tabs -->
   <div style="background:var(--uma-blue-600);padding:0 14px 12px;display:flex;gap:8px;">
     <button class="hero-tab active" data-tab="avisos" onclick="cambiarTab('avisos')">
-      📢 Avisos<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+      📢 Notificaciones<span id="ht-avisos" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
     </button>
     <button class="hero-tab" data-tab="mensajes" onclick="cambiarTab('mensajes')">
-      💬 Mensajes<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
+      💬 Chat privado<span id="ht-mensajes" style="display:none;margin-left:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px;"></span>
     </button>
     <button class="hero-tab" data-tab="eventos" onclick="cambiarTab('eventos')">
       🏆 Eventos
@@ -141,7 +141,7 @@
           <i class="ti ti-speakerphone" style="font-size:20px;color:#d97706;"></i>
         </div>
         <div class="sec-hdr-txt">
-          <div class="sec-hdr-title">Avisos generales</div>
+          <div class="sec-hdr-title">Notificaciones generales</div>
           <div class="sec-hdr-sub">Información importante para todos los alumnos.</div>
         </div>
       </div>
@@ -160,8 +160,8 @@
           <i class="ti ti-message-dots" style="font-size:20px;color:var(--primary);"></i>
         </div>
         <div class="sec-hdr-txt">
-          <div class="sec-hdr-title">Mensajes privados</div>
-          <div class="sec-hdr-sub">Mensajes directos de los instructores.</div>
+          <div class="sec-hdr-title">Chat privado</div>
+          <div class="sec-hdr-sub">Comunicación directa con el instructor.</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <span class="sec-hdr-count" id="msgs-count" style="display:none;">0</span>
@@ -231,7 +231,7 @@
   }
 
   // Tab switcher: definido antes de las consultas para que los botones siempre respondan
-  const tabTitles = { avisos: 'Avisos', mensajes: 'Mensajes', eventos: 'Eventos' }
+  const tabTitles = { avisos: 'Notificaciones', mensajes: 'Chat privado', eventos: 'Eventos' }
   window.cambiarTab = function(tab) {
     document.querySelectorAll('.hero-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
     document.getElementById('sec-avisos').style.display   = tab === 'avisos'   ? 'block' : 'none'
