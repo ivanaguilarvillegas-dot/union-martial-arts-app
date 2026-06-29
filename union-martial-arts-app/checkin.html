@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -59,11 +60,11 @@
           </div>
           <div id="extra-actividad" style="display:none;">
             <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Describe la actividad extra</div>
-            <input id="actividad-text" type="text" placeholder="Ej. Clase de fuerza, yoga, movilidad…" style="width:100%;border:1px solid var(--ink-200);border-radius:12px;padding:12px;background:#fff;" />
+            <input id="actividad-text" type="text" placeholder="Ej. Clase de fuerza, yoga, movilidad..." style="width:100%;border:1px solid var(--ink-200);border-radius:12px;padding:12px;background:#fff;" />
           </div>
           <div class="notice green" id="msg-asiste" style="display:none;flex-direction:column;align-items:flex-start;">
             <span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="shield-check"></i> ¡Llegada registrada!</span>
-            <span style="font-weight:500;margin-top:4px;">El instructor fue notificado. 🥋</span>
+            <span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>
           </div>
           <button class="btn primary block" id="btn-asiste"><i data-lucide="check"></i> Confirmar llegada</button>
         </div>
@@ -76,13 +77,13 @@
         <div class="stack">
           <div style="font-size:12px;font-weight:500;color:var(--muted);">Motivo de ausencia</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;" id="motivos">
-            <button class="chip on" data-motivo="Enfermedad">🤒 Enfermedad</button>
-            <button class="chip" data-motivo="Escuela">📚 Escuela</button>
-            <button class="chip" data-motivo="Viaje">✈️ Viaje</button>
-            <button class="chip" data-motivo="Otro">💬 Otro</button>
+            <button class="chip on" data-motivo="Enfermedad">Enfermedad</button>
+            <button class="chip" data-motivo="Escuela">Escuela</button>
+            <button class="chip" data-motivo="Viaje">Viaje</button>
+            <button class="chip" data-motivo="Otro">Otro</button>
           </div>
           <label class="field"><span class="lab">Mensaje al instructor (opcional)</span>
-            <textarea id="nota-ausencia" rows="2" placeholder="Ej. Tiene fiebre, regresa el jueves…"></textarea></label>
+            <textarea id="nota-ausencia" rows="2" placeholder="Ej. Tiene fiebre, regresa el jueves..."></textarea></label>
           <div class="notice red" id="msg-ausente" style="display:none;flex-direction:column;align-items:flex-start;">
             <span style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="bell"></i> Ausencia registrada</span>
             <span style="font-weight:500;margin-top:4px;">El instructor fue notificado.</span>
@@ -261,9 +262,9 @@
     await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true, es_automatico: true })
 
     const frases = [
-      `🥋 Recibido. ${alumnoNombre} está en clase. ¡Gracias por avisar, que tenga un excelente entrenamiento!`,
-      `✅ Confirmado. Recibimos a ${alumnoNombre} en ${tipo}. ¡Éxito en el entrenamiento!`,
-      `🙏 Gracias. ${alumnoNombre} ya está con nosotros. ¡Nos vemos al terminar la clase!`,
+      `Recibido. ${alumnoNombre} está en clase. ¡Gracias por avisar, que tenga un excelente entrenamiento!`,
+      `Confirmado. Recibimos a ${alumnoNombre} en ${tipo}. ¡Éxito en el entrenamiento!`,
+      `Gracias. ${alumnoNombre} ya está con nosotros. ¡Nos vemos al terminar la clase!`,
     ]
     const respuesta = frases[Math.floor(Math.random() * frases.length)]
     await supabase.from('mensajes').insert({ de_user_id: null, texto: respuesta, para_admin: false, destinatario_id: user.id, es_automatico: true })

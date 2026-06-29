@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -68,7 +69,7 @@
       lucide.createIcons(); return
     }
     cont.innerHTML = eventos.map(e => {
-      const tipo = e.tipo?.replace(/[^a-zA-ZáéíóúÁÉÍÓÚ ]/g,'').trim() || 'Actividad'
+      const tipo = e.tipo?.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]/g,'').trim() || 'Actividad'
       const conf = confirmados.has(e.id)
       return `<div class="card">
         <div style="display:flex;gap:12px;align-items:flex-start;">

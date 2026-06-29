@@ -1,0 +1,83 @@
+/* Unified parent header layout: 3 rows (brand/back, title, actions). */
+.navhead.uma-hdr.hdr-unified {
+  display: grid !important;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "brand back"
+    "title title"
+    "actions actions";
+  align-items: center;
+  row-gap: 10px;
+  column-gap: 10px;
+  min-height: unset;
+  padding: 8px 12px 10px;
+}
+
+.navhead.uma-hdr.hdr-unified .uma-hdr-brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.navhead.uma-hdr.hdr-unified .uma-hdr-logo {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navhead.uma-hdr.hdr-unified .uma-hdr-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.navhead.uma-hdr.hdr-unified .uma-hdr-txt {
+  font-size: 11px;
+  line-height: 1.06;
+  letter-spacing: .05em;
+  font-weight: 800;
+}
+
+.navhead.uma-hdr.hdr-unified .navback {
+  grid-area: back;
+  justify-self: end;
+  margin: 0;
+}
+
+.navhead.uma-hdr.hdr-unified .grow {
+  grid-area: title;
+  width: 100% !important;
+  flex: none !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+  min-width: 0;
+}
+
+.navhead.uma-hdr.hdr-unified .title {
+  font-size: 19px !important;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+}
+
+.navhead.uma-hdr.hdr-unified > :not(.uma-hdr-brand):not(.navback):not(.grow) {
+  grid-area: actions;
+}
+
+.navhead.uma-hdr.hdr-unified .chat-actions,
+.navhead.uma-hdr.hdr-unified .header-actions,
+.navhead.uma-hdr.hdr-unified .top-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 <style>
   .prod { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-card); display:flex; flex-direction:column; }
   .prod .ph { aspect-ratio:1/1; max-height:200px; background:linear-gradient(135deg,var(--soft),#fff); display:flex; align-items:center; justify-content:center; color:var(--uma-blue-300); }
@@ -26,7 +27,7 @@
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -75,7 +76,7 @@
           <div class="pd">${x.descripcion || ''}</div>
           <div class="pp">$${Number(x.precio).toLocaleString()}</div>
         </div>
-        <a class="btn primary block" href="${wa(x.nombre, x.precio)}" target="_blank" rel="noopener">💬 Pedir</a>
+        <a class="btn primary block" href="${wa(x.nombre, x.precio)}" target="_blank" rel="noopener">?? Pedir</a>
       </div>`).join('')
   }
   lucide.createIcons()

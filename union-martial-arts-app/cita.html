@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -39,7 +40,7 @@
           <label class="field"><span class="lab">Hora deseada</span>
             <input type="time" id="hora" /></label>
           <label class="field"><span class="lab">Mensaje adicional (opcional)</span>
-            <textarea id="nota" rows="2" placeholder="Información extra para el instructor…"></textarea></label>
+            <textarea id="nota" rows="2" placeholder="Información extra para el instructor..."></textarea></label>
           <div id="err" class="notice red" style="display:none;"></div>
           <button class="btn primary block" id="solicitar"><i data-lucide="calendar-clock"></i> Solicitar cita</button>
         </div>
@@ -105,7 +106,7 @@
     errEl.style.display = 'none'
 
     const btn = document.getElementById('solicitar')
-    btn.disabled = true; btn.textContent = 'Enviando…'
+    btn.disabled = true; btn.textContent = 'Enviando...'
 
     // Guardar cita
     await supabase.from('citas').insert({

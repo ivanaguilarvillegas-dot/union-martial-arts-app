@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -26,10 +27,10 @@
 
     <!-- Tarjeta de pago actual -->
     <div class="card mb12" style="border:1.5px solid var(--primary);" id="pago-card">
-      <div style="font-size:12px;color:var(--muted);" id="pago-concepto">Cargando…</div>
+      <div style="font-size:12px;color:var(--muted);" id="pago-concepto">Cargando...</div>
       <div style="font-family:var(--font-display);font-size:32px;font-weight:800;margin:6px 0;" id="pago-monto">$— <span style="font-size:15px;color:var(--muted);">MXN</span></div>
       <div style="display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-bottom:14px;font-weight:600;" id="pago-estado">
-        <i data-lucide="loader" style="width:15px;height:15px"></i> Cargando…
+        <i data-lucide="loader" style="width:15px;height:15px"></i> Cargando...
       </div>
 
       <!-- Opciones de pago (solo si hay pago pendiente) -->
@@ -40,7 +41,7 @@
           <label style="display:flex;align-items:center;gap:10px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;" id="lbl-efectivo">
             <input type="radio" name="metodo" value="efectivo" style="accent-color:var(--primary);flex-shrink:0;" />
             <span style="flex:1;">
-              <span style="font-size:13.5px;font-weight:600;display:block;">💵 Efectivo en academia</span>
+              <span style="font-size:13.5px;font-weight:600;display:block;">?? Efectivo en academia</span>
               <span style="font-size:11.5px;color:var(--muted);">Sin comisión adicional</span>
             </span>
             <span style="font-size:13px;font-weight:700;" id="total-efectivo">$—</span>
@@ -49,7 +50,7 @@
           <label style="display:flex;align-items:center;gap:10px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;" id="lbl-transferencia">
             <input type="radio" name="metodo" value="transferencia" style="accent-color:var(--primary);flex-shrink:0;" />
             <span style="flex:1;">
-              <span style="font-size:13.5px;font-weight:600;display:block;">🏦 Transferencia bancaria</span>
+              <span style="font-size:13.5px;font-weight:600;display:block;">?? Transferencia bancaria</span>
               <span style="font-size:11.5px;color:var(--muted);">Santander · 5579 0701 5682 7050 · Sin comisión</span>
             </span>
             <span style="font-size:13px;font-weight:700;color:var(--primary);" id="total-transferencia">$—</span>
@@ -58,7 +59,7 @@
           <label style="display:flex;align-items:center;gap:10px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;" id="lbl-mp">
             <input type="radio" name="metodo" value="mercadopago" style="accent-color:var(--primary);flex-shrink:0;" />
             <span style="flex:1;">
-              <span style="font-size:13.5px;font-weight:600;display:block;">💳 Mercado Pago</span>
+              <span style="font-size:13.5px;font-weight:600;display:block;">?? Mercado Pago</span>
               <span style="font-size:11.5px;color:var(--muted);">Tarjeta, SPEI u OXXO · comisión aplica por MP</span>
             </span>
             <span style="font-size:13px;font-weight:700;color:var(--primary);" id="total-mp">$—</span>
@@ -260,7 +261,7 @@
       montoBase = Number(ultimo.monto) || 0
       pagoId = ultimo.id
 
-      document.getElementById('pago-concepto').textContent = `Mensualidad ${ultimo.mes || '—'} · Programa Básico`
+      document.getElementById('pago-concepto').textContent = `Mensualidad ${ultimo.mes || '—'} — Programa Básico`
       document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
 
       const estadoEl = document.getElementById('pago-estado')
@@ -315,7 +316,7 @@
   // Subir comprobante
   document.getElementById('comp-file').addEventListener('change', e => {
     if (e.target.files[0]) {
-      document.getElementById('comp-label').textContent = '✅ ' + e.target.files[0].name
+      document.getElementById('comp-label').textContent = '? ' + e.target.files[0].name
       document.getElementById('btn-enviar-comp').style.display = 'block'
     }
   })
@@ -372,7 +373,7 @@
     document.getElementById('comprobante-area').style.display = 'none'
     document.getElementById('btn-pagar').style.display = 'none'
     document.getElementById('comp-ok').style.display = 'flex'
-    document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto. <a href="${url}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante →</a>`
+    document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto. <a href="${url}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante</a>`
     lucide.createIcons()
   })
 

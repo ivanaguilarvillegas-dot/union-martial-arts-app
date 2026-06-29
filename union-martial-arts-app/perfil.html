@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -58,7 +59,7 @@
         <button class="btn primary block" id="firmar" disabled><i data-lucide="pen-line"></i> Firmar de acuerdo</button>
       </div>
       <div id="firmado" style="display:none;align-items:center;gap:7px;font-size:13px;color:var(--green-text);font-weight:600;">
-        <i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado y firmado · Laura Reyes · 21 jun 2025
+        <i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado y firmado — Laura Reyes — 21 jun 2025
       </div>
     </div>
   </div>
@@ -171,7 +172,7 @@
   if (firma) {
     document.getElementById('regForm').style.display = 'none'
     document.getElementById('firmado').style.display = 'flex'
-    document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado · ${firma.nombre_firma || padre?.nombre || ''} · ${firma.firmado_en?.split('T')[0] || ''}`
+    document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado — ${firma.nombre_firma || padre?.nombre || ''} — ${firma.firmado_en?.split('T')[0] || ''}`
     lucide.createIcons()
   }
 
@@ -189,22 +190,22 @@
   document.getElementById('firmar').addEventListener('click', async () => {
     if (!aceptado) return
     const btn = document.getElementById('firmar')
-    btn.disabled = true; btn.textContent = 'Guardando…'
+    btn.disabled = true; btn.textContent = 'Guardando...'
     const { error } = await supabase.from('firmas_reglamento').upsert(
       { padre_user_id: user.id, nombre_firma: padre?.nombre, firmado_en: new Date().toISOString() },
       { onConflict: 'padre_user_id' }
     )
-    if (error) { alert('❌ Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="pen-line"></i> Firmar de acuerdo'; lucide.createIcons(); return }
+    if (error) { alert('? Error: ' + error.message); btn.disabled = false; btn.innerHTML = '<i data-lucide="pen-line"></i> Firmar de acuerdo'; lucide.createIcons(); return }
     // Notificar al instructor
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
-      texto: '✍️ ' + (padre?.nombre || 'Un padre') + ' firmó el reglamento de la academia · ' + new Date().toLocaleDateString('es-MX'),
+      texto: (padre?.nombre || 'Un padre') + ' firmó el reglamento de la academia — ' + new Date().toLocaleDateString('es-MX'),
       para_admin: true,
       es_automatico: true
     })
     document.getElementById('regForm').style.display = 'none'
     document.getElementById('firmado').style.display = 'flex'
-    document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado · ${padre?.nombre || ''} · ${new Date().toLocaleDateString('es-MX')}`
+    document.getElementById('firmado').innerHTML = `<i data-lucide="badge-check" style="width:16px;height:16px"></i> Aceptado — ${padre?.nombre || ''} — ${new Date().toLocaleDateString('es-MX')}`
     lucide.createIcons()
   })
 

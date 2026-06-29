@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -30,7 +31,7 @@
     <div class="card soft">
       <div id="qform">
         <div style="font-size:13px;margin-bottom:10px;">Escribe tu propia pregunta y el instructor te responderá.</div>
-        <label class="field"><textarea rows="3" placeholder="Escribe tu pregunta aquí…"></textarea></label>
+        <label class="field"><textarea rows="3" placeholder="Escribe tu pregunta aquí"></textarea></label>
         <button class="btn primary block mt12" id="enviar"><i data-lucide="message-square"></i> Enviar pregunta al instructor</button>
       </div>
       <div id="qok" style="display:none;text-align:center;">
@@ -116,7 +117,7 @@
       const { data: { user } } = await supabase.auth.getUser()
       const { data, error } = await supabase.from('mensajes').insert({ de_user_id: user?.id, texto, para_admin: true }).select()
       if (error) { alert('ERROR al guardar: ' + error.message + '\n\nCódigo: ' + error.code); return }
-      alert('✅ Guardado OK. ID: ' + data?.[0]?.id)
+      alert('? Guardado OK. ID: ' + data?.[0]?.id)
       document.getElementById('qform').style.display = 'none'
       document.getElementById('qok').style.display = 'block'
       lucide.createIcons()

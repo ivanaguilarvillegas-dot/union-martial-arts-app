@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -64,7 +65,7 @@
       const { data: _al } = await supabase.from('alumnos').select('plan_pago').eq('id', _pr.alumno_id).maybeSingle()
       if (_al?.plan_pago === 'mensual') {
         planBloqueado = true
-        document.querySelector('.body').innerHTML = '<div style="padding:48px 24px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🔒</div><div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Acceso no disponible</div><div style="font-size:13px;color:#6b7280;line-height:1.6;">Disponible en plan anual<br>o Club Cinta Negra.</div><a href="programas.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--primary);color:#fff;border-radius:22px;text-decoration:none;font-size:13px;font-weight:700;">Ver planes</a></div>'
+        document.querySelector('.body').innerHTML = '<div style="padding:48px 24px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">??</div><div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Acceso no disponible</div><div style="font-size:13px;color:#6b7280;line-height:1.6;">Disponible en plan anual<br>o Club Cinta Negra.</div><a href="programas.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--primary);color:#fff;border-radius:22px;text-decoration:none;font-size:13px;font-weight:700;">Ver planes</a></div>'
       }
     }
   }
@@ -85,7 +86,7 @@
 
   function clave(nombre) {
     return nombre.toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .normalize('NFD').replace(/[`-?]/g, '')
       .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
       .substring(0, 40)
   }
@@ -158,7 +159,7 @@
       try {
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
-          texto: '🏋️ Rutina en casa completada — nivel ' + lvl + ' (' + items.length + ' ejercicios) · ' + new Date().toLocaleDateString('es-MX'),
+          texto: 'Rutina en casa completada — nivel ' + lvl + ' (' + items.length + ' ejercicios) · ' + new Date().toLocaleDateString('es-MX'),
           para_admin: true,
           es_automatico: true
         })
@@ -177,7 +178,7 @@
     input.parentElement.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px"></i>'
     lucide.createIcons()
     const { error } = await supabase.storage.from('media').upload('videos/' + nombre, file, { upsert: true })
-    if (error) { alert('❌ Error: ' + error.message); await cargarVideos(); return }
+    if (error) { alert('? Error: ' + error.message); await cargarVideos(); return }
     await cargarVideos()
   })
 
