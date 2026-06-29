@@ -231,8 +231,8 @@
     }
 
     const ahora = new Date()
-    const hora = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
-    const registro = { alumno_id: alumnoId, fecha: hoy, tipo, hora }
+    const hora = ahora.toTimeString().slice(0, 8)
+    const registro = { alumno_id: alumnoId, fecha: hoy, tipo, hora, registrado_por: 'padre' }
     if (tipo === 'torneo') {
       registro.evento_id = torneoId
       const torneo = torneosActivos.find(t => t.id === torneoId)
@@ -245,7 +245,7 @@
 
     let insertResult = await supabase.from('checkins').insert(registro)
     if (insertResult.error && insertResult.error.code === '42703') {
-      const safeRegistro = { alumno_id: alumnoId, fecha: hoy, tipo, hora }
+      const safeRegistro = { alumno_id: alumnoId, fecha: hoy, tipo, hora, registrado_por: 'padre' }
       insertResult = await supabase.from('checkins').insert(safeRegistro)
     }
     if (insertResult.error) {
@@ -292,7 +292,7 @@
       lucide.createIcons(); return
     }
     await supabase.from('checkins').upsert({
-      alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
+      alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo, registrado_por: 'padre'
     }, { onConflict: 'alumno_id,fecha' })
     try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'ausencia', descripcion: `Ausencia reportada: ${motivo}`, metadata: { fecha: hoy, motivo } }) } catch(e) {}
 

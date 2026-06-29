@@ -81,7 +81,9 @@ if (!user) { window.location.href = 'index.html' }
 
 let fecha = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
 let alumnos = []
-let checkMap = {}   // alumno_id → { tipo, registrado_por, registered_by }
+let checkMap = {}   // alumno_id → { tipo, registrado_por }
+let checkinsChannel = null
+let pollTimer = null
 
 const picker = document.getElementById('fecha-picker')
 picker.value = fecha
@@ -103,45 +105,14 @@ async function cargar() {
   // Cargar alumnos y registros del día
   const [{ data: als }, { data: checks }] = await Promise.all([
     sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
-    sb.from('checkins').select('id, alumno_id, fecha, tipo, creado_en').eq('fecha', fecha)
+    sb.from('checkins').select('id, alumno_id, fecha, tipo, registrado_por, creado_en').eq('fecha', fecha)
   ])
   alumnos = als || []
 
-  // Cargar padres relacionados para detectar si el registro fue hecho por un padre
-  const alumnoIds = (alumnos || []).map(a => a.id)
-  let padres = []
-  if (alumnoIds.length) {
-    try {
-      const { data: p } = await sb.from('padres').select('id, alumno_id, user_id, nombre').in('alumno_id', alumnoIds)
-      padres = p || []
-    } catch(e) { padres = [] }
-  }
-  const padreByAlumno = {}
-  padres.forEach(p => { if (p.alumno_id) padreByAlumno[p.alumno_id] = p })
-
-  // Mensajes de padres hoy (heurística para saber si fue registrado por padre)
-  const parentUserIds = padres.filter(p => p.user_id).map(p => p.user_id)
-  let parentMsgs = []
-  try {
-    if (parentUserIds.length) {
-      const { data: pm } = await sb.from('mensajes')
-        .select('id,de_user_id,texto,creado_en,para_admin')
-        .in('de_user_id', parentUserIds)
-        .gte('creado_en', fecha)
-        .lte('creado_en', fecha + 'T23:59:59')
-      parentMsgs = pm || []
-    }
-  } catch(e) { parentMsgs = [] }
-
-  const parentMsgByUser = {}
-  parentMsgs.forEach(m => { parentMsgByUser[m.de_user_id] = parentMsgByUser[m.de_user_id] || []; parentMsgByUser[m.de_user_id].push(m) })
-
-  // Mapear checkMap con fuente (padre/admin)
+  // Mapear checkMap usando solo checkins.registrado_por
   checkMap = {}
   ;(checks || []).forEach(c => {
-    const padre = padreByAlumno[c.alumno_id]
-    const tieneMsgPadre = padre && padre.user_id && parentMsgByUser[padre.user_id]
-    checkMap[c.alumno_id] = Object.assign({}, c, { registered_by: tieneMsgPadre ? 'padre' : 'admin' })
+    checkMap[c.alumno_id] = c
   })
 
   render()
@@ -175,14 +146,9 @@ function render() {
     if (esOk) cntOk++; else if (esAus) cntAus++; else cntNone++
     const rowClass = esOk ? 'ok' : esAus ? 'aus' : ''
     const subTxt = esOk ? (c.tipo || 'Clase') : esAus ? 'Faltó' : 'Sin marcar'
-    // Bloqueos: si el registro fue hecho por padre, evitar sobrescribir (usar Corregir)
-    const bloquearAus = c && c.registered_by === 'padre' && esOk
-    const bloquearOk  = c && c.registered_by === 'padre' && esAus
     const btnOkCls = esOk ? 'activo' : ''
     const btnAusCls = esAus ? 'activo' : ''
-    const btnOkDisabled = bloquearOk ? 'disabled' : ''
-    const btnAusDisabled = bloquearAus ? 'disabled' : ''
-    const corregirBtn = c && c.registered_by === 'padre' ? `<button class="btn-aus" style="width:auto;padding:6px 10px;border-radius:10px;margin-left:8px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;font-size:12px;" data-correct="${a.id}">Corregir</button>` : ''
+    const corregirBtn = c ? `<button class="btn-aus" style="width:auto;padding:6px 10px;border-radius:10px;margin-left:8px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;font-size:12px;" data-correct="${a.id}">Corregir</button>` : ''
     return `<div class="al-row ${rowClass}" id="row-${a.id}">
       <div class="al-avatar" style="background:${colorAvatar(a.nombre)}">${ini(a.nombre)}</div>
       <div class="al-info">
@@ -190,8 +156,8 @@ function render() {
         <div class="al-sub" id="sub-${a.id}">${subTxt}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button class="btn-ok ${btnOkCls}" data-id="${a.id}" data-accion="clase" title="Asistió" ${btnOkDisabled}>✓</button>
-        <button class="btn-aus ${btnAusCls}" data-id="${a.id}" data-accion="ausente" title="Faltó" ${btnAusDisabled}>✗</button>
+        <button class="btn-ok ${btnOkCls}" data-id="${a.id}" data-accion="clase" title="Asistió">✓</button>
+        <button class="btn-aus ${btnAusCls}" data-id="${a.id}" data-accion="ausente" title="Faltó">✗</button>
         ${corregirBtn}
       </div>
     </div>`
@@ -213,20 +179,23 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
   const btnCorregir = e.target.closest('[data-correct]')
   if (btnCorregir) {
     const alumnoId = btnCorregir.dataset.correct
-    if (!confirm('¿Confirmas que deseas CORREGIR/ELIMINAR el registro hecho por el padre para este alumno en la fecha seleccionada?')) return
+    if (!confirm('¿Confirmas que deseas corregir este registro para la fecha seleccionada?')) return
     btnCorregir.disabled = true
     try {
-      await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
-      delete checkMap[alumnoId]
-      document.getElementById('row-' + alumnoId)?.classList.remove('ok','aus')
-      document.getElementById('sub-' + alumnoId).textContent = 'Sin marcar'
-      reconteo();
-      // Recargar historial tras corregir
-      const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, registrado_por, creado_en').eq('fecha', fecha).order('creado_en', { ascending: false }).limit(20)
-      renderHistorial(recent || [])
+      const actual = checkMap[alumnoId]
+      if (!actual?.id) {
+        alert('No existe un registro para corregir.')
+        await cargar()
+        return
+      }
+      const tipoActual = (actual.tipo || '').toLowerCase()
+      const nuevoTipo = (tipoActual === 'ausencia' || tipoActual === 'ausente') ? 'clase' : 'ausencia'
+      const { error } = await sb.from('checkins').update({ tipo: nuevoTipo, registrado_por: 'admin' }).eq('id', actual.id)
+      if (error) throw error
+      await cargar()
     } catch(err) {
       alert('No se pudo corregir: ' + (err?.message || err))
-      btnCorregir.disabled = false
+      await cargar()
     }
     return
   }
@@ -239,37 +208,17 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
   const yaActivo = btn.classList.contains('activo')
   const tipo = accion === 'clase' ? 'clase' : 'ausencia'
 
-  // Bloqueo si el registro fue hecho por padre: evitar sobrescribir
   const existing = checkMap[alumnoId]
-  if (existing && existing.registered_by === 'padre') {
-    // Si el admin intenta marcar lo contrario, bloquear y pedir usar "Corregir"
-    const esOk = existing.tipo && existing.tipo !== 'ausente' && existing.tipo !== 'ausencia'
-    const esAus = existing.tipo === 'ausente' || existing.tipo === 'ausencia'
-    if ((esOk && tipo === 'ausencia') || (esAus && tipo === 'clase')) {
-      alert('Este alumno ya registró su estado hoy (por el padre). Usa "Corregir" para modificarlo.')
-      return
-    }
-  }
-
-  row.querySelectorAll('[data-accion]').forEach(b => b.classList.remove('activo'))
-  row.classList.remove('ok', 'aus')
-  if (!yaActivo) {
-    btn.classList.add('activo')
-    row.classList.add(accion === 'clase' ? 'ok' : 'aus')
-    document.getElementById('sub-' + alumnoId).textContent = accion === 'clase' ? 'Clase · ' + new Date().toTimeString().slice(0,5) : 'Faltó · sin justificar'
-  } else {
-    document.getElementById('sub-' + alumnoId).textContent = 'Sin marcar'
-  }
-
-  reconteo()
-
   if (yaActivo) {
-    await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
-    delete checkMap[alumnoId]
+    const { error } = await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
+    if (error) {
+      alert('No se pudo eliminar: ' + error.message)
+    }
+    await cargar()
   } else {
-    // select-then-insert/update: evita depender de constraint onConflict en la tabla
-    const { data: existRow } = await sb.from('checkins')
-      .select('id').eq('alumno_id', alumnoId).eq('fecha', fecha).maybeSingle()
+    const { data: existRow } = existing?.id
+      ? { data: { id: existing.id } }
+      : await sb.from('checkins').select('id').eq('alumno_id', alumnoId).eq('fecha', fecha).maybeSingle()
     let res
     if (existRow?.id) {
       res = await sb.from('checkins').update({ tipo, registrado_por: 'admin' }).eq('id', existRow.id)
@@ -277,18 +226,40 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
       res = await sb.from('checkins').insert({ alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin' })
     }
     if (res.error) {
-      btn.classList.remove('activo'); row.classList.remove('ok','aus')
-      document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + res.error.message
-      reconteo(); return
+      alert('No se pudo guardar: ' + res.error.message)
+      await cargar()
+      return
     }
-    checkMap[alumnoId] = { alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin', registered_by: 'admin' }
+    await cargar()
   }
-  // Recargar historial tras cambio
-  const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, registrado_por, creado_en').eq('fecha', fecha).order('creado_en', { ascending: false }).limit(20)
-  renderHistorial(recent || [])
 })
 
+function setupRealtimeCheckins() {
+  if (checkinsChannel) {
+    sb.removeChannel(checkinsChannel)
+  }
+  checkinsChannel = sb
+    .channel('admin-asistencias-checkins')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, async payload => {
+      const nuevaFecha = payload?.new?.fecha
+      const viejaFecha = payload?.old?.fecha
+      if (nuevaFecha === fecha || viejaFecha === fecha) {
+        await cargar()
+      }
+    })
+    .subscribe()
+}
+
+function setupAutoRefresh() {
+  if (pollTimer) clearInterval(pollTimer)
+  pollTimer = setInterval(() => {
+    cargar()
+  }, 1500)
+}
+
 cargar()
+setupRealtimeCheckins()
+setupAutoRefresh()
 </script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body></html>
