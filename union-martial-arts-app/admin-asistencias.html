@@ -164,7 +164,8 @@ function renderHistorial(rows) {
     const tipo = r.tipo === 'ausencia' ? 'Ausencia' : (r.tipo || 'Clase')
     const alumno = (alumnos || []).find(x => x.id === r.alumno_id)
     const nombre = alumno ? alumno.nombre : r.alumno_id
-    return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px;"><div style="font-size:13px;color:#374151;">${nombre} — ${tipo}</div><div style="font-size:12px;color:#9ca3af;">${fecha}</div></div>`
+    const por = r.registrado_por === 'admin' ? 'Admin' : r.registrado_por ? 'Padre' : '—'
+    return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px;"><div><div style="font-size:13px;color:#374151;">${nombre} — ${tipo}</div><div style="font-size:11px;color:#9ca3af;">Por: ${por}</div></div><div style="font-size:12px;color:#9ca3af;white-space:nowrap;">${fecha}</div></div>`
   }).join('')
 }
 
@@ -272,20 +273,31 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
     await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
     delete checkMap[alumnoId]
   } else {
-    const registro = { alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin' }
-    if (tipo === 'ausencia') registro.motivo = 'sin justificar'
-
-    let res = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
-    if (res.error && res.error.code === '42703') {
-      const safeRegistro = { alumno_id: alumnoId, fecha, tipo }
-      res = await sb.from('checkins').upsert(safeRegistro, { onConflict: 'alumno_id,fecha' })
+    // select-then-insert/update: evita depender de constraint onConflict en la tabla
+    const { data: existRow } = await sb.from('checkins')
+      .select('id').eq('alumno_id', alumnoId).eq('fecha', fecha).maybeSingle()
+    const payload = { tipo, registrado_por: 'admin' }
+    if (tipo === 'ausencia') payload.motivo = 'sin justificar'
+    let res
+    if (existRow?.id) {
+      res = await sb.from('checkins').update(payload).eq('id', existRow.id)
+    } else {
+      res = await sb.from('checkins').insert({ alumno_id: alumnoId, fecha, ...payload })
+    }
+    if (res.error?.code === '42703') {
+      // columna registrado_por o motivo no existe — reintentar solo con campos base
+      if (existRow?.id) {
+        res = await sb.from('checkins').update({ tipo }).eq('id', existRow.id)
+      } else {
+        res = await sb.from('checkins').insert({ alumno_id: alumnoId, fecha, tipo })
+      }
     }
     if (res.error) {
       btn.classList.remove('activo'); row.classList.remove('ok','aus')
       document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + res.error.message
       reconteo(); return
     }
-    checkMap[alumnoId] = registro
+    checkMap[alumnoId] = { alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin' }
   }
 })
 

@@ -42,7 +42,7 @@
   <div class="navhead dark">
     <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Mensajes</div></div>
-    <button id="btn-toggle-system" title="Alternar mensajes del sistema" style="background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ver sistema</button>
+    <button id="btn-toggle-system" title="Alternar mensajes del sistema" style="display:none;background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ver sistema</button>
     <button onclick="abrirNuevo()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;"><i data-lucide="edit"></i></button>
   </div>
   <div class="body" style="padding:0;" id="lista-body">
@@ -99,9 +99,9 @@ let pollTimer = null
 
 function isSystemMessage(m) {
   if (m.es_automatico === true) return true
-  // regex solo para compatibilidad con mensajes históricos sin es_automatico
   const text = (m.texto || '').toString()
-  return /(✅ Check-in|❌ Ausencia|pagará|comprobante|solicitud de cita|confirmación de asistencia|🥗 hábito|nutrición completados|firmó el reglamento|evaluación|evento|diploma|cambio de cinta|sesión de meditación|rutina en casa)/i.test(text)
+  return /^(✅|❌|📅 (Torneo|Clase especial|Actividad|Examen):|🏋️|🧘|🥗|💊|📜 Diploma:)/i.test(text)
+    || /(firmó el reglamento|solicitud de cita|confirmación de asistencia|nutrición completad|rutina en casa completad|sesión de meditación completad|cambio de cinta aprobad)/i.test(text)
 }
 
 // ── CARGAR LISTA DE PADRES CON ÚLTIMO MENSAJE ──
