@@ -31,12 +31,72 @@ body{margin:0;}
 .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:24px;gap:8px;}
 .empty-state span{font-size:36px;}
 .chat-actions{margin-left:auto;display:flex;align-items:center;gap:6px;}
-.chat-action-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:7px 9px;}
+.chat-action-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:6px 7px;width:auto;max-width:max-content;}
 .bottom-nav,.nav-bottom,.mobile-nav,.tabbar,.dock,.bottom-tabs,.footer-nav{display:none!important;}
 
-@media (max-width:480px){
-  .navhead.uma-hdr{min-height:60px;padding:6px 10px 8px;}
-  .navhead.uma-hdr .title{font-size:17px!important;}
+.navhead.uma-hdr{
+  display:grid!important;
+  grid-template-columns:1fr auto;
+  grid-template-areas:
+    "brand back"
+    "title title"
+    "actions actions";
+  align-items:center;
+  row-gap:10px;
+  column-gap:10px;
+  min-height:unset;
+  padding:8px 12px 10px;
+}
+.navhead.uma-hdr .uma-hdr-brand{
+  grid-area:brand;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+.navhead.uma-hdr .uma-hdr-logo{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.navhead.uma-hdr .uma-hdr-logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+.navhead.uma-hdr .uma-hdr-txt{
+  font-size:11px;
+  line-height:1.06;
+  letter-spacing:.05em;
+  font-weight:800;
+}
+.navhead.uma-hdr .navback{
+  grid-area:back;
+  justify-self:end;
+  margin:0;
+}
+.navhead.uma-hdr .grow{
+  grid-area:title;
+  width:100%!important;
+  flex:none!important;
+  padding-left:0!important;
+  margin:0!important;
+}
+.navhead.uma-hdr .title{
+  font-size:19px!important;
+  font-weight:800;
+  line-height:1.2;
+}
+.navhead.uma-hdr .chat-actions{
+  grid-area:actions;
+  margin-left:0;
+  width:100%;
+  justify-content:flex-start;
+  margin-top:0;
 }
 </style>
 </head>
