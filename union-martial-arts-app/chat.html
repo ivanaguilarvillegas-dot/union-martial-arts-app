@@ -3,22 +3,22 @@
 <title>Chat privado — Union Martial Arts</title>
 <link rel="stylesheet" href="css/uma.css?v=18"/>
 <style>
-body{min-height:100vh;overflow:hidden;}
-.phone,.screen{display:flex!important;flex-direction:column!important;height:100vh!important;overflow:hidden!important;}
-.chat-wrap{display:flex;flex-direction:column;flex:1;min-height:0;background:#f4f6fb;}
+:root{--kb-offset:0px;}
+body{min-height:100dvh;overflow:hidden;}
+.phone,.screen{display:flex!important;flex-direction:column!important;height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;}
+.chat-wrap{display:flex;flex-direction:column;flex:1;min-height:0;background:#f4f6fb;padding-bottom:var(--kb-offset);overflow:visible;}
 .chat-header{background:var(--primary);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .chat-header a{color:#fff;text-decoration:none;font-size:22px;line-height:1;}
 .chat-header .info{flex:1;}
 .chat-header .chat-title{font-size:15px;font-weight:700;}
 .chat-header .chat-sub{font-size:11px;opacity:.7;}
-.messages{flex:1;overflow-y:auto;padding:12px 12px 16px;display:flex;flex-direction:column;gap:8px;min-height:0;}
-.chat-wrap{overflow:hidden;}
+.messages{flex:1;overflow-y:auto;padding:12px 12px calc(110px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;min-height:0;scroll-padding-bottom:140px;}
 .msg{max-width:78%;padding:9px 13px;border-radius:18px;font-size:13.5px;line-height:1.45;word-break:break-word;}
 .msg.from-me{background:var(--primary);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
 .msg.from-inst{background:#fff;color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .msg-time{font-size:10px;opacity:.6;margin-top:3px;text-align:right;}
 .msg-label{font-size:10px;color:var(--muted);text-align:center;margin:4px 0;}
-.input-bar{background:#fff;border-top:1px solid var(--ink-100);padding:8px 10px calc(10px + env(safe-area-inset-bottom,4px));display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.input-bar{position:sticky;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--ink-100);padding:8px 10px calc(10px + env(safe-area-inset-bottom,4px));display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
 .input-bar textarea{flex:1;border:1.5px solid var(--ink-200);border-radius:20px;padding:8px 14px;font-size:14px;font-family:var(--font);resize:none;outline:none;max-height:100px;line-height:1.4;}
 .input-bar textarea:focus{border-color:var(--primary);}
 .send-btn{background:var(--primary);border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
@@ -26,6 +26,8 @@ body{min-height:100vh;overflow:hidden;}
 .send-btn svg{width:18px;height:18px;fill:#fff;}
 .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:24px;gap:8px;}
 .empty-state span{font-size:36px;}
+.chat-actions{margin-left:auto;display:flex;align-items:center;gap:6px;}
+.chat-action-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:7px 9px;}
 </style>
 </head>
 <body>
@@ -38,6 +40,7 @@ body{min-height:100vh;overflow:hidden;}
       <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
     <div class="grow"><div class="title">Chat privado</div></div>
+    <div class="chat-actions"><button class="chat-action-btn" id="btn-hide-chat">Ocultar historial</button></div>
   </div>
 
   <div class="messages" id="messages">
@@ -66,9 +69,33 @@ const { data: { user } } = await sb.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
 let padre = null
+let hideBeforeKey = null
+
+function esMensajeManual(m) {
+  if (!m) return false
+  if (m.es_automatico === true) return false
+  const t = (m.texto || '').trim()
+  if (!t) return false
+  const autoPatterns = [
+    /^✅ Check-in:/i,
+    /^❌ Ausencia:/i,
+    /^🏆 Confirmación de asistencia/i,
+    /^🥋/,
+    /^🙏/,
+    /^✅ Confirmado\.?/i,
+    /^🥗/,
+    /^🏋️/,
+    /^🧘/,
+    /^📅 Solicitud de cita/i,
+    /se enteró del aviso\.?$/i,
+    /envió comprobante de pago/i,
+    /avisó que pagará/i
+  ]
+  return !autoPatterns.some(rx => rx.test(t))
+}
 const savedId = localStorage.getItem('uma_padre_id')
 if (savedId) {
-  const { data: ps } = await sb.from('padres').select('id').eq('id', savedId).limit(1)
+  const { data: ps } = await sb.from('padres').select('id, user_id').eq('id', savedId).limit(1)
   if (ps?.[0]) padre = ps[0]
 }
 if (!padre) {
@@ -82,26 +109,37 @@ if (!padre) {
     padre = pe[0] 
   }
 }
-// Fallback: si padre sigue siendo null, obtener TODOS los padres y usar el primero
 if (!padre) {
-  const { data: pall } = await sb.from('padres').select('id').limit(1)
-  if (pall?.[0]) padre = pall[0]
+  document.getElementById('messages').innerHTML = '<div class="empty-state"><span>⚠️</span>No encontramos tu perfil de padre.<br>Vuelve a iniciar sesión.</div>'
 }
+if (padre?.id && padre.user_id !== user.id) {
+  try {
+    await sb.from('padres').update({ user_id: user.id }).eq('id', padre.id)
+    padre.user_id = user.id
+  } catch(e) {}
+}
+hideBeforeKey = padre ? `uma_chat_hide_before_${padre.id}` : null
 
 async function cargarMensajes() {
   if (!padre) return
   const { data: msgs } = await sb.from('mensajes')
     .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id, es_automatico')
     .not('de_user_id', 'is', null)
-    .or(`and(para_admin.eq.true,de_user_id.eq.${user.id}),and(para_admin.eq.false,destinatario_id.eq.${padre.id})`)
+    .or(`and(para_admin.eq.true,de_user_id.eq.${user.id}),and(para_admin.eq.false,destinatario_id.eq.${user.id})`)
     .order('creado_en', { ascending: true })
 
-  const hideSystem = true // padres ven chat limpio por defecto
+  const hideSystem = true
+  const hideBefore = hideBeforeKey ? localStorage.getItem(hideBeforeKey) : null
 
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
 
-  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null && !((hideSystem && m.es_automatico === true) || (m.de_user_id === null)))
+  const chatMsgs = (msgs || []).filter(m => {
+    if (m.de_user_id === null) return false
+    if (hideSystem && !esMensajeManual(m)) return false
+    if (hideBefore && new Date(m.creado_en).getTime() < Number(hideBefore)) return false
+    return true
+  })
   if (!chatMsgs.length) {
     box.innerHTML = '<div class="empty-state"><span>💬</span>Escribe tu primer mensaje<br>al instructor.</div>'
     return
@@ -127,7 +165,7 @@ async function cargarMensajes() {
   }).join('')
 
   // Marcar recibidos como leídos
-  await sb.from('mensajes').update({ leido: true }).eq('destinatario_id', padre.id).eq('leido', false)
+  await sb.from('mensajes').update({ leido: true }).eq('destinatario_id', user.id).eq('leido', false)
   if (atBottom) box.scrollTop = box.scrollHeight
 }
 
@@ -138,11 +176,16 @@ try {
 } catch(e) {}
 
 window.enviar = async function() {
+  if (!padre) return
   const ta = document.getElementById('msg-input')
   const texto = ta.value.trim()
   if (!texto) return
   ta.value = ''; ta.style.height = 'auto'
-  await sb.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true, leido: false })
+  const { error } = await sb.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true, leido: false, es_automatico: false })
+  if (error) {
+    alert('No se pudo enviar el mensaje: ' + error.message)
+    return
+  }
   await cargarMensajes()
 }
 
@@ -151,9 +194,40 @@ window.autoResize = function(ta) {
   ta.style.height = Math.min(ta.scrollHeight, 100) + 'px'
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.enviar() }
+const taInput = document.getElementById('msg-input')
+taInput?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    window.enviar()
+  }
 })
+
+document.getElementById('btn-hide-chat')?.addEventListener('click', async () => {
+  if (!hideBeforeKey) return
+  const cur = localStorage.getItem(hideBeforeKey)
+  if (!cur) {
+    localStorage.setItem(hideBeforeKey, String(Date.now()))
+    document.getElementById('btn-hide-chat').textContent = 'Mostrar historial'
+  } else {
+    localStorage.removeItem(hideBeforeKey)
+    document.getElementById('btn-hide-chat').textContent = 'Ocultar historial'
+  }
+  await cargarMensajes()
+})
+
+if (hideBeforeKey && localStorage.getItem(hideBeforeKey)) {
+  document.getElementById('btn-hide-chat').textContent = 'Mostrar historial'
+}
+
+function syncViewportOffset() {
+  const vv = window.visualViewport
+  if (!vv) return
+  const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+  document.documentElement.style.setProperty('--kb-offset', kb + 'px')
+}
+window.visualViewport?.addEventListener('resize', syncViewportOffset)
+window.visualViewport?.addEventListener('scroll', syncViewportOffset)
+syncViewportOffset()
 
 cargarMensajes()
 setInterval(cargarMensajes, 4000)

@@ -20,6 +20,8 @@
 .chat-header .back{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0;line-height:1;}
 .chat-header .chat-title{flex:1;font-size:15px;font-weight:700;}
 .chat-header .chat-sub{font-size:11px;opacity:.7;}
+.chat-header-actions{display:flex;align-items:center;gap:6px;}
+.chat-action-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:7px 9px;}
 .messages{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px;}
 .msg{max-width:78%;padding:9px 13px;border-radius:18px;font-size:13.5px;line-height:1.45;word-break:break-word;}
 .msg.from-admin{background:var(--primary);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
@@ -61,6 +63,7 @@
         <div class="chat-title" id="cw-nombre">—</div>
         <div class="chat-sub" id="cw-sub">Padre / Tutor</div>
       </div>
+      <div class="chat-header-actions"><button class="chat-action-btn" id="btn-hide-thread">Ocultar historial</button></div>
     </div>
     <div class="messages" id="messages"></div>
     <div class="input-bar">
@@ -95,23 +98,47 @@ if (!user) { window.location.href = 'index.html' }
 
 let currentPadreId = null
 let currentPadreNombre = null
+let currentPadreUserId = null
 let pollTimer = null
+let hideThreadKey = null
+
+function esMensajeManual(m) {
+  if (!m) return false
+  if (m.es_automatico === true) return false
+  const t = (m.texto || '').trim()
+  if (!t) return false
+  const autoPatterns = [
+    /^✅ Check-in:/i,
+    /^❌ Ausencia:/i,
+    /^🏆 Confirmación de asistencia/i,
+    /^🥋/,
+    /^🙏/,
+    /^✅ Confirmado\.?/i,
+    /^🥗/,
+    /^🏋️/,
+    /^🧘/,
+    /^📅 Solicitud de cita/i,
+    /se enteró del aviso\.?$/i,
+    /envió comprobante de pago/i,
+    /avisó que pagará/i
+  ]
+  return !autoPatterns.some(rx => rx.test(t))
+}
 
 // ── CARGAR LISTA DE PADRES CON ÚLTIMO MENSAJE ──
 async function cargarLista() {
-  const { data: padres } = await sb.from('padres').select('id, nombre, user_id').eq('es_admin', false).order('nombre')
+  const { data: padres } = await sb.from('padres').select('id, nombre, user_id').not('es_admin', 'is', true).order('nombre')
   if (!padres?.length) { document.getElementById('lista-padres').innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay padres registrados.</div>'; return }
 
   // Último mensaje por padre (excluyendo mensajes automáticos si el toggle está ON)
   const { data: msgs } = await sb.from('mensajes').select('id, texto, creado_en, para_admin, destinatario_id, de_user_id, leido, es_automatico').order('creado_en', { ascending: false })
-  const hideSystem = localStorage.getItem('uma_hide_system') !== 'false'
+  const hideSystem = true
   const ultimoMap = {}
   const noLeidoMap = {}
   msgs?.forEach(m => {
-    if (hideSystem && m.es_automatico === true) return
-    const pid = m.destinatario_id || m.de_user_id
+    if (hideSystem && !esMensajeManual(m)) return
     // match padre
-    const padre = padres.find(p => p.id === m.destinatario_id || p.user_id === m.de_user_id)
+    const padre = padres.find(p => p.user_id === m.destinatario_id || p.user_id === m.de_user_id)
     if (!padre) return
     if (!ultimoMap[padre.id]) ultimoMap[padre.id] = m
     if (!m.leido && m.para_admin) noLeidoMap[padre.id] = (noLeidoMap[padre.id] || 0) + 1
@@ -145,7 +172,11 @@ async function cargarLista() {
 window.abrirChat = async function(padreId, nombre) {
   currentPadreId = padreId
   currentPadreNombre = nombre
+  const row = document.querySelector(`[data-padre-id="${padreId}"]`)
+  currentPadreUserId = row?.dataset.padreUserId || null
+  hideThreadKey = `uma_admin_chat_hide_before_${currentPadreUserId || padreId}`
   document.getElementById('cw-nombre').textContent = nombre
+  document.getElementById('btn-hide-thread').textContent = localStorage.getItem(hideThreadKey) ? 'Mostrar historial' : 'Ocultar historial'
   document.getElementById('chat-window').classList.add('open')
   await cargarMensajes()
   // Marcar como leídos: mensajes del admin al padre Y mensajes del padre al admin
@@ -177,18 +208,29 @@ window.cerrarChat = function() {
 
 // ── CARGAR MENSAJES DEL HILO ──
 async function cargarMensajes() {
+  if (!currentPadreId) return
   const { data: padreRows } = await sb.from('padres').select('user_id').eq('id', currentPadreId).limit(1)
-  const padreUserId = padreRows?.[0]?.user_id
+  const padreUserId = currentPadreUserId || padreRows?.[0]?.user_id
+  currentPadreUserId = padreUserId || null
+
+  if (!padreUserId) {
+    document.getElementById('messages').innerHTML = '<div class="empty-state">Este padre no tiene usuario vinculado.<br>No es posible abrir el hilo privado.</div>'
+    return
+  }
 
   const { data: msgs } = await sb.from('mensajes')
     .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id, es_automatico')
-    .or(`and(para_admin.eq.true,de_user_id.eq.${padreUserId}),and(para_admin.eq.false,destinatario_id.eq.${currentPadreId})`)
+    .or(`and(para_admin.eq.true,de_user_id.eq.${padreUserId}),and(para_admin.eq.false,destinatario_id.eq.${padreUserId})`)
     .order('creado_en', { ascending: true })
 
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
-  const hideSystem = localStorage.getItem('uma_hide_system') !== 'false'
-  const filteredMsgs = hideSystem ? (msgs || []).filter(m => !m.es_automatico) : (msgs || [])
+  const hideBefore = hideThreadKey ? localStorage.getItem(hideThreadKey) : null
+  const filteredMsgs = (msgs || []).filter(m => {
+    if (!esMensajeManual(m)) return false
+    if (hideBefore && new Date(m.creado_en).getTime() < Number(hideBefore)) return false
+    return true
+  })
 
   if (!filteredMsgs.length) {
     box.innerHTML = '<div class="empty-state">Sin mensajes aún.<br>Inicia la conversación.</div>'
@@ -217,15 +259,22 @@ async function cargarMensajes() {
 window.enviarMensaje = async function() {
   const ta = document.getElementById('msg-input')
   const texto = ta.value.trim()
-  if (!texto || !currentPadreId) return
+  if (!texto || !currentPadreId || !currentPadreUserId) return
   ta.value = ''; ta.style.height = 'auto'
-  console.log('Enviando:', { de_user_id: user.id, texto, destinatario_id: currentPadreId })
   try {
-    const { error } = await sb.from('mensajes').insert({ de_user_id: user.id, texto, destinatario_id: currentPadreId })
-    if (error) console.error('Error:', JSON.stringify(error))
-    else console.log('Éxito')
+    const { error } = await sb.from('mensajes').insert({
+      de_user_id: user.id,
+      texto,
+      destinatario_id: currentPadreUserId,
+      para_admin: false,
+      leido: false,
+      es_automatico: false
+    })
+    if (error) {
+      alert('No se pudo enviar el mensaje: ' + error.message)
+    }
   } catch(e) {
-    console.error('Exception:', e.message)
+    alert('No se pudo enviar el mensaje: ' + e.message)
   }
   await cargarMensajes()
 }
@@ -234,7 +283,7 @@ window.enviarMensaje = async function() {
 window.abrirNuevo = async function() {
   const panel = document.getElementById('nuevo-panel')
   panel.style.display = 'flex'
-  const { data: padres } = await sb.from('padres').select('id, nombre').eq('es_admin', false).order('nombre')
+  const { data: padres } = await sb.from('padres').select('id, nombre').not('es_admin', 'is', true).order('nombre')
   document.getElementById('nuevo-lista').innerHTML = padres?.map(p => {
     const ini = p.nombre?.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?'
     return `<div class="chat-list-item" onclick="selNuevo('${p.id}','${p.nombre?.replace(/'/g,"\\'")}')">
@@ -262,22 +311,22 @@ document.addEventListener('keydown', e => {
   }
 })
 
+document.getElementById('btn-hide-thread')?.addEventListener('click', async () => {
+  if (!hideThreadKey) return
+  const cur = localStorage.getItem(hideThreadKey)
+  if (!cur) {
+    localStorage.setItem(hideThreadKey, String(Date.now()))
+    document.getElementById('btn-hide-thread').textContent = 'Mostrar historial'
+  } else {
+    localStorage.removeItem(hideThreadKey)
+    document.getElementById('btn-hide-thread').textContent = 'Ocultar historial'
+  }
+  await cargarMensajes()
+})
+
 cargarLista()
 lucide.createIcons()
-// Inicializar estado del toggle ocultar mensajes del sistema
-try {
-  const btn = document.getElementById('btn-toggle-system')
-  if (btn) {
-    const cur = localStorage.getItem('uma_hide_system')
-    btn.textContent = cur === 'false' ? 'Ocultar sistema' : 'Ver sistema'
-    btn.addEventListener('click', () => {
-      const newVal = localStorage.getItem('uma_hide_system') === 'false' ? 'true' : 'false'
-      localStorage.setItem('uma_hide_system', newVal)
-      btn.textContent = newVal === 'false' ? 'Ocultar sistema' : 'Ver sistema'
-      cargarLista()
-    })
-  }
-} catch(e) {}
+// Mensajes del sistema ocultos de forma visual por defecto
 </script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
 </body></html>
