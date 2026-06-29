@@ -97,13 +97,6 @@ let currentPadreId = null
 let currentPadreNombre = null
 let pollTimer = null
 
-function isSystemMessage(m) {
-  if (m.es_automatico === true) return true
-  const text = (m.texto || '').toString()
-  return /^(✅|❌|📅 (Torneo|Clase especial|Actividad|Examen):|🏋️|🧘|🥗|💊|📜 Diploma:)/i.test(text)
-    || /(firmó el reglamento|solicitud de cita|confirmación de asistencia|nutrición completad|rutina en casa completad|sesión de meditación completad|cambio de cinta aprobad)/i.test(text)
-}
-
 // ── CARGAR LISTA DE PADRES CON ÚLTIMO MENSAJE ──
 async function cargarLista() {
   const { data: padres } = await sb.from('padres').select('id, nombre, user_id').eq('es_admin', false).order('nombre')
@@ -115,7 +108,7 @@ async function cargarLista() {
   const ultimoMap = {}
   const noLeidoMap = {}
   msgs?.forEach(m => {
-    if (hideSystem && isSystemMessage(m)) return
+    if (hideSystem && m.es_automatico === true) return
     const pid = m.destinatario_id || m.de_user_id
     // match padre
     const padre = padres.find(p => p.id === m.destinatario_id || p.user_id === m.de_user_id)
@@ -195,7 +188,7 @@ async function cargarMensajes() {
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
   const hideSystem = localStorage.getItem('uma_hide_system') !== 'false'
-  const filteredMsgs = hideSystem ? (msgs || []).filter(m => !isSystemMessage(m)) : (msgs || [])
+  const filteredMsgs = hideSystem ? (msgs || []).filter(m => !m.es_automatico) : (msgs || [])
 
   if (!filteredMsgs.length) {
     box.innerHTML = '<div class="empty-state">Sin mensajes aún.<br>Inicia la conversación.</div>'
@@ -226,7 +219,14 @@ window.enviarMensaje = async function() {
   const texto = ta.value.trim()
   if (!texto || !currentPadreId) return
   ta.value = ''; ta.style.height = 'auto'
-  await sb.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: false, destinatario_id: currentPadreId, leido: false })
+  console.log('Enviando:', { de_user_id: user.id, texto, destinatario_id: currentPadreId })
+  try {
+    const { error } = await sb.from('mensajes').insert({ de_user_id: user.id, texto, destinatario_id: currentPadreId })
+    if (error) console.error('Error:', JSON.stringify(error))
+    else console.log('Éxito')
+  } catch(e) {
+    console.error('Exception:', e.message)
+  }
   await cargarMensajes()
 }
 

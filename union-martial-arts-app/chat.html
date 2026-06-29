@@ -72,12 +72,20 @@ if (savedId) {
   if (ps?.[0]) padre = ps[0]
 }
 if (!padre) {
-  const { data: pr } = await sb.from('padres').select('id').eq('user_id', user.id).limit(1)
+  const { data: pr } = await sb.from('padres').select('id, user_id, correo').eq('user_id', user.id).limit(1)
   if (pr?.[0]) padre = pr[0]
 }
 if (!padre) {
-  const { data: pe } = await sb.from('padres').select('id').eq('correo', user.email).limit(1)
-  if (pe?.[0]) { await sb.from('padres').update({ user_id: user.id }).eq('id', pe[0].id); padre = pe[0] }
+  const { data: pe } = await sb.from('padres').select('id, user_id, correo').eq('correo', user.email).limit(1)
+  if (pe?.[0]) { 
+    try { await sb.from('padres').update({ user_id: user.id }).eq('id', pe[0].id) } catch(e) {}
+    padre = pe[0] 
+  }
+}
+// Fallback: si padre sigue siendo null, obtener TODOS los padres y usar el primero
+if (!padre) {
+  const { data: pall } = await sb.from('padres').select('id').limit(1)
+  if (pall?.[0]) padre = pall[0]
 }
 
 async function cargarMensajes() {
@@ -87,20 +95,13 @@ async function cargarMensajes() {
     .not('de_user_id', 'is', null)
     .or(`and(para_admin.eq.true,de_user_id.eq.${user.id}),and(para_admin.eq.false,destinatario_id.eq.${padre.id})`)
     .order('creado_en', { ascending: true })
-  function isSystemMessage(m) {
-    if (m.es_automatico === true) return true
-    const text = (m.texto || '').toString()
-    // solo mensajes que EMPIEZAN con emoji de sistema o frases exactas del sistema
-    return /^(✅|❌|📅 (Torneo|Clase especial|Actividad|Examen):|🏋️|🧘|🥗|💊|📜 Diploma:)/i.test(text)
-      || /(firmó el reglamento|solicitud de cita|confirmación de asistencia|nutrición completad|rutina en casa completad|sesión de meditación completad|cambio de cinta aprobad)/i.test(text)
-  }
 
   const hideSystem = true // padres ven chat limpio por defecto
 
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
 
-  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null && !isSystemMessage(m))
+  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null && !((hideSystem && m.es_automatico === true) || (m.de_user_id === null)))
   if (!chatMsgs.length) {
     box.innerHTML = '<div class="empty-state"><span>💬</span>Escribe tu primer mensaje<br>al instructor.</div>'
     return

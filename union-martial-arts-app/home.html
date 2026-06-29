@@ -835,9 +835,66 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
           return `<button onclick="cambiarHijo('${p.id}')" style="padding:6px 16px;border-radius:22px;font-size:12px;font-weight:700;border:2px solid ${activo?'rgba(255,255,255,.8)':'rgba(255,255,255,.3)'};background:${activo?'rgba(255,255,255,.25)':'transparent'};color:#fff;cursor:pointer;">${al?.nombre?.split(' ')[0] || 'Hijo'}</button>`
         }).join('')
       }
-      window.cambiarHijo = function(padreId) {
+      window.cambiarHijo = async function(padreId) {
         localStorage.setItem('uma_padre_id', padreId)
-        location.reload()
+        const nuevoPadre = todosLosHijos.find(p => p.id === padreId)
+        if (!nuevoPadre?.alumno_id) return
+        
+        // Recargar datos del nuevo alumno sin hacer reload
+        padre = nuevoPadre
+        document.getElementById('nombre-alumno').textContent = 'Cargando…'
+        
+        const { data: alRows } = await supabase.from('alumnos').select('*').eq('id', padre.alumno_id).limit(1)
+        const al = alRows?.[0] || null
+        if (!al) return
+        
+        // Actualizar UI con datos del nuevo alumno
+        document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
+        document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
+        mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
+        
+        // Actualizar foto
+        if (al.foto_url) {
+          document.getElementById('foto-wrap').innerHTML = `<img src="${al.foto_url}" alt="${al.nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+        } else {
+          document.getElementById('foto-wrap').innerHTML = '<div style="font-size:32px;">📷</div>'
+        }
+        
+        // Actualizar badge de pago
+        const hoy = new Date(); hoy.setHours(0,0,0,0)
+        const badge = document.getElementById('badge-pago')
+        if (al.fecha_proximo_pago) {
+          const prox = new Date(al.fecha_proximo_pago + 'T12:00:00')
+          const diasVencido = Math.floor((hoy - prox) / 86400000)
+          if (diasVencido > 6) {
+            badge.innerHTML = '<i data-lucide="x-circle"></i> Vencido'
+            badge.style.background = 'rgba(220,38,38,.2)'
+            badge.style.borderColor = 'rgba(220,38,38,.4)'
+            badge.style.color = '#fca5a5'
+          } else if (diasVencido > 0) {
+            badge.innerHTML = '<i data-lucide="clock"></i> Pendiente'
+            badge.style.background = 'rgba(217,119,6,.2)'
+            badge.style.borderColor = 'rgba(217,119,6,.4)'
+            badge.style.color = '#fde68a'
+          } else {
+            badge.innerHTML = '<i data-lucide="check-circle"></i> Activo'
+            badge.style.background = 'rgba(255,255,255,.15)'
+            badge.style.borderColor = 'rgba(255,255,255,.25)'
+            badge.style.color = '#fff'
+          }
+        }
+        
+        // Actualizar chips: resaltar nuevo alumno
+        const chipsEl = document.getElementById('hijo-chips')
+        if (chipsEl) {
+          chipsEl.innerHTML = todosLosHijos.map(p => {
+            const chipAl = nombresAlumnos?.find(a => a.id === p.alumno_id)
+            const activo = p.id === padreId
+            return `<button onclick="cambiarHijo('${p.id}')" style="padding:6px 16px;border-radius:22px;font-size:12px;font-weight:700;border:2px solid ${activo?'rgba(255,255,255,.8)':'rgba(255,255,255,.3)'};background:${activo?'rgba(255,255,255,.25)':'transparent'};color:#fff;cursor:pointer;">${chipAl?.nombre?.split(' ')[0] || 'Hijo'}</button>`
+          }).join('')
+        }
+        
+        lucide.createIcons()
       }
     }
 
@@ -870,16 +927,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
             badge.style.color = '#fde68a'
           }
           if (diasVencido > 0) lucide.createIcons()
-        }
-
-        // Mostrar progreso del mes — con candado si plan básico mensual
-        const progWrap = document.getElementById('prog-wrap')
-        progWrap.style.display = 'block'
-        if (al.plan_pago === 'mensual') {
-          progWrap.querySelectorAll('a[href]').forEach(a => { a.removeAttribute('href'); a.style.cursor = 'default'; a.style.opacity = '.65' })
-          progWrap.insertAdjacentHTML('beforeend', '<div style="margin-top:10px;padding:9px 12px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:8px;font-size:12px;color:#92400e;display:flex;align-items:center;gap:6px;">🔒 Disponible en plan anual o Club Cinta Negra.</div>')
-        } else {
-          cargarProgreso(al.id)
         }
 
         if (al.foto_url) {

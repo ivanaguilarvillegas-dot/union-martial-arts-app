@@ -81,7 +81,7 @@ if (!user) { window.location.href = 'index.html' }
 
 let fecha = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
 let alumnos = []
-let checkMap = {}   // alumno_id → { tipo, motivo, registrado_por, registered_by }
+let checkMap = {}   // alumno_id → { tipo, registrado_por, registered_by }
 
 const picker = document.getElementById('fecha-picker')
 picker.value = fecha
@@ -103,7 +103,7 @@ async function cargar() {
   // Cargar alumnos y registros del día
   const [{ data: als }, { data: checks }] = await Promise.all([
     sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
-    sb.from('checkins').select('id, alumno_id, fecha, tipo, motivo, registrado_por, creado_en').eq('fecha', fecha)
+    sb.from('checkins').select('id, alumno_id, fecha, tipo, creado_en').eq('fecha', fecha)
   ])
   alumnos = als || []
 
@@ -146,13 +146,9 @@ async function cargar() {
 
   render()
 
-  // Cargar historial reciente (últimos 30 registros)
-  try {
-    const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, motivo, registrado_por, creado_en').order('creado_en', { ascending: false }).limit(30)
-    renderHistorial(recent || [])
-  } catch(e) {
-    document.getElementById('historial-admin').textContent = 'No se pudo cargar historial.'
-  }
+  // Cargar historial del día actual (filtrado por fecha)
+  const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, registrado_por, creado_en').eq('fecha', fecha).order('creado_en', { ascending: false }).limit(20)
+  renderHistorial(recent || [])
 }
 
 
@@ -164,8 +160,8 @@ function renderHistorial(rows) {
     const tipo = r.tipo === 'ausencia' ? 'Ausencia' : (r.tipo || 'Clase')
     const alumno = (alumnos || []).find(x => x.id === r.alumno_id)
     const nombre = alumno ? alumno.nombre : r.alumno_id
-    const por = r.registrado_por === 'admin' ? 'Admin' : r.registrado_por ? 'Padre' : '—'
-    return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px;"><div><div style="font-size:13px;color:#374151;">${nombre} — ${tipo}</div><div style="font-size:11px;color:#9ca3af;">Por: ${por}</div></div><div style="font-size:12px;color:#9ca3af;white-space:nowrap;">${fecha}</div></div>`
+    const registradoPor = r.registrado_por ? (r.registrado_por === 'padre' ? 'Padre' : 'Admin') : '—'
+    return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px;"><div><div style="font-size:13px;color:#374151;">${nombre} — ${tipo}</div><div style="font-size:11px;color:#9ca3af;">Por: ${registradoPor}</div></div><div style="font-size:12px;color:#9ca3af;white-space:nowrap;">${fecha}</div></div>`
   }).join('')
 }
 
@@ -178,9 +174,7 @@ function render() {
     const esAus = tipo === 'ausente' || tipo === 'ausencia'
     if (esOk) cntOk++; else if (esAus) cntAus++; else cntNone++
     const rowClass = esOk ? 'ok' : esAus ? 'aus' : ''
-    const subTxt = esOk ? (c.tipo || 'Clase') : esAus ? '' : 'Sin marcar'
-    const motivoHtml = esAus && c?.motivo ? `<div class="al-motivo">🔴 ${c.motivo}</div>` : ''
-    const registradoPor = c?.registered_by ? `<div style="font-size:11px;color:#6b7280;margin-top:6px;">Registrado por: ${c.registered_by === 'padre' ? 'Padre' : 'Admin'}</div>` : ''
+    const subTxt = esOk ? (c.tipo || 'Clase') : esAus ? 'Faltó' : 'Sin marcar'
     // Bloqueos: si el registro fue hecho por padre, evitar sobrescribir (usar Corregir)
     const bloquearAus = c && c.registered_by === 'padre' && esOk
     const bloquearOk  = c && c.registered_by === 'padre' && esAus
@@ -194,8 +188,6 @@ function render() {
       <div class="al-info">
         <div class="al-nombre">${a.nombre}</div>
         <div class="al-sub" id="sub-${a.id}">${subTxt}</div>
-        ${motivoHtml}
-        ${registradoPor}
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="btn-ok ${btnOkCls}" data-id="${a.id}" data-accion="clase" title="Asistió" ${btnOkDisabled}>✓</button>
@@ -229,7 +221,9 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
       document.getElementById('row-' + alumnoId)?.classList.remove('ok','aus')
       document.getElementById('sub-' + alumnoId).textContent = 'Sin marcar'
       reconteo();
-      await cargar()
+      // Recargar historial tras corregir
+      const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, registrado_por, creado_en').eq('fecha', fecha).order('creado_en', { ascending: false }).limit(20)
+      renderHistorial(recent || [])
     } catch(err) {
       alert('No se pudo corregir: ' + (err?.message || err))
       btnCorregir.disabled = false
@@ -276,29 +270,22 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
     // select-then-insert/update: evita depender de constraint onConflict en la tabla
     const { data: existRow } = await sb.from('checkins')
       .select('id').eq('alumno_id', alumnoId).eq('fecha', fecha).maybeSingle()
-    const payload = { tipo, registrado_por: 'admin' }
-    if (tipo === 'ausencia') payload.motivo = 'sin justificar'
     let res
     if (existRow?.id) {
-      res = await sb.from('checkins').update(payload).eq('id', existRow.id)
+      res = await sb.from('checkins').update({ tipo, registrado_por: 'admin' }).eq('id', existRow.id)
     } else {
-      res = await sb.from('checkins').insert({ alumno_id: alumnoId, fecha, ...payload })
-    }
-    if (res.error?.code === '42703') {
-      // columna registrado_por o motivo no existe — reintentar solo con campos base
-      if (existRow?.id) {
-        res = await sb.from('checkins').update({ tipo }).eq('id', existRow.id)
-      } else {
-        res = await sb.from('checkins').insert({ alumno_id: alumnoId, fecha, tipo })
-      }
+      res = await sb.from('checkins').insert({ alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin' })
     }
     if (res.error) {
       btn.classList.remove('activo'); row.classList.remove('ok','aus')
       document.getElementById('sub-' + alumnoId).textContent = 'Error: ' + res.error.message
       reconteo(); return
     }
-    checkMap[alumnoId] = { alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin' }
+    checkMap[alumnoId] = { alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin', registered_by: 'admin' }
   }
+  // Recargar historial tras cambio
+  const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, registrado_por, creado_en').eq('fecha', fecha).order('creado_en', { ascending: false }).limit(20)
+  renderHistorial(recent || [])
 })
 
 cargar()
