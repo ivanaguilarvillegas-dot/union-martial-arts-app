@@ -81,7 +81,7 @@ if (!user) { window.location.href = 'index.html' }
 
 let fecha = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
 let alumnos = []
-let checkMap = {}   // alumno_id → { tipo, ausencia_motivo, ausencia_nota }
+let checkMap = {}   // alumno_id → { tipo, motivo, registrado_por, registered_by }
 
 const picker = document.getElementById('fecha-picker')
 picker.value = fecha
@@ -103,7 +103,7 @@ async function cargar() {
   // Cargar alumnos y registros del día
   const [{ data: als }, { data: checks }] = await Promise.all([
     sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
-    sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, creado_en').eq('fecha', fecha)
+    sb.from('checkins').select('id, alumno_id, fecha, tipo, motivo, registrado_por, creado_en').eq('fecha', fecha)
   ])
   alumnos = als || []
 
@@ -120,7 +120,7 @@ async function cargar() {
   padres.forEach(p => { if (p.alumno_id) padreByAlumno[p.alumno_id] = p })
 
   // Mensajes de padres hoy (heurística para saber si fue registrado por padre)
-  const parentUserIds = parentsToArray(padres)
+  const parentUserIds = padres.filter(p => p.user_id).map(p => p.user_id)
   let parentMsgs = []
   try {
     if (parentUserIds.length) {
@@ -148,25 +148,20 @@ async function cargar() {
 
   // Cargar historial reciente (últimos 30 registros)
   try {
-    const { data: recent } = await sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, creado_en').order('creado_en', { ascending: false }).limit(30)
+    const { data: recent } = await sb.from('checkins').select('id, alumno_id, fecha, tipo, motivo, registrado_por, creado_en').order('creado_en', { ascending: false }).limit(30)
     renderHistorial(recent || [])
   } catch(e) {
     document.getElementById('historial-admin').textContent = 'No se pudo cargar historial.'
   }
 }
 
-function parentsToArray(padres) {
-  const ids = []
-  (padres || []).forEach(p => { if (p.user_id) ids.push(p.user_id) })
-  return ids
-}
 
 function renderHistorial(rows) {
   const el = document.getElementById('historial-admin')
   if (!rows.length) { el.innerHTML = '<div style="padding:8px 0;color:var(--muted);">Sin historial reciente.</div>'; return }
   el.innerHTML = rows.map(r => {
     const fecha = new Date(r.creado_en).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
-    const tipo = r.tipo === 'ausencia' ? 'Ausencia' : (r.tipo || 'Clase') + (r.hora ? ' · ' + r.hora : '')
+    const tipo = r.tipo === 'ausencia' ? 'Ausencia' : (r.tipo || 'Clase')
     const alumno = (alumnos || []).find(x => x.id === r.alumno_id)
     const nombre = alumno ? alumno.nombre : r.alumno_id
     return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px;"><div style="font-size:13px;color:#374151;">${nombre} — ${tipo}</div><div style="font-size:12px;color:#9ca3af;">${fecha}</div></div>`
@@ -182,8 +177,8 @@ function render() {
     const esAus = tipo === 'ausente' || tipo === 'ausencia'
     if (esOk) cntOk++; else if (esAus) cntAus++; else cntNone++
     const rowClass = esOk ? 'ok' : esAus ? 'aus' : ''
-    const subTxt = esOk ? (c.tipo || 'Clase') + (c.hora ? ' · ' + c.hora : '') : esAus ? '' : 'Sin marcar'
-    const motivoHtml = esAus && c?.ausencia_motivo ? `<div class="al-motivo">🔴 ${c.ausencia_motivo}${c.ausencia_nota ? ' — ' + c.ausencia_nota : ''}</div>` : ''
+    const subTxt = esOk ? (c.tipo || 'Clase') : esAus ? '' : 'Sin marcar'
+    const motivoHtml = esAus && c?.motivo ? `<div class="al-motivo">🔴 ${c.motivo}</div>` : ''
     const registradoPor = c?.registered_by ? `<div style="font-size:11px;color:#6b7280;margin-top:6px;">Registrado por: ${c.registered_by === 'padre' ? 'Padre' : 'Admin'}</div>` : ''
     // Bloqueos: si el registro fue hecho por padre, evitar sobrescribir (usar Corregir)
     const bloquearAus = c && c.registered_by === 'padre' && esOk
@@ -277,18 +272,13 @@ document.getElementById('lista-alumnos').addEventListener('click', async e => {
     await sb.from('checkins').delete().eq('alumno_id', alumnoId).eq('fecha', fecha)
     delete checkMap[alumnoId]
   } else {
-    const registro = { alumno_id: alumnoId, fecha, tipo }
-    if (tipo === 'clase') registro.hora = new Date().toTimeString().slice(0,5)
-    if (tipo === 'ausencia') registro.ausencia_motivo = 'sin justificar'
-    // Intentar guardar quien registró (registrado_por / creado_por). Si la columna no existe, reintentar sin esas claves.
-    registro.registrado_por = 'admin'
-    registro.creado_por = user.id
+    const registro = { alumno_id: alumnoId, fecha, tipo, registrado_por: 'admin' }
+    if (tipo === 'ausencia') registro.motivo = 'sin justificar'
 
     let res = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
     if (res.error && res.error.code === '42703') {
-      // columnas no existentes -> retry without metadata
-      delete registro.registrado_por; delete registro.creado_por
-      res = await sb.from('checkins').upsert(registro, { onConflict: 'alumno_id,fecha' })
+      const safeRegistro = { alumno_id: alumnoId, fecha, tipo }
+      res = await sb.from('checkins').upsert(safeRegistro, { onConflict: 'alumno_id,fecha' })
     }
     if (res.error) {
       btn.classList.remove('activo'); row.classList.remove('ok','aus')
