@@ -115,11 +115,18 @@
 
   let padre = null, alumnoId = null, alumnoNombre = ''
   try {
-    const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
-    if (r1?.length) { padre = r1[0] }
-    else {
-      const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
-      if (r2?.length) { await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id); padre = r2[0] }
+    const _savedId = localStorage.getItem('uma_padre_id')
+    if (_savedId) {
+      const { data: sp } = await supabase.from('padres').select('id, alumno_id, nombre').eq('id', _savedId).limit(1)
+      if (sp?.length) padre = sp[0]
+    }
+    if (!padre) {
+      const { data: r1 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('user_id', user.id).limit(1)
+      if (r1?.length) { padre = r1[0] }
+      else {
+        const { data: r2 } = await supabase.from('padres').select('id, alumno_id, nombre').eq('correo', user.email).limit(1)
+        if (r2?.length) { await supabase.from('padres').update({ user_id: user.id }).eq('id', r2[0].id); padre = r2[0] }
+      }
     }
     alumnoId = padre?.alumno_id
     if (alumnoId) {
@@ -203,7 +210,7 @@
   // Confirmar llegada
   document.getElementById('btn-asiste').addEventListener('click', async () => {
     if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
-    const hoy = new Date().toISOString().split('T')[0]
+    const hoy = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
     const tipo = document.querySelector('#tipos .on')?.dataset.tipo || 'clase'
     const torneoId = torneoSelect.value
     const actividad = actividadText.value.trim()
@@ -273,10 +280,17 @@
   // Reportar ausencia
   document.getElementById('btn-ausente').addEventListener('click', async () => {
     if (!alumnoId) { alert('No hay alumno vinculado a tu cuenta.'); return }
-    const hoy = new Date().toISOString().split('T')[0]
+    const hoy = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
     const motivo = document.querySelector('#motivos .on')?.dataset.motivo || 'Otro'
     const nota = document.getElementById('nota-ausencia').value.trim()
 
+    const { data: existeAus } = await supabase.from('checkins').select('id,tipo').eq('alumno_id', alumnoId).eq('fecha', hoy).maybeSingle()
+    if (existeAus) {
+      const m = document.getElementById('msg-ausente')
+      m.style.display = 'flex'
+      m.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="info"></i> Ya registraste ${existeAus.tipo === 'ausencia' ? 'ausencia' : 'asistencia'} hoy.</span>`
+      lucide.createIcons(); return
+    }
     await supabase.from('checkins').upsert({
       alumno_id: alumnoId, fecha: hoy, tipo: 'ausencia', ausencia_motivo: motivo
     }, { onConflict: 'alumno_id,fecha' })

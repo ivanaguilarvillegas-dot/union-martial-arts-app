@@ -54,6 +54,21 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  let planBloqueado = false
+  {
+    const _sid = localStorage.getItem('uma_padre_id')
+    let _pr = null
+    if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
+    if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
+    if (_pr?.alumno_id) {
+      const { data: _al } = await supabase.from('alumnos').select('plan_pago').eq('id', _pr.alumno_id).maybeSingle()
+      if (_al?.plan_pago === 'mensual') {
+        planBloqueado = true
+        document.querySelector('.body').innerHTML = '<div style="padding:48px 24px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🔒</div><div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Acceso no disponible</div><div style="font-size:13px;color:#6b7280;line-height:1.6;">Disponible en plan anual<br>o Club Cinta Negra.</div><a href="programas.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--primary);color:#fff;border-radius:22px;text-decoration:none;font-size:13px;font-weight:700;">Ver planes</a></div>'
+      }
+    }
+  }
+
   const { data: meAdmin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).maybeSingle()
   const esAdmin = !!meAdmin?.es_admin
 
@@ -63,7 +78,7 @@
     tecnicas:[['activity','Técnica de golpeo','Guía de puños y agarres'],['zap','Técnica de patadas','Instrucciones paso a paso'],['target','Combinaciones básicas','Secuencias para practicar'],['dumbbell','Defensa y bloqueo','Métodos para reaccionar']],
     estrategias:[['trophy','Clases y tácticas','Material de estrategia de combate'],['leaf','Combinaciones avanzadas','Cómo enlazar golpes y patadas'],['flame','Rutina mental','Técnicas de concentración'],['zap','Plan de entrenamiento','Manuales para entrenar en casa']],
   }
-  let lvl = 'principiante'
+  let lvl = 'videos'
   const done = {}
   let videos = []
   let links = {}
@@ -91,6 +106,7 @@
 
   function render() {
     const items = LEVELS[lvl]
+    if (!items) return
     document.getElementById('list').innerHTML = items.map((it, i) => {
       const k = lvl + i, on = !!done[k]
       const nombreClave = clave(it[1])
@@ -125,14 +141,14 @@
     lucide.createIcons()
   }
 
-  document.getElementById('tabs').addEventListener('click', e => {
+  document.getElementById('tabs')?.addEventListener('click', e => {
     const b = e.target.closest('[data-lvl]'); if (!b) return
     ;[...e.currentTarget.children].forEach(c => c.classList.remove('on')); b.classList.add('on')
     lvl = b.dataset.lvl; render()
   })
 
   let notifEnviada = {}
-  document.getElementById('list').addEventListener('click', async e => {
+  document.getElementById('list')?.addEventListener('click', async e => {
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
     const items = LEVELS[lvl]
@@ -151,7 +167,7 @@
   })
 
   // Instructor: subir video a ejercicio específico
-  document.getElementById('list').addEventListener('change', async e => {
+  document.getElementById('list')?.addEventListener('change', async e => {
     const input = e.target.closest('input[data-ejercicio]')
     if (!input || !esAdmin) return
     const file = input.files[0]; if (!file) return
@@ -165,7 +181,7 @@
     await cargarVideos()
   })
 
-  cargarVideos()
+  if (!planBloqueado) cargarVideos()
 </script>
 <script>
   if ('serviceWorker' in navigator) {

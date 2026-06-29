@@ -42,7 +42,7 @@
   <div class="navhead dark">
     <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Mensajes</div></div>
-    <button id="btn-toggle-system" title="Ocultar mensajes del sistema" style="background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ocultar sist.</button>
+    <button id="btn-toggle-system" title="Alternar mensajes del sistema" style="background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ver sistema</button>
     <button onclick="abrirNuevo()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;"><i data-lucide="edit"></i></button>
   </div>
   <div class="body" style="padding:0;" id="lista-body">
@@ -269,11 +269,11 @@ try {
   const btn = document.getElementById('btn-toggle-system')
   if (btn) {
     const cur = localStorage.getItem('uma_hide_system')
-    if (cur === 'false') btn.textContent = 'Mostrar sist.'
+    btn.textContent = cur === 'false' ? 'Ocultar sistema' : 'Ver sistema'
     btn.addEventListener('click', () => {
       const newVal = localStorage.getItem('uma_hide_system') === 'false' ? 'true' : 'false'
       localStorage.setItem('uma_hide_system', newVal)
-      btn.textContent = newVal === 'false' ? 'Mostrar sist.' : 'Ocultar sist.'
+      btn.textContent = newVal === 'false' ? 'Ocultar sistema' : 'Ver sistema'
       cargarLista()
     })
   }

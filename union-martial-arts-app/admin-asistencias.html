@@ -79,7 +79,7 @@ const sb = createClient(
 const { data: { user } } = await sb.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
-let fecha = new Date().toISOString().split('T')[0]
+let fecha = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
 let alumnos = []
 let checkMap = {}   // alumno_id → { tipo, ausencia_motivo, ausencia_nota }
 
@@ -103,17 +103,19 @@ async function cargar() {
   // Cargar alumnos y registros del día
   const [{ data: als }, { data: checks }] = await Promise.all([
     sb.from('alumnos').select('id, nombre, cinta').order('nombre'),
-    sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, created_at').eq('fecha', fecha)
+    sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, creado_en').eq('fecha', fecha)
   ])
   alumnos = als || []
 
   // Cargar padres relacionados para detectar si el registro fue hecho por un padre
   const alumnoIds = (alumnos || []).map(a => a.id)
   let padres = []
-  try {
-    const { data: p } = await sb.from('padres').select('id, alumno_id, user_id, nombre').in('alumno_id', alumnoIds)
-    padres = p || []
-  } catch(e) { padres = [] }
+  if (alumnoIds.length) {
+    try {
+      const { data: p } = await sb.from('padres').select('id, alumno_id, user_id, nombre').in('alumno_id', alumnoIds)
+      padres = p || []
+    } catch(e) { padres = [] }
+  }
   const padreByAlumno = {}
   padres.forEach(p => { if (p.alumno_id) padreByAlumno[p.alumno_id] = p })
 
@@ -146,7 +148,7 @@ async function cargar() {
 
   // Cargar historial reciente (últimos 30 registros)
   try {
-    const { data: recent } = await sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, created_at').order('created_at', { ascending: false }).limit(30)
+    const { data: recent } = await sb.from('checkins').select('id, alumno_id, tipo, ausencia_motivo, ausencia_nota, hora, creado_en').order('creado_en', { ascending: false }).limit(30)
     renderHistorial(recent || [])
   } catch(e) {
     document.getElementById('historial-admin').textContent = 'No se pudo cargar historial.'
@@ -163,7 +165,7 @@ function renderHistorial(rows) {
   const el = document.getElementById('historial-admin')
   if (!rows.length) { el.innerHTML = '<div style="padding:8px 0;color:var(--muted);">Sin historial reciente.</div>'; return }
   el.innerHTML = rows.map(r => {
-    const fecha = new Date(r.created_at).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+    const fecha = new Date(r.creado_en).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
     const tipo = r.tipo === 'ausencia' ? 'Ausencia' : (r.tipo || 'Clase') + (r.hora ? ' · ' + r.hora : '')
     const alumno = (alumnos || []).find(x => x.id === r.alumno_id)
     const nombre = alumno ? alumno.nombre : r.alumno_id

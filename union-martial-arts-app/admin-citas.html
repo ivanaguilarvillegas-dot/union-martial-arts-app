@@ -78,10 +78,16 @@ window.cambiarTab = function(tab) {
 }
 
 async function cargar() {
-  const { data } = await sb.from('citas')
-    .select('*, padres(nombre, user_id)')
+  const { data: citas } = await sb.from('citas')
+    .select('*')
     .order('creado_en', { ascending: false })
-  todasCitas = data || []
+  const userIds = [...new Set((citas || []).map(c => c.padre_user_id).filter(Boolean))]
+  let padresMap = {}
+  if (userIds.length) {
+    const { data: ps } = await sb.from('padres').select('user_id, nombre').in('user_id', userIds)
+    ;(ps || []).forEach(p => { padresMap[p.user_id] = p })
+  }
+  todasCitas = (citas || []).map(c => ({ ...c, padres: padresMap[c.padre_user_id] || null }))
 
   const pendientes = todasCitas.filter(c => c.estado === 'pendiente').length
   const cntEl = document.getElementById('cnt-pendientes')

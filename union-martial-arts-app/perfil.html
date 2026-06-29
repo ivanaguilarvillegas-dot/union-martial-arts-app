@@ -83,9 +83,17 @@
     <span style="font-size:13px;color:var(--muted);">${l}</span>
     <span style="font-size:13px;font-weight:600;text-align:right;">${v || '—'}</span></div>`
 
-  // Cargar datos reales del padre y alumno
-  const { data: pr1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1)
-  let padre = pr1?.[0] || null
+  // Cargar datos reales del padre y alumno, respetando selección actual (uma_padre_id)
+  const _savedPadreId = localStorage.getItem('uma_padre_id')
+  let padre = null
+  if (_savedPadreId) {
+    const { data: sp } = await supabase.from('padres').select('*').eq('id', _savedPadreId).limit(1)
+    if (sp?.[0]) padre = sp[0]
+  }
+  if (!padre) {
+    const { data: pr1 } = await supabase.from('padres').select('*').eq('user_id', user.id).limit(1)
+    padre = pr1?.[0] || null
+  }
   if (!padre) {
     const { data: pr2 } = await supabase.from('padres').select('*').eq('correo', user.email).limit(1)
     if (pr2?.[0]) {

@@ -77,8 +77,16 @@
   // Fecha mínima: hoy
   document.getElementById('fecha').min = new Date().toISOString().split('T')[0]
 
-  const { data: pr } = await supabase.from('padres').select('nombre, alumno_id').eq('user_id', user.id).limit(1)
-  const padre = pr?.[0] || null
+  const _savedPadreId = localStorage.getItem('uma_padre_id')
+  let padre = null
+  if (_savedPadreId) {
+    const { data: sp } = await supabase.from('padres').select('id, nombre, alumno_id').eq('id', _savedPadreId).limit(1)
+    if (sp?.[0]) padre = sp[0]
+  }
+  if (!padre) {
+    const { data: pr } = await supabase.from('padres').select('id, nombre, alumno_id').eq('user_id', user.id).limit(1)
+    padre = pr?.[0] || null
+  }
   let alumnoNombre = ''
   if (padre?.alumno_id) {
     const { data: alr } = await supabase.from('alumnos').select('nombre').eq('id', padre.alumno_id).limit(1)

@@ -872,11 +872,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
           if (diasVencido > 0) lucide.createIcons()
         }
 
-        // Mostrar progreso del mes (ocultar si plan básico mensual)
+        // Mostrar progreso del mes — con candado si plan básico mensual
+        const progWrap = document.getElementById('prog-wrap')
+        progWrap.style.display = 'block'
         if (al.plan_pago === 'mensual') {
-          document.getElementById('prog-wrap').style.display = 'none'
+          progWrap.querySelectorAll('a[href]').forEach(a => { a.removeAttribute('href'); a.style.cursor = 'default'; a.style.opacity = '.65' })
+          progWrap.insertAdjacentHTML('beforeend', '<div style="margin-top:10px;padding:9px 12px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:8px;font-size:12px;color:#92400e;display:flex;align-items:center;gap:6px;">🔒 Disponible en plan anual o Club Cinta Negra.</div>')
         } else {
-          document.getElementById('prog-wrap').style.display = 'block'
           cargarProgreso(al.id)
         }
 
