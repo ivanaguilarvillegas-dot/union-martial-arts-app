@@ -65,7 +65,9 @@
             </div>
           </div>
           <label class="field"><span class="lab">Comentario para los padres</span>
-            <textarea id="nota-mensual" rows="3" placeholder="Resumen del mes…"></textarea></label>
+            <textarea id="comentario-mensual" rows="3" placeholder="Resumen del mes…"></textarea></label>
+          <label class="field"><span class="lab">Objetivo del próximo mes</span>
+            <textarea id="objetivo-mensual" rows="2" placeholder="Ej. Reforzar disciplina y técnica de defensa."></textarea></label>
         </div></div>
       </div>
 
@@ -211,19 +213,20 @@
       }
       notifTexto = `📋 Evaluación del día ${fecha} — ${alumno?.nombre}: ${areas.length}/${ITEMS.length} áreas${otrosNombre ? '\n' + otrosNombre + ': ' + (otrosVal ? '✓ Cumplió' : '— Por mejorar') : ''}${nota ? '\n"' + nota + '"' : ''}`
     } else {
-      const nota = document.getElementById('nota-mensual').value.trim()
+      const comentarioMensual = document.getElementById('comentario-mensual').value.trim()
+      const objetivoMensual = document.getElementById('objetivo-mensual').value.trim()
       const otrosNombre = document.getElementById('otros-mensual-nombre').value.trim()
       const otrosVal = parseInt(document.getElementById('otros-mensual-val').value)
       const todosVals = { ...vals }
       if (otrosNombre) todosVals.otros = otrosVal
       const claves = Object.values(todosVals)
       const prom = (claves.reduce((s,v)=>s+v,0)/claves.length).toFixed(1)
-      payload = { ...payload, ...vals, nota }
+      payload = { ...payload, ...vals, comentarios: comentarioMensual, nota: objetivoMensual }
       if (otrosNombre) {
         payload.otros_nombre = otrosNombre
         payload.otros = otrosVal
       }
-      notifTexto = `📊 Evaluación mensual — ${alumno?.nombre}: Promedio ${prom}/10${otrosNombre ? '\n' + otrosNombre + ': ' + otrosVal + '/10' : ''}${nota ? '\n"' + nota + '"' : ''}`
+      notifTexto = `📊 Evaluación mensual — ${alumno?.nombre}: Promedio ${prom}/10${otrosNombre ? '\n' + otrosNombre + ': ' + otrosVal + '/10' : ''}${comentarioMensual ? '\nComentario: "' + comentarioMensual + '"' : ''}${objetivoMensual ? '\nObjetivo: ' + objetivoMensual : ''}`
     }
 
     const { error } = await supabase.from('evaluaciones').insert(payload)

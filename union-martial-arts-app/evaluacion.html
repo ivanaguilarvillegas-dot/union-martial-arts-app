@@ -135,7 +135,27 @@
     return (n || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase() || '?'
   }
 
-  let alumnoId = null, alumnoNombre = ''
+  let alumnoId = null, alumnoNombre = '', planPago = '', permiteMensual = false
+
+  function normPlan(v) {
+    return (v || '').toString().trim().toLowerCase()
+  }
+
+  function puedeMensual(plan) {
+    const p = normPlan(plan)
+    return ['anual', 'club', 'avanzado', 'elite', 'uacj'].includes(p)
+  }
+
+  function tieneTextoReal(v) {
+    if (v == null) return false
+    const t = String(v).trim()
+    if (!t) return false
+    return t.replace(/[\s"'“”‘’.\.]/g, '').length > 0
+  }
+
+  function safeTxt(v) {
+    return String(v || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
   try {
     let padre = null
     const savedId = localStorage.getItem('uma_padre_id')
@@ -154,11 +174,18 @@
     }
     alumnoId = padre?.alumno_id
     if (alumnoId) {
-      const { data: al } = await supabase.from('alumnos').select('nombre').eq('id', alumnoId).limit(1)
+      const { data: al } = await supabase.from('alumnos').select('nombre, plan_pago').eq('id', alumnoId).limit(1)
       alumnoNombre = al?.[0]?.nombre || ''
+      planPago = al?.[0]?.plan_pago || ''
+      permiteMensual = puedeMensual(planPago)
     }
     if (padre?.nombre) document.getElementById('hero-initials').textContent = initials(padre.nombre)
     document.getElementById('hero-alumno').textContent = alumnoNombre || 'Sin alumno vinculado'
+    if (!permiteMensual) {
+      const tabMensual = document.querySelector('[data-tab="mensual"]')
+      if (tabMensual) tabMensual.style.display = 'none'
+      document.getElementById('tab-mensual').style.display = 'none'
+    }
   } catch(e) {}
 
   const fmtFecha = f => {
@@ -174,10 +201,17 @@
   ]
 
   function resultDia(n) {
-    if (n === 4) return { txt:'Excelente', cls:'rb-excelente' }
-    if (n === 3) return { txt:'Bien',      cls:'rb-bien' }
-    if (n === 2) return { txt:'Por mejorar', cls:'rb-mejorar' }
-    return { txt:'Reforzar', cls:'rb-reforzar' }
+    if (n === 4) return { txt:'Excelente', cls:'rb-excelente', stars:'⭐⭐⭐⭐⭐' }
+    if (n === 3) return { txt:'Muy bien',  cls:'rb-bien',      stars:'⭐⭐⭐⭐' }
+    if (n === 2) return { txt:'En proceso', cls:'rb-mejorar',  stars:'⭐⭐⭐' }
+    return { txt:'Necesita apoyo', cls:'rb-reforzar', stars:'⭐⭐' }
+  }
+
+  function diarioResumenTexto(cumplidos) {
+    if (cumplidos === 4) return 'Excelente participación, buena actitud y ejecución correcta de técnicas durante la clase.'
+    if (cumplidos === 3) return 'Mostró buen desempeño general en clase, con un punto específico por reforzar.'
+    if (cumplidos === 2) return 'Va en progreso; con práctica constante puede consolidar mejor los objetivos del día.'
+    return 'Necesita más acompañamiento para consolidar los objetivos clave de la clase.'
   }
 
   function ayudaDiaria() {
@@ -188,7 +222,8 @@
       '</div>' +
       '<div class="ayuda-body">' +
         '<div class="escala-row"><div class="escala-dot" style="background:#15803d;"></div><div><b>Cumplió:</b> trabajó adecuadamente en ese aspecto durante la clase.</div></div>' +
-        '<div class="escala-row"><div class="escala-dot" style="background:#b45309;"></div><div><b>Por mejorar:</b> necesita más atención, constancia o apoyo en ese aspecto.</div></div>' +
+        '<div class="escala-row"><div class="escala-dot" style="background:#b45309;"></div><div><b>En proceso:</b> va avanzando, pero aún requiere práctica y seguimiento.</div></div>' +
+        '<div class="escala-row"><div class="escala-dot" style="background:#dc2626;"></div><div><b>Necesita apoyo:</b> requiere más acompañamiento en ese aspecto.</div></div>' +
       '</div>' +
     '</div>'
   }
@@ -213,6 +248,19 @@
     evals.forEach((e, idx) => {
       const cumplidos = CRIT.filter(c => !!e[c.k]).length
       const res = resultDia(cumplidos)
+      const extraDiaria = e.otros_nombre
+        ? '<div class="crit-row">' +
+            '<div class="crit-ic" style="background:#eef2ff;"><i class="ti ti-plus" style="font-size:19px;color:#4338ca;"></i></div>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div class="crit-name">' + e.otros_nombre + '</div>' +
+              '<div class="crit-desc">Métrica adicional del instructor</div>' +
+            '</div>' +
+            (((e.otros_valor === true) || (e.otros_valor === 1) || (String(e.otros_valor).toLowerCase() === 'true'))
+              ? '<span class="badge-cumpl"><i class="ti ti-circle-check" style="font-size:14px;"></i>Cumplió</span>'
+              : '<span class="badge-mejor"><i class="ti ti-circle" style="font-size:14px;"></i>Por mejorar</span>') +
+          '</div>'
+        : ''
+
       const critRows = CRIT.map(c =>
         '<div class="crit-row">' +
           '<div class="crit-ic" style="background:' + c.bg + ';"><i class="ti ' + c.ic + '" style="font-size:19px;color:' + c.col + ';"></i></div>' +
@@ -225,8 +273,26 @@
             : '<span class="badge-mejor"><i class="ti ti-circle" style="font-size:14px;"></i>Por mejorar</span>') +
         '</div>'
       ).join('')
+      const comentarioReal = tieneTextoReal(e.nota)
+      const resumenTxt = comentarioReal ? safeTxt(e.nota) : diarioResumenTexto(cumplidos)
+      const pct = Math.round((cumplidos / 4) * 100)
       html += '<div style="font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;' + (idx > 0 ? 'margin-top:20px;' : '') + '">' +
         '<i class="ti ti-calendar" style="font-size:14px;vertical-align:-2px;"></i> ' + fmtFecha(e.fecha) +
+      '</div>' +
+      '<div class="ev-card" style="border:1px solid #dbeafe;">' +
+        '<div class="ev-card-body" style="padding:14px 16px;">' +
+          '<div style="font-size:16px;font-weight:800;color:#166534;">🟢 Clase de hoy</div>' +
+          '<div style="font-size:13px;color:#374151;margin-top:4px;">' + cumplidos + ' de 4 objetivos cumplidos</div>' +
+          '<div style="margin-top:8px;">' +
+            '<div style="height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;">' +
+              '<div style="height:100%;width:' + pct + '%;background:' + (cumplidos === 0 ? '#dc2626' : (cumplidos < 4 ? '#b45309' : '#15803d')) + ';"></div>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:#9ca3af;">' +
+              '<span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.55;">&ldquo;' + resumenTxt + '&rdquo;</div>' +
+        '</div>' +
       '</div>' +
       '<div class="ev-card">' +
         '<div class="ev-card-hdr">' +
@@ -235,17 +301,16 @@
             '<div class="ev-card-title">Evaluación del día</div>' +
             '<div class="ev-card-sub">' + cumplidos + ' de 4 criterios cumplidos</div>' +
           '</div>' +
-          '<span class="result-badge ' + res.cls + '">' + res.txt + '</span>' +
         '</div>' +
-        '<div class="ev-card-body" style="padding-bottom:8px;">' + critRows + '</div>' +
+        '<div class="ev-card-body" style="padding-bottom:8px;">' + critRows + extraDiaria + '</div>' +
       '</div>'
-      if (e.nota) {
+      if (comentarioReal) {
         html += '<div class="ev-card">' +
           '<div class="ev-card-hdr">' +
             '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-message-dots" style="font-size:20px;color:#0047AB;"></i></div>' +
             '<div class="ev-card-hdr-txt"><div class="ev-card-title">Comentario del instructor</div></div>' +
           '</div>' +
-          '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">&ldquo;' + e.nota + '&rdquo;</div>' +
+          '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">&ldquo;' + safeTxt(e.nota) + '&rdquo;</div>' +
         '</div>'
       }
     })
@@ -279,6 +344,34 @@
     return       { txt:'Reforzar',          cls:'rv-rojo' }
   }
 
+  function starsNivel(v) {
+    if (v >= 9) return '⭐⭐⭐⭐⭐'
+    if (v >= 8) return '⭐⭐⭐⭐'
+    if (v >= 6) return '⭐⭐⭐'
+    if (v >= 4) return '⭐⭐'
+    return '⭐'
+  }
+
+  function explicacionNivel(v) {
+    if (v >= 9) return 'Desempeño sobresaliente y constante en clase.'
+    if (v >= 8) return 'Buen control y ejecución durante la clase.'
+    if (v >= 6) return 'Va por buen camino y puede seguir mejorando.'
+    if (v >= 4) return 'Requiere más práctica y seguimiento cercano.'
+    return 'Necesita refuerzo constante y apoyo adicional.'
+  }
+
+  function descripcionArea(k) {
+    const mapa = {
+      tecnica_golpe: 'Calidad de ejecución, postura y precisión en golpes.',
+      patadas: 'Control, altura, técnica y equilibrio en patadas.',
+      defensa: 'Capacidad para bloquear, esquivar y reaccionar con control.',
+      condicion_fisica: 'Resistencia, energía y constancia durante los ejercicios.',
+      disciplina: 'Constancia, atención y seguimiento de indicaciones.',
+      coordinacion: 'Sincronización corporal y dominio de movimientos.'
+    }
+    return mapa[k] || 'Seguimiento del desempeño en esta área.'
+  }
+
   function ayudaMensual() {
     return '<div class="ev-card" style="margin-top:4px;">' +
       '<div class="ayuda-toggle" onclick="var b=this.nextElementSibling;b.classList.toggle(\'open\');this.querySelector(\'.ti-chevron-down\').style.transform=b.classList.contains(\'open\')?\'rotate(180deg)\':\'\';">' +
@@ -301,6 +394,10 @@
 
   async function cargarMensual() {
     if (!alumnoId) return
+    if (!permiteMensual) {
+      document.getElementById('mensual-content').innerHTML = ''
+      return
+    }
     const { data: evals } = await supabase.from('evaluaciones')
       .select('*').eq('alumno_id', alumnoId)
       .not('tecnica_golpe', 'is', null)
@@ -321,18 +418,34 @@
     const sorted = [...campos].sort((a,b) => e[b.k] - e[a.k])
     const fortaleza = sorted.length ? sorted[0].label : '—'
     const aReforzar = sorted.length > 1 ? sorted[sorted.length-1].label : '—'
-    const fuertes = campos.filter(a => e[a.k] >= 7)
-    const debiles = campos.filter(a => e[a.k] < 6)
+    const fuertes = campos.filter(a => e[a.k] >= 8)
+    const debiles = [...campos].sort((a,b) => e[a.k] - e[b.k]).slice(0, Math.min(3, campos.length)).filter(a => e[a.k] <= 6)
+    const comentarioMensual = (e.comentarios || '').trim()
+    const objetivoMensual = (e.nota || '').trim()
+    const comentarioMensualReal = tieneTextoReal(comentarioMensual)
+    const objetivoMensualReal = tieneTextoReal(objetivoMensual)
 
     const areasHtml = campos.map(a => {
-      const nv = nivelLabel(e[a.k])
       return '<div class="area-row">' +
         '<div class="area-ic" style="background:' + a.bg + ';"><i class="ti ' + a.ic + '" style="font-size:18px;color:' + a.col + ';"></i></div>' +
-        '<span style="flex:1;font-size:14px;font-weight:600;color:#111827;">' + a.label + '</span>' +
-        '<span class="nivel-badge ' + nv.cls + '">' + nv.txt + '</span>' +
-        '<span class="area-pts">' + e[a.k] + '/10</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:14px;font-weight:700;color:#111827;">' + a.label + '</div>' +
+          '<div style="font-size:12px;color:#374151;margin-top:2px;">' + starsNivel(e[a.k]) + '</div>' +
+          '<div style="font-size:12px;color:#6b7280;margin-top:2px;">' + e[a.k] + '/10 · ' + explicacionNivel(e[a.k]) + '</div>' +
+        '</div>' +
       '</div>'
     }).join('')
+
+    const extraMensual = (e.otros_nombre && e.otros != null)
+      ? '<div class="area-row">' +
+          '<div class="area-ic" style="background:#eef2ff;"><i class="ti ti-plus" style="font-size:18px;color:#4338ca;"></i></div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:14px;font-weight:700;color:#111827;">' + e.otros_nombre + '</div>' +
+            '<div style="font-size:12px;color:#374151;margin-top:2px;">' + starsNivel(e.otros) + '</div>' +
+            '<div style="font-size:12px;color:#6b7280;margin-top:2px;">' + e.otros + '/10 · Métrica adicional definida por el instructor.</div>' +
+          '</div>' +
+        '</div>'
+      : ''
 
     let compHtml = ''
     if (ep) {
@@ -340,9 +453,16 @@
       if (compCampos.length) {
         const compRows = compCampos.map(a => {
           const diff = e[a.k] - ep[a.k]
-          const sym  = diff > 0 ? '&#8593;' : diff < 0 ? '&#8595;' : '&#8594;'
-          const txt  = diff > 0 ? 'Mejoró' : diff < 0 ? 'Bajó' : 'Igual'
-          return '<div class="comp-row"><span class="comp-name">' + a.label + '</span><span class="comp-arrow clr-' + (diff>0?'up':diff<0?'down':'same') + '">' + sym + '</span><span class="comp-txt clr-' + (diff>0?'up':diff<0?'down':'same') + '">' + txt + '</span></div>'
+          return '<div class="comp-row" style="display:block;padding:8px 0;">' +
+            '<div style="font-size:13px;font-weight:700;color:#111827;">' + a.label + '</div>' +
+            '<div style="display:flex;gap:14px;margin-top:3px;font-size:12px;color:#6b7280;">' +
+              '<span style="font-weight:700;color:#111827;">' + ep[a.k] + ' → ' + e[a.k] + '</span>' +
+              '<span class="comp-txt clr-' + (diff>0?'up':diff<0?'down':'same') + '">' +
+                (diff > 0 ? '⬆ Mejoró' : diff < 0 ? '⬇ Bajó' : '➡ Igual') +
+                (diff !== 0 ? ' · ' + (diff > 0 ? '+' : '') + diff + ' punto' + (Math.abs(diff) > 1 ? 's' : '') : '') +
+              '</span>' +
+            '</div>' +
+          '</div>'
         }).join('')
         compHtml = '<div class="ev-card">' +
           '<div class="ev-card-hdr">' +
@@ -355,13 +475,13 @@
     }
 
     const fortList = fuertes.length
-      ? '<ul class="bullet-list">' + fuertes.map(a => '<li><i class="ti ti-circle-check" style="color:#15803d;"></i>' + a.label + '</li>').join('') + '</ul>'
+      ? '<ul class="bullet-list">' + fuertes.map(a => '<li style="align-items:flex-start;"><i class="ti ti-circle-check" style="color:#15803d;margin-top:2px;"></i><div><div style="font-weight:700;">' + a.label + '</div><div style="font-size:12px;color:#6b7280;">' + descripcionArea(a.k) + '</div></div></li>').join('') + '</ul>'
       : '<p style="font-size:13px;color:#9ca3af;margin:0;">Sin áreas destacadas aún</p>'
     const refList = debiles.length
-      ? '<ul class="bullet-list">' + debiles.map(a => '<li><i class="ti ti-circle" style="color:#b45309;"></i>' + a.label + '</li>').join('') + '</ul>'
-      : '<p style="font-size:13px;color:#9ca3af;margin:0;">Excelente en todas</p>'
+      ? '<ul class="bullet-list">' + debiles.map(a => '<li style="align-items:flex-start;"><i class="ti ti-circle" style="color:#b45309;margin-top:2px;"></i><div><div style="font-weight:700;">' + a.label + '</div><div style="font-size:12px;color:#6b7280;">Necesita trabajar la constancia y reforzar esta área.</div></div></li>').join('') + '</ul>'
+      : '<p style="font-size:13px;color:#15803d;margin:0;">🟢 No hay áreas que requieran refuerzo este mes.</p>'
 
-    const dualCard = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
+    const dualCard = '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px;margin-bottom:12px;">' +
       '<div class="ev-card" style="margin-bottom:0;">' +
         '<div class="ev-card-hdr" style="border-bottom:none;padding-bottom:6px;">' +
           '<div class="ev-card-ic" style="background:#f0fdf4;"><i class="ti ti-star" style="font-size:18px;color:#15803d;"></i></div>' +
@@ -378,29 +498,39 @@
       '</div>' +
     '</div>'
 
-    const comentCard = e.comentarios
+    const comentCard = comentarioMensualReal
       ? '<div class="ev-card">' +
           '<div class="ev-card-hdr">' +
             '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-message-dots" style="font-size:20px;color:#0047AB;"></i></div>' +
             '<div class="ev-card-hdr-txt"><div class="ev-card-title">Comentario del instructor</div></div>' +
           '</div>' +
-          '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">' + e.comentarios + '</div>' +
+          '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">' + safeTxt(comentarioMensual) + '</div>' +
         '</div>'
       : ''
 
-    const objItems = debiles.length
-      ? debiles.map(a => '<li><i class="ti ti-circle-arrow-right" style="color:#0047AB;"></i>Reforzar ' + a.label.toLowerCase() + '</li>').join('')
-      : '<li><i class="ti ti-circle-arrow-right" style="color:#0047AB;"></i>Mantener el buen nivel en todas las áreas</li>'
-
-    const objetivoCard = '<div class="ev-card">' +
+    const objetivoCard = objetivoMensualReal ? '<div class="ev-card">' +
       '<div class="ev-card-hdr">' +
         '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-target" style="font-size:20px;color:#0047AB;"></i></div>' +
         '<div class="ev-card-hdr-txt"><div class="ev-card-title">Objetivo del próximo mes</div></div>' +
       '</div>' +
-      '<div class="ev-card-body"><ul class="bullet-list">' + objItems + '</ul></div>' +
-    '</div>'
+      '<div class="ev-card-body" style="font-size:14px;color:#374151;line-height:1.6;">' + safeTxt(objetivoMensual) + '</div>' +
+    '</div>' : ''
 
     el.innerHTML =
+      '<div class="ev-card" style="border:1px solid #dbeafe;">' +
+        '<div class="ev-card-hdr" style="border-bottom:none;">' +
+          '<div class="ev-card-ic" style="background:#eff6ff;"><i class="ti ti-rosette-discount-check" style="font-size:20px;color:#1d4ed8;"></i></div>' +
+          '<div class="ev-card-hdr-txt">' +
+            '<div class="ev-card-title">Resultado general</div>' +
+            '<div class="ev-card-sub">' + starsNivel(prom) + ' ' + resumen.txt + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ev-card-body" style="padding-top:0;">' +
+          '<div style="font-size:13px;color:#374151;"><b>Promedio:</b> ' + promFmt + '</div>' +
+          '<div style="font-size:13px;color:#6b7280;margin-top:8px;"><b>Comentario del instructor:</b><br>' + (comentarioMensualReal ? safeTxt(comentarioMensual) : 'Sin comentario mensual registrado.') + '</div>' +
+          '<div style="font-size:12px;color:#6b7280;margin-top:8px;">Esta evaluación ayuda a dar seguimiento al avance del alumno en clase.</div>' +
+        '</div>' +
+      '</div>' +
       '<div style="font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;">' +
         '<i class="ti ti-calendar" style="font-size:14px;vertical-align:-2px;"></i> ' + fmtFecha(e.fecha) +
       '</div>' +
@@ -429,7 +559,7 @@
             '<div class="ev-card-sub">Promedio ' + promFmt + '/10</div>' +
           '</div>' +
         '</div>' +
-        areasHtml +
+        areasHtml + extraMensual +
       '</div>' +
       compHtml + dualCard + comentCard + objetivoCard + ayudaMensual()
 
@@ -437,6 +567,7 @@
   }
 
   document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.tab === 'mensual' && !permiteMensual) return
     document.querySelectorAll('[data-tab]').forEach(c => c.classList.remove('on'))
     b.classList.add('on')
     const d = b.dataset.tab === 'diaria'
@@ -445,7 +576,7 @@
   }))
 
   cargarDiarias()
-  cargarMensual()
+  if (permiteMensual) cargarMensual()
   lucide.createIcons()
 </script>
 <script>
