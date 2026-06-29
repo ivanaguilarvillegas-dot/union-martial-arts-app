@@ -409,54 +409,60 @@
       lucide.createIcons(); return
     }
 
-    const e  = evals[0]
-    const ep = evals[1] || null
-    const campos = AREAS.filter(a => e[a.k] != null)
-    const prom = campos.length ? campos.reduce((s,a) => s + e[a.k], 0) / campos.length : 0
+    const evalsOrd = [...evals].sort((a, b) => {
+      const ta = Date.parse(a?.creado_en || ((a?.fecha || '') + 'T00:00:00Z')) || 0
+      const tb = Date.parse(b?.creado_en || ((b?.fecha || '') + 'T00:00:00Z')) || 0
+      return tb - ta
+    })
+
+    const e  = evalsOrd[0]
+    const ep = evalsOrd[1] || null
+
+    const baseCampos = AREAS.filter(a => e[a.k] != null)
+    const otrosEnMensual = (e.otros_nombre && e.otros != null)
+    const campos = [...baseCampos, ...(otrosEnMensual ? [{ k:'otros', label:e.otros_nombre, esExtra:true }] : [])]
+    const valCampo = (obj, k) => {
+      const v = Number(obj?.[k])
+      return Number.isFinite(v) ? v : 0
+    }
+
+    const prom = campos.length ? campos.reduce((s,a) => s + valCampo(e, a.k), 0) / campos.length : 0
     const promFmt = prom.toFixed(1)
     const resumen = nivelResumen(prom)
-    const sorted = [...campos].sort((a,b) => e[b.k] - e[a.k])
+    const sorted = [...campos].sort((a,b) => valCampo(e, b.k) - valCampo(e, a.k))
     const fortaleza = sorted.length ? sorted[0].label : '—'
     const aReforzar = sorted.length > 1 ? sorted[sorted.length-1].label : '—'
-    const fuertes = campos.filter(a => e[a.k] >= 8)
-    const debiles = [...campos].sort((a,b) => e[a.k] - e[b.k]).slice(0, Math.min(3, campos.length)).filter(a => e[a.k] <= 6)
+    const fuertes = campos.filter(a => valCampo(e, a.k) >= 8)
+    const debiles = [...campos].sort((a,b) => valCampo(e, a.k) - valCampo(e, b.k)).slice(0, Math.min(3, campos.length)).filter(a => valCampo(e, a.k) <= 6)
     const comentarioMensual = (e.comentarios || '').trim()
     const objetivoMensual = (e.nota || '').trim()
     const comentarioMensualReal = tieneTextoReal(comentarioMensual)
     const objetivoMensualReal = tieneTextoReal(objetivoMensual)
 
     const areasHtml = campos.map(a => {
+      const valor = valCampo(e, a.k)
       return '<div class="area-row">' +
-        '<div class="area-ic" style="background:' + a.bg + ';"><i class="ti ' + a.ic + '" style="font-size:18px;color:' + a.col + ';"></i></div>' +
+        '<div class="area-ic" style="background:' + (a.esExtra ? '#eef2ff' : a.bg) + ';"><i class="ti ' + (a.esExtra ? 'ti-plus' : a.ic) + '" style="font-size:18px;color:' + (a.esExtra ? '#4338ca' : a.col) + ';"></i></div>' +
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:14px;font-weight:700;color:#111827;">' + a.label + '</div>' +
-          '<div style="font-size:12px;color:#374151;margin-top:2px;">' + starsNivel(e[a.k]) + '</div>' +
-          '<div style="font-size:12px;color:#6b7280;margin-top:2px;">' + e[a.k] + '/10 · ' + explicacionNivel(e[a.k]) + '</div>' +
+          '<div style="font-size:12px;color:#374151;margin-top:2px;">' + starsNivel(valor) + '</div>' +
+          '<div style="font-size:12px;color:#6b7280;margin-top:2px;">' + valor + '/10 · ' + (a.esExtra ? 'Buen avance en ' + a.label.toLowerCase() + '.' : explicacionNivel(valor)) + '</div>' +
         '</div>' +
       '</div>'
     }).join('')
 
-    const extraMensual = (e.otros_nombre && e.otros != null)
-      ? '<div class="area-row">' +
-          '<div class="area-ic" style="background:#eef2ff;"><i class="ti ti-plus" style="font-size:18px;color:#4338ca;"></i></div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:14px;font-weight:700;color:#111827;">' + e.otros_nombre + '</div>' +
-            '<div style="font-size:12px;color:#374151;margin-top:2px;">' + starsNivel(e.otros) + '</div>' +
-            '<div style="font-size:12px;color:#6b7280;margin-top:2px;">' + e.otros + '/10 · Métrica adicional definida por el instructor.</div>' +
-          '</div>' +
-        '</div>'
-      : ''
-
     let compHtml = ''
     if (ep) {
-      const compCampos = AREAS.filter(a => e[a.k] != null && ep[a.k] != null)
+      const compCampos = campos.filter(a => e[a.k] != null && ep[a.k] != null)
       if (compCampos.length) {
         const compRows = compCampos.map(a => {
-          const diff = e[a.k] - ep[a.k]
+          const va = valCampo(ep, a.k)
+          const vb = valCampo(e, a.k)
+          const diff = vb - va
           return '<div class="comp-row" style="display:block;padding:8px 0;">' +
             '<div style="font-size:13px;font-weight:700;color:#111827;">' + a.label + '</div>' +
             '<div style="display:flex;gap:14px;margin-top:3px;font-size:12px;color:#6b7280;">' +
-              '<span style="font-weight:700;color:#111827;">' + ep[a.k] + ' → ' + e[a.k] + '</span>' +
+              '<span style="font-weight:700;color:#111827;">' + va + ' → ' + vb + '</span>' +
               '<span class="comp-txt clr-' + (diff>0?'up':diff<0?'down':'same') + '">' +
                 (diff > 0 ? '⬆ Mejoró' : diff < 0 ? '⬇ Bajó' : '➡ Igual') +
                 (diff !== 0 ? ' · ' + (diff > 0 ? '+' : '') + diff + ' punto' + (Math.abs(diff) > 1 ? 's' : '') : '') +
@@ -475,7 +481,7 @@
     }
 
     const fortList = fuertes.length
-      ? '<ul class="bullet-list">' + fuertes.map(a => '<li style="align-items:flex-start;"><i class="ti ti-circle-check" style="color:#15803d;margin-top:2px;"></i><div><div style="font-weight:700;">' + a.label + '</div><div style="font-size:12px;color:#6b7280;">' + descripcionArea(a.k) + '</div></div></li>').join('') + '</ul>'
+      ? '<ul class="bullet-list">' + fuertes.map(a => '<li style="align-items:flex-start;"><i class="ti ti-circle-check" style="color:#15803d;margin-top:2px;"></i><div><div style="font-weight:700;">' + a.label + '</div><div style="font-size:12px;color:#6b7280;">' + (a.esExtra ? 'Buen avance en esta métrica adicional.' : descripcionArea(a.k)) + '</div></div></li>').join('') + '</ul>'
       : '<p style="font-size:13px;color:#9ca3af;margin:0;">Sin áreas destacadas aún</p>'
     const refList = debiles.length
       ? '<ul class="bullet-list">' + debiles.map(a => '<li style="align-items:flex-start;"><i class="ti ti-circle" style="color:#b45309;margin-top:2px;"></i><div><div style="font-weight:700;">' + a.label + '</div><div style="font-size:12px;color:#6b7280;">Necesita trabajar la constancia y reforzar esta área.</div></div></li>').join('') + '</ul>'
@@ -559,7 +565,7 @@
             '<div class="ev-card-sub">Promedio ' + promFmt + '/10</div>' +
           '</div>' +
         '</div>' +
-        areasHtml + extraMensual +
+        areasHtml +
       '</div>' +
       compHtml + dualCard + comentCard + objetivoCard + ayudaMensual()
 
