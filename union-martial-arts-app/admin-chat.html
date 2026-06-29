@@ -13,14 +13,40 @@
 .chat-time{font-size:11px;color:var(--muted);}
 .badge{background:var(--primary);color:#fff;font-size:10px;font-weight:800;border-radius:99px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
 
+.chat-top-header{
+  display:grid;
+  grid-template-columns:1fr auto;
+  grid-template-areas:
+    "brand back"
+    "title title"
+    "actions actions";
+  align-items:center;
+  row-gap:10px;
+  column-gap:10px;
+  padding:8px 12px 10px;
+}
+.chat-top-header .uma-hdr-brand{grid-area:brand;display:flex;align-items:center;gap:8px;min-width:0;}
+.chat-top-header .uma-hdr-logo{width:42px;height:42px;flex:0 0 42px;display:flex;align-items:center;justify-content:center;}
+.chat-top-header .uma-hdr-logo img{width:100%;height:100%;object-fit:contain;display:block;}
+.chat-top-header .uma-hdr-txt{font-size:11px;line-height:1.06;letter-spacing:.05em;font-weight:800;}
+.chat-top-header .navback{grid-area:back;justify-self:end;margin:0;}
+.chat-top-header .grow{grid-area:title;width:100%;flex:none;}
+.chat-top-header .title{font-size:19px;font-weight:800;line-height:1.2;}
+.chat-top-actions{grid-area:actions;display:flex;align-items:center;gap:8px;}
+
 /* Chat window */
 #chat-window{position:absolute;inset:0;background:#f4f6fb;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);z-index:50;}
 #chat-window.open{transform:translateX(0);}
-.chat-header{background:var(--primary);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.chat-header .back{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0;line-height:1;}
-.chat-header .chat-title{flex:1;font-size:15px;font-weight:700;}
+.chat-header{background:var(--primary);color:#fff;padding:8px 12px 10px;display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand back" "title title" "actions actions";align-items:center;row-gap:10px;column-gap:10px;flex-shrink:0;}
+.chat-header-brand{grid-area:brand;display:flex;align-items:center;gap:8px;min-width:0;}
+.chat-header-brand .uma-hdr-logo{width:42px;height:42px;flex:0 0 42px;display:flex;align-items:center;justify-content:center;}
+.chat-header-brand .uma-hdr-logo img{width:100%;height:100%;object-fit:contain;display:block;}
+.chat-header-brand .uma-hdr-txt{font-size:11px;line-height:1.06;letter-spacing:.05em;font-weight:800;}
+.chat-header .back{grid-area:back;justify-self:end;width:36px;height:36px;border-radius:10px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:22px;cursor:pointer;padding:0;line-height:1;}
+.chat-header-title{grid-area:title;}
+.chat-header .chat-title{font-size:19px;font-weight:800;line-height:1.2;}
 .chat-header .chat-sub{font-size:11px;opacity:.7;}
-.chat-header-actions{display:flex;align-items:center;gap:6px;}
+.chat-header-actions{grid-area:actions;display:flex;align-items:center;gap:6px;}
 .chat-action-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:7px 9px;}
 .messages{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px;}
 .msg{max-width:78%;padding:9px 13px;border-radius:18px;font-size:13.5px;line-height:1.45;word-break:break-word;}
@@ -41,11 +67,17 @@
 <div class="phone"><div class="screen" style="position:relative;overflow:hidden;">
 
   <!-- Lista de conversaciones -->
-  <div class="navhead dark">
+  <div class="navhead dark chat-top-header">
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-white.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
+    </div>
     <a class="navback" href="admin.html"><i data-lucide="chevron-left"></i></a>
     <div class="grow"><div class="title">Mensajes</div></div>
-    <button id="btn-toggle-system" title="Alternar mensajes del sistema" style="display:none;background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ver sistema</button>
-    <button onclick="abrirNuevo()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;"><i data-lucide="edit"></i></button>
+    <div class="chat-top-actions">
+      <button id="btn-toggle-system" title="Alternar mensajes del sistema" style="display:none;background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;cursor:pointer;margin-right:8px;">Ver sistema</button>
+      <button onclick="abrirNuevo()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;"><i data-lucide="edit"></i></button>
+    </div>
   </div>
   <div class="body" style="padding:0;" id="lista-body">
     <div style="padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;">
@@ -58,8 +90,12 @@
   <!-- Ventana de chat -->
   <div id="chat-window">
     <div class="chat-header">
+      <div class="chat-header-brand">
+        <div class="uma-hdr-logo"><img src="/assets/logo-union-white.png" alt="UMA" /></div>
+        <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
+      </div>
       <button class="back" onclick="cerrarChat()">‹</button>
-      <div>
+      <div class="chat-header-title">
         <div class="chat-title" id="cw-nombre">—</div>
         <div class="chat-sub" id="cw-sub">Padre / Tutor</div>
       </div>
