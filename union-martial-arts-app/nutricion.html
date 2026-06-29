@@ -563,7 +563,8 @@
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
           texto: `🥗 Hábito ${n}/${habitos.length}: ${habitos[idx].txt} · ${new Date().toLocaleDateString('es-MX')}`,
-          para_admin: true
+          para_admin: true,
+          es_automatico: true
         })
       } catch(e) {}
     }
@@ -574,7 +575,8 @@
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
           texto: '🥗 ¡Hábitos de nutrición completados hoy! · ' + new Date().toLocaleDateString('es-MX'),
-          para_admin: true
+          para_admin: true,
+          es_automatico: true
         })
       } catch(e) {}
     }

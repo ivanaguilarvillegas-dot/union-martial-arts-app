@@ -251,7 +251,7 @@
     const texto = tipo === 'torneo'
       ? `✅ Check-in: ${alumnoNombre} llegó a torneo (${torneoSelect.selectedOptions[0]?.textContent || 'torneo'}) el ${hoy} a las ${hora}`
       : `✅ Check-in: ${alumnoNombre} llegó a ${tipo} el ${hoy} a las ${hora}`
-    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true, es_automatico: true })
 
     const frases = [
       `🥋 Recibido. ${alumnoNombre} está en clase. ¡Gracias por avisar, que tenga un excelente entrenamiento!`,
@@ -259,7 +259,7 @@
       `🙏 Gracias. ${alumnoNombre} ya está con nosotros. ¡Nos vemos al terminar la clase!`,
     ]
     const respuesta = frases[Math.floor(Math.random() * frases.length)]
-    await supabase.from('mensajes').insert({ de_user_id: null, texto: respuesta, para_admin: false, destinatario_id: user.id })
+    await supabase.from('mensajes').insert({ de_user_id: null, texto: respuesta, para_admin: false, destinatario_id: user.id, es_automatico: true })
 
     document.getElementById('msg-asiste').style.display = 'flex'
     document.getElementById('btn-asiste').disabled = true
@@ -284,7 +284,7 @@
 
     // Notificar al instructor
     const texto = `❌ Ausencia: ${alumnoNombre} no asistirá el ${hoy} — Motivo: ${motivo}${nota ? ' · ' + nota : ''}`
-    const { error: errMsg } = await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    const { error: errMsg } = await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true, es_automatico: true })
     if (errMsg) alert('No se pudo notificar al instructor: ' + errMsg.message)
 
     document.getElementById('msg-ausente').style.display = 'flex'

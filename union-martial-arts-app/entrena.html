@@ -143,7 +143,8 @@
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
           texto: '🏋️ Rutina en casa completada — nivel ' + lvl + ' (' + items.length + ' ejercicios) · ' + new Date().toLocaleDateString('es-MX'),
-          para_admin: true
+          para_admin: true,
+          es_automatico: true
         })
       } catch(e) {}
     }

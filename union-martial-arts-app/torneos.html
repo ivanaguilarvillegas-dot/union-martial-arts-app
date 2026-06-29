@@ -110,7 +110,7 @@
 
     // Notificar al instructor
     const texto = `🏆 Confirmación de asistencia — ${alumnoNombre || padre?.nombre || 'Padre'} asistirá a: ${evento?.titulo || 'Evento'} (${evento?.fecha || ''}${evento?.hora ? ' · ' + evento.hora : ''})`
-    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true })
+    await supabase.from('mensajes').insert({ de_user_id: user.id, texto, para_admin: true, es_automatico: true })
 
     confirmados.add(evento_id)
     render()

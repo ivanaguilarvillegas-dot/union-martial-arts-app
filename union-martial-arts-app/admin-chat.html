@@ -97,22 +97,25 @@ let currentPadreId = null
 let currentPadreNombre = null
 let pollTimer = null
 
+function isSystemMessage(m) {
+  if (m.es_automatico === true) return true
+  // regex solo para compatibilidad con mensajes históricos sin es_automatico
+  const text = (m.texto || '').toString()
+  return /(✅ Check-in|❌ Ausencia|pagará|comprobante|solicitud de cita|confirmación de asistencia|🥗 hábito|nutrición completados|firmó el reglamento|evaluación|evento|diploma|cambio de cinta|sesión de meditación|rutina en casa)/i.test(text)
+}
+
 // ── CARGAR LISTA DE PADRES CON ÚLTIMO MENSAJE ──
 async function cargarLista() {
   const { data: padres } = await sb.from('padres').select('id, nombre, user_id').eq('es_admin', false).order('nombre')
   if (!padres?.length) { document.getElementById('lista-padres').innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No hay padres registrados.</div>'; return }
 
   // Último mensaje por padre (excluyendo mensajes automáticos si el toggle está ON)
-  const { data: msgs } = await sb.from('mensajes').select('id, texto, creado_en, para_admin, destinatario_id, de_user_id, leido').order('creado_en', { ascending: false })
+  const { data: msgs } = await sb.from('mensajes').select('id, texto, creado_en, para_admin, destinatario_id, de_user_id, leido, es_automatico').order('creado_en', { ascending: false })
   const hideSystem = localStorage.getItem('uma_hide_system') !== 'false'
-  function isSystemMessage(text) {
-    if (!text) return false
-    return /(✅ Check-in|❌ Ausencia|\bPago\b|Recibo|Comprobante|📜 Diploma:|\bDiploma\b|\bCita\b|\btorneo\b|\bevento\b|\baviso\b)/i.test(text.toString())
-  }
   const ultimoMap = {}
   const noLeidoMap = {}
   msgs?.forEach(m => {
-    if (hideSystem && isSystemMessage(m.texto)) return
+    if (hideSystem && isSystemMessage(m)) return
     const pid = m.destinatario_id || m.de_user_id
     // match padre
     const padre = padres.find(p => p.id === m.destinatario_id || p.user_id === m.de_user_id)
@@ -185,20 +188,22 @@ async function cargarMensajes() {
   const padreUserId = padreRows?.[0]?.user_id
 
   const { data: msgs } = await sb.from('mensajes')
-    .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id')
+    .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id, es_automatico')
     .or(`and(para_admin.eq.true,de_user_id.eq.${padreUserId}),and(para_admin.eq.false,destinatario_id.eq.${currentPadreId})`)
     .order('creado_en', { ascending: true })
 
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
+  const hideSystem = localStorage.getItem('uma_hide_system') !== 'false'
+  const filteredMsgs = hideSystem ? (msgs || []).filter(m => !isSystemMessage(m)) : (msgs || [])
 
-  if (!msgs?.length) {
+  if (!filteredMsgs.length) {
     box.innerHTML = '<div class="empty-state">Sin mensajes aún.<br>Inicia la conversación.</div>'
     return
   }
 
   let lastDate = ''
-  box.innerHTML = msgs.map(m => {
+  box.innerHTML = filteredMsgs.map(m => {
     const isAdmin = !m.para_admin && m.de_user_id === user.id || (!m.para_admin && m.destinatario_id === currentPadreId)
     const fromAdmin = m.de_user_id === user.id
     const dt = new Date(m.creado_en)

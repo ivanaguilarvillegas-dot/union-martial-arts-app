@@ -191,7 +191,8 @@
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
       texto: '✍️ ' + (padre?.nombre || 'Un padre') + ' firmó el reglamento de la academia · ' + new Date().toLocaleDateString('es-MX'),
-      para_admin: true
+      para_admin: true,
+      es_automatico: true
     })
     document.getElementById('regForm').style.display = 'none'
     document.getElementById('firmado').style.display = 'flex'

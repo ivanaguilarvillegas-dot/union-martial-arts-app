@@ -83,13 +83,15 @@ if (!padre) {
 async function cargarMensajes() {
   if (!padre) return
   const { data: msgs } = await sb.from('mensajes')
-    .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id')
+    .select('id, texto, creado_en, para_admin, de_user_id, destinatario_id, es_automatico')
     .not('de_user_id', 'is', null)
     .or(`and(para_admin.eq.true,de_user_id.eq.${user.id}),and(para_admin.eq.false,destinatario_id.eq.${padre.id})`)
     .order('creado_en', { ascending: true })
-  function isSystemMessage(text) {
-    if (!text) return false
-    return /(✅ Check-in|❌ Ausencia|\bPago\b|Recibo|Comprobante|📜 Diploma:|\bDiploma\b|\bCita\b|\btorneo\b|\bevento\b|\baviso\b)/i.test(text.toString())
+  function isSystemMessage(m) {
+    if (m.es_automatico === true) return true
+    // regex solo para compatibilidad con mensajes históricos sin es_automatico
+    const text = (m.texto || '').toString()
+    return /(✅ Check-in|❌ Ausencia|pagará|comprobante|solicitud de cita|confirmación de asistencia|🥗 hábito|nutrición completados|firmó el reglamento|evaluación|evento|diploma|cambio de cinta|sesión de meditación|rutina en casa)/i.test(text)
   }
 
   const hideSystem = true // padres ven chat limpio por defecto
@@ -97,7 +99,7 @@ async function cargarMensajes() {
   const box = document.getElementById('messages')
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60
 
-  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null && (!hideSystem || !isSystemMessage(m.texto)))
+  const chatMsgs = (msgs || []).filter(m => m.de_user_id !== null && !isSystemMessage(m))
   if (!chatMsgs.length) {
     box.innerHTML = '<div class="empty-state"><span>💬</span>Escribe tu primer mensaje<br>al instructor.</div>'
     return

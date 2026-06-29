@@ -332,7 +332,8 @@
       await supabase.from('mensajes').insert({
         de_user_id: user.id,
         texto: `${padre?.nombre || 'Un padre'} avisó que pagará $${montoFinal.toLocaleString('es-MX')} en efectivo en la academia.`,
-        para_admin: true
+        para_admin: true,
+        es_automatico: true
       })
       document.getElementById('btn-pagar').innerHTML = '<i data-lucide="check"></i> Aviso enviado al instructor'
       document.getElementById('btn-pagar').disabled = true
@@ -358,7 +359,8 @@
     await supabase.from('mensajes').insert({
       de_user_id: user.id,
       texto: `${padre?.nombre || 'Un padre'} envió comprobante de pago $${montoFinal.toLocaleString('es-MX')} (${metodoPago}). Ver: ${url}`,
-      para_admin: true
+      para_admin: true,
+      es_automatico: true
     })
 
     // Actualizar pago con monto real + comprobante
