@@ -156,6 +156,12 @@
     return raw
   }
 
+  function publicadoPorText(texto, fallbackUuid) {
+    const raw = String(texto || '').trim()
+    if (raw) return raw
+    return publicadoPorLabel(fallbackUuid)
+  }
+
   // Total padres para calcular pendientes
   try {
     const { count } = await supabase.from('padres').select('*', { count:'exact', head:true }).eq('es_admin', false)
@@ -208,7 +214,7 @@
       const pendientes = Math.max(0, totalPadres - lista.length)
       const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
       const pr = a.prioridad || 'informativo'
-      const autor = publicadoPorLabel(a.creado_por)
+      const autor = publicadoPorText(a.publicado_por, a.creado_por)
       return `<div class="aviso-item" data-id="${a.id}">
         <div class="aviso-head">
           <div class="aviso-head-txt">
@@ -281,14 +287,14 @@
 
     let result
     if (editId) {
-      result = await supabase.from('avisos').update({ titulo, mensaje, prioridad, creado_por: publicadoPor }).eq('id', editId)
+      result = await supabase.from('avisos').update({ titulo, mensaje, prioridad, creado_por: user.id, publicado_por: publicadoPor }).eq('id', editId)
       if (result.error && result.error.code === '42703') {
-        result = await supabase.from('avisos').update({ titulo, mensaje, prioridad }).eq('id', editId)
+        result = await supabase.from('avisos').update({ titulo, mensaje, prioridad, creado_por: user.id }).eq('id', editId)
       }
     } else {
-      result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, creado_por: publicadoPor, activo: true })
+      result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, creado_por: user.id, publicado_por: publicadoPor, activo: true })
       if (result.error && result.error.code === '42703') {
-        result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, activo: true })
+        result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, creado_por: user.id, activo: true })
       }
     }
     if (result.error) {
@@ -317,7 +323,7 @@
       document.getElementById('f-titulo').value = a.titulo
       document.getElementById('f-mensaje').value = a.mensaje
       document.querySelector(`input[name="prioridad"][value="${a.prioridad||'informativo'}"]`).checked = true
-      document.getElementById('f-publicado-por').value = publicadoPorLabel(a.creado_por)
+      document.getElementById('f-publicado-por').value = publicadoPorText(a.publicado_por, a.creado_por)
       document.getElementById('modal').classList.add('open')
       lucide.createIcons()
     }
