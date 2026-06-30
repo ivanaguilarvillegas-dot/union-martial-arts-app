@@ -119,25 +119,40 @@
     
     if (!user) { window.location.href = 'index.html'; return }
 
-    // Cargar padre — intenta por user_id primero, luego por correo
+    // Misma selección de padre que Perfil: uma_padre_id -> user_id -> correo.
     let padre = null
-    const { data: r1, error: err1 } = await supabase.from('padres')
-      .select('id, alumno_id, nombre')
-      .eq('user_id', user.id)
-      .limit(1)
-    
-    if (err1) {
-      showErr(err1.message)
-      lucide.createIcons(); return
+    const savedPadreId = localStorage.getItem('uma_padre_id')
+    if (savedPadreId) {
+      const { data: sp, error: errSp } = await supabase.from('padres')
+        .select('id, alumno_id, nombre, correo')
+        .eq('id', savedPadreId)
+        .limit(1)
+      if (errSp) {
+        showErr(errSp.message)
+        lucide.createIcons(); return
+      }
+      if (sp?.[0]) padre = sp[0]
     }
-    if (r1?.[0]?.alumno_id) {
-      padre = r1[0]
-    } else {
+
+    if (!padre) {
+      const { data: r1, error: err1 } = await supabase.from('padres')
+        .select('id, alumno_id, nombre, correo')
+        .eq('user_id', user.id)
+        .limit(1)
+
+      if (err1) {
+        showErr(err1.message)
+        lucide.createIcons(); return
+      }
+      if (r1?.[0]) padre = r1[0]
+    }
+
+    if (!padre) {
       const { data: r2, error: err2 } = await supabase.from('padres')
-        .select('id, alumno_id, nombre')
+        .select('id, alumno_id, nombre, correo')
         .eq('correo', user.email)
         .limit(1)
-      
+
       if (err2) {
         showErr(err2.message)
         lucide.createIcons(); return
@@ -211,43 +226,21 @@
       lucide.createIcons(); return
     }
 
-    // Parsear horario
-    // Soporta: "Lunes·6pm | Miércoles·6pm" o "Lunes 6pm, Miércoles 6pm" o "Lunes - 6pm"
-    const segmentos = al.horario.split(/\s*[|,;]\s*/).map(s => s.trim()).filter(Boolean)
+    // Mostrar exactamente los segmentos guardados para el alumno.
+    const segmentos = al.horario.split('|').map(s => s.trim()).filter(Boolean)
 
     const rows = segmentos.map(seg => {
-      // Separadores: ·, -, :, espacio doble, o primera palabra = día
-      let diaStr = seg, horaStr = ''
-      const m = seg.match(/^(.+?)[\s]*[·\-–]\s*(.+)$/)
-      if (m) {
-        diaStr = m[1].trim()
-        horaStr = m[2].trim()
-      } else {
-        // Intenta dividir por primer espacio si la segunda parte parece hora
-        const parts = seg.split(/\s+/)
-        if (parts.length >= 2 && /\d/.test(parts[parts.length - 1])) {
-          horaStr = parts.pop()
-          diaStr = parts.join(' ')
-        }
-      }
-      return { diaStr, horaStr }
+      const partes = seg.split('·')
+      const diaStr = (partes[0] || seg).trim()
+      const horaStr = partes.length > 1 ? partes.slice(1).join('·').trim() : ''
+      return { raw: seg, diaStr, horaStr }
     })
-
-    // Propagar la hora a segmentos anteriores vacíos si el siguiente segmento contiene hora
-    for (let i = 0; i < rows.length; i++) {
-      const hora = rows[i].horaStr && rows[i].horaStr.trim()
-      if (hora) {
-        for (let j = i - 1; j >= 0 && (!rows[j].horaStr || !rows[j].horaStr.trim()); j--) {
-          rows[j].horaStr = rows[i].horaStr
-        }
-      }
-    }
 
     wrap.innerHTML = `<div class="seg-card">` +
       rows.map(r => `
         <div class="horario-row">
-          <div class="dia-chip">${r.diaStr}</div>
-          <div class="hora-txt">${r.horaStr || '—'}</div>
+          <div class="dia-chip">${r.raw}</div>
+          <div class="hora-txt"></div>
         </div>`).join('') +
       `</div>`
 
@@ -266,6 +259,28 @@
       return { h, min }
     }
 
+    function parseRangoHoras(txt) {
+      const partes = (txt || '').split(/[\-–]/).map(p => p.trim()).filter(Boolean)
+      const inicio = parseHora12h(partes[0] || '')
+      const fin = parseHora12h(partes[1] || '')
+      return { inicio, fin }
+    }
+
+    function inicioDelDia(d) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    }
+
+    function esMismoDia(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+    }
+
+    function fmtHorasMin(minutosTotales) {
+      const mins = Math.max(1, Math.ceil(minutosTotales))
+      const h = Math.floor(mins / 60)
+      const m = mins % 60
+      return `${h} h ${m} min`
+    }
+
     const dias = [
       { n: 'domingo', i: 0 },
       { n: 'lunes', i: 1 },
@@ -277,44 +292,75 @@
     ]
 
     const ahora = new Date()
-    let mejor = null
+    const enCurso = []
+    const proximas = []
 
     for (const r of rows) {
       const diaNormalizado = textoSinAcentos(r.diaStr)
-      const hora = parseHora12h(r.horaStr)
+      const rango = parseRangoHoras(r.horaStr)
       for (const d of dias) {
         if (!diaNormalizado.includes(d.n)) continue
-        const candidato = new Date(ahora)
-        const diff = (d.i - ahora.getDay() + 7) % 7
-        candidato.setDate(ahora.getDate() + diff)
-        candidato.setSeconds(0, 0)
-        candidato.setHours(hora ? hora.h : 23, hora ? hora.min : 59, 0, 0)
-        if (candidato <= ahora) candidato.setDate(candidato.getDate() + 7)
 
-        if (!mejor || candidato < mejor.fecha) {
-          mejor = { fecha: candidato, dia: r.diaStr, hora: r.horaStr, nombreDia: d.n }
+        const inicio = new Date(ahora)
+        const diff = (d.i - ahora.getDay() + 7) % 7
+        inicio.setDate(ahora.getDate() + diff)
+        inicio.setSeconds(0, 0)
+        inicio.setHours(rango.inicio ? rango.inicio.h : 12, rango.inicio ? rango.inicio.min : 0, 0, 0)
+
+        const fin = new Date(inicio)
+        if (rango.fin) {
+          fin.setHours(rango.fin.h, rango.fin.min, 0, 0)
+          if (fin <= inicio) fin.setDate(fin.getDate() + 1)
+        } else {
+          fin.setMinutes(fin.getMinutes() + 60)
         }
+
+        if (ahora >= inicio && ahora < fin) {
+          enCurso.push({ inicio, fin, hora: r.horaStr, nombreDia: d.n })
+          continue
+        }
+
+        let proximoInicio = inicio
+        if (proximoInicio <= ahora) {
+          proximoInicio = new Date(proximoInicio)
+          proximoInicio.setDate(proximoInicio.getDate() + 7)
+        }
+
+        proximas.push({ inicio: proximoInicio, hora: r.horaStr, nombreDia: d.n })
       }
     }
 
-    if (mejor) {
-      const msRestantes = mejor.fecha - ahora
-      const minutosTotales = Math.max(0, Math.floor(msRestantes / 60000))
-      const diasFaltan = Math.floor(minutosTotales / 1440)
-      const horas = Math.floor((minutosTotales % 1440) / 60)
-      const minutos = minutosTotales % 60
-      const esHoy = diasFaltan === 0
-
-      const opcFecha = { day:'numeric', month:'long' }
-      document.getElementById('prox-dia').textContent = esHoy
-        ? 'Hoy'
-        : (mejor.nombreDia.charAt(0).toUpperCase() + mejor.nombreDia.slice(1)) + ' · ' + mejor.fecha.toLocaleDateString('es-MX', opcFecha)
-
-      const conteo = esHoy
-        ? `Faltan ${horas} h ${minutos} min`
-        : `Faltan ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`
-      document.getElementById('prox-hora').textContent = `${conteo}${mejor.hora ? ' · ' + mejor.hora : ''}`
+    if (enCurso.length) {
+      enCurso.sort((a, b) => a.fin - b.fin)
+      const actual = enCurso[0]
+      const minRest = Math.max(1, Math.ceil((actual.fin - ahora) / 60000))
+      document.getElementById('prox-dia').textContent = 'En clase ahora'
+      document.getElementById('prox-hora').innerHTML = `Termina en ${minRest} min${actual.hora ? '<br>' + actual.hora : ''}`
       document.getElementById('proxima-section').style.display = 'block'
+    } else if (proximas.length) {
+      proximas.sort((a, b) => a.inicio - b.inicio)
+      const siguiente = proximas[0]
+
+      const hoy0 = inicioDelDia(ahora)
+      const sig0 = inicioDelDia(siguiente.inicio)
+      const diasDif = Math.round((sig0 - hoy0) / 86400000)
+      const totalMin = Math.max(1, Math.ceil((siguiente.inicio - ahora) / 60000))
+
+      if (esMismoDia(siguiente.inicio, ahora)) {
+        document.getElementById('prox-dia').textContent = 'Hoy'
+        document.getElementById('prox-hora').innerHTML = `Comienza en ${fmtHorasMin(totalMin)}${siguiente.hora ? '<br>' + siguiente.hora : ''}`
+      } else if (diasDif === 1) {
+        document.getElementById('prox-dia').textContent = 'Mañana'
+        document.getElementById('prox-hora').innerHTML = `Comienza en ${fmtHorasMin(totalMin)}${siguiente.hora ? '<br>' + siguiente.hora : ''}`
+      } else {
+        document.getElementById('prox-dia').textContent = siguiente.nombreDia.charAt(0).toUpperCase() + siguiente.nombreDia.slice(1)
+        const restoMin = totalMin - (diasDif * 1440)
+        document.getElementById('prox-hora').innerHTML = `Comienza en ${diasDif} día${diasDif === 1 ? '' : 's'} / ${fmtHorasMin(restoMin)}${siguiente.hora ? '<br>' + siguiente.hora : ''}`
+      }
+
+      document.getElementById('proxima-section').style.display = 'block'
+    } else {
+      document.getElementById('proxima-section').style.display = 'none'
     }
 
     lucide.createIcons()

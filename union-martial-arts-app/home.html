@@ -780,6 +780,28 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     return { h, min }
   }
 
+  function parseRangoHoras(txt) {
+    const partes = (txt || '').split(/[\-–]/).map(p => p.trim()).filter(Boolean)
+    const inicio = parseHora12h(partes[0] || '')
+    const fin = parseHora12h(partes[1] || '')
+    return { inicio, fin }
+  }
+
+  function inicioDelDia(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  }
+
+  function esMismoDia(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+  }
+
+  function fmtHorasMin(minutosTotales) {
+    const mins = Math.max(1, Math.ceil(minutosTotales))
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return `${h} h ${m} min`
+  }
+
   function getSiguienteClase(horario) {
     if (!horario) return null
     const segmentos = horario.split('|').map(s => s.trim()).filter(Boolean)
@@ -796,50 +818,92 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     ]
 
     const ahora = new Date()
-    let mejor = null
+    const enCurso = []
+    const proximas = []
 
     for (const seg of segmentos) {
       const partes = seg.split('·').map(p => p.trim())
       const diaTexto = partes[0] || seg
       const horaTexto = partes[1] || ''
       const diaNormalizado = textoSinAcentos(diaTexto)
-      const hora = parseHora12h(horaTexto)
+      const rango = parseRangoHoras(horaTexto)
 
       for (const d of dias) {
         if (!diaNormalizado.includes(d.n)) continue
-        const candidato = new Date(ahora)
-        const diff = (d.i - ahora.getDay() + 7) % 7
-        candidato.setDate(ahora.getDate() + diff)
-        candidato.setSeconds(0, 0)
-        candidato.setHours(hora ? hora.h : 23, hora ? hora.min : 59, 0, 0)
-        if (candidato <= ahora) candidato.setDate(candidato.getDate() + 7)
 
-        if (!mejor || candidato < mejor.fecha) {
-          mejor = {
-            fecha: candidato,
-            detalle: seg,
-            diaTexto,
-            horaTexto,
-            nombreDia: d.n
-          }
+        const inicio = new Date(ahora)
+        const diff = (d.i - ahora.getDay() + 7) % 7
+        inicio.setDate(ahora.getDate() + diff)
+        inicio.setSeconds(0, 0)
+        inicio.setHours(rango.inicio ? rango.inicio.h : 12, rango.inicio ? rango.inicio.min : 0, 0, 0)
+
+        const fin = new Date(inicio)
+        if (rango.fin) {
+          fin.setHours(rango.fin.h, rango.fin.min, 0, 0)
+          if (fin <= inicio) fin.setDate(fin.getDate() + 1)
+        } else {
+          fin.setMinutes(fin.getMinutes() + 60)
         }
+
+        if (ahora >= inicio && ahora < fin) {
+          enCurso.push({ inicio, fin, horaTexto, nombreDia: d.n })
+          continue
+        }
+
+        let proximoInicio = inicio
+        if (proximoInicio <= ahora) {
+          proximoInicio = new Date(proximoInicio)
+          proximoInicio.setDate(proximoInicio.getDate() + 7)
+        }
+        proximas.push({ inicio: proximoInicio, horaTexto, nombreDia: d.n })
       }
     }
 
-    if (!mejor) return null
+    if (enCurso.length) {
+      enCurso.sort((a, b) => a.fin - b.fin)
+      const actual = enCurso[0]
+      const minRest = Math.max(1, Math.ceil((actual.fin - ahora) / 60000))
+      return {
+        estado: 'en-curso',
+        titulo: 'En clase ahora',
+        subtitulo: `Termina en ${minRest} min`,
+        horaTexto: actual.horaTexto || ''
+      }
+    }
 
-    const msRestantes = mejor.fecha - ahora
-    const minutosTotales = Math.max(0, Math.floor(msRestantes / 60000))
-    const diasFaltan = Math.floor(minutosTotales / 1440)
-    const horas = Math.floor((minutosTotales % 1440) / 60)
-    const minutos = minutosTotales % 60
-    const esHoy = diasFaltan === 0
+    if (!proximas.length) return null
+    proximas.sort((a, b) => a.inicio - b.inicio)
+    const siguiente = proximas[0]
 
+    const totalMin = Math.max(1, Math.ceil((siguiente.inicio - ahora) / 60000))
+    const hoy0 = inicioDelDia(ahora)
+    const sig0 = inicioDelDia(siguiente.inicio)
+    const diasDif = Math.round((sig0 - hoy0) / 86400000)
+
+    if (esMismoDia(siguiente.inicio, ahora)) {
+      return {
+        estado: 'hoy',
+        titulo: 'Hoy',
+        subtitulo: `Comienza en ${fmtHorasMin(totalMin)}`,
+        horaTexto: siguiente.horaTexto || ''
+      }
+    }
+
+    if (diasDif === 1) {
+      return {
+        estado: 'manana',
+        titulo: 'Mañana',
+        subtitulo: `Comienza en ${fmtHorasMin(totalMin)}`,
+        horaTexto: siguiente.horaTexto || ''
+      }
+    }
+
+    const restoMin = totalMin - (diasDif * 1440)
     return {
-      ...mejor,
-      esHoy,
-      diasFaltan,
-      contador: esHoy ? `Faltan ${horas} h ${minutos} min` : `Faltan ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`
+      estado: 'otro-dia',
+      titulo: siguiente.nombreDia.charAt(0).toUpperCase() + siguiente.nombreDia.slice(1),
+      subtitulo: `Comienza en ${diasDif} día${diasDif === 1 ? '' : 's'} / ${fmtHorasMin(restoMin)}`,
+      horaTexto: siguiente.horaTexto || ''
     }
   }
 
@@ -904,9 +968,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
       return
     }
 
-    claseDia.textContent = pc.esHoy ? 'Hoy' : (pc.nombreDia.charAt(0).toUpperCase() + pc.nombreDia.slice(1))
+    claseDia.textContent = pc.titulo || '—'
+    claseDias.textContent = pc.subtitulo || ''
     claseHora.textContent = pc.horaTexto || ''
-    claseDias.textContent = pc.esHoy ? pc.contador : `${pc.contador} · ${pc.diaTexto}`
   }
 
   document.getElementById('btn-logout').addEventListener('click', async (e) => {
