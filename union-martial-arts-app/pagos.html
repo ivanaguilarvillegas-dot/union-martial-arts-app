@@ -211,8 +211,17 @@
 
   function estadoPago(pago) {
     if (!pago) return 'pendiente'
-    if (pago.estado === 'pagado') return 'aprobado'
-    if (pago.estado === 'rechazado') return 'rechazado'
+    const estadoRaw = String(pago.estado || '').toLowerCase().trim()
+    if (estadoRaw === 'pagado' || estadoRaw === 'aprobado') return 'aprobado'
+    if (estadoRaw === 'rechazado') return 'rechazado'
+    if ([
+      'por_revisar',
+      'por revisar',
+      'pendiente_revision',
+      'pendiente de revision',
+      'pendiente_aprobacion',
+      'pendiente de aprobacion'
+    ].includes(estadoRaw)) return 'por_revisar'
     const ev = eventosPago[pago.id]
     if (ev?.accion === 'aprobado') return 'aprobado'
     if (ev?.accion === 'rechazado') return 'rechazado'
@@ -230,6 +239,12 @@
 
   function reviewStatus(pago) {
     return estadoForzado || estadoPago(pago)
+  }
+
+  function actualizarTotalesMetodo() {
+    document.getElementById('total-efectivo').textContent = fmt(montoBase)
+    document.getElementById('total-transferencia').textContent = fmt(montoBase)
+    document.getElementById('total-mp').textContent = fmt(montoBase + montoBase * COM)
   }
 
   function restaurarVistaPendiente() {
@@ -256,6 +271,7 @@
     seguimiento.style.display = 'none'
     seguimiento.innerHTML = ''
     setMetodoInputsDisabled(false)
+    actualizarTotalesMetodo()
   }
 
   function setMetodoInputsDisabled(disabled) {
@@ -473,7 +489,7 @@
     const estadoEl = document.getElementById('pago-estado')
     if (status === 'aprobado') {
       estadoEl.style.color = 'var(--green-600)'
-      estadoEl.innerHTML = '<i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago aprobado'
+      estadoEl.innerHTML = '<i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago pagado'
       document.getElementById('pago-opciones').style.display = 'block'
       setMetodoInputsDisabled(true)
       document.getElementById('comprobante-area').style.display = 'none'
@@ -504,9 +520,7 @@
       pintarSeguimiento(pagoActual)
     }
 
-    document.getElementById('total-efectivo').textContent = fmt(montoBase)
-    document.getElementById('total-transferencia').textContent = fmt(montoBase)
-    document.getElementById('total-mp').textContent = fmt(montoBase + montoBase * COM)
+    actualizarTotalesMetodo()
 
     if (metodoPago) {
       const selected = document.querySelector(`input[name="metodo"][value="${metodoPago}"]`)
@@ -597,27 +611,56 @@
     }
 
     if (metodoPago === 'efectivo') {
-      await supabase.from('pagos').update({ forma_pago: 'efectivo' }).eq('id', pagoId)
-      await enviarEventoAdmin('aviso_efectivo', {
+      const { error: errEfectivo } = await supabase.from('pagos').update({
+        forma_pago: 'efectivo',
+        estado: 'pendiente_aprobacion',
+        comprobante_url: null
+      }).eq('id', pagoId)
+      if (errEfectivo) {
+        alert('No se pudo registrar el pago en efectivo: ' + errEfectivo.message)
+        return
+      }
+
+      const evEfectivo = await enviarEventoAdmin('aviso_efectivo', {
         metodo: 'efectivo',
         texto: `${padre?.nombre || 'Un padre'} avisó que pagará ${fmt(montoBase)} en efectivo en la academia.`
       })
+      if (!evEfectivo.ok) {
+        alert('Se guardó el pago, pero no se pudo avisar al instructor. Intenta nuevamente.')
+        return
+      }
+
       estadoForzado = 'por_revisar'
       if (pagoActual) pagoActual.forma_pago = 'efectivo'
       document.getElementById('pago-estado').style.color = '#d97706'
       document.getElementById('pago-estado').innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
       document.getElementById('pago-seguimiento').style.display = 'block'
       document.getElementById('pago-seguimiento').innerHTML = 'Aviso enviado / Por revisar'
-      document.getElementById('comp-ok').style.display = 'none'
+      document.getElementById('comp-ok').style.display = 'flex'
+      document.getElementById('comp-ok').innerHTML = '<i data-lucide="check-circle"></i> Pago enviado a revisión. El instructor confirmará tu pago pronto.'
+      lucide.createIcons()
       return
     }
 
     if (metodoPago === 'mercadopago') {
-      await supabase.from('pagos').update({ forma_pago: 'mercadopago' }).eq('id', pagoId)
-      await enviarEventoAdmin('mercadopago_iniciado', {
+      const { error: errMp } = await supabase.from('pagos').update({
+        forma_pago: 'mercadopago',
+        estado: 'pendiente_revision'
+      }).eq('id', pagoId)
+      if (errMp) {
+        alert('No se pudo registrar el inicio de Mercado Pago: ' + errMp.message)
+        return
+      }
+
+      const evMp = await enviarEventoAdmin('mercadopago_iniciado', {
         metodo: 'mercadopago',
         texto: `${padre?.nombre || 'Un padre'} inició pago por Mercado Pago por ${fmt(montoBase)}.`
       })
+      if (!evMp.ok) {
+        alert('Se registró el método, pero no se pudo avisar al instructor.')
+        return
+      }
+
       alert('Mercado Pago todavía no está configurado para cobrar. Por ahora usa transferencia o efectivo.')
       await cargarPago()
     }
@@ -637,12 +680,25 @@
     if (error) { alert('Error al subir: ' + error.message); return }
     const url = supabase.storage.from('media').getPublicUrl('comprobantes/' + nombre).data.publicUrl
 
-    await supabase.from('pagos').update({ forma_pago: 'transferencia', comprobante_url: url }).eq('id', pagoId)
-    await enviarEventoAdmin('envio_comprobante', {
+    const { error: errPagoComp } = await supabase.from('pagos').update({
+      forma_pago: 'transferencia',
+      comprobante_url: url,
+      estado: 'pendiente_revision'
+    }).eq('id', pagoId)
+    if (errPagoComp) {
+      alert('Se subió el archivo, pero no se pudo guardar el pago: ' + errPagoComp.message)
+      return
+    }
+
+    const evComp = await enviarEventoAdmin('envio_comprobante', {
       metodo: 'transferencia',
       comp: url,
       texto: `${padre?.nombre || 'Un padre'} envió comprobante de transferencia por ${fmt(montoBase)}. Ver: ${url}`
     })
+    if (!evComp.ok) {
+      alert('Se guardó el comprobante, pero no se pudo avisar al instructor. Intenta de nuevo.')
+      return
+    }
 
     estadoForzado = 'por_revisar'
     if (pagoActual) {

@@ -129,8 +129,17 @@ function etiquetaMetodo(metodo) {
 
 function estadoPago(p) {
   if (!p) return 'pendiente'
-  if (p.estado === 'pagado') return 'aprobado'
-  if (p.estado === 'rechazado') return 'rechazado'
+  const estadoRaw = String(p.estado || '').toLowerCase().trim()
+  if (estadoRaw === 'pagado' || estadoRaw === 'aprobado') return 'aprobado'
+  if (estadoRaw === 'rechazado') return 'rechazado'
+  if ([
+    'por_revisar',
+    'por revisar',
+    'pendiente_revision',
+    'pendiente de revision',
+    'pendiente_aprobacion',
+    'pendiente de aprobacion'
+  ].includes(estadoRaw)) return 'por_revisar'
   const ev = pagoEventos[p.id]
   if (ev?.accion === 'aprobado') return 'aprobado'
   if (ev?.accion === 'rechazado') return 'rechazado'
@@ -232,7 +241,7 @@ function render() {
   const filtro = tabActual === 'revisar'
     ? pagos.filter(p => estadoRevision(p) === 'por_revisar')
     : tabActual === 'pendientes'
-    ? pagos.filter(p => ['pendiente', 'rechazado'].includes(estadoRevision(p)))
+    ? pagos.filter(p => ['pendiente', 'rechazado', 'por_revisar'].includes(estadoRevision(p)))
     : pagos.filter(p => estadoRevision(p) === 'aprobado')
 
   const body = document.getElementById('pagos-body')
@@ -259,12 +268,15 @@ function render() {
     const ok = rev === 'aprobado'
     const tieneComp = !!p.comprobante_url
     const metodo = p.forma_pago || pagoEventos[p.id]?.metodo || '—'
+    const metodoNorm = String(metodo || '').toLowerCase()
+    const esTransferencia = metodoNorm === 'transferencia'
     const esImagen = tieneComp && /\.(jpg|jpeg|png|gif|webp)$/i.test(p.comprobante_url)
     const fecha = p.fecha_pago || String(p.creado_en || '').slice(0,10) || '—'
     const estadoTxt = textoEstado(rev)
     const badgeBg = rev === 'aprobado' ? 'var(--green-bg)' : rev === 'rechazado' ? 'var(--red-bg)' : rev === 'por_revisar' ? '#fef3c7' : 'var(--soft)'
     const badgeTx = rev === 'aprobado' ? 'var(--green-text)' : rev === 'rechazado' ? 'var(--red-text)' : rev === 'por_revisar' ? '#92400e' : 'var(--muted)'
     const ev = pagoEventos[p.id]
+    const puedeAprobar = !ok && rev === 'por_revisar' && (!esTransferencia || tieneComp)
     const avisoTxt = avisoPadreEstado(p)
 
     return `<div class="pago-card ${tabActual === 'revisar' ? 'highlight' : ''}">
@@ -284,13 +296,14 @@ function render() {
         <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;background:${badgeBg};color:${badgeTx};font-size:11px;font-weight:700;">${estadoTxt}</span>
       </div>
       ${ev?.accion === 'marcar_recibido' ? `<div style="font-size:11px;color:#92400e;margin-bottom:8px;">Efectivo marcado como recibido por admin. Falta aprobación final.</div>` : ''}
+      ${esTransferencia && !tieneComp ? `<div style="font-size:11px;color:#b91c1c;margin-bottom:8px;">Falta comprobante de transferencia. No se puede aprobar sin revisar el archivo.</div>` : ''}
       ${ev?.accion === 'rechazado' ? `<div style="font-size:11px;color:#b91c1c;margin-bottom:8px;">Pago rechazado. El padre puede reenviar aviso o comprobante.</div>` : ''}
       ${tieneComp && esImagen ? `<img src="${p.comprobante_url}" style="width:100%;border-radius:10px;max-height:120px;object-fit:contain;background:#f4f6fb;margin-bottom:8px;" onerror="this.style.display='none'" />` : ''}
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${tieneComp ? `<a href="${p.comprobante_url}" target="_blank" class="btn secondary sm"><i data-lucide="file-image" style="width:12px;height:12px"></i> Ver comprobante</a>` : ''}
         ${!ok && rev === 'por_revisar' ? `<button class="btn secondary sm" data-recibido="${p.id}"><i data-lucide="wallet" style="width:12px;height:12px"></i> Marcar recibido</button>` : ''}
-        ${!ok && rev !== 'pendiente' ? `<button class="btn secondary sm" data-aprobar="${p.id}"><i data-lucide="check" style="width:12px;height:12px"></i> Aprobar</button>` : ''}
-        ${!ok && rev !== 'pendiente' ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;" data-rechazar="${p.id}">Rechazar</button>` : ''}
+        ${puedeAprobar ? `<button class="btn secondary sm" data-aprobar="${p.id}"><i data-lucide="check" style="width:12px;height:12px"></i> Aprobar</button>` : ''}
+        ${!ok && rev === 'por_revisar' ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;" data-rechazar="${p.id}">Rechazar</button>` : ''}
         ${ok ? `<a href="recibo.html?id=${p.id}" target="_blank" class="btn secondary sm"><i data-lucide="file-text" style="width:12px;height:12px"></i> Ver recibo</a>` : ''}
         ${ok ? `<button class="btn secondary sm" data-nuevo-pago="${p.alumno_id}" data-nuevo-nombre="${nombre}"><i data-lucide="plus" style="width:12px;height:12px"></i> Nuevo cargo</button>` : ''}
         ${ok ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;" data-desmarcar="${p.id}">Desmarcar</button>` : ''}
@@ -354,7 +367,7 @@ document.getElementById('pagos-body').addEventListener('click', async e => {
       destinatario_id: p._padre?.id || null,
       texto: `${token} · El pago fue rechazado. Sube un nuevo comprobante o selecciona otro método.`
     })
-    await supabase.from('pagos').update({ estado: 'pendiente' }).eq('id', p.id)
+    await supabase.from('pagos').update({ estado: 'rechazado' }).eq('id', p.id)
     await cargar()
     return
   }
@@ -389,6 +402,10 @@ document.getElementById('modal-confirmar').addEventListener('click', async () =>
   const monto = parseInt(document.getElementById('modal-monto').value) || 0
   const forma = document.getElementById('modal-forma').value
   if (monto < 1) { alert('Ingresa el monto recibido'); return }
+  if (forma === 'transferencia' && !pagoSel.comprobante_url) {
+    alert('Este pago es por transferencia y requiere comprobante antes de aprobar.')
+    return
+  }
 
   const btn = document.getElementById('modal-confirmar')
   btn.disabled = true; btn.textContent = 'Guardando…'
