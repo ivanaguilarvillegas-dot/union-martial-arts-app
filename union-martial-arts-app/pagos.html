@@ -229,9 +229,19 @@
 
   async function asegurarPagoEditable() {
     if (!alumnoId) return { ok: false, error: { message: 'No hay alumno vinculado.' } }
-    const statusActual = reviewStatus(pagoActual)
-    if (pagoActual && statusActual !== 'aprobado') {
-      return { ok: true, id: pagoActual.id }
+    if (pagoActual?.id) {
+      const { data: pagoRefrescado } = await supabase
+        .from('pagos')
+        .select('id, estado')
+        .eq('id', pagoActual.id)
+        .maybeSingle()
+
+      const estadoDb = String(pagoRefrescado?.estado || '').toLowerCase().trim()
+      const aprobadoEnDb = estadoDb === 'pagado' || estadoDb === 'aprobado'
+      const aprobadoEnLocal = reviewStatus(pagoActual) === 'aprobado'
+      if (!aprobadoEnDb && !aprobadoEnLocal) {
+        return { ok: true, id: pagoActual.id }
+      }
     }
 
     const payload = payloadPagoSolicitud({ estado: 'pendiente', metodo: null, comprobanteUrl: null })
