@@ -167,6 +167,7 @@
   let pagoActual = null
   let pagosAlumno = []
   let eventosPago = {}
+  let estadoForzado = null
 
   function fmt(n) { return '$' + Math.round(Number(n || 0)).toLocaleString('es-MX') }
 
@@ -228,7 +229,35 @@
   }
 
   function reviewStatus(pago) {
-    return estadoPago(pago)
+    return estadoForzado || estadoPago(pago)
+  }
+
+  function restaurarVistaPendiente() {
+    estadoForzado = 'por_revisar'
+    const btn = document.getElementById('btn-pagar')
+    btn.dataset.action = ''
+    btn.dataset.reciboHref = ''
+    const estadoEl = document.getElementById('pago-estado')
+    estadoEl.style.color = '#d97706'
+    estadoEl.innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
+    document.getElementById('pago-opciones').style.display = 'block'
+    document.getElementById('btn-recibo').style.display = 'none'
+    document.getElementById('comp-ok').style.display = 'none'
+    document.getElementById('pago-seguimiento').style.display = 'none'
+    setMetodoInputsDisabled(false)
+  }
+
+  function setMetodoInputsDisabled(disabled) {
+    document.querySelectorAll('input[name="metodo"]').forEach(radio => { radio.disabled = disabled })
+  }
+
+  function setMainAction(mode, pagoIdValue, label) {
+    const btn = document.getElementById('btn-pagar')
+    btn.dataset.action = mode
+    btn.dataset.reciboHref = pagoIdValue ? `recibo.html?id=${pagoIdValue}` : ''
+    btn.style.display = 'block'
+    btn.disabled = false
+    btn.innerHTML = label
   }
 
   async function cargarEventosPago() {
@@ -296,12 +325,17 @@
     const metodo = pago.forma_pago || ev?.metodo || '—'
     const tieneAviso = ['aviso_efectivo', 'mercadopago_iniciado', 'marcar_recibido', 'aprobado'].includes(ev?.accion) || !!pago.forma_pago
     const tieneComp = !!(pago.comprobante_url || ev?.comp || ev?.accion === 'envio_comprobante')
-    const lineas = [
-      `Método elegido: ${etiquetaMetodo(metodo)}`,
-      `Aviso enviado: ${tieneAviso ? 'sí' : 'no'}`,
-      `Comprobante subido: ${tieneComp ? 'sí' : 'no'}`,
-      `Estado: ${textoEstadoPago(status)}`
-    ]
+    const lineas = []
+    if (metodo === 'efectivo') {
+      lineas.push(tieneAviso ? 'Aviso enviado / Por revisar' : 'Avisar al instructor')
+    } else if (metodo === 'transferencia') {
+      lineas.push(tieneComp ? 'Comprobante enviado / Por revisar' : 'Subir comprobante')
+    } else if (metodo === 'mercadopago') {
+      lineas.push('Mercado Pago / Por revisar')
+    } else {
+      lineas.push(`Método elegido: ${etiquetaMetodo(metodo)}`)
+    }
+    lineas.push(`Estado: ${textoEstadoPago(status)}`)
     box.style.display = 'block'
     box.innerHTML = lineas.join(' · ')
   }
@@ -309,8 +343,13 @@
   function pintarAprobado(pago) {
     const box = document.getElementById('pago-seguimiento')
     if (!pago) { box.style.display = 'none'; box.innerHTML = ''; return }
-    box.style.display = 'none'
-    box.innerHTML = ''
+    const ev = eventosPago[pago.id]
+    const metodo = etiquetaMetodo(pago.forma_pago || ev?.metodo || '—')
+    const fecha = pago.fecha_pago
+      ? new Date(pago.fecha_pago + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+      : '—'
+    box.style.display = 'block'
+    box.innerHTML = `Método elegido: ${metodo} · Fecha: ${fecha}`
   }
 
   function actualizarDesglose(metodo) {
@@ -326,16 +365,24 @@
     document.getElementById('desglose').style.display = 'block'
 
     const btn = document.getElementById('btn-pagar')
+    if (btn.dataset.action === 'recibo') {
+      window.location.href = btn.dataset.reciboHref || ('recibo.html?id=' + pagoId)
+      return
+    }
     btn.style.display = 'block'
     btn.disabled = false
-    document.getElementById('btn-enviar-comp').style.display = 'none'
+    const btnComp = document.getElementById('btn-enviar-comp')
+    btnComp.style.display = 'none'
+    btnComp.disabled = false
 
     if (metodo === 'efectivo') {
-      btn.innerHTML = '<i data-lucide="banknote"></i> Avisar que pagaré en efectivo'
+      btn.innerHTML = '<i data-lucide="banknote"></i> Avisar al instructor'
       document.getElementById('comprobante-area').style.display = 'none'
     } else if (metodo === 'transferencia') {
       btn.style.display = 'none'
       document.getElementById('comprobante-area').style.display = 'block'
+      btnComp.style.display = 'block'
+      btnComp.innerHTML = '<i data-lucide="upload"></i> Subir comprobante'
     } else if (metodo === 'mercadopago') {
       btn.innerHTML = '<i data-lucide="credit-card"></i> Pagar ' + fmt(total) + ' con Mercado Pago'
       document.getElementById('comprobante-area').style.display = 'none'
@@ -372,6 +419,7 @@
   }
 
   async function cargarPago() {
+    estadoForzado = null
     if (!alumnoId) {
       document.getElementById('pago-concepto').textContent = 'Sin alumno vinculado'
       document.getElementById('pago-monto').innerHTML = '$— <span style="font-size:15px;color:var(--muted);">MXN</span>'
@@ -415,26 +463,32 @@
     if (status === 'aprobado') {
       estadoEl.style.color = 'var(--green-600)'
       estadoEl.innerHTML = '<i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago aprobado'
-      document.getElementById('pago-opciones').style.display = 'none'
-      document.getElementById('btn-recibo').href = 'recibo.html?id=' + pagoActual.id
-      document.getElementById('btn-recibo').style.display = 'flex'
+      document.getElementById('pago-opciones').style.display = 'block'
+      setMetodoInputsDisabled(true)
+      document.getElementById('comprobante-area').style.display = 'none'
+      document.getElementById('comp-ok').style.display = 'none'
+      setMainAction('recibo', pagoActual.id, '<i data-lucide="file-text"></i> Ver mi recibo de pago')
+      document.getElementById('btn-recibo').style.display = 'none'
       pintarAprobado(pagoActual)
     } else if (status === 'rechazado') {
       estadoEl.style.color = 'var(--red-600)'
       estadoEl.innerHTML = '<i data-lucide="x-circle" style="width:15px;height:15px"></i> Pago rechazado'
       document.getElementById('pago-opciones').style.display = 'block'
+      setMetodoInputsDisabled(false)
       document.getElementById('btn-recibo').style.display = 'none'
       document.getElementById('pago-seguimiento').style.display = 'none'
     } else if (status === 'por_revisar') {
       estadoEl.style.color = '#d97706'
       estadoEl.innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
       document.getElementById('pago-opciones').style.display = 'block'
+      setMetodoInputsDisabled(false)
       document.getElementById('btn-recibo').style.display = 'none'
       pintarSeguimiento(pagoActual)
     } else {
       estadoEl.style.color = 'var(--red-600)'
       estadoEl.innerHTML = '<i data-lucide="alert-circle" style="width:15px;height:15px"></i> Pago pendiente'
       document.getElementById('pago-opciones').style.display = 'block'
+      setMetodoInputsDisabled(false)
       document.getElementById('btn-recibo').style.display = 'none'
       pintarSeguimiento(pagoActual)
     }
@@ -445,7 +499,10 @@
 
     if (metodoPago) {
       const selected = document.querySelector(`input[name="metodo"][value="${metodoPago}"]`)
-      if (selected) { selected.checked = true; actualizarDesglose(metodoPago) }
+      if (selected) {
+        selected.checked = true
+        if (status !== 'aprobado') actualizarDesglose(metodoPago)
+      }
     }
 
     const ev = eventosPago[pagoId]
@@ -495,6 +552,7 @@
       document.getElementById('pago-concepto').textContent = p.label
       document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
       document.getElementById('pago-card').scrollIntoView({ behavior: 'smooth' })
+      restaurarVistaPendiente()
       if (metodoPago) actualizarDesglose(metodoPago)
     }
     lucide.createIcons()
@@ -507,6 +565,7 @@
     document.getElementById('pago-concepto').textContent = 'Pago personalizado — $' + val.toLocaleString('es-MX')
     document.getElementById('pago-monto').innerHTML = `${fmt(val)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
     document.getElementById('otra-cantidad-card').style.display = 'none'
+    restaurarVistaPendiente()
     if (metodoPago) actualizarDesglose(metodoPago)
   })
 
@@ -518,7 +577,6 @@
     const f = e.target.files?.[0]
     if (!f) return
     document.getElementById('comp-label').textContent = 'Archivo: ' + f.name
-    document.getElementById('btn-enviar-comp').style.display = 'block'
   })
 
   document.getElementById('btn-pagar').addEventListener('click', async () => {
@@ -535,7 +593,13 @@
         metodo: 'efectivo',
         texto: `${padre?.nombre || 'Un padre'} avisó que pagará ${fmt(montoBase)} en efectivo en la academia.`
       })
-      await cargarPago()
+      estadoForzado = 'por_revisar'
+      if (pagoActual) pagoActual.forma_pago = 'efectivo'
+      document.getElementById('pago-estado').style.color = '#d97706'
+      document.getElementById('pago-estado').innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
+      document.getElementById('pago-seguimiento').style.display = 'block'
+      document.getElementById('pago-seguimiento').innerHTML = 'Aviso enviado / Por revisar'
+      document.getElementById('comp-ok').style.display = 'none'
       return
     }
 
@@ -571,9 +635,17 @@
       texto: `${padre?.nombre || 'Un padre'} envió comprobante de transferencia por ${fmt(montoBase)}. Ver: ${url}`
     })
 
+    estadoForzado = 'por_revisar'
+    if (pagoActual) {
+      pagoActual.forma_pago = 'transferencia'
+      pagoActual.comprobante_url = url
+    }
+    document.getElementById('pago-estado').style.color = '#d97706'
+    document.getElementById('pago-estado').innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
+    document.getElementById('pago-seguimiento').style.display = 'block'
+    document.getElementById('pago-seguimiento').innerHTML = 'Comprobante enviado / Por revisar'
     document.getElementById('comp-ok').style.display = 'flex'
-    document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto. <a href="${url}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante</a>`
-    await cargarPago()
+    document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado / Por revisar. <a href="${url}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante</a>`
   })
 
   await cargarPago()
