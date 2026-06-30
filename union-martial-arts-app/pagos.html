@@ -233,15 +233,23 @@
   }
 
   function restaurarVistaPendiente() {
-    estadoForzado = 'por_revisar'
+    estadoForzado = 'pendiente'
+    metodoPago = ''
+    document.querySelectorAll('input[name="metodo"]').forEach(r => { r.checked = false })
     const btn = document.getElementById('btn-pagar')
     btn.dataset.action = ''
     btn.dataset.reciboHref = ''
+    btn.style.display = 'block'
+    btn.disabled = true
+    btn.innerHTML = '<i data-lucide="credit-card"></i> Selecciona una forma de pago'
     const estadoEl = document.getElementById('pago-estado')
-    estadoEl.style.color = '#d97706'
-    estadoEl.innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
+    estadoEl.style.color = 'var(--red-600)'
+    estadoEl.innerHTML = '<i data-lucide="alert-circle" style="width:15px;height:15px"></i> Pago pendiente'
     document.getElementById('pago-opciones').style.display = 'block'
     document.getElementById('btn-recibo').style.display = 'none'
+    document.getElementById('desglose').style.display = 'none'
+    document.getElementById('comprobante-area').style.display = 'none'
+    document.getElementById('btn-enviar-comp').style.display = 'none'
     document.getElementById('comp-ok').style.display = 'none'
     document.getElementById('comp-ok').innerHTML = '<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto.'
     const seguimiento = document.getElementById('pago-seguimiento')
@@ -556,7 +564,6 @@
       document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
       document.getElementById('pago-card').scrollIntoView({ behavior: 'smooth' })
       restaurarVistaPendiente()
-      if (metodoPago) actualizarDesglose(metodoPago)
     }
     lucide.createIcons()
   })
@@ -569,7 +576,6 @@
     document.getElementById('pago-monto').innerHTML = `${fmt(val)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
     document.getElementById('otra-cantidad-card').style.display = 'none'
     restaurarVistaPendiente()
-    if (metodoPago) actualizarDesglose(metodoPago)
   })
 
   document.querySelectorAll('input[name="metodo"]').forEach(radio => {
