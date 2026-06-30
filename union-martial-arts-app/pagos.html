@@ -32,6 +32,7 @@
       <div style="display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-bottom:14px;font-weight:600;" id="pago-estado">
         <i data-lucide="loader" style="width:15px;height:15px"></i> Cargando...
       </div>
+      <div id="pago-seguimiento" style="display:none;margin:-4px 0 12px;font-size:12px;color:var(--muted);"></div>
 
       <!-- Opciones de pago (solo si hay pago pendiente) -->
       <div id="pago-opciones" style="display:none;">
@@ -126,7 +127,7 @@
       </div>
     </div>
 
-    <div class="label">Historial de pagos</div>
+    <div class="label">Historial de pagos aprobados</div>
     <div class="stack-8" id="hist"></div>
   </div>
   <nav class="bottomnav">
@@ -145,76 +146,163 @@
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) { window.location.href = 'index.html' }
+  if (!user) {
+    window.location.href = 'index.html'
+    return
+  }
 
-  const { data: padreRows } = await supabase.from('padres').select('alumno_id, nombre').eq('user_id', user.id).limit(1)
+  const { data: padreRows } = await supabase
+    .from('padres')
+    .select('id, alumno_id, nombre')
+    .eq('user_id', user.id)
+    .limit(1)
   const padre = padreRows?.[0] || null
+  const padreId = padre?.id
   const alumnoId = padre?.alumno_id
 
+  const COM = 0.035
   let montoBase = 0
   let pagoId = null
   let metodoPago = ''
+  let pagoActual = null
+  let pagosAlumno = []
+  let eventosPago = {}
 
-  // Cargar planes/precios desde configuracion
-  const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
-    .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra'])
-  const cfg = {}; (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor })
+  function fmt(n) { return '$' + Math.round(Number(n || 0)).toLocaleString('es-MX') }
 
   function extraerMonto(str) {
     const m = (str || '').match(/[\d,]+/)
     return m ? parseInt(m[0].replace(/,/g,'')) : 0
   }
 
-  const planes = [
-    { label: 'Inscripción', monto: extraerMonto(cfg.precio_inscripcion || '500'), ic: 'user-plus' },
-    { label: 'Mensualidad Básico', monto: extraerMonto(cfg.precio_mensual_basico || '1550'), ic: 'star' },
-    { label: 'Anual UNION', monto: extraerMonto(cfg.precio_anual || '12500'), ic: 'calendar' },
-    { label: 'Club Cinta Negra', monto: extraerMonto(cfg.precio_cinta_negra || '9950'), ic: 'crown' },
-    { label: 'Otra cantidad', monto: 0, ic: 'edit-3', otra: true },
-  ]
-
-  document.getElementById('planes-pago').innerHTML = planes.map((p, i) => `
-    <button class="row" data-plan="${i}" style="width:100%;background:none;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;text-align:left;padding:0;">
-      <span class="ic blue"><i data-lucide="${p.ic}"></i></span>
-      <span class="grow"><span class="t">${p.label}</span>${p.otra ? '' : '<span class="s">$' + p.monto.toLocaleString('es-MX') + ' MXN</span>'}</span>
-      <span class="trail"><i data-lucide="chevron-right"></i></span>
-    </button>`).join('')
-  lucide.createIcons()
-
-  function seleccionarMonto(monto, concepto) {
-    montoBase = monto
-    document.getElementById('pago-concepto').textContent = concepto
-    document.getElementById('pago-monto').innerHTML = fmt(monto) + ' <span style="font-size:15px;color:var(--muted);">MXN</span>'
-    document.getElementById('pago-opciones').style.display = 'block'
-    document.getElementById('total-efectivo').textContent = fmt(monto)
-    document.getElementById('total-transferencia').textContent = fmt(monto)
-    document.getElementById('total-mp').textContent = fmt(monto + monto * 0.035)
-    document.getElementById('pago-card').scrollIntoView({ behavior: 'smooth' })
+  function mkPayToken(payload = {}) {
+    const base = {
+      pago: payload.pago || '',
+      alumno: payload.alumno || '',
+      accion: payload.accion || '',
+      metodo: payload.metodo || '',
+      comp: payload.comp || '',
+      ts: new Date().toISOString()
+    }
+    return '[[PAY]] ' + Object.entries(base)
+      .map(([k, v]) => `${k}=${String(v).replace(/;/g, ',')}`)
+      .join(';')
   }
 
-  document.getElementById('planes-pago').addEventListener('click', e => {
-    const btn = e.target.closest('[data-plan]'); if (!btn) return
-    const p = planes[parseInt(btn.dataset.plan)]
-    if (p.otra) {
-      document.getElementById('otra-cantidad-card').style.display = 'block'
-      document.getElementById('input-otra').focus()
-    } else {
-      document.getElementById('otra-cantidad-card').style.display = 'none'
-      seleccionarMonto(p.monto, p.label)
-    }
-    lucide.createIcons()
-  })
+  function parsePayToken(text) {
+    if (!String(text || '').startsWith('[[PAY]]')) return null
+    const raw = String(text).replace('[[PAY]]', '').trim()
+    const out = {}
+    raw.split(';').forEach(pair => {
+      const i = pair.indexOf('=')
+      if (i > 0) out[pair.slice(0, i).trim()] = pair.slice(i + 1).trim()
+    })
+    return out.pago ? out : null
+  }
 
-  document.getElementById('btn-otra').addEventListener('click', () => {
-    const val = parseInt(document.getElementById('input-otra').value) || 0
-    if (val < 1) { alert('Ingresa una cantidad válida'); return }
-    seleccionarMonto(val, 'Pago personalizado — $' + val.toLocaleString('es-MX'))
-    document.getElementById('otra-cantidad-card').style.display = 'none'
-  })
+  function etiquetaMetodo(metodo) {
+    const normalizado = String(metodo || '').toLowerCase()
+    if (normalizado === 'efectivo') return 'Efectivo en academia'
+    if (normalizado === 'transferencia') return 'Transferencia bancaria'
+    if (normalizado === 'mercadopago') return 'Mercado Pago'
+    return '—'
+  }
 
-  const COM = 0.035 // 3.50%
+  function estadoPago(pago) {
+    if (!pago) return 'pendiente'
+    if (pago.estado === 'pagado') return 'aprobado'
+    if (pago.estado === 'rechazado') return 'rechazado'
+    const ev = eventosPago[pago.id]
+    if (ev?.accion === 'aprobado') return 'aprobado'
+    if (ev?.accion === 'rechazado') return 'rechazado'
+    const porRevisarAccion = ['aviso_efectivo', 'envio_comprobante', 'mercadopago_iniciado', 'marcar_recibido']
+    if (porRevisarAccion.includes(ev?.accion) || !!pago.comprobante_url || !!pago.forma_pago) return 'por_revisar'
+    return 'pendiente'
+  }
 
-  function fmt(n) { return '$' + Math.round(n).toLocaleString('es-MX') }
+  function textoEstadoPago(estado) {
+    if (estado === 'aprobado') return 'aprobado'
+    if (estado === 'rechazado') return 'rechazado'
+    if (estado === 'por_revisar') return 'por revisar'
+    return 'pendiente'
+  }
+
+  function reviewStatus(pago) {
+    return estadoPago(pago)
+  }
+
+  async function cargarEventosPago() {
+    eventosPago = {}
+    if (!padreId || !alumnoId) return
+
+    const { data: enviados } = await supabase
+      .from('mensajes')
+      .select('texto, creado_en')
+      .eq('de_user_id', user.id)
+      .eq('para_admin', true)
+      .order('creado_en', { ascending: false })
+      .limit(200)
+
+    const { data: recibidos } = await supabase
+      .from('mensajes')
+      .select('texto, creado_en')
+      .eq('destinatario_id', padreId)
+      .eq('para_admin', false)
+      .order('creado_en', { ascending: false })
+      .limit(200)
+
+    ;[...(enviados || []), ...(recibidos || [])].forEach(m => {
+      const t = parsePayToken(m.texto)
+      if (!t) return
+      if (t.alumno && t.alumno !== alumnoId) return
+      const prev = eventosPago[t.pago]
+      if (!prev || String(m.creado_en || '') > String(prev.creado_en || '')) {
+        eventosPago[t.pago] = { ...t, creado_en: m.creado_en }
+      }
+    })
+  }
+
+  async function enviarEventoAdmin(accion, extra = {}) {
+    if (!pagoId) return { ok: false }
+    const pago = pagosAlumno.find(x => x.id === pagoId) || pagoActual
+    const monto = Number(pago?.monto || montoBase || 0)
+    const metodo = extra.metodo || metodoPago || pago?.forma_pago || ''
+    const token = mkPayToken({
+      pago: pagoId,
+      alumno: alumnoId,
+      accion,
+      metodo,
+      comp: extra.comp || ''
+    })
+    const textoHumano = extra.texto || `${padre?.nombre || 'Un padre'} envió actualización de pago ${fmt(monto)} (${metodo || 'sin método'}).`
+    const { error } = await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      texto: `${token} · ${textoHumano}`,
+      para_admin: true,
+      es_automatico: true
+    })
+    return { ok: !error, error }
+  }
+
+  function pintarSeguimiento(pago) {
+    const box = document.getElementById('pago-seguimiento')
+    if (!pago) { box.style.display = 'none'; return }
+    const status = reviewStatus(pago)
+    const ev = eventosPago[pago.id]
+    const metodo = pago.forma_pago || ev?.metodo || '—'
+    const tieneAviso = ['aviso_efectivo', 'mercadopago_iniciado', 'marcar_recibido', 'aprobado'].includes(ev?.accion) || !!pago.forma_pago
+    const tieneComp = !!(pago.comprobante_url || ev?.comp || ev?.accion === 'envio_comprobante')
+    const tieneRecibo = status === 'aprobado'
+    const lineas = [
+      `Método elegido: ${etiquetaMetodo(metodo)}`,
+      `Aviso enviado: ${tieneAviso ? 'sí' : 'no'}`,
+      `Comprobante subido: ${tieneComp ? 'sí' : 'no'}`,
+      `Recibo disponible: ${tieneRecibo ? 'sí' : 'no'}`,
+      `Estado: ${textoEstadoPago(status)}`
+    ]
+    box.style.display = 'block'
+    box.innerHTML = lineas.join(' · ')
+  }
 
   function actualizarDesglose(metodo) {
     metodoPago = metodo
@@ -229,7 +317,9 @@
     document.getElementById('desglose').style.display = 'block'
 
     const btn = document.getElementById('btn-pagar')
+    btn.style.display = 'block'
     btn.disabled = false
+    document.getElementById('btn-enviar-comp').style.display = 'none'
 
     if (metodo === 'efectivo') {
       btn.innerHTML = '<i data-lucide="banknote"></i> Avisar que pagaré en efectivo'
@@ -242,141 +332,232 @@
       document.getElementById('comprobante-area').style.display = 'none'
     }
 
-    // Resaltar opción seleccionada
-    ;['efectivo','transferencia','mp'].forEach(id => {
-      document.getElementById('lbl-' + id).style.borderColor = 'var(--border)'
-    })
+    ;['efectivo','transferencia','mp'].forEach(id => { document.getElementById('lbl-' + id).style.borderColor = 'var(--border)' })
     const lblId = metodo === 'mercadopago' ? 'lbl-mp' : 'lbl-' + metodo
     document.getElementById(lblId).style.borderColor = 'var(--primary)'
-
     lucide.createIcons()
   }
 
-  if (alumnoId) {
-    const { data: pagos } = await supabase.from('pagos').select('*').eq('alumno_id', alumnoId).order('creado_en', { ascending: false })
+  function renderHistorial() {
+    const pagados = pagosAlumno.filter(p => estadoPago(p) === 'aprobado')
+    const hist = document.getElementById('hist')
+    if (!pagados.length) {
+      hist.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Aún no hay pagos aprobados.</div>'
+      return
+    }
+    hist.innerHTML = pagados.map(p => `
+      <div class="card mb8" style="padding:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="ic green" style="flex-shrink:0;"><i data-lucide="check"></i></span>
+          <span class="grow">
+            <span class="t" style="display:block;font-size:13.5px;font-weight:600;">Mensualidad ${p.mes||'—'}</span>
+            <span class="s">$${Number(p.monto||0).toLocaleString('es-MX')} MXN${p.fecha_pago ? ' · '+p.fecha_pago : ''}${p.forma_pago ? ' · '+etiquetaMetodo(p.forma_pago) : ''}</span>
+          </span>
+          <span class="badge green" style="flex-shrink:0;">Pagado</span>
+        </div>
+        <a href="recibo.html?id=${p.id}" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:var(--primary);font-weight:600;text-decoration:none;">
+          <i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo
+        </a>
+      </div>
+    `).join('')
+  }
 
-    if (pagos?.length) {
-      const ultimo = pagos[0]
-      const pendiente = ultimo.estado === 'pendiente'
-      montoBase = Number(ultimo.monto) || 0
-      pagoId = ultimo.id
+  async function cargarPago() {
+    if (!alumnoId) return
+    const { data: pagos } = await supabase
+      .from('pagos')
+      .select('*')
+      .eq('alumno_id', alumnoId)
+      .order('creado_en', { ascending: false })
+    pagosAlumno = pagos || []
+    await cargarEventosPago()
 
-      document.getElementById('pago-concepto').textContent = `Mensualidad ${ultimo.mes || '—'} — Programa Básico`
-      document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
-
-      const estadoEl = document.getElementById('pago-estado')
-      estadoEl.style.color = pendiente ? 'var(--red-600)' : 'var(--green-600)'
-      estadoEl.innerHTML = pendiente
-        ? `<i data-lucide="alert-circle" style="width:15px;height:15px"></i> Pago pendiente`
-        : `<i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago al día`
-
-      // Mostrar totales en cada opción
-      document.getElementById('total-efectivo').textContent = fmt(montoBase)
-      document.getElementById('total-transferencia').textContent = fmt(montoBase)
-      document.getElementById('total-mp').textContent = fmt(montoBase + montoBase * COM)
-
-      if (pendiente) {
-        document.getElementById('pago-opciones').style.display = 'block'
-      } else {
-        // Pago ya confirmado — mostrar botón de recibo
-        const btnRecibo = document.getElementById('btn-recibo')
-        btnRecibo.href = 'recibo.html?id=' + ultimo.id
-        btnRecibo.style.display = 'flex'
-      }
-
-      // Historial
-      document.getElementById('hist').innerHTML = pagos.map(p => {
-        const ok = p.estado === 'pagado'
-        return `<div class="card mb8" style="padding:12px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="ic ${ok?'green':'red'}" style="flex-shrink:0;"><i data-lucide="${ok?'check':'clock'}"></i></span>
-            <span class="grow">
-              <span class="t" style="display:block;font-size:13.5px;font-weight:600;">Mensualidad ${p.mes||'—'}</span>
-              <span class="s">$${Number(p.monto).toLocaleString()} MXN${p.fecha_pago ? ' · '+p.fecha_pago : ''}${p.forma_pago ? ' · '+p.forma_pago : ''}</span>
-            </span>
-            <span class="badge ${ok?'green':'red'}" style="flex-shrink:0;">${ok?'Pagado':'Pendiente'}</span>
-          </div>
-          ${ok ? `<a href="recibo.html?id=${p.id}" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:var(--primary);font-weight:600;text-decoration:none;">
-            <i data-lucide="file-text" style="width:13px;height:13px"></i> Ver recibo</a>` : ''}
-        </div>`
-      }).join('')
-    } else {
+    if (!pagosAlumno.length) {
       document.getElementById('pago-concepto').textContent = 'Sin pagos registrados'
       document.getElementById('pago-monto').innerHTML = '$— <span style="font-size:15px;color:var(--muted);">MXN</span>'
       document.getElementById('pago-estado').innerHTML = '<i data-lucide="info" style="width:15px;height:15px"></i> Sin registros'
-      document.getElementById('hist').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Sin registros de pago.</div>'
+      document.getElementById('pago-opciones').style.display = 'none'
+      renderHistorial()
+      lucide.createIcons()
+      return
     }
+
+    pagoActual = pagosAlumno.find(p => p.estado !== 'pagado') || pagosAlumno[0]
+    pagoId = pagoActual.id
+    montoBase = Number(pagoActual.monto) || 0
+    metodoPago = pagoActual.forma_pago || ''
+
+    document.getElementById('pago-concepto').textContent = `Mensualidad ${pagoActual.mes || '—'} — Programa Básico`
+    document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
+
+    const status = reviewStatus(pagoActual)
+    const estadoEl = document.getElementById('pago-estado')
+    if (status === 'aprobado') {
+      estadoEl.style.color = 'var(--green-600)'
+      estadoEl.innerHTML = '<i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago aprobado'
+      document.getElementById('pago-opciones').style.display = 'none'
+      document.getElementById('btn-recibo').href = 'recibo.html?id=' + pagoActual.id
+      document.getElementById('btn-recibo').style.display = 'flex'
+    } else if (status === 'rechazado') {
+      estadoEl.style.color = 'var(--red-600)'
+      estadoEl.innerHTML = '<i data-lucide="x-circle" style="width:15px;height:15px"></i> Pago rechazado'
+      document.getElementById('pago-opciones').style.display = 'block'
+      document.getElementById('btn-recibo').style.display = 'none'
+    } else if (status === 'por_revisar') {
+      estadoEl.style.color = '#d97706'
+      estadoEl.innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
+      document.getElementById('pago-opciones').style.display = 'block'
+      document.getElementById('btn-recibo').style.display = 'none'
+    } else if (status === 'rechazado') {
+      estadoEl.style.color = 'var(--red-600)'
+      estadoEl.innerHTML = '<i data-lucide="x-circle" style="width:15px;height:15px"></i> Pago rechazado'
+      document.getElementById('pago-opciones').style.display = 'block'
+      document.getElementById('btn-recibo').style.display = 'none'
+    } else {
+      estadoEl.style.color = 'var(--red-600)'
+      estadoEl.innerHTML = '<i data-lucide="alert-circle" style="width:15px;height:15px"></i> Pago pendiente'
+      document.getElementById('pago-opciones').style.display = 'block'
+      document.getElementById('btn-recibo').style.display = 'none'
+    }
+
+    document.getElementById('total-efectivo').textContent = fmt(montoBase)
+    document.getElementById('total-transferencia').textContent = fmt(montoBase)
+    document.getElementById('total-mp').textContent = fmt(montoBase + montoBase * COM)
+
+    if (metodoPago) {
+      const selected = document.querySelector(`input[name="metodo"][value="${metodoPago}"]`)
+      if (selected) { selected.checked = true; actualizarDesglose(metodoPago) }
+    }
+
+    const ev = eventosPago[pagoId]
+    if ((ev?.accion === 'envio_comprobante' || ev?.accion === 'aprobado') && (pagoActual.comprobante_url || ev.comp)) {
+      const compUrl = pagoActual.comprobante_url || ev.comp
+      document.getElementById('comp-ok').style.display = 'flex'
+      document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto. <a href="${compUrl}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante</a>`
+    } else {
+      document.getElementById('comp-ok').style.display = 'none'
+    }
+
+    pintarSeguimiento(pagoActual)
+    renderHistorial()
+    lucide.createIcons()
   }
 
-  // Detectar selección de método
+  // Cargar planes/precios desde configuracion
+  const { data: cfgRows } = await supabase.from('configuracion').select('clave, valor')
+    .in('clave', ['precio_inscripcion','precio_mensual_basico','precio_anual','precio_cinta_negra'])
+  const cfg = {}; (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor })
+
+  const planes = [
+    { label: 'Inscripción', monto: extraerMonto(cfg.precio_inscripcion || '500'), ic: 'user-plus' },
+    { label: 'Mensualidad Básico', monto: extraerMonto(cfg.precio_mensual_basico || '1550'), ic: 'star' },
+    { label: 'Anual UNION', monto: extraerMonto(cfg.precio_anual || '12500'), ic: 'calendar' },
+    { label: 'Club Cinta Negra', monto: extraerMonto(cfg.precio_cinta_negra || '9950'), ic: 'crown' },
+    { label: 'Otra cantidad', monto: 0, ic: 'edit-3', otra: true }
+  ]
+
+  document.getElementById('planes-pago').innerHTML = planes.map((p, i) => `
+    <button class="row" data-plan="${i}" style="width:100%;background:none;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;text-align:left;padding:0;">
+      <span class="ic blue"><i data-lucide="${p.ic}"></i></span>
+      <span class="grow"><span class="t">${p.label}</span>${p.otra ? '' : '<span class="s">$' + p.monto.toLocaleString('es-MX') + ' MXN</span>'}</span>
+      <span class="trail"><i data-lucide="chevron-right"></i></span>
+    </button>`).join('')
+
+  document.getElementById('planes-pago').addEventListener('click', e => {
+    const btn = e.target.closest('[data-plan]')
+    if (!btn) return
+    const p = planes[parseInt(btn.dataset.plan, 10)]
+    if (p.otra) {
+      document.getElementById('otra-cantidad-card').style.display = 'block'
+      document.getElementById('input-otra').focus()
+    } else {
+      document.getElementById('otra-cantidad-card').style.display = 'none'
+      montoBase = p.monto
+      document.getElementById('pago-concepto').textContent = p.label
+      document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
+      document.getElementById('pago-card').scrollIntoView({ behavior: 'smooth' })
+      if (metodoPago) actualizarDesglose(metodoPago)
+    }
+    lucide.createIcons()
+  })
+
+  document.getElementById('btn-otra').addEventListener('click', () => {
+    const val = parseInt(document.getElementById('input-otra').value, 10) || 0
+    if (val < 1) { alert('Ingresa una cantidad válida'); return }
+    montoBase = val
+    document.getElementById('pago-concepto').textContent = 'Pago personalizado — $' + val.toLocaleString('es-MX')
+    document.getElementById('pago-monto').innerHTML = `${fmt(val)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
+    document.getElementById('otra-cantidad-card').style.display = 'none'
+    if (metodoPago) actualizarDesglose(metodoPago)
+  })
+
   document.querySelectorAll('input[name="metodo"]').forEach(radio => {
     radio.addEventListener('change', e => actualizarDesglose(e.target.value))
   })
 
-  // Subir comprobante
   document.getElementById('comp-file').addEventListener('change', e => {
-    if (e.target.files[0]) {
-      document.getElementById('comp-label').textContent = '? ' + e.target.files[0].name
-      document.getElementById('btn-enviar-comp').style.display = 'block'
-    }
+    const f = e.target.files?.[0]
+    if (!f) return
+    document.getElementById('comp-label').textContent = 'Archivo: ' + f.name
+    document.getElementById('btn-enviar-comp').style.display = 'block'
   })
 
-  // Botón principal
   document.getElementById('btn-pagar').addEventListener('click', async () => {
+    if (!pagoId) return
+    const status = reviewStatus(pagoActual)
+    if (status === 'por_revisar' && metodoPago === (pagoActual?.forma_pago || metodoPago)) {
+      alert('Este pago ya fue enviado para revisión.')
+      return
+    }
+
     if (metodoPago === 'efectivo') {
-      const montoFinal = montoBase
-      // Actualizar monto en BD
-      if (pagoId) {
-        await supabase.from('pagos').update({ monto: montoFinal, forma_pago: 'efectivo' }).eq('id', pagoId)
-      }
-      try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'pago', descripcion: `Pago en efectivo: $${montoFinal.toLocaleString('es-MX')}`, metadata: { monto: montoFinal, forma_pago: 'efectivo' } }) } catch(e) {}
-      await supabase.from('mensajes').insert({
-        de_user_id: user.id,
-        texto: `${padre?.nombre || 'Un padre'} avisó que pagará $${montoFinal.toLocaleString('es-MX')} en efectivo en la academia.`,
-        para_admin: true,
-        es_automatico: true
+      await supabase.from('pagos').update({ forma_pago: 'efectivo' }).eq('id', pagoId)
+      await enviarEventoAdmin('aviso_efectivo', {
+        metodo: 'efectivo',
+        texto: `${padre?.nombre || 'Un padre'} avisó que pagará ${fmt(montoBase)} en efectivo en la academia.`
       })
-      document.getElementById('btn-pagar').innerHTML = '<i data-lucide="check"></i> Aviso enviado al instructor'
-      document.getElementById('btn-pagar').disabled = true
-      lucide.createIcons()
-    } else if (metodoPago === 'mercadopago') {
-      alert('Mercado Pago se activará pronto. Por ahora usa transferencia o efectivo.')
+      await cargarPago()
+      return
+    }
+
+    if (metodoPago === 'mercadopago') {
+      await supabase.from('pagos').update({ forma_pago: 'mercadopago' }).eq('id', pagoId)
+      await enviarEventoAdmin('mercadopago_iniciado', {
+        metodo: 'mercadopago',
+        texto: `${padre?.nombre || 'Un padre'} inició pago por Mercado Pago por ${fmt(montoBase)}.`
+      })
+      alert('Mercado Pago todavía no está configurado para cobrar. Por ahora usa transferencia o efectivo.')
+      await cargarPago()
     }
   })
 
-  // Enviar comprobante de transferencia
   document.getElementById('btn-enviar-comp').addEventListener('click', async () => {
-    const file = document.getElementById('comp-file').files[0]
+    if (!pagoId) return
+    const file = document.getElementById('comp-file').files?.[0]
     if (!file) return
+    if (metodoPago !== 'transferencia') {
+      alert('Selecciona Transferencia bancaria para enviar comprobante.')
+      return
+    }
 
-    const montoFinal = montoBase
     const nombre = Date.now() + '_comp_' + file.name
     const { error } = await supabase.storage.from('media').upload('comprobantes/' + nombre, file)
     if (error) { alert('Error al subir: ' + error.message); return }
-
     const url = supabase.storage.from('media').getPublicUrl('comprobantes/' + nombre).data.publicUrl
 
-    // Notificar al instructor con el monto real
-    await supabase.from('mensajes').insert({
-      de_user_id: user.id,
-      texto: `${padre?.nombre || 'Un padre'} envió comprobante de pago $${montoFinal.toLocaleString('es-MX')} (${metodoPago}). Ver: ${url}`,
-      para_admin: true,
-      es_automatico: true
+    await supabase.from('pagos').update({ forma_pago: 'transferencia', comprobante_url: url }).eq('id', pagoId)
+    await enviarEventoAdmin('envio_comprobante', {
+      metodo: 'transferencia',
+      comp: url,
+      texto: `${padre?.nombre || 'Un padre'} envió comprobante de transferencia por ${fmt(montoBase)}. Ver: ${url}`
     })
 
-    // Actualizar pago con monto real + comprobante
-    if (pagoId) {
-      await supabase.from('pagos').update({ monto: montoFinal, forma_pago: metodoPago, comprobante_url: url }).eq('id', pagoId)
-    }
-    try { await supabase.from('activity_log').insert({ alumno_id: alumnoId, tipo: 'pago', descripcion: `Comprobante enviado: $${montoFinal.toLocaleString('es-MX')} (${metodoPago})`, metadata: { monto: montoFinal, forma_pago: metodoPago, comprobante_url: url } }) } catch(e) {}
-
-    document.getElementById('comprobante-area').style.display = 'none'
-    document.getElementById('btn-pagar').style.display = 'none'
     document.getElementById('comp-ok').style.display = 'flex'
     document.getElementById('comp-ok').innerHTML = `<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto. <a href="${url}" target="_blank" style="color:var(--primary);font-weight:700;text-decoration:none;">Ver comprobante</a>`
-    lucide.createIcons()
+    await cargarPago()
   })
 
+  await cargarPago()
   lucide.createIcons()
 </script>
 <script>

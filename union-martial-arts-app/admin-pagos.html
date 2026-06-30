@@ -20,7 +20,7 @@
       Por revisar<span id="cnt-revisar" style="display:none;margin-left:4px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px;"></span>
     </button>
     <button class="tab" data-tab="pendientes" onclick="cambiarTab('pendientes')">Pendientes</button>
-    <button class="tab" data-tab="pagados" onclick="cambiarTab('pagados')">Pagados</button>
+    <button class="tab" data-tab="pagados" onclick="cambiarTab('pagados')">Pagados / Historial</button>
   </div>
 
   <div class="body" id="pagos-body">
@@ -115,22 +115,111 @@ const { data: { user } } = await supabase.auth.getUser()
 if (!user) { window.location.href = 'index.html' }
 
 let pagos = [], tabActual = 'revisar', pagoSel = null, nuevoPagoAlumnoId = null
+let pagoEventos = {}
 
 function iniciales(n) { return (n||'?').split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() }
 
-async function cargar() {
-  const { data } = await supabase
-    .from('pagos')
-    .select('*, alumnos(nombre), padres(id, nombre)')
-    .order('creado_en', { ascending: false })
-  pagos = data || []
+function etiquetaMetodo(metodo) {
+  const normalizado = String(metodo || '').toLowerCase()
+  if (normalizado === 'efectivo') return 'Efectivo en academia'
+  if (normalizado === 'transferencia') return 'Transferencia bancaria'
+  if (normalizado === 'mercadopago') return 'Mercado Pago'
+  return '—'
+}
 
-  const porRevisar = pagos.filter(p => p.estado === 'pendiente' && p.comprobante_url).length
+function estadoPago(p) {
+  if (!p) return 'pendiente'
+  if (p.estado === 'pagado') return 'aprobado'
+  if (p.estado === 'rechazado') return 'rechazado'
+  const ev = pagoEventos[p.id]
+  if (ev?.accion === 'aprobado') return 'aprobado'
+  if (ev?.accion === 'rechazado') return 'rechazado'
+  const acciones = ['aviso_efectivo', 'envio_comprobante', 'mercadopago_iniciado', 'marcar_recibido']
+  if (acciones.includes(ev?.accion) || !!p.forma_pago || !!p.comprobante_url) return 'por_revisar'
+  return 'pendiente'
+}
+
+function textoEstado(estado) {
+  if (estado === 'aprobado') return 'aprobado'
+  if (estado === 'rechazado') return 'rechazado'
+  if (estado === 'por_revisar') return 'por revisar'
+  return 'pendiente'
+}
+
+function avisoPadreEstado(p) {
+  const ev = pagoEventos[p.id]
+  if (!ev) return 'sin aviso'
+  if (ev.accion === 'rechazado') return 'notificación enviada'
+  if (ev.accion === 'aprobado') return 'recibo enviado'
+  if (['aviso_efectivo', 'envio_comprobante', 'mercadopago_iniciado', 'marcar_recibido'].includes(ev.accion)) return 'notificación enviada'
+  return 'sin aviso'
+}
+
+async function cargar() {
+  const { data, error } = await supabase
+    .from('pagos')
+    .select('*, alumnos(nombre)')
+    .order('creado_en', { ascending: false })
+  pagos = error ? [] : (data || [])
+
+  const { data: padresRows } = await supabase
+    .from('padres')
+    .select('id, alumno_id, nombre')
+  const padrePorAlumno = {}
+  ;(padresRows || []).forEach(p => { if (p.alumno_id) padrePorAlumno[p.alumno_id] = p })
+  pagos = pagos.map(p => ({ ...p, _padre: padrePorAlumno[p.alumno_id] || null }))
+
+  const { data: msgs } = await supabase
+    .from('mensajes')
+    .select('texto, creado_en')
+    .order('creado_en', { ascending: false })
+    .limit(500)
+
+  pagoEventos = {}
+  ;(msgs || []).forEach(m => {
+    const ev = parsePayToken(m.texto)
+    if (!ev?.pago) return
+    const prev = pagoEventos[ev.pago]
+    if (!prev || String(m.creado_en || '') > String(prev.creado_en || '')) {
+      pagoEventos[ev.pago] = { ...ev, creado_en: m.creado_en }
+    }
+  })
+
+  const porRevisar = pagos.filter(p => estadoRevision(p) === 'por_revisar').length
   const cnt = document.getElementById('cnt-revisar')
   if (porRevisar > 0) { cnt.textContent = porRevisar; cnt.style.display = 'inline' }
   else cnt.style.display = 'none'
 
   render()
+}
+
+function parsePayToken(text) {
+  if (!String(text || '').startsWith('[[PAY]]')) return null
+  const raw = String(text).replace('[[PAY]]', '').trim()
+  const out = {}
+  raw.split(';').forEach(pair => {
+    const i = pair.indexOf('=')
+    if (i > 0) out[pair.slice(0, i).trim()] = pair.slice(i + 1).trim()
+  })
+  return out
+}
+
+function mkPayToken(payload = {}) {
+  const base = {
+    pago: payload.pago || '',
+    alumno: payload.alumno || '',
+    accion: payload.accion || '',
+    metodo: payload.metodo || '',
+    comp: payload.comp || '',
+    ts: new Date().toISOString()
+  }
+  return '[[PAY]] ' + Object.entries(base)
+    .map(([k, v]) => `${k}=${String(v).replace(/;/g, ',')}`)
+    .join(';')
+}
+
+function estadoRevision(p) {
+  return estadoPago(p)
 }
 
 window.cambiarTab = function(tab) {
@@ -141,12 +230,17 @@ window.cambiarTab = function(tab) {
 
 function render() {
   const filtro = tabActual === 'revisar'
-    ? pagos.filter(p => p.estado === 'pendiente' && p.comprobante_url)
+    ? pagos.filter(p => estadoRevision(p) === 'por_revisar')
     : tabActual === 'pendientes'
-    ? pagos.filter(p => p.estado === 'pendiente' && !p.comprobante_url)
-    : pagos.filter(p => p.estado === 'pagado')
+    ? pagos.filter(p => ['pendiente', 'rechazado'].includes(estadoRevision(p)))
+    : pagos.filter(p => estadoRevision(p) === 'aprobado')
 
   const body = document.getElementById('pagos-body')
+  const tituloSeccion = tabActual === 'revisar'
+    ? 'Por revisar'
+    : tabActual === 'pendientes'
+    ? 'Pendientes'
+    : 'Pagados / Historial'
 
   if (!filtro.length) {
     const msgs = {
@@ -154,37 +248,49 @@ function render() {
       pendientes: 'Sin pagos pendientes.',
       pagados: 'Sin pagos confirmados aún.'
     }
-    body.innerHTML = `<div style="text-align:center;color:var(--muted);font-size:13px;padding:32px;">${msgs[tabActual]}</div>`
+    body.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">${tituloSeccion}</div><div style="text-align:center;color:var(--muted);font-size:13px;padding:22px 0 10px;">${msgs[tabActual]}</div>`
     return
   }
 
-  body.innerHTML = filtro.map(p => {
+  body.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">${tituloSeccion}</div>` + filtro.map(p => {
     const nombre = p.alumnos?.nombre || 'Alumno'
     const ini = iniciales(nombre)
-    const ok = p.estado === 'pagado'
+    const rev = estadoRevision(p)
+    const ok = rev === 'aprobado'
     const tieneComp = !!p.comprobante_url
+    const metodo = p.forma_pago || pagoEventos[p.id]?.metodo || '—'
     const esImagen = tieneComp && /\.(jpg|jpeg|png|gif|webp)$/i.test(p.comprobante_url)
+    const fecha = p.fecha_pago || String(p.creado_en || '').slice(0,10) || '—'
+    const estadoTxt = textoEstado(rev)
+    const badgeBg = rev === 'aprobado' ? 'var(--green-bg)' : rev === 'rechazado' ? 'var(--red-bg)' : rev === 'por_revisar' ? '#fef3c7' : 'var(--soft)'
+    const badgeTx = rev === 'aprobado' ? 'var(--green-text)' : rev === 'rechazado' ? 'var(--red-text)' : rev === 'por_revisar' ? '#92400e' : 'var(--muted)'
+    const ev = pagoEventos[p.id]
+    const avisoTxt = avisoPadreEstado(p)
 
     return `<div class="pago-card ${tabActual === 'revisar' ? 'highlight' : ''}">
       ${tabActual === 'revisar' ? `<div style="font-size:11px;font-weight:700;color:#d97706;margin-bottom:8px;display:flex;align-items:center;gap:4px;">
-        <i data-lucide="alert-circle" style="width:13px;height:13px"></i> Comprobante recibido — pendiente de confirmar
+        <i data-lucide="alert-circle" style="width:13px;height:13px"></i> Pago por revisar
       </div>` : ''}
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${tieneComp && !ok ? 10 : 0}px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
         <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
         <span class="grow">
           <span class="t" style="font-size:13.5px;font-weight:600;">${nombre}</span>
-          <span class="s">$${Number(p.monto||0).toLocaleString('es-MX')} MXN · ${p.mes||'—'}${p.forma_pago?' · '+p.forma_pago:''}</span>
+          <span class="s">Concepto: ${p.mes || '—'}</span>
+          <span class="s">Monto: $${Number(p.monto||0).toLocaleString('es-MX')} MXN</span>
+          <span class="s">Método: ${etiquetaMetodo(metodo)}</span>
+          <span class="s">Fecha: ${fecha}${tieneComp ? ' · con comprobante' : ''}</span>
+          <span class="s">Padre: ${avisoTxt}</span>
         </span>
-        ${ok
-          ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;background:var(--green-bg);color:var(--green-text);font-size:11px;font-weight:700;"><i data-lucide="check" style="width:12px;height:12px"></i> Pagado</span>`
-          : `<button data-id="${p.id}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:99px;border:none;cursor:pointer;font-weight:700;font-size:11px;background:${tieneComp?'#f59e0b':'var(--red-bg)'};color:${tieneComp?'#fff':'var(--red-text)'};flex-shrink:0;">
-              <i data-lucide="${tieneComp?'check-circle':'clock'}" style="width:12px;height:12px"></i> ${tieneComp?'Confirmar':'Pendiente'}
-            </button>`
-        }
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;background:${badgeBg};color:${badgeTx};font-size:11px;font-weight:700;">${estadoTxt}</span>
       </div>
+      ${ev?.accion === 'marcar_recibido' ? `<div style="font-size:11px;color:#92400e;margin-bottom:8px;">Efectivo marcado como recibido por admin. Falta aprobación final.</div>` : ''}
+      ${ev?.accion === 'rechazado' ? `<div style="font-size:11px;color:#b91c1c;margin-bottom:8px;">Pago rechazado. El padre puede reenviar aviso o comprobante.</div>` : ''}
       ${tieneComp && esImagen ? `<img src="${p.comprobante_url}" style="width:100%;border-radius:10px;max-height:120px;object-fit:contain;background:#f4f6fb;margin-bottom:8px;" onerror="this.style.display='none'" />` : ''}
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${tieneComp ? `<a href="${p.comprobante_url}" target="_blank" class="btn secondary sm"><i data-lucide="file-image" style="width:12px;height:12px"></i> Ver comprobante</a>` : ''}
+        ${!ok && rev === 'por_revisar' ? `<button class="btn secondary sm" data-recibido="${p.id}"><i data-lucide="wallet" style="width:12px;height:12px"></i> Marcar recibido</button>` : ''}
+        ${!ok && rev !== 'pendiente' ? `<button class="btn secondary sm" data-aprobar="${p.id}"><i data-lucide="check" style="width:12px;height:12px"></i> Aprobar</button>` : ''}
+        ${!ok && rev !== 'pendiente' ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;" data-rechazar="${p.id}">Rechazar</button>` : ''}
         ${ok ? `<a href="recibo.html?id=${p.id}" target="_blank" class="btn secondary sm"><i data-lucide="file-text" style="width:12px;height:12px"></i> Ver recibo</a>` : ''}
         ${ok ? `<button class="btn secondary sm" data-nuevo-pago="${p.alumno_id}" data-nuevo-nombre="${nombre}"><i data-lucide="plus" style="width:12px;height:12px"></i> Nuevo cargo</button>` : ''}
         ${ok ? `<button class="btn sm" style="background:var(--red-bg);color:var(--red-text);border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;" data-desmarcar="${p.id}">Desmarcar</button>` : ''}
@@ -195,10 +301,10 @@ function render() {
 }
 
 document.getElementById('pagos-body').addEventListener('click', async e => {
-  // Confirmar pago
-  const btnConf = e.target.closest('[data-id]')
+  // Aprobar pago
+  const btnConf = e.target.closest('[data-aprobar]')
   if (btnConf) {
-    const p = pagos.find(x => x.id === btnConf.dataset.id)
+    const p = pagos.find(x => x.id === btnConf.dataset.aprobar)
     if (!p) return
     pagoSel = p
     document.getElementById('modal-alumno-nombre').textContent = (p.alumnos?.nombre||'Alumno') + ' · ' + (p.mes||'')
@@ -218,6 +324,39 @@ document.getElementById('pagos-body').addEventListener('click', async e => {
     }
     document.getElementById('modal-pago').style.display = 'flex'
     lucide.createIcons(); return
+  }
+
+  // Marcar recibido
+  const btnRec = e.target.closest('[data-recibido]')
+  if (btnRec) {
+    const p = pagos.find(x => x.id === btnRec.dataset.recibido)
+    if (!p) return
+    const token = mkPayToken({ pago: p.id, alumno: p.alumno_id, accion: 'marcar_recibido', metodo: p.forma_pago || 'efectivo' })
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      para_admin: false,
+      destinatario_id: p._padre?.id || null,
+      texto: `${token} · Recibimos tu aviso de pago en efectivo. En revisión final.`
+    })
+    await cargar()
+    return
+  }
+
+  // Rechazar
+  const btnR = e.target.closest('[data-rechazar]')
+  if (btnR) {
+    const p = pagos.find(x => x.id === btnR.dataset.rechazar)
+    if (!p) return
+    const token = mkPayToken({ pago: p.id, alumno: p.alumno_id, accion: 'rechazado', metodo: p.forma_pago || '' })
+    await supabase.from('mensajes').insert({
+      de_user_id: user.id,
+      para_admin: false,
+      destinatario_id: p._padre?.id || null,
+      texto: `${token} · El pago fue rechazado. Sube un nuevo comprobante o selecciona otro método.`
+    })
+    await supabase.from('pagos').update({ estado: 'pendiente' }).eq('id', p.id)
+    await cargar()
+    return
   }
 
   // Nuevo cargo
@@ -275,9 +414,10 @@ document.getElementById('modal-confirmar').addEventListener('click', async () =>
   const { data: padre } = await supabase.from('padres').select('id').eq('alumno_id', pagoSel.alumno_id).maybeSingle()
   const nombre = pagoSel.alumnos?.nombre || 'tu hijo/a'
 
+  const token = mkPayToken({ pago: pagoSel.id, alumno: pagoSel.alumno_id, accion: 'aprobado', metodo: forma, comp: pagoSel.comprobante_url || '' })
   await supabase.from('mensajes').insert({
     de_user_id: user.id,
-    texto: `✅ Pago confirmado — ${nombre} · ${pagoSel.mes||''} · $${monto.toLocaleString('es-MX')} MXN (${forma}). Puedes ver tu recibo en la app.`,
+    texto: `${token} · ✅ Pago confirmado — ${nombre} · ${pagoSel.mes||''} · $${monto.toLocaleString('es-MX')} MXN (${forma}). Puedes ver tu recibo en la app.`,
     para_admin: false,
     destinatario_id: padre?.id || null
   })
@@ -300,6 +440,12 @@ document.getElementById('nuevo-pago-crear').addEventListener('click', async () =
   if (monto < 1) { alert('Escribe el monto'); return }
   const btn = document.getElementById('nuevo-pago-crear')
   btn.disabled = true; btn.textContent = 'Creando…'
+  const existeAbierto = pagos.some(p => p.alumno_id === nuevoPagoAlumnoId && p.estado !== 'pagado')
+  if (existeAbierto) {
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Crear'; lucide.createIcons()
+    alert('Ya existe un pago abierto para este alumno. Evita duplicados.')
+    return
+  }
   const { error } = await supabase.from('pagos').insert({ alumno_id: nuevoPagoAlumnoId, mes, monto, estado: 'pendiente' })
   btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Crear'; lucide.createIcons()
   if (error) { alert('❌ Error: ' + error.message); return }
