@@ -974,13 +974,28 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
   }
 
   function planPermiteZonaUnion(planPago) {
-    const p = (planPago || '').toLowerCase()
-    return p.includes('anual') || p.includes('club') || p.includes('elite') || p.includes('uacj')
+    const p = (planPago || '').toLowerCase().trim()
+    const esBasicoMensual = p.includes('mensual') || p.includes('basico') || p.includes('básico')
+    return !esBasicoMensual
+  }
+
+  function hrefZonaPorId(id) {
+    if (id === 'zona-nutricion') return 'nutricion.html'
+    if (id === 'zona-meditacion') return 'meditacion.html'
+    if (id === 'zona-rutinas') return 'entrena.html'
+    if (id === 'zona-beneficios') return 'programas.html'
+    if (id === 'zona-biblioteca') return 'biblioteca.html'
+    if (id === 'zona-juegos') return 'juegos.html'
+    return null
   }
 
   function setLockVisual(anchor, locked) {
     if (!anchor) return
-    if (!anchor.dataset.baseHref) anchor.dataset.baseHref = anchor.getAttribute('href') || '#'
+    const fallbackHref = hrefZonaPorId(anchor.id)
+    if (!anchor.dataset.baseHref || anchor.dataset.baseHref === '#') {
+      const hrefActual = anchor.getAttribute('href') || ''
+      anchor.dataset.baseHref = (hrefActual && hrefActual !== '#') ? hrefActual : (fallbackHref || '#')
+    }
 
     const sub = anchor.querySelector('.menu-sub') || anchor.querySelector('.prog-count') || anchor.querySelector('div[style*="color:rgba(255,255,255,.75)"]')
     const existing = anchor.querySelector('.zona-lock')
@@ -1000,9 +1015,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         sub.appendChild(lock)
       }
     } else {
-      anchor.setAttribute('href', anchor.dataset.baseHref)
+      anchor.setAttribute('href', anchor.dataset.baseHref || fallbackHref || '#')
       anchor.style.opacity = ''
       anchor.style.filter = ''
+      anchor.style.pointerEvents = ''
       anchor.onclick = null
       if (existing) existing.remove()
     }
