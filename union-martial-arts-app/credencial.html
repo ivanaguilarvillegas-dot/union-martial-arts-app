@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Credencial Digital — Union Martial Arts</title>
+<title>Credencial Digital - Union Martial Arts</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0f2167">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,30 +13,34 @@
 <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
 :root{
-  --um-electric:#0a2bff;
-  --um-deep:#081a56;
-  --um-glass:rgba(255,255,255,.12);
-  --um-metal:#d5deef;
+  --um-blue:#0b2cff;
+  --um-deep:#0a1b63;
+  --um-gold:#d4a93b;
+  --um-white:#f8fbff;
   --ok:#16a34a;
-  --warn:#d97706;
-  --danger:#dc2626;
+  --bad:#dc2626;
 }
 *{box-sizing:border-box}
-body{background:radial-gradient(circle at 12% 15%, #e0ecff 0%, #f4f7fb 35%, #edf2f9 100%)}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 10%, #e2ebff 0%, transparent 30%),
+    radial-gradient(circle at 95% 95%, #dbe7ff 0%, transparent 30%),
+    linear-gradient(180deg,#eef3fb,#f7faff);
+}
 
 .cred-wrap{padding:14px 12px 24px;max-width:980px;margin:0 auto}
-.topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .btn-pill{height:38px;padding:0 14px;border:none;border-radius:999px;font-weight:800;font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-decoration:none}
 .btn-back{background:#e5e7eb;color:#111827}
-.btn-print{background:linear-gradient(135deg,#0f2167,#0a2bff);color:#fff}
+.btn-print{background:linear-gradient(135deg,#0f2167,#0b2cff);color:#fff}
 .btn-dl{background:#dbeafe;color:#1e40af}
-.btn-note{font-size:11px;color:#64748b;margin-left:auto}
 
 .sheet{display:grid;grid-template-columns:1fr;gap:14px}
 .pvc-card{
   width:100%;
   max-width:640px;
-  aspect-ratio:86 / 54;
+  aspect-ratio:85.6 / 53.98;
   margin:0 auto;
   position:relative;
   border-radius:18px;
@@ -46,84 +50,95 @@ body{background:radial-gradient(circle at 12% 15%, #e0ecff 0%, #f4f7fb 35%, #edf
 }
 .front{
   background:
-    radial-gradient(circle at 80% 15%, rgba(255,255,255,.24), transparent 35%),
-    radial-gradient(circle at 15% 100%, rgba(56,189,248,.15), transparent 45%),
-    linear-gradient(135deg, #081a56 0%, #0f2167 36%, #0a2bff 100%);
+    radial-gradient(circle at 85% 8%, rgba(255,255,255,.18), transparent 35%),
+    radial-gradient(circle at 14% 95%, rgba(212,169,59,.18), transparent 35%),
+    linear-gradient(138deg,#081a56 0%, #0f2167 45%, #0b2cff 100%);
 }
 .back{
   background:
-    radial-gradient(circle at 18% 0%, rgba(255,255,255,.2), transparent 30%),
-    linear-gradient(145deg, #0c1f64 0%, #0d2b84 45%, #0a2bff 100%);
+    radial-gradient(circle at 12% 8%, rgba(255,255,255,.16), transparent 26%),
+    linear-gradient(140deg,#0a1b63 0%, #0f2167 40%, #0b2cff 100%);
 }
-.glass{position:absolute;inset:8px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));backdrop-filter:blur(3px)}
+.glass{position:absolute;inset:8px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));backdrop-filter:blur(3px)}
 
-.front-inner{position:relative;z-index:2;height:100%;padding:14px;display:grid;grid-template-columns:36% 1fr;gap:12px;color:#fff}
-.brand{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.front-inner{position:relative;z-index:2;height:100%;padding:12px 14px;color:#fff;display:grid;grid-template-columns:34% 1fr;gap:12px}
+.brand{display:flex;align-items:center;gap:8px}
 .brand img{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
-.brand-txt{font-size:10px;letter-spacing:.08em;font-weight:900;line-height:1.2}
+.brand-txt{font-size:10px;letter-spacing:.07em;font-weight:900;line-height:1.2}
 
-.photo-zone{display:flex;flex-direction:column;align-items:center;gap:8px}
+.left{display:flex;flex-direction:column;align-items:center;gap:8px}
 .photo-frame{
-  width:130px;height:130px;border-radius:50%;position:relative;overflow:hidden;
-  border:4px solid #0a2bff;box-shadow:0 0 0 3px #fff, 0 8px 18px rgba(0,0,0,.28);
+  margin-top:4px;
+  width:124px;height:124px;border-radius:50%;position:relative;overflow:hidden;
+  border:3px solid var(--um-blue);
+  box-shadow:0 0 0 2px #fff, 0 0 0 5px rgba(212,169,59,.35), 0 8px 18px rgba(0,0,0,.28);
   background:#e2e8f0;display:flex;align-items:center;justify-content:center;
 }
-.photo-frame.black-belt{box-shadow:0 0 0 3px #fff, 0 0 0 6px rgba(250,204,21,.45), 0 8px 18px rgba(0,0,0,.28)}
+.photo-frame.black-belt{box-shadow:0 0 0 2px #fff, 0 0 0 6px rgba(212,169,59,.6), 0 8px 18px rgba(0,0,0,.28)}
 .photo-frame img{width:100%;height:100%;object-fit:cover;object-position:center}
 .photo-fallback{display:flex;flex-direction:column;align-items:center;gap:6px;color:#1e3a8a}
-.photo-fallback img{width:38px;height:38px;object-fit:contain}
-.stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.14}
-.stamp img{width:82px;height:82px;object-fit:contain;transform:rotate(-12deg)}
+.photo-fallback img{width:34px;height:34px;object-fit:contain}
+.stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.12}
+.stamp img{width:76px;height:76px;object-fit:contain;transform:rotate(-10deg)}
+.member-chip{font-size:9px;background:rgba(212,169,59,.22);border:1px solid rgba(255,255,255,.35);color:#fff7d6;border-radius:999px;padding:4px 9px;font-weight:800;letter-spacing:.02em}
 
-.values{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
-.values span{font-size:9px;background:rgba(255,255,255,.14);padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.2);display:inline-flex;align-items:center;gap:4px}
-
-.meta{display:flex;flex-direction:column;min-width:0}
-.name{font-size:20px;font-weight:900;line-height:1.05;letter-spacing:.01em}
-.idline{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:11px;color:#dbeafe}
-.status-badge{margin-top:8px;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;width:max-content;border:1px solid rgba(255,255,255,.25)}
+.right{display:flex;flex-direction:column;min-width:0;position:relative;padding-right:92px}
+.name{font-size:18px;font-weight:900;line-height:1.05;letter-spacing:.01em;margin-top:2px}
+.idline{margin-top:4px;font-size:11px;font-weight:700;color:#dbeafe}
+.status-badge{margin-top:6px;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;width:max-content;border:1px solid rgba(255,255,255,.25)}
 .status-ok{background:rgba(22,163,74,.24);color:#dcfce7}
-.status-warn{background:rgba(217,119,6,.25);color:#fef3c7}
-.status-danger{background:rgba(220,38,38,.25);color:#fee2e2}
+.status-bad{background:rgba(220,38,38,.25);color:#fee2e2}
 
-.data-grid{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:44px}
-.kv .k{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#bfdbfe;font-weight:700}
-.kv .v{font-size:11px;font-weight:700;margin-top:2px;line-height:1.25}
+.front-list{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:42px}
+.k{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#bfdbfe;font-weight:700}
+.v{font-size:11px;font-weight:800;margin-top:2px;line-height:1.2}
 
-.badge-row{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.belt-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;display:flex;align-items:center;gap:8px}
-.belt-bar{height:8px;border-radius:999px;flex:1;position:relative;overflow:hidden}
-.belt-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.24),transparent 52%,rgba(0,0,0,.2))}
-.belt-txt{font-size:10px;font-weight:800;white-space:nowrap}
+.front-bottom{margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.premium{font-size:9px;color:#fef3c7;font-weight:800;letter-spacing:.03em}
 
-.qr-block{margin-top:8px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px}
-.qr-box{width:88px;height:88px;background:#fff;border-radius:10px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.qr-box canvas{width:100%!important;height:100%!important}
-.qr-txt{font-size:10px;line-height:1.4;color:#dbeafe}
+.qr-mini-wrap{
+  position:absolute;
+  right:0;
+  bottom:0;
+  width:84px;
+  height:84px;
+  background:#fff;
+  border-radius:10px;
+  border:2px solid rgba(212,169,59,.5);
+  padding:5px;
+}
+.qr-mini-wrap canvas{width:100%!important;height:100%!important;display:block}
 
-.back-inner{position:relative;z-index:2;height:100%;padding:14px;color:#fff;display:grid;grid-template-columns:1fr 34%;gap:10px}
-.back-title{font-size:12px;font-weight:900;letter-spacing:.06em}
-.loss{margin-top:8px;font-size:10.5px;line-height:1.45;color:#e2e8f0}
+.back-inner{position:relative;z-index:2;height:100%;padding:12px 14px;color:#fff;display:grid;grid-template-columns:1fr 48%;gap:12px}
+.loss-title{font-size:12px;font-weight:900;letter-spacing:.06em}
+.loss{margin-top:7px;font-size:10.4px;line-height:1.43;color:#e2e8f0}
 .loss b{color:#fff}
-.side{display:flex;flex-direction:column;justify-content:space-between;gap:8px}
-.side-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px}
-.side .k{font-size:8.5px;text-transform:uppercase;letter-spacing:.08em;color:#bfdbfe;font-weight:800}
-.side .v{font-size:10.5px;font-weight:700;margin-top:2px}
-.barcode{height:30px;background:#fff;border-radius:8px;padding:5px;display:flex;align-items:flex-end;gap:1px}
-.bar{width:2px;background:#0f172a;border-radius:1px}
+.valid-box{margin-top:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px}
+.valid-k{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#bfdbfe;font-weight:800}
+.valid-v{font-size:10.2px;font-weight:700;line-height:1.35;margin-top:4px}
 
-.foot{font-size:8.5px;color:#bfdbfe;text-align:center;margin-top:8px}
+.back-qr{display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.back-qr-box{width:100%;aspect-ratio:1/1;background:#fff;border-radius:12px;padding:9px;border:2px solid rgba(212,169,59,.55)}
+.back-qr-box canvas{width:100%!important;height:100%!important;display:block}
+.back-id{font-size:11px;font-weight:800;text-align:center;color:#eaf0ff}
 
 .hidden{display:none}
 
+@media (max-width: 680px){
+  .right{padding-right:82px}
+  .qr-mini-wrap{width:74px;height:74px}
+  .name{font-size:16px}
+  .kv{min-height:39px;padding:5px 7px}
+}
+
 @media print {
-  @page { size: 86mm 54mm landscape; margin: 0; }
-  body{background:#fff}
-  .topbar,.btn-note{display:none!important}
+  @page { size: 85.60mm 53.98mm landscape; margin: 0; }
+  html,body{width:85.60mm;height:53.98mm;background:#fff}
+  .topbar{display:none!important}
   .cred-wrap{padding:0;max-width:none}
   .sheet{gap:0}
-  .pvc-card{width:86mm;height:54mm;max-width:none;aspect-ratio:auto;border-radius:0;box-shadow:none;margin:0}
+  .pvc-card{width:85.60mm;height:53.98mm;max-width:none;aspect-ratio:auto;border-radius:0;box-shadow:none;margin:0}
   .pvc-card.back{page-break-before:always}
 }
 </style>
@@ -135,14 +150,13 @@ body{background:radial-gradient(circle at 12% 15%, #e0ecff 0%, #f4f7fb 35%, #edf
       <a class="btn-pill btn-back" href="home.html">↩ Regresar</a>
       <button class="btn-pill btn-dl" id="btn-pdf">⬇ Descargar PDF</button>
       <button class="btn-pill btn-print" id="btn-print">🖨 Imprimir PVC</button>
-      <div class="btn-note" id="top-note">PDF: preparado para siguiente fase</div>
     </div>
 
-    <div class="sheet" id="cred-sheet">
-      <div class="pvc-card front" id="card-front">
+    <div class="sheet">
+      <div class="pvc-card front">
         <div class="glass"></div>
         <div class="front-inner">
-          <div class="photo-zone">
+          <div class="left">
             <div class="brand">
               <img src="assets/logo-union-blue.png" alt="Union">
               <div class="brand-txt">UNION<br>MARTIAL ARTS</div>
@@ -151,91 +165,60 @@ body{background:radial-gradient(circle at 12% 15%, #e0ecff 0%, #f4f7fb 35%, #edf
               <img id="foto" class="hidden" alt="Alumno">
               <div class="photo-fallback" id="foto-fallback">
                 <img src="assets/logo-union-blue.png" alt="logo">
-                <div style="font-size:26px;">👤</div>
+                <div style="font-size:24px;">👤</div>
               </div>
               <div class="stamp"><img src="assets/logo-union-white.png" alt="sello"></div>
             </div>
-            <div class="values">
-              <span>🥋 Disciplina</span>
-              <span>🤝 Respeto</span>
-              <span>🛡 Honor</span>
-              <span>🔥 Esfuerzo</span>
-              <span>🏔 Perseverancia</span>
-            </div>
+            <div class="member-chip">Miembro Oficial UNION</div>
           </div>
 
-          <div class="meta">
+          <div class="right">
             <div class="name" id="alumno-nombre">Alumno</div>
-            <div class="idline"><span>🆔</span><span id="alumno-id">—</span></div>
-            <div class="status-badge status-ok" id="badge-estado">🟢 Activo</div>
+            <div class="idline" id="alumno-id">UMA-000000</div>
+            <div class="status-badge status-ok" id="badge-estado">🟢 Alumno Activo</div>
 
-            <div class="data-grid">
-              <div class="kv"><div class="k">Fecha nacimiento</div><div class="v" id="dato-nac">—</div></div>
-              <div class="kv"><div class="k">Edad</div><div class="v" id="dato-edad">—</div></div>
-              <div class="kv"><div class="k">Ingreso</div><div class="v" id="dato-ingreso">—</div></div>
-              <div class="kv"><div class="k">Instructor</div><div class="v" id="dato-instructor">—</div></div>
-              <div class="kv"><div class="k">Grupo</div><div class="v" id="dato-grupo">—</div></div>
-              <div class="kv"><div class="k">Horario</div><div class="v" id="dato-horario">—</div></div>
+            <div class="front-list">
+              <div class="kv"><div class="k">Grupo</div><div class="v" id="dato-grupo">-</div></div>
+              <div class="kv"><div class="k">Cinta</div><div class="v" id="dato-cinta">-</div></div>
+              <div class="kv"><div class="k">Instructor</div><div class="v" id="dato-instructor">-</div></div>
+              <div class="kv"><div class="k">Ingreso</div><div class="v" id="dato-ingreso">-</div></div>
+              <div class="kv"><div class="k">Plan</div><div class="v" id="dato-plan">-</div></div>
             </div>
 
-            <div class="badge-row">
-              <div class="belt-chip">
-                <div class="belt-bar" id="belt-bar"></div>
-                <div class="belt-txt" id="dato-cinta">—</div>
-              </div>
-              <div class="kv" style="min-height:auto;display:flex;flex-direction:column;justify-content:center;">
-                <div class="k">Plan / Vigencia</div>
-                <div class="v" id="dato-plan">—</div>
-                <div class="v" id="dato-vigencia" style="font-size:10px;color:#dbeafe;">—</div>
-              </div>
+            <div class="front-bottom">
+              <div class="premium">Credencial Oficial del Alumno</div>
             </div>
 
-            <div class="qr-block">
-              <div class="qr-box"><canvas id="qr-main"></canvas></div>
-              <div class="qr-txt">
-                Validación preparada para QR:<br>
-                <span id="qr-url" style="word-break:break-all;">—</span>
-              </div>
-            </div>
+            <div class="qr-mini-wrap"><canvas id="qr-main"></canvas></div>
           </div>
         </div>
       </div>
 
-      <div class="pvc-card back" id="card-back">
+      <div class="pvc-card back">
         <div class="glass"></div>
         <div class="back-inner">
           <div>
-            <div class="back-title">EN CASO DE PÉRDIDA</div>
+            <div class="loss-title">EN CASO DE PERDIDA</div>
             <div class="loss">
-              Si encuentras esta credencial, por favor entrégala en:<br><br>
+              Esta credencial es propiedad de UNION Martial Arts.<br><br>
+              Si la encuentra favor de entregarla en:<br><br>
               <b>UNION Martial Arts</b><br>
               Av. de los Insurgentes 2405<br>
-              Partido Romero<br>
+              Col. Partido Romero<br>
               C.P. 32030<br>
-              Ciudad Juárez, Chihuahua<br><br>
-              <b>Teléfono:</b> (656) 637-9191<br><br>
-              Esta credencial es propiedad de UNION Martial Arts.<br>
-              Es personal e intransferible.<br>
-              No tiene valor fuera de la academia.<br>
-              Válida únicamente mientras el alumno permanezca inscrito y activo en UNION Martial Arts.
+              Ciudad Juarez, Chihuahua<br>
+              Telefono<br>
+              (656) 637-9191<br>
+              www.unionmartialarts.org
             </div>
-            <div class="foot">Esta credencial es propiedad de UNION Martial Arts.</div>
+            <div class="valid-box">
+              <div class="valid-k">VALIDACION DIGITAL</div>
+              <div class="valid-v">Credencial Oficial UNION.<br>Uso exclusivo para alumnos activos.<br>Codigo QR de validacion.</div>
+            </div>
           </div>
-          <div class="side">
-            <div class="side-box">
-              <div class="k">ID / Alumno</div>
-              <div class="v" id="back-id">—</div>
-            </div>
-            <div class="side-box">
-              <div class="k">Firma digital (futuro)</div>
-              <div class="v">Director UNION</div>
-            </div>
-            <div class="side-box">
-              <div class="k">Observaciones</div>
-              <div class="v">NFC / Código de barras / Validación pública</div>
-            </div>
-            <div class="qr-box" style="width:100%;height:96px;"><canvas id="qr-back"></canvas></div>
-            <div class="barcode" id="barcode"></div>
+          <div class="back-qr">
+            <div class="back-qr-box"><canvas id="qr-back"></canvas></div>
+            <div class="back-id" id="back-id">UMA-000000</div>
           </div>
         </div>
       </div>
@@ -257,65 +240,42 @@ function fmtFecha(v){
   const d = new Date(v + 'T12:00:00')
   return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })
 }
-function edadDesde(fecha){
-  if (!fecha) return '—'
-  const f = new Date(fecha + 'T12:00:00')
-  const h = new Date()
-  let e = h.getFullYear() - f.getFullYear()
-  const m = h.getMonth() - f.getMonth()
-  if (m < 0 || (m === 0 && h.getDate() < f.getDate())) e--
-  return e + ' años'
+function year2From(fechaIngreso) {
+  const y = (fechaIngreso && /^\d{4}-\d{2}-\d{2}$/.test(fechaIngreso))
+    ? Number(fechaIngreso.slice(0, 4))
+    : new Date().getFullYear()
+  return String(y).slice(-2)
 }
-function cintaColor(c){
-  const l = String(c || '').toLowerCase()
-  if (l.includes('negra') || l.includes('negro')) return '#111827'
-  if (l.includes('roja') || l.includes('rojo')) return '#dc2626'
-  if (l.includes('cafe') || l.includes('café') || l.includes('marron') || l.includes('marrón')) return '#78350f'
-  if (l.includes('verde')) return '#16a34a'
-  if (l.includes('azul')) return '#2563eb'
-  if (l.includes('morada') || l.includes('morado')) return '#9333ea'
-  if (l.includes('naranja') || l.includes('anaranjada')) return '#f97316'
-  if (l.includes('amarilla') || l.includes('amarillo')) return '#fbbf24'
-  if (l.includes('blanca') || l.includes('blanco')) return '#e5e7eb'
-  return '#60a5fa'
+function alumnoEsActivo(a){
+  if (a && Object.prototype.hasOwnProperty.call(a, 'activo') && a.activo === false) return false
+  const est = String(a?.estado || '').toLowerCase()
+  if (est === 'inactivo') return false
+  return true
 }
-function extraerGrado(cinta){
-  const s = String(cinta || '')
-  if (s.includes(' V ')) return 'V'
-  if (s.includes(' IV ')) return 'IV'
-  if (s.includes(' III ')) return 'III'
-  if (s.includes(' II ')) return 'II'
-  if (s.includes(' I ')) return 'I'
-  return 'Base'
-}
-function estadoPago(fechaProx){
-  const base = { label:'Activo', emoji:'🟢', cls:'status-ok' }
-  if (!fechaProx) return base
-  const hoy = new Date(); hoy.setHours(0,0,0,0)
-  const prox = new Date(fechaProx + 'T12:00:00')
-  const dias = Math.floor((hoy - prox) / 86400000)
-  if (dias > 6) return { label:'Pendiente pago', emoji:'🔴', cls:'status-danger' }
-  if (dias > 0) return { label:'Pendiente', emoji:'🟡', cls:'status-warn' }
-  return base
-}
-function principalHorario(h){
-  if (!h) return 'No asignado'
-  return String(h).split('|').map(x => x.trim()).filter(Boolean)[0] || 'No asignado'
+function instructorDe(a, fallback){
+  return a?.instructor || a?.instructor_nombre || fallback || 'Instructor UNION'
 }
 
-function fillBarcode(id){
-  const box = document.getElementById('barcode')
-  const seed = String(id || 'UMA')
-  box.innerHTML = ''
-  for (let i = 0; i < 42; i++) {
-    const ch = seed.charCodeAt(i % seed.length)
-    const h = 9 + ((ch + i * 7) % 16)
-    const bar = document.createElement('span')
-    bar.className = 'bar'
-    bar.style.height = h + 'px'
-    bar.style.width = (i % 5 === 0 ? 3 : 2) + 'px'
-    box.appendChild(bar)
+async function ensureCredencialVisualId(alumno){
+  const keyByAlumno = `cred_id_${alumno.id}`
+  const ref = await supabase.from('configuracion').select('valor').eq('clave', keyByAlumno).maybeSingle()
+  const existing = ref?.data?.valor ? String(ref.data.valor).trim() : ''
+  if (existing) {
+    await supabase.from('configuracion').upsert({ clave: `cred_ref_${existing}`, valor: alumno.id }, { onConflict: 'clave' })
+    return existing
   }
+
+  const yy = year2From(alumno.fecha_ingreso)
+  const seqKey = `cred_seq_${yy}`
+  const seqRes = await supabase.from('configuracion').select('valor').eq('clave', seqKey).maybeSingle()
+  const current = Number(seqRes?.data?.valor || 0)
+  const next = Number.isFinite(current) ? current + 1 : 1
+  const visualId = `UMA-${yy}${String(next).padStart(4, '0')}`
+
+  await supabase.from('configuracion').upsert({ clave: seqKey, valor: String(next) }, { onConflict: 'clave' })
+  await supabase.from('configuracion').upsert({ clave: keyByAlumno, valor: visualId }, { onConflict: 'clave' })
+  await supabase.from('configuracion').upsert({ clave: `cred_ref_${visualId}`, valor: alumno.id }, { onConflict: 'clave' })
+  return visualId
 }
 
 async function qrConLogo(canvasId, value){
@@ -330,7 +290,7 @@ async function qrConLogo(canvasId, value){
   const x = (canvas.width - s) / 2
   const y = (canvas.height - s) / 2
   ctx.fillStyle = '#fff'
-  const r = 12
+  const r = 10
   ctx.beginPath()
   ctx.moveTo(x + r, y)
   ctx.arcTo(x + s, y, x + s, y + s, r)
@@ -341,6 +301,12 @@ async function qrConLogo(canvasId, value){
   ctx.fill()
   if (logo.complete) ctx.drawImage(logo, x + 8, y + 8, s - 16, s - 16)
 }
+
+function cleanFileName(text) {
+  return String(text || 'Alumno').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '')
+}
+
+let pdfName = 'Credencial_Alumno.pdf'
 
 async function cargarCredencial(){
   const { data: auth } = await supabase.auth.getUser()
@@ -376,36 +342,29 @@ async function cargarCredencial(){
   const alumno = alRows?.[0]
   if (!alumno) return
 
-  let instructor = 'Instructor UNION'
+  let fallbackInstructor = 'Instructor UNION'
   try {
     const { data: adminRows } = await supabase.from('padres').select('nombre,es_admin').eq('es_admin', true).limit(1)
-    if (adminRows?.[0]?.nombre) instructor = adminRows[0].nombre
+    if (adminRows?.[0]?.nombre) fallbackInstructor = adminRows[0].nombre
   } catch (e) {}
 
-  const estado = estadoPago(alumno.fecha_proximo_pago)
-  const vigencia = alumno.fecha_proximo_pago ? fmtFecha(alumno.fecha_proximo_pago) : 'No registrada'
-  const qrUrl = 'https://app.unionmartialarts.org/credencial?id=' + encodeURIComponent(alumno.id)
+  const visualId = await ensureCredencialVisualId(alumno)
+  const qrUrl = 'https://app.unionmartialarts.org/id/' + encodeURIComponent(visualId)
+  const activo = alumnoEsActivo(alumno)
+  const estadoTxt = activo ? 'Alumno Activo' : 'Alumno Inactivo'
 
   document.getElementById('alumno-nombre').textContent = alumno.nombre || 'Alumno'
-  document.getElementById('alumno-id').textContent = alumno.id
-  document.getElementById('back-id').textContent = alumno.id
-  document.getElementById('dato-nac').textContent = fmtFecha(alumno.fecha_nacimiento)
-  document.getElementById('dato-edad').textContent = edadDesde(alumno.fecha_nacimiento)
-  document.getElementById('dato-ingreso').textContent = fmtFecha(alumno.fecha_ingreso)
+  document.getElementById('alumno-id').textContent = visualId
+  document.getElementById('back-id').textContent = visualId
   document.getElementById('dato-grupo').textContent = alumno.grupo || 'Sin grupo'
-  document.getElementById('dato-horario').textContent = principalHorario(alumno.horario)
-  document.getElementById('dato-instructor').textContent = instructor
-  document.getElementById('dato-cinta').textContent = (alumno.cinta || 'Sin cinta') + ' · ' + extraerGrado(alumno.cinta)
+  document.getElementById('dato-cinta').textContent = alumno.cinta || 'Sin cinta'
+  document.getElementById('dato-instructor').textContent = instructorDe(alumno, fallbackInstructor)
+  document.getElementById('dato-ingreso').textContent = fmtFecha(alumno.fecha_ingreso)
   document.getElementById('dato-plan').textContent = (alumno.plan_pago || 'Sin plan').toString()
-  document.getElementById('dato-vigencia').textContent = 'Vigencia: ' + vigencia
-  document.getElementById('qr-url').textContent = qrUrl
 
   const b = document.getElementById('badge-estado')
-  b.className = 'status-badge ' + estado.cls
-  b.textContent = `${estado.emoji} ${estado.label}`
-
-  const belt = document.getElementById('belt-bar')
-  belt.style.background = `linear-gradient(90deg, ${cintaColor(alumno.cinta)} 0%, ${cintaColor(alumno.cinta)} 100%)`
+  b.className = 'status-badge ' + (activo ? 'status-ok' : 'status-bad')
+  b.textContent = (activo ? '🟢 ' : '🔴 ') + estadoTxt
 
   const foto = document.getElementById('foto')
   const fallback = document.getElementById('foto-fallback')
@@ -418,17 +377,25 @@ async function cargarCredencial(){
   const esNegra = String(alumno.cinta || '').toLowerCase().includes('negra')
   if (esNegra) document.getElementById('photo-frame').classList.add('black-belt')
 
-  fillBarcode(alumno.id)
   await qrConLogo('qr-main', qrUrl)
   await qrConLogo('qr-back', qrUrl)
+
+  const safeName = cleanFileName(alumno.nombre || 'Alumno')
+  pdfName = `Credencial_${safeName}.pdf`
 }
 
-// Botones
-const note = document.getElementById('top-note')
-document.getElementById('btn-print').addEventListener('click', () => window.print())
-document.getElementById('btn-pdf').addEventListener('click', () => {
-  note.textContent = 'PDF en v1: usa Imprimir PVC y guardar como PDF'
+document.getElementById('btn-print').addEventListener('click', () => {
+  const prev = document.title
+  document.title = 'Credencial_PVC_UNION'
   window.print()
+  setTimeout(() => { document.title = prev }, 100)
+})
+
+document.getElementById('btn-pdf').addEventListener('click', () => {
+  const prev = document.title
+  document.title = pdfName
+  window.print()
+  setTimeout(() => { document.title = prev }, 100)
 })
 
 cargarCredencial()

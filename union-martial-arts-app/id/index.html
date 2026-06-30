@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Validacion de Credencial - UNION Martial Arts</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<link rel="stylesheet" href="../css/uma.css?v=18" />
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#eef3ff,#f8fbff);font-family:inherit}
+.wrap{max-width:520px;margin:0 auto;padding:18px 14px 26px}
+.card{background:#fff;border-radius:16px;border:1px solid #dbe6ff;box-shadow:0 10px 24px rgba(11,44,255,.12);overflow:hidden}
+.head{background:linear-gradient(135deg,#0f2167,#0b2cff);color:#fff;padding:14px 14px 12px;display:flex;align-items:center;gap:10px}
+.head img{width:34px;height:34px;border-radius:50%;background:#fff;padding:4px}
+.ttl{font-size:12px;font-weight:900;line-height:1.2;letter-spacing:.06em}
+.body{padding:14px}
+.photo{width:110px;height:110px;border-radius:50%;overflow:hidden;background:#e2e8f0;border:3px solid #0b2cff;box-shadow:0 0 0 3px #fff,0 0 0 6px rgba(212,169,59,.35);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;color:#1e3a8a;font-size:36px}
+.photo img{width:100%;height:100%;object-fit:cover}
+.name{text-align:center;font-size:20px;font-weight:900;color:#0f172a;line-height:1.1}
+.id{text-align:center;margin-top:5px;font-size:12px;font-weight:800;color:#1d4ed8}
+.badge{margin:10px auto 0;display:flex;align-items:center;justify-content:center;gap:7px;width:max-content;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:800;border:1px solid}
+.badge.ok{background:#dcfce7;color:#166534;border-color:#86efac}
+.badge.bad{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.grid{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv{background:#f8fbff;border:1px solid #dbe6ff;border-radius:10px;padding:7px 8px}
+.k{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;font-weight:800}
+.v{font-size:12px;font-weight:800;color:#0f172a;margin-top:2px;line-height:1.25}
+.foot{text-align:center;font-size:11px;color:#64748b;margin-top:12px}
+.err{padding:14px;text-align:center;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:12px;font-weight:700}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="ok-card" style="display:none;">
+      <div class="head">
+        <img src="../assets/logo-union-blue.png" alt="Union">
+        <div class="ttl">UNION<br>MARTIAL ARTS</div>
+      </div>
+      <div class="body">
+        <div class="photo" id="photo-box">👤</div>
+        <div class="name" id="name">Alumno</div>
+        <div class="id" id="vid">UMA-000000</div>
+        <div class="badge ok" id="estado">🟢 Alumno Activo</div>
+
+        <div class="grid">
+          <div class="kv"><div class="k">Cinta</div><div class="v" id="cinta">-</div></div>
+          <div class="kv"><div class="k">Instructor</div><div class="v" id="instructor">-</div></div>
+          <div class="kv"><div class="k">Fecha de ingreso</div><div class="v" id="ingreso">-</div></div>
+          <div class="kv"><div class="k">Grupo</div><div class="v" id="grupo">-</div></div>
+        </div>
+
+        <div class="foot">Credencial Oficial UNION - Validacion digital</div>
+      </div>
+    </div>
+
+    <div class="err" id="err" style="display:none;">No se pudo validar la credencial.</div>
+  </div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const supabase = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+
+function fmtFecha(v){
+  if (!v) return 'No registrada'
+  const d = new Date(v + 'T12:00:00')
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })
+}
+function alumnoEsActivo(a){
+  if (a && Object.prototype.hasOwnProperty.call(a, 'activo') && a.activo === false) return false
+  const est = String(a?.estado || '').toLowerCase()
+  if (est === 'inactivo') return false
+  return true
+}
+
+async function load(){
+  const parts = window.location.pathname.split('/').filter(Boolean)
+  const visualId = decodeURIComponent(parts[parts.length - 1] || '').trim()
+  if (!visualId || !/^UMA-\d{6}$/.test(visualId)) {
+    document.getElementById('err').style.display = 'block'
+    return
+  }
+
+  const ref = await supabase.from('configuracion').select('valor').eq('clave', `cred_ref_${visualId}`).maybeSingle()
+  const alumnoId = ref?.data?.valor ? String(ref.data.valor).trim() : ''
+  if (!alumnoId) {
+    document.getElementById('err').style.display = 'block'
+    return
+  }
+
+  const { data: rows } = await supabase.from('alumnos').select('*').eq('id', alumnoId).limit(1)
+  const a = rows?.[0]
+  if (!a) {
+    document.getElementById('err').style.display = 'block'
+    return
+  }
+
+  let instructor = a.instructor || a.instructor_nombre || 'Instructor UNION'
+  try {
+    if (!a.instructor && !a.instructor_nombre) {
+      const { data: adminRows } = await supabase.from('padres').select('nombre,es_admin').eq('es_admin', true).limit(1)
+      if (adminRows?.[0]?.nombre) instructor = adminRows[0].nombre
+    }
+  } catch (e) {}
+
+  const activo = alumnoEsActivo(a)
+  const photo = document.getElementById('photo-box')
+  if (a.foto_url) {
+    photo.innerHTML = `<img src="${a.foto_url}" alt="Alumno" />`
+  }
+
+  document.getElementById('name').textContent = a.nombre || 'Alumno'
+  document.getElementById('vid').textContent = visualId
+  document.getElementById('cinta').textContent = a.cinta || 'Sin cinta'
+  document.getElementById('instructor').textContent = instructor
+  document.getElementById('ingreso').textContent = fmtFecha(a.fecha_ingreso)
+  document.getElementById('grupo').textContent = a.grupo || 'Sin grupo'
+
+  const estado = document.getElementById('estado')
+  estado.className = 'badge ' + (activo ? 'ok' : 'bad')
+  estado.textContent = activo ? '🟢 Alumno Activo' : '🔴 Alumno Inactivo'
+
+  document.getElementById('ok-card').style.display = 'block'
+}
+
+load().catch(() => {
+  document.getElementById('err').style.display = 'block'
+})
+</script>
+</body>
+</html>

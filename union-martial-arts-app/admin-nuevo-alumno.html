@@ -146,6 +146,32 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  function year2From(fechaIngreso) {
+    const y = (fechaIngreso && /^\d{4}-\d{2}-\d{2}$/.test(fechaIngreso))
+      ? Number(fechaIngreso.slice(0, 4))
+      : new Date().getFullYear()
+    return String(y).slice(-2)
+  }
+
+  async function ensureCredencialVisualId(alumnoId, fechaIngreso) {
+    const keyByAlumno = `cred_id_${alumnoId}`
+    const ref = await supabase.from('configuracion').select('valor').eq('clave', keyByAlumno).maybeSingle()
+    const existing = ref?.data?.valor ? String(ref.data.valor).trim() : ''
+    if (existing) return existing
+
+    const yy = year2From(fechaIngreso)
+    const seqKey = `cred_seq_${yy}`
+    const seqRes = await supabase.from('configuracion').select('valor').eq('clave', seqKey).maybeSingle()
+    const current = Number(seqRes?.data?.valor || 0)
+    const next = Number.isFinite(current) ? current + 1 : 1
+    const visualId = `UMA-${yy}${String(next).padStart(4, '0')}`
+
+    await supabase.from('configuracion').upsert({ clave: seqKey, valor: String(next) }, { onConflict: 'clave' })
+    await supabase.from('configuracion').upsert({ clave: keyByAlumno, valor: visualId }, { onConflict: 'clave' })
+    await supabase.from('configuracion').upsert({ clave: `cred_ref_${visualId}`, valor: alumnoId }, { onConflict: 'clave' })
+    return visualId
+  }
+
   const TODOS_HORARIOS = [
     'Lunes, Miércoles y Viernes · 4:00 PM – 5:00 PM',
     'Lunes, Miércoles y Viernes · 5:00 PM – 6:00 PM',
@@ -232,6 +258,11 @@
       btn.innerHTML = '<i data-lucide="user-plus"></i> Registrar alumno'
       lucide.createIcons(); return
     }
+
+    // 2.1 Generar ID visual permanente de credencial sin alterar el esquema
+    try {
+      await ensureCredencialVisualId(alumno.id, fechaIngreso)
+    } catch (e) {}
 
     // 3. Insertar padre (sin user_id por ahora — se vincula al aceptar invitación)
     const { error: errPadre } = await supabase.from('padres').insert({
