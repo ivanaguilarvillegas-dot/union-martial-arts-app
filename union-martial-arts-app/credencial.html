@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Credencial Digital — Union Martial Arts</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Union MA">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="stylesheet" href="css/uma.css?v=18" />
+<style>
+:root{
+  --um-electric:#0a2bff;
+  --um-deep:#081a56;
+  --um-glass:rgba(255,255,255,.12);
+  --um-metal:#d5deef;
+  --ok:#16a34a;
+  --warn:#d97706;
+  --danger:#dc2626;
+}
+*{box-sizing:border-box}
+body{background:radial-gradient(circle at 12% 15%, #e0ecff 0%, #f4f7fb 35%, #edf2f9 100%)}
+
+.cred-wrap{padding:14px 12px 24px;max-width:980px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.btn-pill{height:38px;padding:0 14px;border:none;border-radius:999px;font-weight:800;font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-decoration:none}
+.btn-back{background:#e5e7eb;color:#111827}
+.btn-print{background:linear-gradient(135deg,#0f2167,#0a2bff);color:#fff}
+.btn-dl{background:#dbeafe;color:#1e40af}
+.btn-note{font-size:11px;color:#64748b;margin-left:auto}
+
+.sheet{display:grid;grid-template-columns:1fr;gap:14px}
+.pvc-card{
+  width:100%;
+  max-width:640px;
+  aspect-ratio:86 / 54;
+  margin:0 auto;
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 14px 40px rgba(8,26,86,.22);
+  border:1px solid rgba(255,255,255,.45);
+}
+.front{
+  background:
+    radial-gradient(circle at 80% 15%, rgba(255,255,255,.24), transparent 35%),
+    radial-gradient(circle at 15% 100%, rgba(56,189,248,.15), transparent 45%),
+    linear-gradient(135deg, #081a56 0%, #0f2167 36%, #0a2bff 100%);
+}
+.back{
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.2), transparent 30%),
+    linear-gradient(145deg, #0c1f64 0%, #0d2b84 45%, #0a2bff 100%);
+}
+.glass{position:absolute;inset:8px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));backdrop-filter:blur(3px)}
+
+.front-inner{position:relative;z-index:2;height:100%;padding:14px;display:grid;grid-template-columns:36% 1fr;gap:12px;color:#fff}
+.brand{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.brand img{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
+.brand-txt{font-size:10px;letter-spacing:.08em;font-weight:900;line-height:1.2}
+
+.photo-zone{display:flex;flex-direction:column;align-items:center;gap:8px}
+.photo-frame{
+  width:130px;height:130px;border-radius:50%;position:relative;overflow:hidden;
+  border:4px solid #0a2bff;box-shadow:0 0 0 3px #fff, 0 8px 18px rgba(0,0,0,.28);
+  background:#e2e8f0;display:flex;align-items:center;justify-content:center;
+}
+.photo-frame.black-belt{box-shadow:0 0 0 3px #fff, 0 0 0 6px rgba(250,204,21,.45), 0 8px 18px rgba(0,0,0,.28)}
+.photo-frame img{width:100%;height:100%;object-fit:cover;object-position:center}
+.photo-fallback{display:flex;flex-direction:column;align-items:center;gap:6px;color:#1e3a8a}
+.photo-fallback img{width:38px;height:38px;object-fit:contain}
+.stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.14}
+.stamp img{width:82px;height:82px;object-fit:contain;transform:rotate(-12deg)}
+
+.values{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.values span{font-size:9px;background:rgba(255,255,255,.14);padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.2);display:inline-flex;align-items:center;gap:4px}
+
+.meta{display:flex;flex-direction:column;min-width:0}
+.name{font-size:20px;font-weight:900;line-height:1.05;letter-spacing:.01em}
+.idline{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:11px;color:#dbeafe}
+.status-badge{margin-top:8px;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;width:max-content;border:1px solid rgba(255,255,255,.25)}
+.status-ok{background:rgba(22,163,74,.24);color:#dcfce7}
+.status-warn{background:rgba(217,119,6,.25);color:#fef3c7}
+.status-danger{background:rgba(220,38,38,.25);color:#fee2e2}
+
+.data-grid{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:44px}
+.kv .k{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#bfdbfe;font-weight:700}
+.kv .v{font-size:11px;font-weight:700;margin-top:2px;line-height:1.25}
+
+.badge-row{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.belt-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;display:flex;align-items:center;gap:8px}
+.belt-bar{height:8px;border-radius:999px;flex:1;position:relative;overflow:hidden}
+.belt-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.24),transparent 52%,rgba(0,0,0,.2))}
+.belt-txt{font-size:10px;font-weight:800;white-space:nowrap}
+
+.qr-block{margin-top:8px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px}
+.qr-box{width:88px;height:88px;background:#fff;border-radius:10px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qr-box canvas{width:100%!important;height:100%!important}
+.qr-txt{font-size:10px;line-height:1.4;color:#dbeafe}
+
+.back-inner{position:relative;z-index:2;height:100%;padding:14px;color:#fff;display:grid;grid-template-columns:1fr 34%;gap:10px}
+.back-title{font-size:12px;font-weight:900;letter-spacing:.06em}
+.loss{margin-top:8px;font-size:10.5px;line-height:1.45;color:#e2e8f0}
+.loss b{color:#fff}
+.side{display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.side-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px}
+.side .k{font-size:8.5px;text-transform:uppercase;letter-spacing:.08em;color:#bfdbfe;font-weight:800}
+.side .v{font-size:10.5px;font-weight:700;margin-top:2px}
+.barcode{height:30px;background:#fff;border-radius:8px;padding:5px;display:flex;align-items:flex-end;gap:1px}
+.bar{width:2px;background:#0f172a;border-radius:1px}
+
+.foot{font-size:8.5px;color:#bfdbfe;text-align:center;margin-top:8px}
+
+.hidden{display:none}
+
+@media print {
+  @page { size: 86mm 54mm landscape; margin: 0; }
+  body{background:#fff}
+  .topbar,.btn-note{display:none!important}
+  .cred-wrap{padding:0;max-width:none}
+  .sheet{gap:0}
+  .pvc-card{width:86mm;height:54mm;max-width:none;aspect-ratio:auto;border-radius:0;box-shadow:none;margin:0}
+  .pvc-card.back{page-break-before:always}
+}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen" style="background:#f1f5fb;overflow:auto;">
+  <div class="cred-wrap">
+    <div class="topbar">
+      <a class="btn-pill btn-back" href="home.html">↩ Regresar</a>
+      <button class="btn-pill btn-dl" id="btn-pdf">⬇ Descargar PDF</button>
+      <button class="btn-pill btn-print" id="btn-print">🖨 Imprimir PVC</button>
+      <div class="btn-note" id="top-note">PDF: preparado para siguiente fase</div>
+    </div>
+
+    <div class="sheet" id="cred-sheet">
+      <div class="pvc-card front" id="card-front">
+        <div class="glass"></div>
+        <div class="front-inner">
+          <div class="photo-zone">
+            <div class="brand">
+              <img src="assets/logo-union-blue.png" alt="Union">
+              <div class="brand-txt">UNION<br>MARTIAL ARTS</div>
+            </div>
+            <div class="photo-frame" id="photo-frame">
+              <img id="foto" class="hidden" alt="Alumno">
+              <div class="photo-fallback" id="foto-fallback">
+                <img src="assets/logo-union-blue.png" alt="logo">
+                <div style="font-size:26px;">👤</div>
+              </div>
+              <div class="stamp"><img src="assets/logo-union-white.png" alt="sello"></div>
+            </div>
+            <div class="values">
+              <span>🥋 Disciplina</span>
+              <span>🤝 Respeto</span>
+              <span>🛡 Honor</span>
+              <span>🔥 Esfuerzo</span>
+              <span>🏔 Perseverancia</span>
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="name" id="alumno-nombre">Alumno</div>
+            <div class="idline"><span>🆔</span><span id="alumno-id">—</span></div>
+            <div class="status-badge status-ok" id="badge-estado">🟢 Activo</div>
+
+            <div class="data-grid">
+              <div class="kv"><div class="k">Fecha nacimiento</div><div class="v" id="dato-nac">—</div></div>
+              <div class="kv"><div class="k">Edad</div><div class="v" id="dato-edad">—</div></div>
+              <div class="kv"><div class="k">Ingreso</div><div class="v" id="dato-ingreso">—</div></div>
+              <div class="kv"><div class="k">Instructor</div><div class="v" id="dato-instructor">—</div></div>
+              <div class="kv"><div class="k">Grupo</div><div class="v" id="dato-grupo">—</div></div>
+              <div class="kv"><div class="k">Horario</div><div class="v" id="dato-horario">—</div></div>
+            </div>
+
+            <div class="badge-row">
+              <div class="belt-chip">
+                <div class="belt-bar" id="belt-bar"></div>
+                <div class="belt-txt" id="dato-cinta">—</div>
+              </div>
+              <div class="kv" style="min-height:auto;display:flex;flex-direction:column;justify-content:center;">
+                <div class="k">Plan / Vigencia</div>
+                <div class="v" id="dato-plan">—</div>
+                <div class="v" id="dato-vigencia" style="font-size:10px;color:#dbeafe;">—</div>
+              </div>
+            </div>
+
+            <div class="qr-block">
+              <div class="qr-box"><canvas id="qr-main"></canvas></div>
+              <div class="qr-txt">
+                Validación preparada para QR:<br>
+                <span id="qr-url" style="word-break:break-all;">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pvc-card back" id="card-back">
+        <div class="glass"></div>
+        <div class="back-inner">
+          <div>
+            <div class="back-title">EN CASO DE PÉRDIDA</div>
+            <div class="loss">
+              Si encuentras esta credencial, por favor entrégala en:<br><br>
+              <b>UNION Martial Arts</b><br>
+              Av. de los Insurgentes 2405<br>
+              Partido Romero<br>
+              C.P. 32030<br>
+              Ciudad Juárez, Chihuahua<br><br>
+              <b>Teléfono:</b> (656) 637-9191<br><br>
+              Esta credencial es propiedad de UNION Martial Arts.<br>
+              Es personal e intransferible.<br>
+              No tiene valor fuera de la academia.<br>
+              Válida únicamente mientras el alumno permanezca inscrito y activo en UNION Martial Arts.
+            </div>
+            <div class="foot">Esta credencial es propiedad de UNION Martial Arts.</div>
+          </div>
+          <div class="side">
+            <div class="side-box">
+              <div class="k">ID / Alumno</div>
+              <div class="v" id="back-id">—</div>
+            </div>
+            <div class="side-box">
+              <div class="k">Firma digital (futuro)</div>
+              <div class="v">Director UNION</div>
+            </div>
+            <div class="side-box">
+              <div class="k">Observaciones</div>
+              <div class="v">NFC / Código de barras / Validación pública</div>
+            </div>
+            <div class="qr-box" style="width:100%;height:96px;"><canvas id="qr-back"></canvas></div>
+            <div class="barcode" id="barcode"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const supabase = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+
+function fmtFecha(v){
+  if (!v) return 'No registrada'
+  const d = new Date(v + 'T12:00:00')
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })
+}
+function edadDesde(fecha){
+  if (!fecha) return '—'
+  const f = new Date(fecha + 'T12:00:00')
+  const h = new Date()
+  let e = h.getFullYear() - f.getFullYear()
+  const m = h.getMonth() - f.getMonth()
+  if (m < 0 || (m === 0 && h.getDate() < f.getDate())) e--
+  return e + ' años'
+}
+function cintaColor(c){
+  const l = String(c || '').toLowerCase()
+  if (l.includes('negra') || l.includes('negro')) return '#111827'
+  if (l.includes('roja') || l.includes('rojo')) return '#dc2626'
+  if (l.includes('cafe') || l.includes('café') || l.includes('marron') || l.includes('marrón')) return '#78350f'
+  if (l.includes('verde')) return '#16a34a'
+  if (l.includes('azul')) return '#2563eb'
+  if (l.includes('morada') || l.includes('morado')) return '#9333ea'
+  if (l.includes('naranja') || l.includes('anaranjada')) return '#f97316'
+  if (l.includes('amarilla') || l.includes('amarillo')) return '#fbbf24'
+  if (l.includes('blanca') || l.includes('blanco')) return '#e5e7eb'
+  return '#60a5fa'
+}
+function extraerGrado(cinta){
+  const s = String(cinta || '')
+  if (s.includes(' V ')) return 'V'
+  if (s.includes(' IV ')) return 'IV'
+  if (s.includes(' III ')) return 'III'
+  if (s.includes(' II ')) return 'II'
+  if (s.includes(' I ')) return 'I'
+  return 'Base'
+}
+function estadoPago(fechaProx){
+  const base = { label:'Activo', emoji:'🟢', cls:'status-ok' }
+  if (!fechaProx) return base
+  const hoy = new Date(); hoy.setHours(0,0,0,0)
+  const prox = new Date(fechaProx + 'T12:00:00')
+  const dias = Math.floor((hoy - prox) / 86400000)
+  if (dias > 6) return { label:'Pendiente pago', emoji:'🔴', cls:'status-danger' }
+  if (dias > 0) return { label:'Pendiente', emoji:'🟡', cls:'status-warn' }
+  return base
+}
+function principalHorario(h){
+  if (!h) return 'No asignado'
+  return String(h).split('|').map(x => x.trim()).filter(Boolean)[0] || 'No asignado'
+}
+
+function fillBarcode(id){
+  const box = document.getElementById('barcode')
+  const seed = String(id || 'UMA')
+  box.innerHTML = ''
+  for (let i = 0; i < 42; i++) {
+    const ch = seed.charCodeAt(i % seed.length)
+    const h = 9 + ((ch + i * 7) % 16)
+    const bar = document.createElement('span')
+    bar.className = 'bar'
+    bar.style.height = h + 'px'
+    bar.style.width = (i % 5 === 0 ? 3 : 2) + 'px'
+    box.appendChild(bar)
+  }
+}
+
+async function qrConLogo(canvasId, value){
+  const canvas = document.getElementById(canvasId)
+  const q = new QRious({ element: canvas, value, size: 300, level: 'H', foreground: '#0a2bff', background: '#ffffff' })
+  q.set({ value })
+  const ctx = canvas.getContext('2d')
+  const logo = new Image()
+  logo.src = 'assets/logo-union-blue.png'
+  await new Promise(resolve => { logo.onload = resolve; logo.onerror = resolve })
+  const s = canvas.width * 0.24
+  const x = (canvas.width - s) / 2
+  const y = (canvas.height - s) / 2
+  ctx.fillStyle = '#fff'
+  const r = 12
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + s, y, x + s, y + s, r)
+  ctx.arcTo(x + s, y + s, x, y + s, r)
+  ctx.arcTo(x, y + s, x, y, r)
+  ctx.arcTo(x, y, x + s, y, r)
+  ctx.closePath()
+  ctx.fill()
+  if (logo.complete) ctx.drawImage(logo, x + 8, y + 8, s - 16, s - 16)
+}
+
+async function cargarCredencial(){
+  const { data: auth } = await supabase.auth.getUser()
+  const user = auth?.user
+  if (!user) { window.location.href = 'index.html'; return }
+
+  let { data: padres } = await supabase.from('padres').select('id,alumno_id,nombre').eq('user_id', user.id)
+  if (!padres?.length) {
+    const fb = await supabase.from('padres').select('id,alumno_id,nombre').eq('correo', user.email)
+    padres = fb.data || []
+    if (padres.length) {
+      for (const p of padres) {
+        try { await supabase.from('padres').update({ user_id: user.id }).eq('id', p.id) } catch (e) {}
+      }
+    }
+  }
+
+  const params = new URLSearchParams(window.location.search)
+  const qAlumno = params.get('alumno')
+  const savedPadre = localStorage.getItem('uma_padre_id')
+  const padreSel = (padres || []).find(p => p.id === savedPadre) || (padres || [])[0] || null
+  let alumnoId = qAlumno || padreSel?.alumno_id || null
+
+  if (!alumnoId) {
+    document.getElementById('alumno-nombre').textContent = 'Sin alumno vinculado'
+    return
+  }
+
+  const okIds = new Set((padres || []).map(p => p.alumno_id).filter(Boolean))
+  if (!okIds.has(alumnoId) && okIds.size) alumnoId = [...okIds][0]
+
+  const { data: alRows } = await supabase.from('alumnos').select('*').eq('id', alumnoId).limit(1)
+  const alumno = alRows?.[0]
+  if (!alumno) return
+
+  let instructor = 'Instructor UNION'
+  try {
+    const { data: adminRows } = await supabase.from('padres').select('nombre,es_admin').eq('es_admin', true).limit(1)
+    if (adminRows?.[0]?.nombre) instructor = adminRows[0].nombre
+  } catch (e) {}
+
+  const estado = estadoPago(alumno.fecha_proximo_pago)
+  const vigencia = alumno.fecha_proximo_pago ? fmtFecha(alumno.fecha_proximo_pago) : 'No registrada'
+  const qrUrl = 'https://app.unionmartialarts.org/credencial?id=' + encodeURIComponent(alumno.id)
+
+  document.getElementById('alumno-nombre').textContent = alumno.nombre || 'Alumno'
+  document.getElementById('alumno-id').textContent = alumno.id
+  document.getElementById('back-id').textContent = alumno.id
+  document.getElementById('dato-nac').textContent = fmtFecha(alumno.fecha_nacimiento)
+  document.getElementById('dato-edad').textContent = edadDesde(alumno.fecha_nacimiento)
+  document.getElementById('dato-ingreso').textContent = fmtFecha(alumno.fecha_ingreso)
+  document.getElementById('dato-grupo').textContent = alumno.grupo || 'Sin grupo'
+  document.getElementById('dato-horario').textContent = principalHorario(alumno.horario)
+  document.getElementById('dato-instructor').textContent = instructor
+  document.getElementById('dato-cinta').textContent = (alumno.cinta || 'Sin cinta') + ' · ' + extraerGrado(alumno.cinta)
+  document.getElementById('dato-plan').textContent = (alumno.plan_pago || 'Sin plan').toString()
+  document.getElementById('dato-vigencia').textContent = 'Vigencia: ' + vigencia
+  document.getElementById('qr-url').textContent = qrUrl
+
+  const b = document.getElementById('badge-estado')
+  b.className = 'status-badge ' + estado.cls
+  b.textContent = `${estado.emoji} ${estado.label}`
+
+  const belt = document.getElementById('belt-bar')
+  belt.style.background = `linear-gradient(90deg, ${cintaColor(alumno.cinta)} 0%, ${cintaColor(alumno.cinta)} 100%)`
+
+  const foto = document.getElementById('foto')
+  const fallback = document.getElementById('foto-fallback')
+  if (alumno.foto_url) {
+    foto.src = alumno.foto_url
+    foto.classList.remove('hidden')
+    fallback.classList.add('hidden')
+  }
+
+  const esNegra = String(alumno.cinta || '').toLowerCase().includes('negra')
+  if (esNegra) document.getElementById('photo-frame').classList.add('black-belt')
+
+  fillBarcode(alumno.id)
+  await qrConLogo('qr-main', qrUrl)
+  await qrConLogo('qr-back', qrUrl)
+}
+
+// Botones
+const note = document.getElementById('top-note')
+document.getElementById('btn-print').addEventListener('click', () => window.print())
+document.getElementById('btn-pdf').addEventListener('click', () => {
+  note.textContent = 'PDF en v1: usa Imprimir PVC y guardar como PDF'
+  window.print()
+})
+
+cargarCredencial()
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+</script>
+</body>
+</html>

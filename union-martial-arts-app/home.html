@@ -140,6 +140,21 @@
 .hero-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .badge-activo { background: rgba(255,255,255,.15); color: #fff; border-radius: 20px; font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; font-weight: 600; border: 1px solid rgba(255,255,255,.25); }
 .badge-activo i { width: 12px; height: 12px; color: #86efac; }
+.badge-credencial {
+  background: linear-gradient(135deg, #1f4bff 0%, #0a18ec 55%, #0d2cf4 100%);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: 0 2px 8px rgba(10,24,236,.28);
+  text-decoration: none;
+}
+.badge-credencial i { width: 12px; height: 12px; color: #bfdbfe; }
 
 /* Divisor sutil */
 .hero-divider {
@@ -404,6 +419,7 @@
         <div class="hero-grupo" id="grupo-alumno">—</div>
         <div class="hero-badges">
           <span class="badge-activo" id="badge-pago"><i data-lucide="check-circle"></i> Activo</span>
+          <a class="badge-credencial" id="btn-credencial" href="credencial.html"><i data-lucide="id-card"></i> Credencial</a>
         </div>
         <div id="hijo-chips" style="display:none;margin-top:10px;"></div>
       </div>
@@ -955,6 +971,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     foto.style.boxShadow = `0 0 0 3px ${estado.ring}, 0 4px 16px rgba(0,0,0,.25)`
   }
 
+  function actualizarLinkCredencial(alumno) {
+    const btn = document.getElementById('btn-credencial')
+    if (!btn) return
+    const id = alumno?.id || ''
+    btn.setAttribute('href', id ? `credencial.html?alumno=${encodeURIComponent(id)}` : 'credencial.html')
+  }
+
   function renderProximaClase(horario) {
     const claseDia = document.getElementById('clase-dia')
     const claseHora = document.getElementById('clase-hora')
@@ -1124,6 +1147,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
         aplicarZonaUnion(al)
+        actualizarLinkCredencial(al)
         
         // Actualizar foto
         if (al.foto_url) {
@@ -1161,6 +1185,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
         aplicarEstadoPagoEnHero(al.fecha_proximo_pago)
         aplicarZonaUnion(al)
+        actualizarLinkCredencial(al)
 
         if (al.foto_url) {
           document.getElementById('foto-wrap').innerHTML = `
