@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Union Martial Arts — Biblioteca</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f2167">
+<link rel="stylesheet" href="css/uma.css?v=18" />
+<link rel="stylesheet" href="css/header-unified.css?v=1"/>
+<style>
+.res-card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);text-decoration:none;display:block;}
+.res-thumb{width:100%;height:148px;background:#0d1a5e;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.res-thumb img{width:100%;height:100%;object-fit:cover;}
+.res-play{position:absolute;width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.res-play i{width:20px;height:20px;color:#0d1a5e;margin-left:2px;}
+.res-body{padding:12px 14px;}
+.res-title{font-size:14px;font-weight:700;color:var(--text);}
+.res-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.sec{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:10px 0 8px;}
+</style>
+</head>
+<body>
+<div class="phone"><div class="screen" style="background:#f4f6fb;">
+  <div class="navhead blue uma-hdr hdr-unified">
+    <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
+    <div class="uma-hdr-brand">
+      <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
+      <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
+    </div>
+    <div class="grow"><div class="title">Biblioteca</div></div>
+  </div>
+
+  <div class="body" id="contenido"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px;">Cargando…</div></div>
+
+  <nav class="bottomnav">
+    <a href="home.html"><i data-lucide="home"></i>Inicio</a>
+    <a href="checkin.html"><i data-lucide="clipboard-check"></i>Check-in</a>
+    <a href="pagos.html"><i data-lucide="credit-card"></i>Pagos</a>
+    <a href="perfil.html"><i data-lucide="user"></i>Perfil</a>
+  </nav>
+</div></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+const sb = createClient(
+  'https://gdajgennlsuvndanpxiz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+)
+const { data: { user } } = await sb.auth.getUser()
+if (!user) { window.location.href = 'index.html' }
+
+function getYouTubeId(url) {
+  const m = String(url || '').match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)
+  return m ? m[1] : null
+}
+
+function prettify(k) {
+  return String(k || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+async function cargar() {
+  const { data: row } = await sb.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle()
+  let links = {}
+  try { links = JSON.parse(row?.valor || '{}') } catch {}
+
+  const entries = Object.entries(links)
+  if (!entries.length) {
+    document.getElementById('contenido').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);"><div style="font-size:36px;margin-bottom:10px;">📚</div><div style="font-size:14px;font-weight:600;">Sin contenido publicado</div><div style="font-size:12px;margin-top:6px;">El instructor publicará recursos pronto.</div></div>'
+    lucide.createIcons(); return
+  }
+
+  const html = '<div class="sec">Recursos publicados</div>' + entries.map(([k, v]) => {
+    const url = typeof v === 'string' ? v : (v?.url || '')
+    const title = typeof v === 'object' && v?.titulo ? v.titulo : prettify(k)
+    const desc = typeof v === 'object' && v?.descripcion ? v.descripcion : 'Recurso publicado por el instructor'
+    const yt = getYouTubeId(url)
+    const thumb = yt ? `https://img.youtube.com/vi/${yt}/mqdefault.jpg` : ''
+    return `<a class="res-card" href="${url}" target="_blank" rel="noopener noreferrer">
+      <div class="res-thumb">${thumb ? `<img src="${thumb}" alt="${title}">` : '<div style="color:#fff;font-size:34px;">🎬</div>'}<div class="res-play"><i data-lucide="play"></i></div></div>
+      <div class="res-body"><div class="res-title">${title}</div><div class="res-sub">${desc}</div></div>
+    </a>`
+  }).join('')
+
+  document.getElementById('contenido').innerHTML = html
+  lucide.createIcons()
+}
+
+cargar()
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{})</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Union Martial Arts — En Casa</title>
+<title>Union Martial Arts — Rutina en casa</title>
 <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0f2167">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,12 +21,12 @@
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
       <div class="uma-hdr-txt">UNION<br>MARTIAL ARTS</div>
     </div>
-    <div class="grow"><div class="title">Biblioteca UNION</div></div>
+    <div class="grow"><div class="title">Rutina en casa</div></div>
   </div>
   <div class="body">
     <div class="card soft mb14" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;">
       <i data-lucide="info" style="width:16px;height:16px;color:var(--primary);flex-shrink:0;margin-top:2px;"></i>
-      <span style="font-size:13px;color:var(--text);line-height:1.5;">Accede a videos, técnicas, combinaciones y material educativo del instructor. Marca lo revisado y guarda tu progreso en la biblioteca.</span>
+      <span style="font-size:13px;color:var(--text);line-height:1.5;">Practica rutinas organizadas por nivel. Marca lo completado para que tu instructor vea tu avance.</span>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:14px;" id="tabs">
       <button class="chip on" data-lvl="videos">Videos</button>
@@ -54,6 +54,15 @@
   )
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
+
+  let alumnoId = null
+  const _sid = localStorage.getItem('uma_padre_id')
+  let _pr = null
+  if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
+  if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
+  if (!_pr) { const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email).limit(1); _pr = pc?.[0] }
+  alumnoId = _pr?.alumno_id || null
+  const hoy = new Date().toISOString().split('T')[0]
 
   let planBloqueado = false
   {
@@ -86,7 +95,7 @@
 
   function clave(nombre) {
     return nombre.toLowerCase()
-      .normalize('NFD').replace(/[`-?]/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
       .substring(0, 40)
   }
@@ -102,6 +111,22 @@
       url: supabase.storage.from('media').getPublicUrl('videos/' + v.name).data.publicUrl
     }))
     try { links = JSON.parse(linkRes.value?.data?.valor || '{}') } catch { links = {} }
+
+    try {
+      if (alumnoId) {
+        const { data: ya } = await supabase.from('habitos_log')
+          .select('tipo')
+          .eq('alumno_id', alumnoId)
+          .eq('fecha', hoy)
+        ;(ya || []).forEach(r => {
+          const t = String(r.tipo || '')
+          if (t.startsWith('rutina_')) {
+            done[t.replace('rutina_', '')] = true
+          }
+        })
+      }
+    } catch(e) {}
+
     render()
   }
 
@@ -152,7 +177,35 @@
   document.getElementById('list')?.addEventListener('click', async e => {
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
+    const idx = b.dataset.k
     const items = LEVELS[lvl]
+    const nombre = items[Number(idx.replace(lvl, ''))]?.[1] || idx
+    try {
+      if (alumnoId) {
+        if (done[idx]) {
+          await supabase.from('habitos_log').insert({
+            alumno_id: alumnoId,
+            fecha: hoy,
+            tipo: 'rutina_' + idx,
+          })
+          await supabase.from('actividades_casa').insert({
+            alumno_id: alumnoId,
+            fecha: hoy,
+            tipo: 'rutina_' + idx,
+          })
+        } else {
+          await supabase.from('habitos_log').delete()
+            .eq('alumno_id', alumnoId)
+            .eq('fecha', hoy)
+            .eq('tipo', 'rutina_' + idx)
+          await supabase.from('actividades_casa').delete()
+            .eq('alumno_id', alumnoId)
+            .eq('fecha', hoy)
+            .eq('tipo', 'rutina_' + idx)
+        }
+      }
+    } catch(e) {}
+
     const n = items.filter((_, i) => done[lvl + i]).length
     if (n === items.length && !notifEnviada[lvl]) {
       notifEnviada[lvl] = true

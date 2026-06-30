@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+  <link rel="stylesheet" href="css/header-unified.css?v=1" />
 <style>
 /* Toast */
 .toast {
@@ -143,7 +144,7 @@
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -449,12 +450,16 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  let alumnoId = null
+  const _sid = localStorage.getItem('uma_padre_id')
+  let _pr = null
+  if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
+  if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
+  if (!_pr) { const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email).limit(1); _pr = pc?.[0] }
+  alumnoId = _pr?.alumno_id || null
+
   // Verificar acceso por plan
   {
-    const _sid = localStorage.getItem('uma_padre_id')
-    let _pr = null
-    if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
-    if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
     if (_pr?.alumno_id) {
       const { data: _al } = await supabase.from('alumnos').select('plan_pago').eq('id', _pr.alumno_id).maybeSingle()
       if (_al?.plan_pago === 'mensual') {
@@ -552,6 +557,28 @@
 
   const state = {}
   let notifEnviada = false
+  const hoy = new Date().toISOString().split('T')[0]
+
+  try {
+    if (alumnoId) {
+      const { data: ya } = await supabase.from('nutricion_log')
+        .select('tipo')
+        .eq('alumno_id', alumnoId)
+        .eq('fecha', hoy)
+      ;(ya || []).forEach(r => {
+        const m = String(r.tipo || '').match(/^nutricion_habito_(\d+)$/)
+        if (m) state[String(Number(m[1]) - 1)] = true
+      })
+      Object.keys(state).forEach(k => {
+        const el = habitosEl.querySelector(`[data-h="${k}"]`)
+        if (el) el.classList.add('done')
+      })
+      const n0 = Object.values(state).filter(Boolean).length
+      const badge0 = document.getElementById('cnt-badge')
+      badge0.textContent = n0 + '/' + habitos.length
+      badge0.style.background = n0 === habitos.length ? '#16a34a' : 'rgba(255,255,255,.2)'
+    }
+  } catch(e) {}
 
   const toasts = [
     '',
@@ -575,12 +602,37 @@
       showToast(toasts[n] || '✅ Hábito registrado')
       // Guardar cada hábito individual
       try {
+        if (alumnoId) {
+          await supabase.from('nutricion_log').insert({
+            alumno_id: alumnoId,
+            fecha: hoy,
+            tipo: `nutricion_habito_${Number(idx)+1}`,
+          })
+          await supabase.from('actividades_casa').insert({
+            alumno_id: alumnoId,
+            fecha: hoy,
+            tipo: `nutricion_habito_${Number(idx)+1}`,
+          })
+        }
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
           texto: `🥗 Hábito ${n}/${habitos.length}: ${habitos[idx].txt} · ${new Date().toLocaleDateString('es-MX')}`,
           para_admin: true,
           es_automatico: true
         })
+      } catch(e) {}
+    } else {
+      try {
+        if (alumnoId) {
+          await supabase.from('nutricion_log').delete()
+            .eq('alumno_id', alumnoId)
+            .eq('fecha', hoy)
+            .eq('tipo', `nutricion_habito_${Number(idx)+1}`)
+          await supabase.from('actividades_casa').delete()
+            .eq('alumno_id', alumnoId)
+            .eq('fecha', hoy)
+            .eq('tipo', `nutricion_habito_${Number(idx)+1}`)
+        }
       } catch(e) {}
     }
 

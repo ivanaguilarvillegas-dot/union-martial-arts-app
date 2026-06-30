@@ -11,10 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="Union MA">
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
+  <link rel="stylesheet" href="css/header-unified.css?v=1" />
 </head>
 <body>
 <div class="phone"><div class="screen">
-  <div class="navhead blue uma-hdr">
+  <div class="navhead blue uma-hdr hdr-unified">
     <a href="home.html" class="navback" aria-label="Volver"><i data-lucide="chevron-left"></i></a>
     <div class="uma-hdr-brand">
       <div class="uma-hdr-logo"><img src="/assets/logo-union-blue.png" alt="UMA" /></div>
@@ -60,12 +61,17 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { window.location.href = 'index.html' }
 
+  let alumnoId = null
+  const _sid = localStorage.getItem('uma_padre_id')
+  let _pr = null
+  if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
+  if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
+  if (!_pr) { const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email).limit(1); _pr = pc?.[0] }
+  alumnoId = _pr?.alumno_id || null
+  const hoy = new Date().toISOString().split('T')[0]
+
   let planBloqueado = false
   {
-    const _sid = localStorage.getItem('uma_padre_id')
-    let _pr = null
-    if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
-    if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
     if (_pr?.alumno_id) {
       const { data: _al } = await supabase.from('alumnos').select('plan_pago').eq('id', _pr.alumno_id).maybeSingle()
       if (_al?.plan_pago === 'mensual') {
@@ -106,6 +112,22 @@
     }))
     try { links = JSON.parse(linkRes.value?.data?.valor || '{}') } catch { links = {} }
     total = S.length + audios.length
+
+    try {
+      if (alumnoId) {
+        const { data: ya } = await supabase.from('meditacion_log')
+          .select('tipo')
+          .eq('alumno_id', alumnoId)
+          .eq('fecha', hoy)
+        ;(ya || []).forEach(r => {
+          const t = String(r.tipo || '')
+          if (t.startsWith('meditacion_')) {
+            done[t.replace('meditacion_', '')] = true
+          }
+        })
+      }
+    } catch(e) {}
+
     render()
   }
 
@@ -145,6 +167,37 @@
   document.getElementById('list')?.addEventListener('click', async e => {
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
+    const idx = b.dataset.k
+    const nombre = idx.startsWith('s')
+      ? (S[Number(idx.slice(1))]?.[0] || idx)
+      : (audios[Number(idx.slice(1))]?.nombre || idx)
+
+    try {
+      if (alumnoId) {
+        if (done[idx]) {
+          await supabase.from('meditacion_log').insert({
+            alumno_id: alumnoId,
+            fecha: hoy,
+            tipo: 'meditacion_' + idx,
+          })
+          await supabase.from('actividades_casa').insert({
+            alumno_id: alumnoId,
+            fecha: hoy,
+            tipo: 'meditacion_' + idx,
+          })
+        } else {
+          await supabase.from('meditacion_log').delete()
+            .eq('alumno_id', alumnoId)
+            .eq('fecha', hoy)
+            .eq('tipo', 'meditacion_' + idx)
+          await supabase.from('actividades_casa').delete()
+            .eq('alumno_id', alumnoId)
+            .eq('fecha', hoy)
+            .eq('tipo', 'meditacion_' + idx)
+        }
+      }
+    } catch(e) {}
+
     const n = Object.values(done).filter(Boolean).length
     if (n >= total && !notifMedEnviada) {
       notifMedEnviada = true

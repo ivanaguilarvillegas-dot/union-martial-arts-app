@@ -279,6 +279,9 @@ document.querySelector('.body').addEventListener('change', async e => {
     mostrarMsg('❌ Error: ' + error.message)
     if (label) label.innerHTML = origText
   } else {
+    const pub = supabase.storage.from('media').getPublicUrl(path).data.publicUrl
+    links[k] = pub
+    await guardarLinks()
     mostrarMsg('✅ Subido correctamente', 'green')
   }
   await cargarMedia()
