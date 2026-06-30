@@ -8,15 +8,41 @@
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
 <link rel="stylesheet" href="css/uma.css?v=18" />
 <style>
-.ev-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.ev-card{background:#fff;border-radius:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow:hidden;border:1px solid #e5e7eb;min-width:0;}
+.ev-media{width:100%;aspect-ratio:16/9;background:#0d1a5e;position:relative;overflow:hidden;}
+.ev-media img{width:100%;height:100%;object-fit:cover;display:block;}
+.ev-media-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.58);font-size:14px;font-weight:700;letter-spacing:.03em;}
+.ev-media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;padding:4px 8px;border-radius:999px;backdrop-filter:blur(4px);}
+.ev-body{padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;}
+.ev-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0;}
+.ev-title-wrap{min-width:0;flex:1;}
 .ev-tipo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1d4ed8;margin-bottom:4px;}
-.ev-titulo{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
-.ev-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
-.ev-meta span{display:flex;align-items:center;gap:3px;}
-.ev-actions{display:flex;gap:8px;}
+.ev-titulo{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.35;overflow-wrap:anywhere;}
+.ev-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;line-height:1.35;}
+.ev-meta span{display:inline-flex;align-items:center;gap:3px;}
+.ev-desc{font-size:12.5px;color:var(--muted);line-height:1.45;overflow-wrap:anywhere;}
+.ev-section{display:flex;flex-direction:column;gap:8px;}
+.ev-section-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.ev-actions{display:flex;flex-wrap:wrap;gap:8px;min-width:0;}
+.ev-actions .ev-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid transparent;min-width:0;white-space:nowrap;}
+.ev-actions .ev-btn.resource{background:#eff6ff;color:#0047AB;border-color:#dbeafe;}
+.ev-actions .ev-btn.edit{background:#fff;border-color:#e5e7eb;color:#111827;}
+.ev-actions .ev-btn.disable{background:#fff1f2;color:#dc2626;border-color:#fecaca;}
+.ev-extra-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;}
+.ev-extra-grid a{display:block;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;background:#f8fafc;}
+.ev-extra-grid img{width:100%;height:92px;object-fit:cover;display:block;}
+.ev-file-list{display:flex;flex-wrap:wrap;gap:8px;}
+.ev-file{display:inline-flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;color:#111827;text-decoration:none;min-width:0;max-width:100%;}
+.ev-file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:210px;}
+.ev-card-row{display:flex;flex-direction:column;gap:12px;}
 .tab-bar{display:flex;gap:4px;padding:10px 12px 0;background:#f4f6fb;}
 .tab{flex:1;padding:8px;border:none;background:none;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px;font-family:inherit;}
 .tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+@media (max-width: 520px) {
+  .ev-body{padding:12px;}
+  .ev-actions .ev-btn{flex:1 1 calc(50% - 4px);}
+  .ev-file span{max-width:140px;}
+}
 </style>
 </head>
 <body>
@@ -112,6 +138,116 @@ let editingEventId = null
 let editingOriginalFoto = null
 let editingOriginalPdf = null
 
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"]|'/g, match => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[match]))
+}
+
+function splitList(value) {
+  if (!value) return []
+  if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean)
+  return String(value)
+    .split(/\r?\n|\s*[,;]\s*/)
+    .map(v => v.trim())
+    .filter(Boolean)
+}
+
+function fileNameFromUrl(url) {
+  try {
+    const raw = new URL(url, window.location.href).pathname.split('/').filter(Boolean).pop() || url
+    return decodeURIComponent(raw).replace(/^.*?\//, '')
+  } catch {
+    return String(url).split('/').pop() || String(url)
+  }
+}
+
+function buildEventResources(ev) {
+  const links = []
+  if (ev.convocatoria_pdf_url) links.push({ label: 'Ver convocatoria', href: ev.convocatoria_pdf_url, kind: 'resource' })
+  if (ev.convocatoria_link) links.push({ label: 'Abrir enlace', href: ev.convocatoria_link, kind: 'resource' })
+  const extraImages = splitList(ev.imagenes_adicionales || ev.imagenes_urls || ev.galeria_urls || ev.fotos_adicionales || ev.fotos_urls)
+  const extraFiles = splitList(ev.archivos_adicionales || ev.archivos_urls || ev.documentos_urls || ev.adjuntos_urls)
+  return { links, extraImages, extraFiles }
+}
+
+function renderEventCard(ev, { admin = true, confirmado = false } = {}) {
+  const fechaFmt = ev.fecha
+    ? new Date(ev.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
+    : '—'
+  const tipo = esc(ev.tipo || 'Evento')
+  const titulo = esc(ev.titulo || 'Sin título')
+  const lugar = esc(ev.lugar || '')
+  const descripcion = esc(ev.descripcion || '')
+  const { links, extraImages, extraFiles } = buildEventResources(ev)
+  const media = ev.foto_url
+    ? `<img src="${esc(ev.foto_url)}" alt="${titulo}">`
+    : `<div class="ev-media-empty"><i data-lucide="calendar" style="width:30px;height:30px;"></i></div>`
+  const resourceHtml = links.length ? `
+    <div class="ev-section">
+      <div class="ev-section-title">Recursos</div>
+      <div class="ev-actions">
+        ${links.map(link => `<a class="ev-btn resource" href="${esc(link.href)}" target="_blank" rel="noopener"><i data-lucide="link" style="width:13px;height:13px;"></i>${esc(link.label)}</a>`).join('')}
+      </div>
+    </div>` : ''
+  const imagesHtml = extraImages.length ? `
+    <div class="ev-section">
+      <div class="ev-section-title">Imágenes adicionales</div>
+      <div class="ev-extra-grid">
+        ${extraImages.map(src => `<a href="${esc(src)}" target="_blank" rel="noopener"><img src="${esc(src)}" alt="${titulo}"></a>`).join('')}
+      </div>
+    </div>` : ''
+  const filesHtml = extraFiles.length ? `
+    <div class="ev-section">
+      <div class="ev-section-title">Archivos</div>
+      <div class="ev-file-list">
+        ${extraFiles.map(src => `<a class="ev-file" href="${esc(src)}" target="_blank" rel="noopener"><i data-lucide="paperclip" style="width:13px;height:13px;flex-shrink:0;"></i><span>${esc(fileNameFromUrl(src))}</span></a>`).join('')}
+      </div>
+    </div>` : ''
+  const actionHtml = admin
+    ? `<div class="ev-section">
+        <div class="ev-actions">
+          <a class="ev-btn resource" href="${esc(ev.convocatoria_pdf_url || ev.convocatoria_link || '#')}" target="_blank" rel="noopener" style="${ev.convocatoria_pdf_url || ev.convocatoria_link ? '' : 'display:none;'}"><i data-lucide="file-text" style="width:13px;height:13px;"></i>Ver convocatoria</a>
+          <button class="ev-btn edit" data-editar="${esc(ev.id)}"><i data-lucide="edit" style="width:13px;height:13px;"></i>Editar</button>
+          <button class="ev-btn disable" data-borrar="${esc(ev.id)}"><i data-lucide="trash-2" style="width:13px;height:13px;"></i>Desactivar</button>
+        </div>
+      </div>`
+    : `<div class="ev-section">
+        ${confirmado
+          ? '<div class="notice green" style="margin:0;"><i data-lucide="check-circle"></i> Asistencia confirmada · se notificó al instructor</div>'
+          : `<button class="btn secondary block" data-id="${esc(ev.id)}"><i data-lucide="calendar-check"></i> Confirmar asistencia</button>`}
+      </div>`
+
+  return `<div class="ev-card">
+    <div class="ev-media">
+      ${media}
+      ${tipo ? `<div class="ev-media-badge">${tipo.toUpperCase()}</div>` : ''}
+    </div>
+    <div class="ev-body">
+      <div class="ev-head">
+        <div class="ev-title-wrap">
+          <div class="ev-tipo">${tipo}</div>
+          <div class="ev-titulo">${titulo}</div>
+        </div>
+      </div>
+      <div class="ev-meta">
+        <span><i data-lucide="calendar" style="width:12px;height:12px;"></i>${esc(fechaFmt)}</span>
+        ${ev.hora ? `<span><i data-lucide="clock" style="width:12px;height:12px;"></i>${esc(ev.hora)}</span>` : ''}
+        ${lugar ? `<span><i data-lucide="map-pin" style="width:12px;height:12px;"></i>${lugar}</span>` : ''}
+      </div>
+      ${descripcion ? `<div class="ev-desc">${descripcion}</div>` : ''}
+      ${resourceHtml}
+      ${imagesHtml}
+      ${filesHtml}
+      ${actionHtml}
+    </div>
+  </div>`
+}
+
 document.getElementById('fecha').value = new Date().toISOString().split('T')[0]
 
 window.cambiarTab = function(tab) {
@@ -137,31 +273,7 @@ async function cargarEventos() {
   const hoy = new Date().toISOString().split('T')[0]
   el.innerHTML = data.map(ev => {
     const pasado = ev.fecha < hoy
-    const fechaFmt = new Date(ev.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'long', year:'numeric' })
-    const thumb = ev.foto_url ? `<div style="width:84px;height:84px;border-radius:8px;overflow:hidden;flex-shrink:0;margin-right:8px;"><img src="${ev.foto_url}" style="width:100%;height:100%;object-fit:cover" alt="${ev.titulo}"></div>` : ''
-    const convocatoriaBtn = (ev.convocatoria_pdf_url || ev.convocatoria_link) ? `<a class="btn sm" href="${ev.convocatoria_pdf_url || ev.convocatoria_link}" target="_blank" style="margin-right:8px;background:#eff6ff;color:#0047AB;border-radius:8px;padding:6px 10px;text-decoration:none;font-weight:700;">📎 Ver convocatoria</a>` : ''
-    return `<div class="ev-card" style="display:flex;align-items:flex-start;gap:12px;${pasado ? 'opacity:.6;' : ''}">
-      ${thumb}
-      <div style="flex:1;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <div>
-            <div class="ev-tipo">${ev.tipo || 'Evento'}${pasado ? ' · Pasado' : ''}</div>
-            <div class="ev-titulo">${ev.titulo}</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            ${convocatoriaBtn}
-            <button class="btn sm" style="background:#fff;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:8px;" data-editar="${ev.id}"><i data-lucide="edit" style="width:14px;height:14px"></i> Editar</button>
-            <button class="btn sm" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:6px 10px;border-radius:8px;" data-borrar="${ev.id}"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Desactivar</button>
-          </div>
-        </div>
-        <div class="ev-meta" style="margin-top:8px;">
-          <span><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fechaFmt}</span>
-          ${ev.hora ? `<span><i data-lucide="clock" style="width:12px;height:12px;"></i>${ev.hora}</span>` : ''}
-          ${ev.lugar ? `<span><i data-lucide="map-pin" style="width:12px;height:12px;"></i>${ev.lugar}</span>` : ''}
-        </div>
-        ${ev.descripcion ? `<div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;">${ev.descripcion}</div>` : ''}
-      </div>
-    </div>`
+    return `${renderEventCard(ev, { admin: true })}`
   }).join('')
   lucide.createIcons()
 }
