@@ -251,34 +251,69 @@
         </div>`).join('') +
       `</div>`
 
-    // Calcular próxima clase
-    const DIAS_MAP = {
-      'domingo':0,'lunes':1,'martes':2,'miércoles':3,'miercoles':3,
-      'jueves':4,'viernes':5,'sábado':6,'sabado':6
+    function textoSinAcentos(s) {
+      return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     }
-    const hoy = new Date()
-    const diaHoy = hoy.getDay()
-    let proximoDia = null, proximaHora = '', diasHasta = 99
+
+    function parseHora12h(txt) {
+      const m = (txt || '').match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i)
+      if (!m) return null
+      let h = parseInt(m[1], 10)
+      const min = parseInt(m[2] || '0', 10)
+      const ap = m[3].toUpperCase()
+      if (ap === 'PM' && h !== 12) h += 12
+      if (ap === 'AM' && h === 12) h = 0
+      return { h, min }
+    }
+
+    const dias = [
+      { n: 'domingo', i: 0 },
+      { n: 'lunes', i: 1 },
+      { n: 'martes', i: 2 },
+      { n: 'miercoles', i: 3 },
+      { n: 'jueves', i: 4 },
+      { n: 'viernes', i: 5 },
+      { n: 'sabado', i: 6 }
+    ]
+
+    const ahora = new Date()
+    let mejor = null
 
     for (const r of rows) {
-      const l = r.diaStr.toLowerCase()
-      for (const [nombre, num] of Object.entries(DIAS_MAP)) {
-        if (l.includes(nombre)) {
-          let diff = (num - diaHoy + 7) % 7
-          if (diff === 0) diff = 7
-          if (diff < diasHasta) { diasHasta = diff; proximoDia = r.diaStr; proximaHora = r.horaStr }
-          break
+      const diaNormalizado = textoSinAcentos(r.diaStr)
+      const hora = parseHora12h(r.horaStr)
+      for (const d of dias) {
+        if (!diaNormalizado.includes(d.n)) continue
+        const candidato = new Date(ahora)
+        const diff = (d.i - ahora.getDay() + 7) % 7
+        candidato.setDate(ahora.getDate() + diff)
+        candidato.setSeconds(0, 0)
+        candidato.setHours(hora ? hora.h : 23, hora ? hora.min : 59, 0, 0)
+        if (candidato <= ahora) candidato.setDate(candidato.getDate() + 7)
+
+        if (!mejor || candidato < mejor.fecha) {
+          mejor = { fecha: candidato, dia: r.diaStr, hora: r.horaStr, nombreDia: d.n }
         }
       }
     }
 
-    if (proximoDia) {
-      const proxFecha = new Date(hoy)
-      proxFecha.setDate(hoy.getDate() + diasHasta)
+    if (mejor) {
+      const msRestantes = mejor.fecha - ahora
+      const minutosTotales = Math.max(0, Math.floor(msRestantes / 60000))
+      const diasFaltan = Math.floor(minutosTotales / 1440)
+      const horas = Math.floor((minutosTotales % 1440) / 60)
+      const minutos = minutosTotales % 60
+      const esHoy = diasFaltan === 0
+
       const opcFecha = { day:'numeric', month:'long' }
-      document.getElementById('prox-dia').textContent =
-        proximoDia + ' · ' + proxFecha.toLocaleDateString('es-MX', opcFecha)
-      document.getElementById('prox-hora').textContent = proximaHora
+      document.getElementById('prox-dia').textContent = esHoy
+        ? 'Hoy'
+        : (mejor.nombreDia.charAt(0).toUpperCase() + mejor.nombreDia.slice(1)) + ' · ' + mejor.fecha.toLocaleDateString('es-MX', opcFecha)
+
+      const conteo = esHoy
+        ? `Faltan ${horas} h ${minutos} min`
+        : `Faltan ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`
+      document.getElementById('prox-hora').textContent = `${conteo}${mejor.hora ? ' · ' + mejor.hora : ''}`
       document.getElementById('proxima-section').style.display = 'block'
     }
 

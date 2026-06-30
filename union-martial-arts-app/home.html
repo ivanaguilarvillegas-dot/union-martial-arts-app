@@ -765,19 +765,148 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     document.getElementById('cinta-label').textContent = 'Cinta ' + label
   }
 
-  function proximaClase(horario) {
+  function textoSinAcentos(s) {
+    return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  }
+
+  function parseHora12h(txt) {
+    const m = (txt || '').match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i)
+    if (!m) return null
+    let h = parseInt(m[1], 10)
+    const min = parseInt(m[2] || '0', 10)
+    const ap = m[3].toUpperCase()
+    if (ap === 'PM' && h !== 12) h += 12
+    if (ap === 'AM' && h === 12) h = 0
+    return { h, min }
+  }
+
+  function getSiguienteClase(horario) {
     if (!horario) return null
-    const hoy = new Date().getDay()
-    const diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
     const segmentos = horario.split('|').map(s => s.trim()).filter(Boolean)
     if (!segmentos.length) return null
+
+    const dias = [
+      { n: 'domingo', i: 0 },
+      { n: 'lunes', i: 1 },
+      { n: 'martes', i: 2 },
+      { n: 'miercoles', i: 3 },
+      { n: 'jueves', i: 4 },
+      { n: 'viernes', i: 5 },
+      { n: 'sabado', i: 6 }
+    ]
+
+    const ahora = new Date()
+    let mejor = null
+
     for (const seg of segmentos) {
-      const lower = seg.toLowerCase()
-      if (lower.includes(diasSemana[hoy]) || lower.includes('l, m y v') || lower.includes('l, m, j')) {
-        return { dia: 'Hoy', detalle: seg }
+      const partes = seg.split('·').map(p => p.trim())
+      const diaTexto = partes[0] || seg
+      const horaTexto = partes[1] || ''
+      const diaNormalizado = textoSinAcentos(diaTexto)
+      const hora = parseHora12h(horaTexto)
+
+      for (const d of dias) {
+        if (!diaNormalizado.includes(d.n)) continue
+        const candidato = new Date(ahora)
+        const diff = (d.i - ahora.getDay() + 7) % 7
+        candidato.setDate(ahora.getDate() + diff)
+        candidato.setSeconds(0, 0)
+        candidato.setHours(hora ? hora.h : 23, hora ? hora.min : 59, 0, 0)
+        if (candidato <= ahora) candidato.setDate(candidato.getDate() + 7)
+
+        if (!mejor || candidato < mejor.fecha) {
+          mejor = {
+            fecha: candidato,
+            detalle: seg,
+            diaTexto,
+            horaTexto,
+            nombreDia: d.n
+          }
+        }
       }
     }
-    return { dia: segmentos[0].split('·')[0].trim(), detalle: segmentos[0] }
+
+    if (!mejor) return null
+
+    const msRestantes = mejor.fecha - ahora
+    const minutosTotales = Math.max(0, Math.floor(msRestantes / 60000))
+    const diasFaltan = Math.floor(minutosTotales / 1440)
+    const horas = Math.floor((minutosTotales % 1440) / 60)
+    const minutos = minutosTotales % 60
+    const esHoy = diasFaltan === 0
+
+    return {
+      ...mejor,
+      esHoy,
+      diasFaltan,
+      contador: esHoy ? `Faltan ${horas} h ${minutos} min` : `Faltan ${diasFaltan} día${diasFaltan === 1 ? '' : 's'}`
+    }
+  }
+
+  function aplicarEstadoPagoEnHero(fechaProximoPago) {
+    const badge = document.getElementById('badge-pago')
+    const foto = document.getElementById('foto-wrap')
+    if (!badge || !foto) return
+
+    let estado = {
+      icon: 'check-circle',
+      texto: 'Activo',
+      bg: 'rgba(255,255,255,.15)',
+      border: 'rgba(255,255,255,.25)',
+      color: '#fff',
+      ring: 'rgba(134,239,172,.9)'
+    }
+
+    if (fechaProximoPago) {
+      const hoy = new Date()
+      hoy.setHours(0, 0, 0, 0)
+      const prox = new Date(fechaProximoPago + 'T12:00:00')
+      const diasVencido = Math.floor((hoy - prox) / 86400000)
+
+      if (diasVencido > 6) {
+        estado = {
+          icon: 'x-circle',
+          texto: 'Vencido',
+          bg: 'rgba(220,38,38,.2)',
+          border: 'rgba(220,38,38,.45)',
+          color: '#fecaca',
+          ring: 'rgba(239,68,68,.95)'
+        }
+      } else if (diasVencido > 0) {
+        estado = {
+          icon: 'clock',
+          texto: 'Pendiente',
+          bg: 'rgba(217,119,6,.2)',
+          border: 'rgba(217,119,6,.45)',
+          color: '#fde68a',
+          ring: 'rgba(245,158,11,.95)'
+        }
+      }
+    }
+
+    badge.innerHTML = `<i data-lucide="${estado.icon}"></i> ${estado.texto}`
+    badge.style.background = estado.bg
+    badge.style.borderColor = estado.border
+    badge.style.color = estado.color
+    foto.style.boxShadow = `0 0 0 3px ${estado.ring}, 0 4px 16px rgba(0,0,0,.25)`
+  }
+
+  function renderProximaClase(horario) {
+    const claseDia = document.getElementById('clase-dia')
+    const claseHora = document.getElementById('clase-hora')
+    const claseDias = document.getElementById('clase-dias')
+    const pc = getSiguienteClase(horario)
+
+    if (!pc) {
+      claseDia.textContent = 'Sin horario'
+      claseHora.textContent = ''
+      claseDias.textContent = 'Consulta con tu instructor'
+      return
+    }
+
+    claseDia.textContent = pc.esHoy ? 'Hoy' : (pc.nombreDia.charAt(0).toUpperCase() + pc.nombreDia.slice(1))
+    claseHora.textContent = pc.horaTexto || ''
+    claseDias.textContent = pc.esHoy ? pc.contador : `${pc.contador} · ${pc.diaTexto}`
   }
 
   document.getElementById('btn-logout').addEventListener('click', async (e) => {
@@ -859,30 +988,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         } else {
           document.getElementById('foto-wrap').innerHTML = '<div style="font-size:32px;">📷</div>'
         }
-        
-        // Actualizar badge de pago
-        const hoy = new Date(); hoy.setHours(0,0,0,0)
-        const badge = document.getElementById('badge-pago')
-        if (al.fecha_proximo_pago) {
-          const prox = new Date(al.fecha_proximo_pago + 'T12:00:00')
-          const diasVencido = Math.floor((hoy - prox) / 86400000)
-          if (diasVencido > 6) {
-            badge.innerHTML = '<i data-lucide="x-circle"></i> Vencido'
-            badge.style.background = 'rgba(220,38,38,.2)'
-            badge.style.borderColor = 'rgba(220,38,38,.4)'
-            badge.style.color = '#fca5a5'
-          } else if (diasVencido > 0) {
-            badge.innerHTML = '<i data-lucide="clock"></i> Pendiente'
-            badge.style.background = 'rgba(217,119,6,.2)'
-            badge.style.borderColor = 'rgba(217,119,6,.4)'
-            badge.style.color = '#fde68a'
-          } else {
-            badge.innerHTML = '<i data-lucide="check-circle"></i> Activo'
-            badge.style.background = 'rgba(255,255,255,.15)'
-            badge.style.borderColor = 'rgba(255,255,255,.25)'
-            badge.style.color = '#fff'
-          }
-        }
+
+        aplicarEstadoPagoEnHero(al.fecha_proximo_pago)
+        renderProximaClase(al.horario)
         
         // Actualizar chips: resaltar nuevo alumno
         const chipsEl = document.getElementById('hijo-chips')
@@ -908,26 +1016,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
         document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
-
-        // Badge de pago
-        if (al.fecha_proximo_pago) {
-          const hoy = new Date(); hoy.setHours(0,0,0,0)
-          const prox = new Date(al.fecha_proximo_pago + 'T12:00:00')
-          const diasVencido = Math.floor((hoy - prox) / 86400000)
-          const badge = document.getElementById('badge-pago')
-          if (diasVencido > 6) {
-            badge.innerHTML = '<i data-lucide="x-circle"></i> Vencido'
-            badge.style.background = 'rgba(220,38,38,.2)'
-            badge.style.borderColor = 'rgba(220,38,38,.4)'
-            badge.style.color = '#fca5a5'
-          } else if (diasVencido > 0) {
-            badge.innerHTML = '<i data-lucide="clock"></i> Pendiente'
-            badge.style.background = 'rgba(217,119,6,.2)'
-            badge.style.borderColor = 'rgba(217,119,6,.4)'
-            badge.style.color = '#fde68a'
-          }
-          if (diasVencido > 0) lucide.createIcons()
-        }
+        aplicarEstadoPagoEnHero(al.fecha_proximo_pago)
 
         if (al.foto_url) {
           document.getElementById('foto-wrap').innerHTML = `
@@ -958,21 +1047,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
           wrap.onclick = () => document.getElementById('foto-input').click()
         })
 
-        const pc = proximaClase(al.horario)
-        if (pc) {
-          const segPartes = pc.detalle.split('·')
-          if (segPartes.length > 1) {
-            document.getElementById('clase-dia').textContent = pc.dia
-            document.getElementById('clase-hora').textContent = segPartes[1].trim()
-            document.getElementById('clase-dias').textContent = segPartes[0].trim()
-          } else {
-            document.getElementById('clase-dia').textContent = pc.dia
-            document.getElementById('clase-dias').textContent = pc.detalle
-          }
-        } else {
-          document.getElementById('clase-dia').textContent = 'Sin horario'
-          document.getElementById('clase-dias').textContent = 'Consulta con tu instructor'
-        }
+        renderProximaClase(al.horario)
       }
     } catch(e) {}
 
