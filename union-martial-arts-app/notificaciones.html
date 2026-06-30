@@ -249,6 +249,12 @@
     let h = 0; for (const c of (name||'')) h = (h*31 + c.charCodeAt(0)) % colors.length
     return colors[h]
   }
+  function publicadoPorLabel(value) {
+    const raw = String(value || '').trim()
+    if (!raw) return 'UNION MARTIAL ARTS'
+    if (/^[0-9a-f-]{36}$/i.test(raw)) return 'UNION MARTIAL ARTS'
+    return raw
+  }
 
   // Tab switcher: definido antes de las consultas para que los botones siempre respondan
   const tabTitles = { avisos: 'Notificaciones', eventos: 'Eventos' }
@@ -377,7 +383,7 @@
       }
       const p = pMap[a.prioridad] || pMap.informativo
       const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
-      const autor = a.autor || 'UNION MARTIAL ARTS'
+      const autor = publicadoPorLabel(a.creado_por)
       const yaConfirmo = a.yaConfirmo
       return `<div class="aviso-row">
             <div class="aviso-top">
@@ -431,8 +437,9 @@
       let avisos = null
       let errAv = null
       const avRes = await supabase.from('avisos')
-        .select('id,titulo,mensaje,prioridad,creado_en,autor')
+        .select('id,titulo,mensaje,prioridad,creado_en,creado_por')
         .eq('activo', true).order('creado_en', { ascending: false }).limit(20)
+        const autor = publicadoPorLabel(a.creado_por)
       avisos = avRes.data; errAv = avRes.error
       if (errAv && errAv.code === '42703') {
         const fallback = await supabase.from('avisos')

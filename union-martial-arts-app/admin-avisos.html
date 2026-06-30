@@ -149,6 +149,13 @@
   let editId = null
   let totalPadres = 0
 
+  function publicadoPorLabel(value) {
+    const raw = String(value || '').trim()
+    if (!raw) return 'UNION MARTIAL ARTS'
+    if (/^[0-9a-f-]{36}$/i.test(raw)) return 'UNION MARTIAL ARTS'
+    return raw
+  }
+
   // Total padres para calcular pendientes
   try {
     const { count } = await supabase.from('padres').select('*', { count:'exact', head:true }).eq('es_admin', false)
@@ -163,7 +170,7 @@
     let avisos = null
     let errAv = null
     const res = await supabase.from('avisos')
-      .select('id, titulo, mensaje, prioridad, creado_en, activo, autor')
+      .select('id, titulo, mensaje, prioridad, creado_en, activo, creado_por')
       .order('creado_en', { ascending: false })
     avisos = res.data
     errAv = res.error
@@ -201,7 +208,7 @@
       const pendientes = Math.max(0, totalPadres - lista.length)
       const fecha = new Date(a.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
       const pr = a.prioridad || 'informativo'
-      const autor = a.autor || 'UNION MARTIAL ARTS'
+      const autor = publicadoPorLabel(a.creado_por)
       return `<div class="aviso-item" data-id="${a.id}">
         <div class="aviso-head">
           <div class="aviso-head-txt">
@@ -265,7 +272,7 @@
     const titulo  = document.getElementById('f-titulo').value.trim()
     const mensaje = document.getElementById('f-mensaje').value.trim()
     const prioridad = document.querySelector('input[name="prioridad"]:checked')?.value || 'informativo'
-    const autor = document.getElementById('f-publicado-por').value || 'UNION MARTIAL ARTS'
+    const publicadoPor = document.getElementById('f-publicado-por').value || 'UNION MARTIAL ARTS'
 
     if (!titulo || !mensaje) { alert('Completa título y mensaje.'); return }
 
@@ -274,12 +281,12 @@
 
     let result
     if (editId) {
-      result = await supabase.from('avisos').update({ titulo, mensaje, prioridad, autor }).eq('id', editId)
+      result = await supabase.from('avisos').update({ titulo, mensaje, prioridad, creado_por: publicadoPor }).eq('id', editId)
       if (result.error && result.error.code === '42703') {
         result = await supabase.from('avisos').update({ titulo, mensaje, prioridad }).eq('id', editId)
       }
     } else {
-      result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, autor, activo: true })
+      result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, creado_por: publicadoPor, activo: true })
       if (result.error && result.error.code === '42703') {
         result = await supabase.from('avisos').insert({ titulo, mensaje, prioridad, activo: true })
       }
@@ -310,7 +317,7 @@
       document.getElementById('f-titulo').value = a.titulo
       document.getElementById('f-mensaje').value = a.mensaje
       document.querySelector(`input[name="prioridad"][value="${a.prioridad||'informativo'}"]`).checked = true
-      document.getElementById('f-publicado-por').value = a.autor || 'UNION MARTIAL ARTS'
+      document.getElementById('f-publicado-por').value = publicadoPorLabel(a.creado_por)
       document.getElementById('modal').classList.add('open')
       lucide.createIcons()
     }
