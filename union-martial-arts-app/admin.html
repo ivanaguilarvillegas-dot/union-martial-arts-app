@@ -116,14 +116,6 @@
       </div>
       <div class="ac-badge" id="badge-chat" style="display:none;">0</div>
     </a>
-    <a class="action-card green" href="admin-preguntas.html">
-      <div class="ac-icon"><i data-lucide="help-circle"></i></div>
-      <div>
-        <div class="ac-label">Preguntas de Padres</div>
-        <div class="ac-sub">Centro de ayuda</div>
-      </div>
-      <div class="ac-badge" id="badge-preguntas" style="display:none;">0</div>
-    </a>
     <a class="action-card cobalt" href="admin-evento.html">
       <div class="ac-icon"><i data-lucide="calendar"></i></div>
       <div>
@@ -346,53 +338,6 @@
       document.getElementById('sub-avisos').textContent = avisosCount + ' aviso' + (avisosCount > 1 ? 's' : '') + ' activo' + (avisosCount > 1 ? 's' : '')
     }
   }
-
-  // Badge preguntas de padres (Centro de Ayuda)
-  try {
-    const decode = v => decodeURIComponent(String(v || ''))
-    const toMap = raw => {
-      const out = {}
-      String(raw || '').split(';').forEach(pair => {
-        const i = pair.indexOf('=')
-        if (i > 0) out[pair.slice(0, i).trim()] = decode(pair.slice(i + 1).trim())
-      })
-      return out
-    }
-
-    const { data: qRows } = await sb.from('mensajes')
-      .select('texto, creado_en')
-      .eq('para_admin', true)
-      .order('creado_en', { ascending: false })
-      .limit(500)
-
-    const { data: aRows } = await sb.from('mensajes')
-      .select('texto, creado_en')
-      .eq('para_admin', false)
-      .order('creado_en', { ascending: false })
-      .limit(700)
-
-    const estado = {}
-    ;(qRows || []).forEach(r => {
-      if (!String(r.texto || '').startsWith('[[FAQ_Q]]')) return
-      const m = toMap(String(r.texto).replace('[[FAQ_Q]]', '').trim())
-      if (m.id) estado[m.id] = 'pendiente'
-    })
-    ;(aRows || []).forEach(r => {
-      if (!String(r.texto || '').startsWith('[[FAQ_A]]')) return
-      const m = toMap(String(r.texto).replace('[[FAQ_A]]', '').trim())
-      if (!m.qid || !estado[m.qid]) return
-      if (m.accion === 'respondida' || m.accion === 'marcar_respondida') estado[m.qid] = 'respondida'
-      if (m.accion === 'eliminada') estado[m.qid] = 'eliminada'
-    })
-
-    const pendientesFaq = Object.values(estado).filter(v => v === 'pendiente').length
-    if (pendientesFaq > 0) {
-      const bp = document.getElementById('badge-preguntas')
-      bp.textContent = pendientesFaq
-      bp.style.display = 'flex'
-    }
-  } catch (e) {}
-
 
   lucide.createIcons()
 
