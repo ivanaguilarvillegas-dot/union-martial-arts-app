@@ -15,6 +15,12 @@
   <div class="body">
     <a class="btn secondary block mb14" href="admin-nuevo-alumno.html"><i data-lucide="user-plus"></i> Agregar nuevo alumno</a>
     <div class="label">Lista de alumnos</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="btn primary" id="flt-activos" style="flex:1;height:36px;padding:0 10px;font-size:12px;">Activos</button>
+      <button class="btn secondary" id="flt-inactivos" style="flex:1;height:36px;padding:0 10px;font-size:12px;">Inactivos</button>
+      <button class="btn secondary" id="flt-todos" style="flex:1;height:36px;padding:0 10px;font-size:12px;">Todos</button>
+    </div>
+    <div id="msgbox" style="display:none;font-size:12.5px;border-radius:10px;padding:10px 12px;margin-bottom:10px;"></div>
     <div class="stack-8" id="list"></div>
   </div>
   <nav class="bottomnav">
@@ -172,11 +178,11 @@
 <!-- Modal confirmar borrar -->
 <div id="modal-borrar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-    <div style="font-size:15px;font-weight:700;margin-bottom:8px;">¿Eliminar alumno?</div>
-    <div style="font-size:13.5px;color:var(--muted);margin-bottom:18px;" id="borrar-nombre-txt">Esta acción no se puede deshacer.</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:8px;">Borrado seguro de alumno</div>
+    <div style="font-size:13.5px;color:var(--muted);margin-bottom:18px;" id="borrar-nombre-txt">Este alumno tiene información relacionada: padres, pagos, asistencias, mensajes, evaluaciones o historial. ¿Deseas desactivarlo en lugar de borrarlo?</div>
     <div style="display:flex;gap:10px;">
       <button class="btn secondary" style="flex:1;" id="borrar-cancelar">Cancelar</button>
-      <button class="btn" style="flex:1;background:var(--red-600);color:#fff;" id="borrar-confirmar"><i data-lucide="trash-2"></i> Eliminar</button>
+      <button class="btn" style="flex:1;background:#d97706;color:#fff;" id="borrar-confirmar"><i data-lucide="user-x"></i> Desactivar</button>
     </div>
   </div>
 </div>
@@ -219,29 +225,70 @@
 
   let alumnos = []
   let borrarId = null
+  let filtroEstado = 'activos'
+
+  function esInactivoAlumno(a) {
+    if (Object.prototype.hasOwnProperty.call(a || {}, 'activo')) return a.activo === false
+    return String(a?.estado || '').toLowerCase() === 'inactivo'
+  }
+
+  function mostrarAviso(msg, tipo = 'ok') {
+    const box = document.getElementById('msgbox')
+    if (!box) return
+    box.style.display = 'block'
+    if (tipo === 'error') {
+      box.style.background = '#fff1f2'
+      box.style.border = '1px solid #fecdd3'
+      box.style.color = '#9f1239'
+    } else {
+      box.style.background = '#ecfdf5'
+      box.style.border = '1px solid #bbf7d0'
+      box.style.color = '#166534'
+    }
+    box.textContent = msg
+  }
+
+  function setFiltroEstado(valor) {
+    filtroEstado = valor
+    document.getElementById('flt-activos').className = valor === 'activos' ? 'btn primary' : 'btn secondary'
+    document.getElementById('flt-inactivos').className = valor === 'inactivos' ? 'btn primary' : 'btn secondary'
+    document.getElementById('flt-todos').className = valor === 'todos' ? 'btn primary' : 'btn secondary'
+    render()
+  }
 
   async function cargar() {
-    const { data, count } = await supabase.from('alumnos').select('*', { count: 'exact' }).order('nombre')
+    const { data } = await supabase.from('alumnos').select('*').order('nombre')
     alumnos = data || []
-    document.getElementById('sub').textContent = (count || 0) + ' activos'
     render()
   }
 
   function render() {
     const list = document.getElementById('list')
-    if (!alumnos.length) {
+    const activos = alumnos.filter(a => !esInactivoAlumno(a)).length
+    const inactivos = alumnos.length - activos
+    document.getElementById('sub').textContent = `${activos} activos · ${inactivos} inactivos`
+
+    const vis = alumnos.filter(a => {
+      const inactivo = esInactivoAlumno(a)
+      if (filtroEstado === 'activos') return !inactivo
+      if (filtroEstado === 'inactivos') return inactivo
+      return true
+    })
+
+    if (!vis.length) {
       list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">Sin alumnos registrados.</div>'
     } else {
-      list.innerHTML = alumnos.map(a => {
+      list.innerHTML = vis.map(a => {
         const ini = a.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
         const hoyStr = new Date().toISOString().split('T')[0]
         const vencido = a.fecha_proximo_pago && a.fecha_proximo_pago < hoyStr
         const sinPago = !a.fecha_proximo_pago
+        const inactivo = esInactivoAlumno(a)
         return `<div class="row" style="gap:10px;">
           <a href="admin-evaluacion.html?alumno=${a.id}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit;min-width:0;">
-            <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;${vencido?'background:#dc2626;':''}">${ini}</span>
+            <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;${vencido?'background:#dc2626;':''}${inactivo?'opacity:.55;':''}">${ini}</span>
             <span class="grow" style="min-width:0;">
-              <span class="t" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre}${vencido ? ' <span style="font-size:10px;font-weight:700;background:#fff1f2;color:#dc2626;border-radius:99px;padding:1px 6px;vertical-align:middle;">Vencido</span>' : sinPago ? ' <span style="font-size:10px;font-weight:700;background:#fef9c3;color:#854d0e;border-radius:99px;padding:1px 6px;vertical-align:middle;">Sin pago</span>' : ''}</span>
+              <span class="t" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre}${inactivo ? ' <span style="font-size:10px;font-weight:700;background:#f3f4f6;color:#374151;border-radius:99px;padding:1px 6px;vertical-align:middle;">Inactivo</span>' : vencido ? ' <span style="font-size:10px;font-weight:700;background:#fff1f2;color:#dc2626;border-radius:99px;padding:1px 6px;vertical-align:middle;">Vencido</span>' : sinPago ? ' <span style="font-size:10px;font-weight:700;background:#fef9c3;color:#854d0e;border-radius:99px;padding:1px 6px;vertical-align:middle;">Sin pago</span>' : ''}</span>
               <span class="s">${a.cinta ? 'Cinta ' + a.cinta : 'Sin cinta'}${a.grupo ? ' · ' + a.grupo : ''}${a.plan_pago ? ' · ' + a.plan_pago : ''}</span>
             </span>
           </a>
@@ -300,10 +347,14 @@
     if (borrarBtn) {
       borrarId = borrarBtn.dataset.borrar
       const a = alumnos.find(x => x.id === borrarId)
-      document.getElementById('borrar-nombre-txt').textContent = '¿Eliminar a ' + (a?.nombre || 'este alumno') + '? Esta acción no se puede deshacer.'
+      document.getElementById('borrar-nombre-txt').textContent = 'Este alumno tiene información relacionada: padres, pagos, asistencias, mensajes, evaluaciones o historial. ¿Deseas desactivarlo en lugar de borrarlo?'
       document.getElementById('modal-borrar').style.display = 'flex'
     }
   })
+
+  document.getElementById('flt-activos').addEventListener('click', () => setFiltroEstado('activos'))
+  document.getElementById('flt-inactivos').addEventListener('click', () => setFiltroEstado('inactivos'))
+  document.getElementById('flt-todos').addEventListener('click', () => setFiltroEstado('todos'))
 
   document.getElementById('modal-cancelar').addEventListener('click', () => {
     document.getElementById('modal').style.display = 'none'
@@ -399,15 +450,29 @@
   document.getElementById('borrar-confirmar').addEventListener('click', async () => {
     if (!borrarId) return
     const btn = document.getElementById('borrar-confirmar')
-    btn.disabled = true; btn.textContent = 'Eliminando…'
-    const { error } = await supabase.from('alumnos').delete().eq('id', borrarId)
-    btn.disabled = false; btn.innerHTML = '<i data-lucide="trash-2"></i> Eliminar'; lucide.createIcons()
-    if (error) { alert('❌ Error: ' + error.message); return }
+    btn.disabled = true; btn.textContent = 'Desactivando…'
+
+    let error = null
+    let result = await supabase.from('alumnos').update({ activo: false }).eq('id', borrarId)
+    error = result.error || null
+    if (error && error.code === '42703') {
+      result = await supabase.from('alumnos').update({ estado: 'inactivo' }).eq('id', borrarId)
+      error = result.error || null
+    }
+
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="user-x"></i> Desactivar'; lucide.createIcons()
+    if (error) {
+      mostrarAviso('No se puede eliminar este alumno porque tiene información relacionada. Puedes desactivarlo para conservar su historial.', 'error')
+      return
+    }
+
     document.getElementById('modal-borrar').style.display = 'none'
+    mostrarAviso('Alumno desactivado correctamente. Su historial se conserva.', 'ok')
     borrarId = null
     await cargar()
   })
 
+  setFiltroEstado('activos')
   cargar()
 </script>
 <script>
