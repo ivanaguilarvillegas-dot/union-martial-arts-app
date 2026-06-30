@@ -148,7 +148,7 @@
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     window.location.href = 'index.html'
-    return
+    throw new Error('Redirecting to login')
   }
 
   const { data: padreRows } = await supabase
@@ -363,7 +363,18 @@
   }
 
   async function cargarPago() {
-    if (!alumnoId) return
+    if (!alumnoId) {
+      document.getElementById('pago-concepto').textContent = 'Sin alumno vinculado'
+      document.getElementById('pago-monto').innerHTML = '$— <span style="font-size:15px;color:var(--muted);">MXN</span>'
+      document.getElementById('pago-estado').innerHTML = '<i data-lucide="info" style="width:15px;height:15px"></i> Sin registros'
+      document.getElementById('pago-opciones').style.display = 'none'
+      document.getElementById('btn-recibo').style.display = 'none'
+      document.getElementById('pago-seguimiento').style.display = 'none'
+      pagosAlumno = []
+      renderHistorial()
+      lucide.createIcons()
+      return
+    }
     const { data: pagos } = await supabase
       .from('pagos')
       .select('*')
