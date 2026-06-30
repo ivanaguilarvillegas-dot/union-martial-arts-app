@@ -243,7 +243,10 @@
     document.getElementById('pago-opciones').style.display = 'block'
     document.getElementById('btn-recibo').style.display = 'none'
     document.getElementById('comp-ok').style.display = 'none'
-    document.getElementById('pago-seguimiento').style.display = 'none'
+    document.getElementById('comp-ok').innerHTML = '<i data-lucide="check-circle"></i> Comprobante enviado. El instructor confirmará tu pago pronto.'
+    const seguimiento = document.getElementById('pago-seguimiento')
+    seguimiento.style.display = 'none'
+    seguimiento.innerHTML = ''
     setMetodoInputsDisabled(false)
   }
 
