@@ -1016,9 +1016,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     setLockVisual(document.getElementById('zona-nutricion'), locked)
     setLockVisual(document.getElementById('zona-meditacion'), locked)
     setLockVisual(document.getElementById('zona-rutinas'), locked)
-    setLockVisual(document.getElementById('zona-beneficios'), locked)
-    setLockVisual(document.getElementById('zona-biblioteca'), locked)
-    setLockVisual(document.getElementById('zona-juegos'), locked)
+    setLockVisual(document.getElementById('zona-beneficios'), false)
+    setLockVisual(document.getElementById('zona-biblioteca'), false)
+    setLockVisual(document.getElementById('zona-juegos'), false)
 
     if (locked) {
       document.getElementById('prog-mes-label').textContent = 'Contenido bloqueado para tu plan actual'
