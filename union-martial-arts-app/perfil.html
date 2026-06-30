@@ -12,6 +12,27 @@
   <link rel="apple-touch-icon" href="/assets/icon-192.png">
   <link rel="stylesheet" href="css/uma.css?v=18" />
 <link rel="stylesheet" href="css/header-unified.css?v=1"/>
+  <style>
+    .diploma-list { display:flex; flex-direction:column; gap:10px; }
+    .diploma-item { border:1px solid #e5e7eb; border-radius:14px; padding:12px; background:#fff; }
+    .diploma-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .diploma-figure { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:linear-gradient(135deg,#eff6ff,#e0e7ff); color:var(--primary); }
+    .diploma-heading { min-width:0; }
+    .diploma-heading h3 { margin:0; font-size:14px; font-weight:800; color:var(--text); line-height:1.2; }
+    .diploma-heading p { margin:2px 0 0; font-size:12px; color:var(--muted); line-height:1.3; }
+    .diploma-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .diploma-meta { font-size:12px; color:var(--muted); line-height:1.45; }
+    .diploma-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .diploma-actions a { display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; text-decoration:none; font-size:12px; font-weight:700; }
+    .diploma-view { background:#eff6ff; color:var(--primary); border:1px solid #dbeafe; }
+    .diploma-download { background:#f8fafc; color:#0f172a; border:1px solid #e5e7eb; }
+    .belt-road { display:flex; flex-direction:column; gap:10px; }
+    .belt-road-step { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid #e5e7eb; border-radius:14px; background:#fff; }
+    .belt-road-badge { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#eff6ff; color:var(--primary); font-weight:800; }
+    .belt-road-text { flex:1; min-width:0; }
+    .belt-road-name { font-size:14px; font-weight:700; color:var(--text); }
+    .belt-road-sub { font-size:12px; color:var(--muted); margin-top:2px; }
+  </style>
 </head>
 <body>
 <div class="phone"><div class="screen">
@@ -35,6 +56,18 @@
         </div>
       </div>
       <div id="datos-alumno"></div>
+    </div>
+
+    <div class="label">🏅 Diplomas y reconocimientos</div>
+    <div class="card mb14" id="diplomas-card">
+      <div id="diplomas-list" class="diploma-list">
+        <div style="text-align:center;color:var(--muted);font-size:13px;padding:12px 0;">Cargando diplomas…</div>
+      </div>
+    </div>
+
+    <div class="label">Camino a la siguiente cinta</div>
+    <div class="card mb14">
+      <div id="belt-road" class="belt-road"></div>
     </div>
 
     <div class="label">Datos del padre / tutor</div>
@@ -83,6 +116,56 @@
   const campo = (l, v) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ink-100);">
     <span style="font-size:13px;color:var(--muted);">${l}</span>
     <span style="font-size:13px;font-weight:600;text-align:right;">${v || '—'}</span></div>`
+
+  const BELTS = ['Blanca','Amarilla','Anaranjada','Morada','Azul','Verde','Café I','Café II','Café III','Roja','Roja-Negra','Negra','Negra I grado','Negra II grado','Negra III grado','Negra IV grado','Negra V grado']
+
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, match => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[match]))
+  }
+
+  function fileNameFromUrl(url) {
+    try {
+      const raw = new URL(url, window.location.href).pathname.split('/').filter(Boolean).pop() || url
+      return decodeURIComponent(raw).replace(/^.*?\//, '')
+    } catch {
+      return String(url).split('/').pop() || String(url)
+    }
+  }
+
+  function parseDiplomaText(texto) {
+    const diplomaMatch = String(texto || '').match(/📜 Diploma:\s*(https?:\/\/\S+)/i)
+    const beltMatch = String(texto || '').match(/ascendido a Cinta\s+(.+?)\s+el\s+(.+?)(?:[.!]|$)/i)
+    if (!diplomaMatch) return null
+    return {
+      url: diplomaMatch[1],
+      belt: beltMatch?.[1]?.trim() || '',
+      fecha: beltMatch?.[2]?.trim() || '',
+      titulo: beltMatch?.[1]?.trim() ? `Ascenso a Cinta ${beltMatch[1].trim()}` : 'Diploma de ascenso'
+    }
+  }
+
+  function diplomaTitleFromName(name) {
+    const clean = String(name || '').replace(/\.[^.]+$/, '')
+    return clean.includes('-') ? 'Diploma de ascenso' : clean
+  }
+
+  function formatBeltLabel(belt) {
+    const value = String(belt || '').trim()
+    if (!value) return 'Diploma'
+    return `Diploma de Cinta ${value}`
+  }
+
+  function nextBelt(current) {
+    const idx = BELTS.findIndex(b => String(b).toLowerCase() === String(current || '').toLowerCase())
+    if (idx < 0) return BELTS[0]
+    return BELTS[Math.min(idx + 1, BELTS.length - 1)]
+  }
 
   // Cargar datos reales del padre y alumno, respetando selección actual (uma_padre_id)
   const _savedPadreId = localStorage.getItem('uma_padre_id')
@@ -137,6 +220,77 @@
         <div style="display:flex;flex-direction:column;gap:4px;text-align:right;">
           ${alumno.horario.split(' | ').filter(Boolean).map(h => `<span style="font-size:13px;font-weight:600;">${h}</span>`).join('')}
         </div></div>` : campo('Horario', '—'))
+
+    const road = document.getElementById('belt-road')
+    const currentBelt = alumno.cinta || 'Sin cinta'
+    const next = nextBelt(alumno.cinta)
+    road.innerHTML = `
+      <div class="belt-road-step">
+        <div class="belt-road-badge">${alumno.cinta ? 'ACT' : 'SIN'}</div>
+        <div class="belt-road-text">
+          <div class="belt-road-name">Cinta actual: ${esc(currentBelt)}</div>
+          <div class="belt-road-sub">${alumno.cinta ? 'Este es el rango visible en Home y Perfil.' : 'Aún no se ha asignado una cinta.'}</div>
+        </div>
+      </div>
+      <div class="belt-road-step">
+        <div class="belt-road-badge">SIG</div>
+        <div class="belt-road-text">
+          <div class="belt-road-name">Siguiente cinta: ${esc(next)}</div>
+          <div class="belt-road-sub">Se actualizará cuando Admin registre el ascenso.</div>
+        </div>
+      </div>`
+  }
+
+  let diplomas = []
+  if (alumno?.id) {
+    const { data: files } = await supabase.storage.from('eventos').list('diplomas', {
+      limit: 100,
+      sortBy: { column: 'created_at', order: 'desc' }
+    })
+
+    diplomas = (files || [])
+      .filter(file => String(file.name || '').startsWith(`${alumno.id}-`))
+      .sort((a, b) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime())
+      .filter((file, index, arr) => {
+        const beltKey = String(file.name || '').split('-').slice(0, -1).join('-')
+        return arr.findIndex(other => String(other.name || '').split('-').slice(0, -1).join('-') === beltKey) === index
+      })
+      .map(file => {
+        const publicUrl = supabase.storage.from('eventos').getPublicUrl(`diplomas/${file.name}`).data.publicUrl
+        const beltName = alumno?.cinta || ''
+        return {
+          url: publicUrl,
+          belt: beltName,
+          fecha: file.created_at ? new Date(file.created_at).toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' }) : '',
+          titulo: formatBeltLabel(beltName),
+          archivo: file.name,
+          creado_en: file.created_at || ''
+        }
+      })
+  }
+
+  const diplomasList = document.getElementById('diplomas-list')
+  if (!diplomas.length) {
+    diplomasList.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px 0;">Aún no hay diplomas registrados.</div>'
+  } else {
+    diplomasList.innerHTML = diplomas.map(d => {
+      const fecha = d.fecha || (d.creado_en ? new Date(d.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' }) : '—')
+      return `<div class="diploma-item">
+        <div class="diploma-header">
+          <div class="diploma-figure"><i data-lucide="award" style="width:20px;height:20px"></i></div>
+          <div class="diploma-heading">
+            <h3>🏅 Diplomas y reconocimientos</h3>
+            <p>${esc(d.titulo || 'Diploma oficial del ascenso')}</p>
+          </div>
+        </div>
+        <div class="diploma-meta">Cinta obtenida: <strong>${esc(d.belt || alumno?.cinta || '—')}</strong></div>
+        <div class="diploma-meta">Fecha: ${esc(fecha)}</div>
+        <div class="diploma-actions">
+          <a class="diploma-view" href="${esc(d.url)}" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:13px;height:13px;"></i>Ver diploma</a>
+          <a class="diploma-download" href="${esc(d.url)}" download rel="noopener"><i data-lucide="download" style="width:13px;height:13px;"></i>Descargar</a>
+        </div>
+      </div>`
+    }).join('')
   }
 
   if (padre) {
