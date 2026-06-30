@@ -61,15 +61,16 @@ body{
 }
 .glass{position:absolute;inset:8px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));backdrop-filter:blur(3px)}
 
-.front-inner{position:relative;z-index:2;height:100%;padding:12px 14px;color:#fff;display:grid;grid-template-columns:34% 1fr;gap:12px}
-.brand{display:flex;align-items:center;gap:8px}
+.front-inner{position:relative;z-index:2;height:100%;padding:12px 14px;color:#fff;display:grid;grid-template-columns:31% 1fr;gap:16px}
+.brand{display:flex;align-items:center;gap:8px;margin-top:7px;margin-left:8px}
 .brand img{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
 .brand-txt{font-size:10px;letter-spacing:.07em;font-weight:900;line-height:1.2}
 
-.left{display:flex;flex-direction:column;align-items:center;gap:8px}
+.left{display:flex;flex-direction:column;align-items:flex-start;gap:11px}
 .photo-frame{
-  margin-top:4px;
-  width:124px;height:124px;border-radius:50%;position:relative;overflow:hidden;
+  margin-top:8px;
+  margin-left:8px;
+  width:98px;height:98px;border-radius:50%;position:relative;overflow:hidden;
   border:3px solid var(--um-blue);
   box-shadow:0 0 0 2px #fff, 0 0 0 5px rgba(212,169,59,.35), 0 8px 18px rgba(0,0,0,.28);
   background:#e2e8f0;display:flex;align-items:center;justify-content:center;
@@ -80,22 +81,33 @@ body{
 .photo-fallback img{width:34px;height:34px;object-fit:contain}
 .stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.12}
 .stamp img{width:76px;height:76px;object-fit:contain;transform:rotate(-10deg)}
-.member-chip{font-size:9px;background:rgba(212,169,59,.22);border:1px solid rgba(255,255,255,.35);color:#fff7d6;border-radius:999px;padding:4px 9px;font-weight:800;letter-spacing:.02em}
+.member-chip{font-size:9px;background:rgba(212,169,59,.22);border:1px solid rgba(255,255,255,.35);color:#fff7d6;border-radius:999px;padding:4px 9px;font-weight:800;letter-spacing:.02em;margin-left:8px}
 
-.right{display:flex;flex-direction:column;min-width:0;position:relative;padding-right:92px}
-.name{font-size:18px;font-weight:900;line-height:1.05;letter-spacing:.01em;margin-top:2px}
-.idline{margin-top:4px;font-size:11px;font-weight:700;color:#dbeafe}
-.status-badge{margin-top:6px;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:800;width:max-content;border:1px solid rgba(255,255,255,.25)}
+.right{display:flex;flex-direction:column;min-width:0;position:relative;padding-right:90px;padding-top:8px}
+.name{font-size:16px;font-weight:900;line-height:1.08;letter-spacing:.01em;margin-top:8px;max-width:100%;white-space:normal;word-break:break-word}
+.idline{margin-top:6px}
+.id-k{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#bfdbfe;font-weight:800}
+.id-v{font-size:11px;font-weight:800;color:#eaf1ff;margin-top:2px}
+.status-badge{margin-top:7px;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 9px;font-size:10px;font-weight:800;width:max-content;border:1px solid rgba(255,255,255,.25)}
 .status-ok{background:rgba(22,163,74,.24);color:#dcfce7}
 .status-bad{background:rgba(220,38,38,.25);color:#fee2e2}
 
-.front-list{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:42px}
+.front-list{margin-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:44px;height:44px;display:flex;flex-direction:column;justify-content:center}
 .k{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#bfdbfe;font-weight:700}
-.v{font-size:11px;font-weight:800;margin-top:2px;line-height:1.2}
+.v{font-size:10.6px;font-weight:800;margin-top:2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.front-bottom{margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.belt-visual{margin-top:10px;display:flex;align-items:center;gap:8px}
+.belt-icon{position:relative;display:block;width:56px;height:14px;border-radius:999px;background:var(--belt,#111827);box-shadow:inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.28)}
+.belt-icon::before,.belt-icon::after{content:'';position:absolute;top:50%;width:8px;height:16px;background:var(--belt,#111827);transform:translateY(-50%);border-radius:2px}
+.belt-icon::before{left:-5px}
+.belt-icon::after{right:-5px}
+.belt-knot{position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);background:#0f172a;border-radius:2px}
+.belt-label{font-size:9.5px;font-weight:800;color:#eaf1ff;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.front-bottom{margin-top:8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:4px}
 .premium{font-size:9px;color:#fef3c7;font-weight:800;letter-spacing:.03em}
+.plan-sub{font-size:8.5px;color:#dbeafe;font-weight:700}
 
 .qr-mini-wrap{
   position:absolute;
@@ -118,8 +130,8 @@ body{
 .valid-k{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#bfdbfe;font-weight:800}
 .valid-v{font-size:10.2px;font-weight:700;line-height:1.35;margin-top:4px}
 
-.back-qr{display:flex;flex-direction:column;justify-content:space-between;gap:8px}
-.back-qr-box{width:100%;aspect-ratio:1/1;background:#fff;border-radius:12px;padding:9px;border:2px solid rgba(212,169,59,.55)}
+.back-qr{display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:8px}
+.back-qr-box{width:96%;aspect-ratio:1/1;background:#fff;border-radius:12px;padding:9px;border:2px solid rgba(212,169,59,.55)}
 .back-qr-box canvas{width:100%!important;height:100%!important;display:block}
 .back-id{font-size:11px;font-weight:800;text-align:center;color:#eaf0ff}
 
@@ -128,8 +140,9 @@ body{
 @media (max-width: 680px){
   .right{padding-right:82px}
   .qr-mini-wrap{width:74px;height:74px}
-  .name{font-size:16px}
+  .name{font-size:14px}
   .kv{min-height:39px;padding:5px 7px}
+  .photo-frame{width:88px;height:88px}
 }
 
 @media print {
@@ -174,7 +187,10 @@ body{
 
           <div class="right">
             <div class="name" id="alumno-nombre">Alumno</div>
-            <div class="idline" id="alumno-id">UMA-000000</div>
+            <div class="idline">
+              <div class="id-k">ID Alumno</div>
+              <div class="id-v" id="alumno-id">UMA-000000</div>
+            </div>
             <div class="status-badge status-ok" id="badge-estado">🟢 Alumno Activo</div>
 
             <div class="front-list">
@@ -182,11 +198,16 @@ body{
               <div class="kv"><div class="k">Cinta</div><div class="v" id="dato-cinta">-</div></div>
               <div class="kv"><div class="k">Instructor</div><div class="v" id="dato-instructor">-</div></div>
               <div class="kv"><div class="k">Ingreso</div><div class="v" id="dato-ingreso">-</div></div>
-              <div class="kv"><div class="k">Plan</div><div class="v" id="dato-plan">-</div></div>
+            </div>
+
+            <div class="belt-visual">
+              <span class="belt-icon" id="belt-icon"><span class="belt-knot"></span></span>
+              <span class="belt-label" id="belt-label">Cinturon</span>
             </div>
 
             <div class="front-bottom">
               <div class="premium">Credencial Oficial del Alumno</div>
+              <div class="plan-sub" id="dato-plan">Plan: -</div>
             </div>
 
             <div class="qr-mini-wrap"><canvas id="qr-main"></canvas></div>
@@ -254,6 +275,26 @@ function alumnoEsActivo(a){
 }
 function instructorDe(a, fallback){
   return a?.instructor || a?.instructor_nombre || fallback || 'Instructor UNION'
+}
+function nombreDosLineas(nombre){
+  const parts = String(nombre || 'Alumno').trim().split(/\s+/).filter(Boolean)
+  if (parts.length <= 1) return parts[0] || 'Alumno'
+  if (parts.length === 2) return parts.join('<br>')
+  const mid = Math.ceil(parts.length / 2)
+  return parts.slice(0, mid).join(' ') + '<br>' + parts.slice(mid).join(' ')
+}
+function colorCinturon(cinta){
+  const s = String(cinta || '').toLowerCase()
+  if (s.includes('negra') || s.includes('negro')) return '#111827'
+  if (s.includes('roja') || s.includes('rojo')) return '#dc2626'
+  if (s.includes('cafe') || s.includes('café') || s.includes('marron') || s.includes('marrón')) return '#78350f'
+  if (s.includes('verde')) return '#16a34a'
+  if (s.includes('azul')) return '#2563eb'
+  if (s.includes('morada') || s.includes('morado')) return '#9333ea'
+  if (s.includes('naranja') || s.includes('anaranjada')) return '#f97316'
+  if (s.includes('amarilla') || s.includes('amarillo')) return '#fbbf24'
+  if (s.includes('blanca') || s.includes('blanco')) return '#e5e7eb'
+  return '#334155'
 }
 
 async function ensureCredencialVisualId(alumno){
@@ -353,14 +394,17 @@ async function cargarCredencial(){
   const activo = alumnoEsActivo(alumno)
   const estadoTxt = activo ? 'Alumno Activo' : 'Alumno Inactivo'
 
-  document.getElementById('alumno-nombre').textContent = alumno.nombre || 'Alumno'
+  document.getElementById('alumno-nombre').innerHTML = nombreDosLineas(alumno.nombre || 'Alumno')
   document.getElementById('alumno-id').textContent = visualId
   document.getElementById('back-id').textContent = visualId
   document.getElementById('dato-grupo').textContent = alumno.grupo || 'Sin grupo'
-  document.getElementById('dato-cinta').textContent = alumno.cinta || 'Sin cinta'
+  const cintaTxt = alumno.cinta || 'Sin cinta'
+  document.getElementById('dato-cinta').textContent = cintaTxt
+  document.getElementById('belt-label').textContent = cintaTxt
+  document.getElementById('belt-icon').style.setProperty('--belt', colorCinturon(cintaTxt))
   document.getElementById('dato-instructor').textContent = instructorDe(alumno, fallbackInstructor)
   document.getElementById('dato-ingreso').textContent = fmtFecha(alumno.fecha_ingreso)
-  document.getElementById('dato-plan').textContent = (alumno.plan_pago || 'Sin plan').toString()
+  document.getElementById('dato-plan').textContent = 'Plan: ' + (alumno.plan_pago || 'Sin plan').toString()
 
   const b = document.getElementById('badge-estado')
   b.className = 'status-badge ' + (activo ? 'status-ok' : 'status-bad')
