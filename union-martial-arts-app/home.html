@@ -475,10 +475,10 @@
     </div>
 
     <!-- Progreso del mes: Nutrición / Meditación / Rutinas -->
-    <div class="prog-card" id="prog-wrap" style="display:none;">
+    <div class="prog-card" id="prog-wrap" style="display:block;">
       <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;">Desarrollo en casa</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px;" id="prog-mes-label"></div>
-      <a href="nutricion.html" style="text-decoration:none;display:block;">
+      <a id="zona-nutricion" href="nutricion.html" style="text-decoration:none;display:block;">
         <div class="prog-row" style="cursor:pointer;">
           <div class="prog-ic" style="background:#f0fdf4;">🥗</div>
           <div class="prog-info">
@@ -488,7 +488,7 @@
           <span class="prog-count" style="color:#16a34a;" id="cnt-nutricion">—</span>
         </div>
       </a>
-      <a href="meditacion.html" style="text-decoration:none;display:block;">
+      <a id="zona-meditacion" href="meditacion.html" style="text-decoration:none;display:block;">
         <div class="prog-row" style="cursor:pointer;">
           <div class="prog-ic" style="background:#f5f3ff;">🧘</div>
           <div class="prog-info">
@@ -498,7 +498,7 @@
           <span class="prog-count" style="color:#7c3aed;" id="cnt-meditacion">—</span>
         </div>
       </a>
-      <a href="entrena.html" style="text-decoration:none;display:block;">
+      <a id="zona-rutinas" href="entrena.html" style="text-decoration:none;display:block;">
         <div class="prog-row" style="cursor:pointer;">
           <div class="prog-ic" style="background:#eff6ff;">🏃</div>
           <div class="prog-info">
@@ -552,7 +552,7 @@
     <div class="menu-card">
 
       <!-- Programas: banner llamativo -->
-      <a href="programas.html" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--uma-blue-700) 0%,var(--primary) 100%);border-radius:14px;padding:12px 14px;text-decoration:none;margin-bottom:12px;">
+      <a id="zona-beneficios" href="programas.html" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--uma-blue-700) 0%,var(--primary) 100%);border-radius:14px;padding:12px 14px;text-decoration:none;margin-bottom:12px;">
         <div style="width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <i class="ti ti-crown" style="font-size:24px;color:#fff;"></i>
         </div>
@@ -590,7 +590,7 @@
       <div class="hub-section">
         <div class="hub-section-title">Recursos</div>
         <div class="hub-grid">
-          <a class="hub-card" href="entrena.html">
+          <a id="zona-biblioteca" class="hub-card" href="entrena.html">
             <div class="menu-ic amber"><i class="ti ti-activity" style="font-size:32px;color:#d97706;"></i></div>
             <div class="menu-label">Biblioteca UNION</div>
             <div class="menu-sub">Videos, guías y apoyo para practicar.</div>
@@ -600,7 +600,7 @@
             <div class="menu-label">Tienda</div>
             <div class="menu-sub">Compra equipo y accesorios UNION</div>
           </a>
-          <a class="hub-card" href="juegos.html">
+          <a id="zona-juegos" class="hub-card" href="juegos.html">
             <div class="menu-ic cobalt" style="background:#fdf4ff;"><i class="ti ti-device-gamepad-2" style="font-size:36px;color:#9333ea;"></i></div>
             <div class="menu-label">Zona de Juegos</div>
             <div class="menu-sub">Retos y actividades para el hogar</div>
@@ -973,6 +973,67 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     claseHora.textContent = pc.horaTexto || ''
   }
 
+  function planPermiteZonaUnion(planPago) {
+    const p = (planPago || '').toLowerCase()
+    return p.includes('anual') || p.includes('club') || p.includes('elite') || p.includes('uacj')
+  }
+
+  function setLockVisual(anchor, locked) {
+    if (!anchor) return
+    if (!anchor.dataset.baseHref) anchor.dataset.baseHref = anchor.getAttribute('href') || '#'
+
+    const sub = anchor.querySelector('.menu-sub') || anchor.querySelector('.prog-count') || anchor.querySelector('div[style*="color:rgba(255,255,255,.75)"]')
+    const existing = anchor.querySelector('.zona-lock')
+
+    if (locked) {
+      anchor.setAttribute('href', '#')
+      anchor.style.opacity = '.75'
+      anchor.style.filter = 'grayscale(.1)'
+      anchor.style.pointerEvents = 'auto'
+      anchor.onclick = (e) => { e.preventDefault() }
+      if (sub && !existing) {
+        const lock = document.createElement('span')
+        lock.className = 'zona-lock'
+        lock.style.marginLeft = '6px'
+        lock.style.fontWeight = '700'
+        lock.textContent = '🔒'
+        sub.appendChild(lock)
+      }
+    } else {
+      anchor.setAttribute('href', anchor.dataset.baseHref)
+      anchor.style.opacity = ''
+      anchor.style.filter = ''
+      anchor.onclick = null
+      if (existing) existing.remove()
+    }
+  }
+
+  function aplicarZonaUnion(alumno) {
+    const wrap = document.getElementById('prog-wrap')
+    if (wrap) wrap.style.display = 'block'
+
+    const locked = !planPermiteZonaUnion(alumno?.plan_pago)
+    setLockVisual(document.getElementById('zona-nutricion'), locked)
+    setLockVisual(document.getElementById('zona-meditacion'), locked)
+    setLockVisual(document.getElementById('zona-rutinas'), locked)
+    setLockVisual(document.getElementById('zona-beneficios'), locked)
+    setLockVisual(document.getElementById('zona-biblioteca'), locked)
+    setLockVisual(document.getElementById('zona-juegos'), locked)
+
+    if (locked) {
+      document.getElementById('prog-mes-label').textContent = 'Contenido bloqueado para tu plan actual'
+      document.getElementById('cnt-nutricion').textContent = '🔒'
+      document.getElementById('cnt-meditacion').textContent = '🔒'
+      document.getElementById('cnt-entrena').textContent = '🔒'
+      document.getElementById('bar-nutricion').style.width = '0%'
+      document.getElementById('bar-meditacion').style.width = '0%'
+      document.getElementById('bar-entrena').style.width = '0%'
+      return
+    }
+
+    if (alumno?.id) cargarProgreso(alumno.id)
+  }
+
   document.getElementById('btn-logout').addEventListener('click', async (e) => {
     e.preventDefault()
     await supabase.auth.signOut()
@@ -1045,6 +1106,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         document.getElementById('nombre-alumno').textContent = al.nombre || 'Mi hijo/a'
         document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
+        aplicarZonaUnion(al)
         
         // Actualizar foto
         if (al.foto_url) {
@@ -1081,6 +1143,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         document.getElementById('grupo-alumno').textContent = al.grupo || 'Sin grupo asignado'
         mostrarCinta(al.cinta || al.cinturon, al.dan || 0)
         aplicarEstadoPagoEnHero(al.fecha_proximo_pago)
+        aplicarZonaUnion(al)
 
         if (al.foto_url) {
           document.getElementById('foto-wrap').innerHTML = `
