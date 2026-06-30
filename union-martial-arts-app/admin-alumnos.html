@@ -93,6 +93,16 @@
       </select>
     </div>
     <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Plan</label>
+      <select id="edit-plan" style="width:100%;height:42px;border:1.5px solid var(--border-input);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;">
+        <option value="mensual">mensual</option>
+        <option value="anual">anual</option>
+        <option value="club">club</option>
+        <option value="elite">elite</option>
+        <option value="uacj">uacj</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Horario</label>
       <div id="edit-horario-checks" style="display:flex;flex-direction:column;gap:8px;margin-top:2px;"></div>
     </div>
@@ -256,6 +266,7 @@
       document.getElementById('edit-fecha-ingreso').value = a.fecha_ingreso || ''
       document.getElementById('edit-cinta').value = a.cinta || ''
       document.getElementById('edit-grupo').value = a.grupo || ''
+      document.getElementById('edit-plan').value = (a.plan_pago || 'mensual').toLowerCase()
 
       // Foto en modal
       const fotoWrap = document.getElementById('admin-foto-wrap')
@@ -347,6 +358,7 @@
     const nombre = document.getElementById('edit-nombre').value.trim()
     const cinta = document.getElementById('edit-cinta').value
     const grupo = document.getElementById('edit-grupo').value
+    const planPago = document.getElementById('edit-plan').value || 'mensual'
     const horario = getHorariosEdit()
     if (!nombre) { alert('El nombre es obligatorio'); return }
     const btn = document.getElementById('modal-guardar')
@@ -354,7 +366,7 @@
 
     const fechaIngreso = document.getElementById('edit-fecha-ingreso').value
     const { error } = await supabase.from('alumnos').update({
-      nombre, cinta: cinta || null, grupo: grupo || null, horario: horario || null,
+      nombre, cinta: cinta || null, grupo: grupo || null, plan_pago: planPago, horario: horario || null,
       fecha_ingreso: fechaIngreso || null
     }).eq('id', id)
 
