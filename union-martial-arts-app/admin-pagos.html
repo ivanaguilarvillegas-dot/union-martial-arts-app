@@ -127,6 +127,14 @@ function etiquetaMetodo(metodo) {
   return '—'
 }
 
+function metodoPagoFila(p) {
+  return p?.forma_pago || p?.metodo_pago || ''
+}
+
+function conceptoPagoFila(p) {
+  return String(p?.concepto || p?.mes || '—').trim()
+}
+
 function estadoPago(p) {
   if (!p) return 'pendiente'
   const estadoRaw = String(p.estado || '').toLowerCase().trim()
@@ -144,7 +152,7 @@ function estadoPago(p) {
   if (ev?.accion === 'aprobado') return 'aprobado'
   if (ev?.accion === 'rechazado') return 'rechazado'
   const acciones = ['aviso_efectivo', 'envio_comprobante', 'mercadopago_iniciado', 'marcar_recibido']
-  if (acciones.includes(ev?.accion) || !!p.forma_pago || !!p.comprobante_url) return 'por_revisar'
+  if (acciones.includes(ev?.accion) || !!metodoPagoFila(p) || !!p.comprobante_url) return 'por_revisar'
   return 'pendiente'
 }
 
@@ -227,6 +235,11 @@ function mkPayToken(payload = {}) {
     .join(';')
 }
 
+function faltaColumna(err) {
+  const msg = String(err?.message || '').toLowerCase()
+  return err?.code === '42703' || err?.code === 'PGRST204' || msg.includes('could not find') || msg.includes('schema cache')
+}
+
 function estadoRevision(p) {
   return estadoPago(p)
 }
@@ -267,7 +280,7 @@ function render() {
     const rev = estadoRevision(p)
     const ok = rev === 'aprobado'
     const tieneComp = !!p.comprobante_url
-    const metodo = p.forma_pago || pagoEventos[p.id]?.metodo || '—'
+    const metodo = metodoPagoFila(p) || pagoEventos[p.id]?.metodo || '—'
     const metodoNorm = String(metodo || '').toLowerCase()
     const esTransferencia = metodoNorm === 'transferencia'
     const esImagen = tieneComp && /\.(jpg|jpeg|png|gif|webp)$/i.test(p.comprobante_url)
@@ -287,7 +300,7 @@ function render() {
         <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</span>
         <span class="grow">
           <span class="t" style="font-size:13.5px;font-weight:600;">${nombre}</span>
-          <span class="s">Concepto: ${p.mes || '—'}</span>
+          <span class="s">Concepto: ${conceptoPagoFila(p)}</span>
           <span class="s">Monto: $${Number(p.monto||0).toLocaleString('es-MX')} MXN</span>
           <span class="s">Método: ${etiquetaMetodo(metodo)}</span>
           <span class="s">Fecha: ${fecha}${tieneComp ? ' · con comprobante' : ''}</span>
@@ -320,9 +333,9 @@ document.getElementById('pagos-body').addEventListener('click', async e => {
     const p = pagos.find(x => x.id === btnConf.dataset.aprobar)
     if (!p) return
     pagoSel = p
-    document.getElementById('modal-alumno-nombre').textContent = (p.alumnos?.nombre||'Alumno') + ' · ' + (p.mes||'')
+    document.getElementById('modal-alumno-nombre').textContent = (p.alumnos?.nombre||'Alumno') + ' · ' + conceptoPagoFila(p)
     document.getElementById('modal-monto').value = p.monto || ''
-    document.getElementById('modal-forma').value = p.forma_pago || (p.comprobante_url ? 'transferencia' : 'efectivo')
+    document.getElementById('modal-forma').value = metodoPagoFila(p) || (p.comprobante_url ? 'transferencia' : 'efectivo')
     const compWrap = document.getElementById('modal-comp-wrap')
     if (p.comprobante_url) {
       compWrap.style.display = 'block'
@@ -411,9 +424,14 @@ document.getElementById('modal-confirmar').addEventListener('click', async () =>
   btn.disabled = true; btn.textContent = 'Guardando…'
 
   const hoy = new Date().toISOString().split('T')[0]
-  const { error } = await supabase.from('pagos').update({
-    estado: 'pagado', monto, forma_pago: forma, fecha_pago: hoy
+  let { error } = await supabase.from('pagos').update({
+    estado: 'pagado', monto, forma_pago: forma, metodo_pago: forma, fecha_pago: hoy
   }).eq('id', pagoSel.id)
+  if (error && faltaColumna(error)) {
+    ;({ error } = await supabase.from('pagos').update({
+      estado: 'pagado', monto, forma_pago: forma, fecha_pago: hoy
+    }).eq('id', pagoSel.id))
+  }
 
   if (error) {
     alert('❌ Error: ' + error.message)
@@ -434,7 +452,7 @@ document.getElementById('modal-confirmar').addEventListener('click', async () =>
   const token = mkPayToken({ pago: pagoSel.id, alumno: pagoSel.alumno_id, accion: 'aprobado', metodo: forma, comp: pagoSel.comprobante_url || '' })
   await supabase.from('mensajes').insert({
     de_user_id: user.id,
-    texto: `${token} · ✅ Pago confirmado — ${nombre} · ${pagoSel.mes||''} · $${monto.toLocaleString('es-MX')} MXN (${forma}). Puedes ver tu recibo en la app.`,
+    texto: `${token} · ✅ Pago confirmado — ${nombre} · ${conceptoPagoFila(pagoSel)} · $${monto.toLocaleString('es-MX')} MXN (${forma}). Puedes ver tu recibo en la app.`,
     para_admin: false,
     destinatario_id: padre?.id || null
   })
@@ -463,7 +481,10 @@ document.getElementById('nuevo-pago-crear').addEventListener('click', async () =
     alert('Ya existe un pago abierto para este alumno. Evita duplicados.')
     return
   }
-  const { error } = await supabase.from('pagos').insert({ alumno_id: nuevoPagoAlumnoId, mes, monto, estado: 'pendiente' })
+  let { error } = await supabase.from('pagos').insert({ alumno_id: nuevoPagoAlumnoId, mes, concepto: mes, monto, estado: 'pendiente' })
+  if (error && faltaColumna(error)) {
+    ;({ error } = await supabase.from('pagos').insert({ alumno_id: nuevoPagoAlumnoId, mes, monto, estado: 'pendiente' }))
+  }
   btn.disabled = false; btn.innerHTML = '<i data-lucide="plus"></i> Crear'; lucide.createIcons()
   if (error) { alert('❌ Error: ' + error.message); return }
   document.getElementById('modal-nuevo-pago').style.display = 'none'

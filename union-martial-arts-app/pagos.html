@@ -168,8 +168,82 @@
   let pagosAlumno = []
   let eventosPago = {}
   let estadoForzado = null
+  let conceptoSeleccionado = ''
 
   function fmt(n) { return '$' + Math.round(Number(n || 0)).toLocaleString('es-MX') }
+
+  function hoyISO() {
+    return new Date().toISOString().split('T')[0]
+  }
+
+  function conceptoPago(pago) {
+    return String(pago?.concepto || pago?.mes || '').trim()
+  }
+
+  function conceptoActual() {
+    return String(conceptoSeleccionado || conceptoPago(pagoActual) || '').trim()
+  }
+
+  function payloadPagoSolicitud({ estado, metodo, comprobanteUrl }) {
+    const concepto = conceptoActual() || 'Pago'
+    const monto = Number(montoBase || 0)
+    const fecha = hoyISO()
+    const metodoNorm = metodo || null
+    const base = {
+      alumno_id: alumnoId,
+      mes: concepto,
+      monto,
+      forma_pago: metodoNorm,
+      estado,
+      comprobante_url: comprobanteUrl || null
+    }
+    const extendido = {
+      ...base,
+      concepto,
+      metodo_pago: metodoNorm,
+      fecha
+    }
+    return { base, extendido }
+  }
+
+  function faltaColumna(err) {
+    const msg = String(err?.message || '').toLowerCase()
+    return err?.code === '42703' || err?.code === 'PGRST204' || msg.includes('could not find') || msg.includes('schema cache')
+  }
+
+  async function insertarPagoSolicitud(payload) {
+    let { data, error } = await supabase.from('pagos').insert(payload.extendido).select('*').single()
+    if (error && faltaColumna(error)) {
+      ;({ data, error } = await supabase.from('pagos').insert(payload.base).select('*').single())
+    }
+    return { data, error }
+  }
+
+  async function actualizarPagoSolicitud(id, payload) {
+    let { error } = await supabase.from('pagos').update(payload.extendido).eq('id', id)
+    if (error && faltaColumna(error)) {
+      ;({ error } = await supabase.from('pagos').update(payload.base).eq('id', id))
+    }
+    return { error }
+  }
+
+  async function asegurarPagoEditable() {
+    if (!alumnoId) return { ok: false, error: { message: 'No hay alumno vinculado.' } }
+    const statusActual = reviewStatus(pagoActual)
+    if (pagoActual && statusActual !== 'aprobado') {
+      return { ok: true, id: pagoActual.id }
+    }
+
+    const payload = payloadPagoSolicitud({ estado: 'pendiente', metodo: null, comprobanteUrl: null })
+    const { data, error } = await insertarPagoSolicitud(payload)
+    if (error) return { ok: false, error }
+    if (!data?.id) return { ok: false, error: { message: 'No se pudo crear el pago.' } }
+
+    pagoActual = data
+    pagoId = data.id
+    pagosAlumno = [data, ...(pagosAlumno || []).filter(p => p.id !== data.id)]
+    return { ok: true, id: data.id }
+  }
 
   function extraerMonto(str) {
     const m = (str || '').match(/[\d,]+/)
@@ -433,8 +507,8 @@
         <div style="display:flex;align-items:center;gap:10px;">
           <span class="ic green" style="flex-shrink:0;"><i data-lucide="check"></i></span>
           <span class="grow">
-            <span class="t" style="display:block;font-size:13.5px;font-weight:600;">Mensualidad ${p.mes||'—'}</span>
-            <span class="s">$${Number(p.monto||0).toLocaleString('es-MX')} MXN${p.fecha_pago ? ' · '+p.fecha_pago : ''}${p.forma_pago ? ' · '+etiquetaMetodo(p.forma_pago) : ''}</span>
+            <span class="t" style="display:block;font-size:13.5px;font-weight:600;">${conceptoPago(p)||'Pago'}</span>
+            <span class="s">$${Number(p.monto||0).toLocaleString('es-MX')} MXN${p.fecha_pago ? ' · '+p.fecha_pago : ''}${(p.forma_pago || p.metodo_pago) ? ' · '+etiquetaMetodo(p.forma_pago || p.metodo_pago) : ''}</span>
           </span>
           <span class="badge green" style="flex-shrink:0;">Pagado</span>
         </div>
@@ -477,12 +551,13 @@
       return
     }
 
-    pagoActual = pagosAlumno.find(p => p.estado !== 'pagado') || pagosAlumno[0]
+    pagoActual = pagosAlumno.find(p => estadoPago(p) !== 'aprobado') || pagosAlumno[0]
     pagoId = pagoActual.id
     montoBase = Number(pagoActual.monto) || 0
-    metodoPago = pagoActual.forma_pago || ''
+    metodoPago = pagoActual.forma_pago || pagoActual.metodo_pago || ''
+    conceptoSeleccionado = conceptoPago(pagoActual)
 
-    document.getElementById('pago-concepto').textContent = `Mensualidad ${pagoActual.mes || '—'} — Programa Básico`
+    document.getElementById('pago-concepto').textContent = conceptoSeleccionado || 'Pago'
     document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
 
     const status = reviewStatus(pagoActual)
@@ -574,7 +649,8 @@
     } else {
       document.getElementById('otra-cantidad-card').style.display = 'none'
       montoBase = p.monto
-      document.getElementById('pago-concepto').textContent = p.label
+      conceptoSeleccionado = p.label
+      document.getElementById('pago-concepto').textContent = conceptoSeleccionado
       document.getElementById('pago-monto').innerHTML = `${fmt(montoBase)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
       document.getElementById('pago-card').scrollIntoView({ behavior: 'smooth' })
       restaurarVistaPendiente()
@@ -586,7 +662,8 @@
     const val = parseInt(document.getElementById('input-otra').value, 10) || 0
     if (val < 1) { alert('Ingresa una cantidad válida'); return }
     montoBase = val
-    document.getElementById('pago-concepto').textContent = 'Pago personalizado — $' + val.toLocaleString('es-MX')
+    conceptoSeleccionado = 'Pago personalizado'
+    document.getElementById('pago-concepto').textContent = `${conceptoSeleccionado} — $${val.toLocaleString('es-MX')}`
     document.getElementById('pago-monto').innerHTML = `${fmt(val)} <span style="font-size:15px;color:var(--muted);">MXN</span>`
     document.getElementById('otra-cantidad-card').style.display = 'none'
     restaurarVistaPendiente()
@@ -603,19 +680,39 @@
   })
 
   document.getElementById('btn-pagar').addEventListener('click', async () => {
-    if (!pagoId) return
+    if (montoBase < 1) {
+      alert('Selecciona un concepto con monto válido.')
+      return
+    }
+    const concepto = conceptoActual()
+    if (!concepto) {
+      alert('Selecciona un concepto antes de continuar.')
+      return
+    }
     const status = reviewStatus(pagoActual)
-    if (status === 'por_revisar' && metodoPago === (pagoActual?.forma_pago || metodoPago)) {
+    const metodoAnterior = pagoActual?.forma_pago || pagoActual?.metodo_pago || ''
+    const mismoConcepto = conceptoPago(pagoActual) === concepto
+    const mismoMonto = Number(pagoActual?.monto || 0) === Number(montoBase || 0)
+    if (status === 'por_revisar' && metodoPago === (metodoAnterior || metodoPago) && mismoConcepto && mismoMonto) {
       alert('Este pago ya fue enviado para revisión.')
       return
     }
 
+    const editable = await asegurarPagoEditable()
+    if (!editable.ok) {
+      alert('No se pudo preparar el pago: ' + (editable.error?.message || 'Error desconocido'))
+      return
+    }
+    const idObjetivo = editable.id
+    pagoId = idObjetivo
+
     if (metodoPago === 'efectivo') {
-      const { error: errEfectivo } = await supabase.from('pagos').update({
-        forma_pago: 'efectivo',
+      const payload = payloadPagoSolicitud({
         estado: 'pendiente_aprobacion',
-        comprobante_url: null
-      }).eq('id', pagoId)
+        metodo: 'efectivo',
+        comprobanteUrl: null
+      })
+      const { error: errEfectivo } = await actualizarPagoSolicitud(idObjetivo, payload)
       if (errEfectivo) {
         alert('No se pudo registrar el pago en efectivo: ' + errEfectivo.message)
         return
@@ -631,7 +728,13 @@
       }
 
       estadoForzado = 'por_revisar'
-      if (pagoActual) pagoActual.forma_pago = 'efectivo'
+      if (pagoActual) {
+        pagoActual.forma_pago = 'efectivo'
+        pagoActual.metodo_pago = 'efectivo'
+        pagoActual.monto = Number(montoBase || 0)
+        pagoActual.mes = concepto
+        pagoActual.concepto = concepto
+      }
       document.getElementById('pago-estado').style.color = '#d97706'
       document.getElementById('pago-estado').innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
       document.getElementById('pago-seguimiento').style.display = 'block'
@@ -643,10 +746,12 @@
     }
 
     if (metodoPago === 'mercadopago') {
-      const { error: errMp } = await supabase.from('pagos').update({
-        forma_pago: 'mercadopago',
-        estado: 'pendiente_revision'
-      }).eq('id', pagoId)
+      const payload = payloadPagoSolicitud({
+        estado: 'pendiente_revision',
+        metodo: 'mercadopago',
+        comprobanteUrl: null
+      })
+      const { error: errMp } = await actualizarPagoSolicitud(idObjetivo, payload)
       if (errMp) {
         alert('No se pudo registrar el inicio de Mercado Pago: ' + errMp.message)
         return
@@ -667,7 +772,15 @@
   })
 
   document.getElementById('btn-enviar-comp').addEventListener('click', async () => {
-    if (!pagoId) return
+    if (montoBase < 1) {
+      alert('Selecciona un concepto con monto válido.')
+      return
+    }
+    const concepto = conceptoActual()
+    if (!concepto) {
+      alert('Selecciona un concepto antes de enviar comprobante.')
+      return
+    }
     const file = document.getElementById('comp-file').files?.[0]
     if (!file) return
     if (metodoPago !== 'transferencia') {
@@ -675,16 +788,25 @@
       return
     }
 
+    const editable = await asegurarPagoEditable()
+    if (!editable.ok) {
+      alert('No se pudo preparar el pago: ' + (editable.error?.message || 'Error desconocido'))
+      return
+    }
+    const idObjetivo = editable.id
+    pagoId = idObjetivo
+
     const nombre = Date.now() + '_comp_' + file.name
     const { error } = await supabase.storage.from('media').upload('comprobantes/' + nombre, file)
     if (error) { alert('Error al subir: ' + error.message); return }
     const url = supabase.storage.from('media').getPublicUrl('comprobantes/' + nombre).data.publicUrl
 
-    const { error: errPagoComp } = await supabase.from('pagos').update({
-      forma_pago: 'transferencia',
-      comprobante_url: url,
-      estado: 'pendiente_revision'
-    }).eq('id', pagoId)
+    const payload = payloadPagoSolicitud({
+      estado: 'pendiente_revision',
+      metodo: 'transferencia',
+      comprobanteUrl: url
+    })
+    const { error: errPagoComp } = await actualizarPagoSolicitud(idObjetivo, payload)
     if (errPagoComp) {
       alert('Se subió el archivo, pero no se pudo guardar el pago: ' + errPagoComp.message)
       return
@@ -703,6 +825,10 @@
     estadoForzado = 'por_revisar'
     if (pagoActual) {
       pagoActual.forma_pago = 'transferencia'
+      pagoActual.metodo_pago = 'transferencia'
+      pagoActual.monto = Number(montoBase || 0)
+      pagoActual.mes = concepto
+      pagoActual.concepto = concepto
       pagoActual.comprobante_url = url
     }
     document.getElementById('pago-estado').style.color = '#d97706'

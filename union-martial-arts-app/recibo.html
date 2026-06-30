@@ -260,13 +260,14 @@
 
   if (pago) {
     const monto = Number(pago.monto) || 0
-    const forma = pago.forma_pago || 'Efectivo'
+    const forma = pago.forma_pago || pago.metodo_pago || 'Efectivo'
+    const concepto = String(pago.concepto || pago.mes || '—').trim()
     // Si fue Mercado Pago, mostrar monto con comisión
     const montoFinal = forma === 'mercadopago' ? Math.round(monto * 1.035) : monto
 
     document.getElementById('r-monto').textContent = '$' + montoFinal.toLocaleString('es-MX')
     document.getElementById('r-alumno').textContent = pago.alumnos?.nombre || meAdmin?.nombre || '—'
-    document.getElementById('r-concepto').textContent = 'Mensualidad ' + (pago.mes || '—')
+    document.getElementById('r-concepto').textContent = concepto || '—'
 
     const formaTexto = {
       efectivo: 'Efectivo',
