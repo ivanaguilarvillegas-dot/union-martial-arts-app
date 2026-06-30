@@ -59,9 +59,9 @@ body{
     radial-gradient(circle at 12% 8%, rgba(255,255,255,.16), transparent 26%),
     linear-gradient(140deg,#0a1b63 0%, #0f2167 40%, #0b2cff 100%);
 }
-.glass{position:absolute;inset:8px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));backdrop-filter:blur(3px)}
+.glass{position:absolute;inset:7px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));backdrop-filter:blur(3px)}
 
-.front-inner{position:relative;z-index:2;height:100%;padding:12px 14px;color:#fff;display:grid;grid-template-columns:31% 1fr;gap:16px}
+.front-inner{position:relative;z-index:2;height:100%;padding:14px 16px;color:#fff;display:grid;grid-template-columns:30% 1fr;gap:14px}
 .brand{display:flex;align-items:center;gap:8px;margin-top:7px;margin-left:8px}
 .brand img{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
 .brand-txt{font-size:10px;letter-spacing:.07em;font-weight:900;line-height:1.2}
@@ -70,7 +70,7 @@ body{
 .photo-frame{
   margin-top:8px;
   margin-left:8px;
-  width:98px;height:98px;border-radius:50%;position:relative;overflow:hidden;
+  width:76px;height:76px;border-radius:50%;position:relative;overflow:hidden;
   border:3px solid var(--um-blue);
   box-shadow:0 0 0 2px #fff, 0 0 0 5px rgba(212,169,59,.35), 0 8px 18px rgba(0,0,0,.28);
   background:#e2e8f0;display:flex;align-items:center;justify-content:center;
@@ -83,8 +83,9 @@ body{
 .stamp img{width:76px;height:76px;object-fit:contain;transform:rotate(-10deg)}
 .member-chip{font-size:9px;background:rgba(212,169,59,.22);border:1px solid rgba(255,255,255,.35);color:#fff7d6;border-radius:999px;padding:4px 9px;font-weight:800;letter-spacing:.02em;margin-left:8px}
 
-.right{display:flex;flex-direction:column;min-width:0;position:relative;padding-right:90px;padding-top:8px}
-.name{font-size:16px;font-weight:900;line-height:1.08;letter-spacing:.01em;margin-top:8px;max-width:100%;white-space:normal;word-break:break-word}
+.right{display:flex;flex-direction:column;min-width:0;position:relative;padding-right:78px;padding-top:8px}
+.name{font-size:14px;font-weight:900;line-height:1.12;letter-spacing:.01em;margin-top:8px;max-width:100%;white-space:normal;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.name.long{font-size:12.5px}
 .idline{margin-top:6px}
 .id-k{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#bfdbfe;font-weight:800}
 .id-v{font-size:11px;font-weight:800;color:#eaf1ff;margin-top:2px}
@@ -93,9 +94,12 @@ body{
 .status-bad{background:rgba(220,38,38,.25);color:#fee2e2}
 
 .front-list{margin-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:44px;height:44px;display:flex;flex-direction:column;justify-content:center}
+.kv{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;min-height:44px;height:44px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
 .k{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#bfdbfe;font-weight:700}
-.v{font-size:10.6px;font-weight:800;margin-top:2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v{font-size:10px;font-weight:800;margin-top:2px;line-height:1.15;white-space:normal;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#dato-instructor{font-size:9.4px}
+#dato-grupo{font-size:9.5px}
+#dato-cinta{text-align:center;font-size:9.8px}
 
 .belt-visual{margin-top:10px;display:flex;align-items:center;gap:8px}
 .belt-icon{position:relative;display:block;width:56px;height:14px;border-radius:999px;background:var(--belt,#111827);box-shadow:inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.28)}
@@ -111,10 +115,10 @@ body{
 
 .qr-mini-wrap{
   position:absolute;
-  right:0;
-  bottom:0;
-  width:84px;
-  height:84px;
+  right:5px;
+  bottom:5px;
+  width:68px;
+  height:68px;
   background:#fff;
   border-radius:10px;
   border:2px solid rgba(212,169,59,.5);
@@ -122,33 +126,35 @@ body{
 }
 .qr-mini-wrap canvas{width:100%!important;height:100%!important;display:block}
 
-.back-inner{position:relative;z-index:2;height:100%;padding:12px 14px;color:#fff;display:grid;grid-template-columns:1fr 48%;gap:12px}
+.back-inner{position:relative;z-index:2;height:100%;padding:14px 16px;color:#fff;display:grid;grid-template-columns:1fr 46%;gap:10px}
 .loss-title{font-size:12px;font-weight:900;letter-spacing:.06em}
-.loss{margin-top:7px;font-size:10.4px;line-height:1.43;color:#e2e8f0}
+.loss{margin-top:7px;font-size:9.2px;line-height:1.34;color:#e2e8f0}
 .loss b{color:#fff}
 .valid-box{margin-top:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px}
 .valid-k{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#bfdbfe;font-weight:800}
 .valid-v{font-size:10.2px;font-weight:700;line-height:1.35;margin-top:4px}
 
 .back-qr{display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:8px}
-.back-qr-box{width:96%;aspect-ratio:1/1;background:#fff;border-radius:12px;padding:9px;border:2px solid rgba(212,169,59,.55)}
+.back-qr-box{width:86%;aspect-ratio:1/1;background:#fff;border-radius:12px;padding:8px;border:2px solid rgba(212,169,59,.55)}
 .back-qr-box canvas{width:100%!important;height:100%!important;display:block}
 .back-id{font-size:11px;font-weight:800;text-align:center;color:#eaf0ff}
 
 .hidden{display:none}
 
 @media (max-width: 680px){
-  .right{padding-right:82px}
-  .qr-mini-wrap{width:74px;height:74px}
-  .name{font-size:14px}
+  .right{padding-right:72px}
+  .qr-mini-wrap{width:62px;height:62px}
+  .name{font-size:12.5px}
   .kv{min-height:39px;padding:5px 7px}
-  .photo-frame{width:88px;height:88px}
+  .photo-frame{width:68px;height:68px}
 }
 
 @media print {
   @page { size: 85.60mm 53.98mm landscape; margin: 0; }
-  html,body{width:85.60mm;height:53.98mm;background:#fff}
+  html,body{width:85.60mm;height:53.98mm;background:#fff;margin:0;padding:0;overflow:hidden}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .topbar{display:none!important}
+  .phone,.screen{width:85.60mm!important;height:53.98mm!important;margin:0!important;padding:0!important;border:none!important;border-radius:0!important;box-shadow:none!important}
   .cred-wrap{padding:0;max-width:none}
   .sheet{gap:0}
   .pvc-card{width:85.60mm;height:53.98mm;max-width:none;aspect-ratio:auto;border-radius:0;box-shadow:none;margin:0}
@@ -227,10 +233,8 @@ body{
               Av. de los Insurgentes 2405<br>
               Col. Partido Romero<br>
               C.P. 32030<br>
-              Ciudad Juarez, Chihuahua<br>
-              Telefono<br>
-              (656) 637-9191<br>
-              www.unionmartialarts.org
+              Cd. Juarez, Chihuahua<br>
+              Tel. (656) 637-9191
             </div>
             <div class="valid-box">
               <div class="valid-k">VALIDACION DIGITAL</div>
@@ -295,6 +299,16 @@ function colorCinturon(cinta){
   if (s.includes('amarilla') || s.includes('amarillo')) return '#fbbf24'
   if (s.includes('blanca') || s.includes('blanco')) return '#e5e7eb'
   return '#334155'
+}
+function ajustarFuente(el, thresholds){
+  if (!el) return
+  const len = (el.textContent || '').trim().length
+  for (const t of thresholds) {
+    if (len >= t.min) {
+      el.style.fontSize = t.size
+      return
+    }
+  }
 }
 
 async function ensureCredencialVisualId(alumno){
@@ -395,6 +409,7 @@ async function cargarCredencial(){
   const estadoTxt = activo ? 'Alumno Activo' : 'Alumno Inactivo'
 
   document.getElementById('alumno-nombre').innerHTML = nombreDosLineas(alumno.nombre || 'Alumno')
+  document.getElementById('alumno-nombre').classList.toggle('long', String(alumno.nombre || '').length > 22)
   document.getElementById('alumno-id').textContent = visualId
   document.getElementById('back-id').textContent = visualId
   document.getElementById('dato-grupo').textContent = alumno.grupo || 'Sin grupo'
@@ -405,6 +420,9 @@ async function cargarCredencial(){
   document.getElementById('dato-instructor').textContent = instructorDe(alumno, fallbackInstructor)
   document.getElementById('dato-ingreso').textContent = fmtFecha(alumno.fecha_ingreso)
   document.getElementById('dato-plan').textContent = 'Plan: ' + (alumno.plan_pago || 'Sin plan').toString()
+  ajustarFuente(document.getElementById('dato-instructor'), [{ min: 24, size: '8.5px' }, { min: 18, size: '9px' }])
+  ajustarFuente(document.getElementById('dato-grupo'), [{ min: 24, size: '8.6px' }, { min: 18, size: '9px' }])
+  ajustarFuente(document.getElementById('dato-cinta'), [{ min: 16, size: '9px' }])
 
   const b = document.getElementById('badge-estado')
   b.className = 'status-badge ' + (activo ? 'status-ok' : 'status-bad')
