@@ -288,20 +288,49 @@
     const box = document.getElementById('pago-seguimiento')
     if (!pago) { box.style.display = 'none'; return }
     const status = reviewStatus(pago)
+    if (status === 'aprobado') {
+      box.style.display = 'none'
+      return
+    }
     const ev = eventosPago[pago.id]
     const metodo = pago.forma_pago || ev?.metodo || '—'
     const tieneAviso = ['aviso_efectivo', 'mercadopago_iniciado', 'marcar_recibido', 'aprobado'].includes(ev?.accion) || !!pago.forma_pago
     const tieneComp = !!(pago.comprobante_url || ev?.comp || ev?.accion === 'envio_comprobante')
-    const tieneRecibo = status === 'aprobado'
     const lineas = [
       `Método elegido: ${etiquetaMetodo(metodo)}`,
       `Aviso enviado: ${tieneAviso ? 'sí' : 'no'}`,
       `Comprobante subido: ${tieneComp ? 'sí' : 'no'}`,
-      `Recibo disponible: ${tieneRecibo ? 'sí' : 'no'}`,
       `Estado: ${textoEstadoPago(status)}`
     ]
     box.style.display = 'block'
     box.innerHTML = lineas.join(' · ')
+  }
+
+  function pintarAprobado(pago) {
+    const box = document.getElementById('pago-seguimiento')
+    if (!pago) { box.style.display = 'none'; return }
+    const ev = eventosPago[pago.id]
+    const metodo = etiquetaMetodo(pago.forma_pago || ev?.metodo || '—')
+    const fecha = pago.fecha_pago
+      ? new Date(pago.fecha_pago + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+      : '—'
+    box.style.display = 'block'
+    box.innerHTML = `
+      <div class="card" style="padding:12px 14px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r-md);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--green-600);">
+            <i data-lucide="check-circle" style="width:15px;height:15px"></i> Pago aprobado
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:99px;background:var(--green-bg);color:var(--green-text);font-size:11px;font-weight:700;">Pagado</span>
+        </div>
+        <div style="display:grid;gap:4px;font-size:12px;color:var(--muted);">
+          <div><strong style="color:var(--text);">Método:</strong> ${metodo}</div>
+          <div><strong style="color:var(--text);">Monto:</strong> ${fmt(pago.monto || montoBase)}</div>
+          <div><strong style="color:var(--text);">Fecha:</strong> ${fecha}</div>
+        </div>
+      </div>
+    `
+    lucide.createIcons()
   }
 
   function actualizarDesglose(metodo) {
@@ -409,26 +438,31 @@
       document.getElementById('pago-opciones').style.display = 'none'
       document.getElementById('btn-recibo').href = 'recibo.html?id=' + pagoActual.id
       document.getElementById('btn-recibo').style.display = 'flex'
+      pintarAprobado(pagoActual)
     } else if (status === 'rechazado') {
       estadoEl.style.color = 'var(--red-600)'
       estadoEl.innerHTML = '<i data-lucide="x-circle" style="width:15px;height:15px"></i> Pago rechazado'
       document.getElementById('pago-opciones').style.display = 'block'
       document.getElementById('btn-recibo').style.display = 'none'
+      document.getElementById('pago-seguimiento').style.display = 'none'
     } else if (status === 'por_revisar') {
       estadoEl.style.color = '#d97706'
       estadoEl.innerHTML = '<i data-lucide="hourglass" style="width:15px;height:15px"></i> Pago por revisar'
       document.getElementById('pago-opciones').style.display = 'block'
       document.getElementById('btn-recibo').style.display = 'none'
+      pintarSeguimiento(pagoActual)
     } else if (status === 'rechazado') {
       estadoEl.style.color = 'var(--red-600)'
       estadoEl.innerHTML = '<i data-lucide="x-circle" style="width:15px;height:15px"></i> Pago rechazado'
       document.getElementById('pago-opciones').style.display = 'block'
       document.getElementById('btn-recibo').style.display = 'none'
+      document.getElementById('pago-seguimiento').style.display = 'none'
     } else {
       estadoEl.style.color = 'var(--red-600)'
       estadoEl.innerHTML = '<i data-lucide="alert-circle" style="width:15px;height:15px"></i> Pago pendiente'
       document.getElementById('pago-opciones').style.display = 'block'
       document.getElementById('btn-recibo').style.display = 'none'
+      pintarSeguimiento(pagoActual)
     }
 
     document.getElementById('total-efectivo').textContent = fmt(montoBase)
@@ -449,7 +483,7 @@
       document.getElementById('comp-ok').style.display = 'none'
     }
 
-    pintarSeguimiento(pagoActual)
+    if (status !== 'aprobado') pintarSeguimiento(pagoActual)
     renderHistorial()
     lucide.createIcons()
   }
