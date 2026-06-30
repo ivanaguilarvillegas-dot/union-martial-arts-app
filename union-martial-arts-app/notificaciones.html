@@ -281,6 +281,17 @@
   let citasCache = []
   let checkinsCache = []
   let eventosCache = []
+  let faqNotifCache = []
+
+  function decodeToken(v) { try { return decodeURIComponent(String(v || '')) } catch(e) { return String(v || '') } }
+  function parseTokenMap(raw) {
+    const out = {}
+    String(raw || '').split(';').forEach(pair => {
+      const i = pair.indexOf('=')
+      if (i > 0) out[pair.slice(0, i).trim()] = decodeToken(pair.slice(i + 1).trim())
+    })
+    return out
+  }
 
   function normalizeText(text) {
     return (text || '').toLowerCase()
@@ -371,12 +382,29 @@
 
   function renderAvisos(avisos) {
     const box = document.getElementById('avisos-list')
-    if (!avisos?.length) {
+    if (!avisos?.length && !faqNotifCache.length) {
       box.innerHTML = '<div class="empty-sec"><p>No hay avisos generales por el momento.</p></div>'
       return
     }
 
-    box.innerHTML = avisos.map(a => {
+    const faqHTML = (faqNotifCache || []).map(n => {
+      const fecha = new Date(n.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+      const msg = n.mensaje || 'El instructor respondió tu duda. Toca para abrir Chat Privado.'
+      return `<div class="aviso-row" style="cursor:pointer;" onclick="window.location.href='chat.html'">
+        <div class="aviso-top">
+          <div class="aviso-ic blue"><i class="ti ti-message" style="font-size:18px;color:var(--primary);"></i></div>
+          <div style="flex:1;min-width:0;">
+            <span class="badge-imp informativo">Centro de ayuda</span>
+            <div class="aviso-title">Tu pregunta fue respondida</div>
+            <div class="aviso-msg">${msg}</div>
+            <div class="aviso-meta"><i data-lucide="calendar" style="width:12px;height:12px;"></i>${fecha}</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:6px;">Toca para abrir Chat Privado</div>
+          </div>
+        </div>
+      </div>`
+    }).join('')
+
+    const avisosHTML = (avisos || []).map(a => {
       const pMap = {
         urgente:    { cls:'red',   icon:'ti-alert-circle',  col:'#dc2626' },
         importante: { cls:'amber', icon:'ti-calendar-event',col:'#d97706' },
@@ -405,6 +433,7 @@
             </button>
           </div>`
     }).join('')
+    box.innerHTML = faqHTML + avisosHTML
     lucide.createIcons()
   }
 
@@ -475,9 +504,23 @@
         .select('id,titulo,fecha,hora,lugar,tipo').gte('fecha', hoy).order('fecha').limit(10)
       eventosCache = eventos || []
 
+      const padreIdSafe = padre?.id || '00000000-0000-0000-0000-000000000000'
+      const userIdSafe = user.id || '00000000-0000-0000-0000-000000000000'
+      const { data: faqRows } = await supabase.from('mensajes')
+        .select('id,texto,creado_en,destinatario_id')
+        .eq('para_admin', false)
+        .or(`destinatario_id.eq.${padreIdSafe},destinatario_id.eq.${userIdSafe}`)
+        .order('creado_en', { ascending: false })
+        .limit(80)
+      faqNotifCache = (faqRows || []).map(r => {
+        if (!String(r.texto || '').startsWith('[[FAQ_NOTIFY]]')) return null
+        const t = parseTokenMap(String(r.texto).replace('[[FAQ_NOTIFY]]', '').trim())
+        return { id: r.id, creado_en: r.creado_en, mensaje: t.mensaje || '' }
+      }).filter(Boolean)
+
       filterAvisos(currentCategory)
 
-      const sinConfirmar = avisosCache.filter(a => !a.yaConfirmo).length
+      const sinConfirmar = avisosCache.filter(a => !a.yaConfirmo).length + faqNotifCache.length
       if (sinConfirmar > 0) {
         document.getElementById('bell-count').textContent = sinConfirmar
         document.getElementById('bell-count').style.display = 'flex'

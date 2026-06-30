@@ -30,16 +30,28 @@
     <div class="label">¿No encuentras tu respuesta?</div>
     <div class="card soft">
       <div id="qform">
-        <div style="font-size:13px;margin-bottom:10px;">Escribe tu propia pregunta y el instructor te responderá.</div>
-        <label class="field"><textarea rows="3" placeholder="Escribe tu pregunta aquí"></textarea></label>
+        <div style="font-size:13px;margin-bottom:10px;">Escribe tu pregunta y el instructor te responderá en Chat Privado.</div>
+        <label class="field"><textarea id="pregunta-input" rows="3" placeholder="Escribe tu pregunta aquí"></textarea></label>
         <button class="btn primary block mt12" id="enviar"><i data-lucide="message-square"></i> Enviar pregunta al instructor</button>
       </div>
       <div id="qok" style="display:none;text-align:center;">
-        <span style="color:var(--green-600);display:inline-block;margin-bottom:6px;"><i data-lucide="send" style="width:22px;height:22px"></i></span>
-        <div style="font-size:14px;font-weight:700;color:var(--green-text);">Pregunta enviada</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">Tu instructor te responderá pronto.</div>
+        <div style="background:#ecfdf5;border:1.5px solid #86efac;border-radius:12px;padding:14px 12px;text-align:left;">
+          <div style="display:flex;align-items:center;gap:8px;color:#166534;font-size:14px;font-weight:800;">
+            <i data-lucide="check-circle" style="width:18px;height:18px"></i> Pregunta enviada
+          </div>
+          <div style="font-size:13px;color:#166534;margin-top:8px;line-height:1.5;">
+            Tu mensaje fue enviado correctamente.<br>
+            El instructor responderá mediante el <strong>Chat Privado</strong>.<br>
+            Recibirás una notificación cuando exista una respuesta.
+          </div>
+          <a href="chat.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none;">
+            <i data-lucide="message-circle" style="width:14px;height:14px"></i> Ir al Chat Privado
+          </a>
+        </div>
       </div>
     </div>
+    <div class="label">Mis preguntas</div>
+    <div id="mis-preguntas"></div>
     <div id="mensajes-admin-wrap"></div>
     <div class="brandmark"><img src="assets/logo-union-blue.png" alt="" /><span>Union Martial Arts</span></div>
   </div>
@@ -51,14 +63,62 @@
   </nav>
 </div></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const supabase = createClient(
+    'https://gdajgennlsuvndanpxiz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
+  )
+
+  function e(v) { return encodeURIComponent(String(v || '')) }
+  function d(v) { return decodeURIComponent(String(v || '')) }
+  function tokenMap(raw) {
+    const out = {}
+    String(raw || '').split(';').forEach(pair => {
+      const i = pair.indexOf('=')
+      if (i > 0) out[pair.slice(0, i).trim()] = d(pair.slice(i + 1).trim())
+    })
+    return out
+  }
+  function parseFaqQ(texto) {
+    if (!String(texto || '').startsWith('[[FAQ_Q]]')) return null
+    const raw = String(texto).replace('[[FAQ_Q]]', '').trim()
+    const m = tokenMap(raw)
+    if (!m.id) return null
+    return m
+  }
+  function parseFaqA(texto) {
+    if (!String(texto || '').startsWith('[[FAQ_A]]')) return null
+    const raw = String(texto).replace('[[FAQ_A]]', '').trim()
+    const m = tokenMap(raw)
+    if (!m.qid) return null
+    return m
+  }
+  async function insertMensaje(payload) {
+    let { error } = await supabase.from('mensajes').insert(payload)
+    if (error && error.code === '42703' && Object.prototype.hasOwnProperty.call(payload, 'es_automatico')) {
+      const fallback = { ...payload }
+      delete fallback.es_automatico
+      ;({ error } = await supabase.from('mensajes').insert(fallback))
+    }
+    return { error }
+  }
+
   const FAQ = [
-    ['¿Qué necesita mi hijo para su primera clase?','Ropa cómoda y agua. El uniforme se entrega al inscribirse.'],
-    ['¿Cómo cambio de horario?','Agenda una cita o escríbenos; ajustamos según disponibilidad.'],
-    ['¿Cuándo son los exámenes de cinta?','Cada cambio se evalúa mensualmente; verás la fecha en Torneos y actividades.'],
-    ['¿Puedo pagar en línea?','Sí, con Mercado Pago desde la sección Pagos (tarjeta, SPEI u OXXO).'],
+    ['¿Cómo registro la asistencia de mi hijo?','Marca el botón Check-in antes del inicio de la clase. Si tu hijo no asistirá, puedes justificar la ausencia desde esa misma sección.'],
+    ['¿Cómo pago la mensualidad?','En la sección Pagos puedes elegir pagar en efectivo, transferencia bancaria o Mercado Pago. Cuando el instructor confirme el pago recibirás una notificación y podrás descargar tu recibo.'],
+    ['¿Dónde veo el horario de mi hijo?','En Perfil encontrarás los horarios actualizados correspondientes al alumno seleccionado.'],
+    ['¿Cómo cambio entre mis hijos?','En la página principal utiliza el Selector de Alumno ubicado debajo del cinturón para cambiar rápidamente entre los estudiantes registrados.'],
+    ['¿Dónde encuentro los diplomas y reconocimientos?','En la sección Perfil, dentro de Diplomas y Reconocimientos, podrás visualizar y descargar todos los diplomas obtenidos.'],
+    ['¿Cómo desbloqueo Nutrición, Meditación y Rutinas?','Estas funciones se habilitan automáticamente cuando el alumno cuenta con un Plan Anual o superior.'],
+    ['¿Cómo contacto al instructor?','Puedes escribir mediante el Chat Privado o enviar una pregunta desde este Centro de Ayuda.'],
+    ['¿Dónde consulto mis pagos anteriores?','En Pagos → Historial encontrarás todos tus recibos y pagos anteriores.'],
   ];
   let open=0;
+  let user = null
+  let padre = null
+  let alumno = null
+
   function render(){
     document.getElementById('faqs').innerHTML = FAQ.map(([q,a],i)=>`
       <div class="card flush">
@@ -72,58 +132,162 @@
   }
   document.getElementById('faqs').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;open=open==+b.dataset.i?-1:+b.dataset.i;render();});
   async function cargarMensajesAdmin() {
-    import('https://esm.sh/@supabase/supabase-js@2').then(async ({ createClient }) => {
-      const supabase = createClient(
-        'https://gdajgennlsuvndanpxiz.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-      )
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: pr } = await supabase.from('padres').select('id').eq('user_id', user.id).limit(1)
-      const padre = pr?.[0] || null
-      if (!padre) return
-      const { data: msgs } = await supabase.from('mensajes')
-        .select('id, texto, creado_en')
-        .eq('para_admin', false)
-        .eq('destinatario_id', padre.id)
-        .order('creado_en', { ascending: false })
-        .limit(20)
-      const wrap = document.getElementById('mensajes-admin-wrap')
-      if (!msgs?.length) return
-      wrap.innerHTML = '<div class="label" style="margin-bottom:10px;">Mensajes del instructor</div>' +
-        msgs.map(m => {
-          const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
-          return `<div class="card mb10" style="border-left:3px solid var(--primary);">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;">
-              <span style="font-weight:700;color:var(--primary);">Instructor UNION</span>
-              <span>${fecha}</span>
-            </div>
-            <div style="font-size:13.5px;line-height:1.5;">${m.texto}</div>
-          </div>`
-        }).join('')
-      lucide.createIcons()
-    })
+    if (!padre) return
+    const { data: msgs } = await supabase.from('mensajes')
+      .select('id, texto, creado_en, destinatario_id')
+      .eq('para_admin', false)
+      .or(`destinatario_id.eq.${padre.id}${user?.id ? ',destinatario_id.eq.' + user.id : ''}`)
+      .order('creado_en', { ascending: false })
+      .limit(30)
+
+    const visibles = (msgs || []).filter(m => !String(m.texto || '').startsWith('[[FAQ_A]]') && !String(m.texto || '').startsWith('[[FAQ_NOTIFY]]'))
+    const wrap = document.getElementById('mensajes-admin-wrap')
+    if (!visibles.length) return
+    wrap.innerHTML = '<div class="label" style="margin-bottom:10px;">Mensajes del instructor</div>' +
+      visibles.map(m => {
+        const fecha = new Date(m.creado_en).toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+        return `<div class="card mb10" style="border-left:3px solid var(--primary);">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;">
+            <span style="font-weight:700;color:var(--primary);">Instructor UNION</span>
+            <span>${fecha}</span>
+          </div>
+          <div style="font-size:13.5px;line-height:1.5;">${m.texto}</div>
+        </div>`
+      }).join('')
+    lucide.createIcons()
   }
-  cargarMensajesAdmin()
+
+  async function cargarMisPreguntas() {
+    if (!user) return
+    const { data: qRows } = await supabase.from('mensajes')
+      .select('id, texto, creado_en, de_user_id, para_admin')
+      .eq('para_admin', true)
+      .eq('de_user_id', user.id)
+      .order('creado_en', { ascending: false })
+      .limit(150)
+
+    const { data: aRows } = await supabase.from('mensajes')
+      .select('texto, creado_en, destinatario_id')
+      .eq('para_admin', false)
+      .or(`destinatario_id.eq.${padre?.id || '00000000-0000-0000-0000-000000000000'}${user?.id ? ',destinatario_id.eq.' + user.id : ''}`)
+      .order('creado_en', { ascending: false })
+      .limit(200)
+
+    const preguntas = (qRows || []).map(r => {
+      const p = parseFaqQ(r.texto)
+      if (!p) return null
+      return {
+        qid: p.id,
+        pregunta: p.pregunta || '',
+        creada: r.creado_en,
+        estado: 'pendiente',
+        respuesta: '',
+        respondidaEn: ''
+      }
+    }).filter(Boolean)
+
+    const byQid = {}
+    preguntas.forEach(p => { byQid[p.qid] = p })
+    ;(aRows || []).slice().reverse().forEach(r => {
+      const a = parseFaqA(r.texto)
+      if (!a?.qid || !byQid[a.qid]) return
+      if (['respondida', 'marcar_respondida'].includes(a.accion || '')) {
+        byQid[a.qid].estado = 'respondida'
+        byQid[a.qid].respuesta = a.respuesta || byQid[a.qid].respuesta
+        byQid[a.qid].respondidaEn = r.creado_en
+      }
+      if (a.accion === 'eliminada') {
+        byQid[a.qid].estado = 'eliminada'
+      }
+    })
+
+    const visibles = preguntas.filter(p => p.estado !== 'eliminada')
+
+    const cont = document.getElementById('mis-preguntas')
+    if (!visibles.length) {
+      cont.innerHTML = '<div class="card" style="font-size:12.5px;color:var(--muted);">Aún no has enviado preguntas.</div>'
+      return
+    }
+    cont.innerHTML = visibles.map(p => {
+      const fecha = new Date(p.creada).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' })
+      const stBg = p.estado === 'respondida' ? 'var(--green-bg)' : '#fff7ed'
+      const stTx = p.estado === 'respondida' ? 'var(--green-text)' : '#9a3412'
+      const stLabel = p.estado === 'respondida' ? 'Respondida' : 'Pendiente'
+      return `<div class="card mb8" style="padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div style="font-size:13px;font-weight:700;line-height:1.4;">❓ ${p.pregunta}</div>
+          <span style="font-size:10px;font-weight:800;border-radius:99px;padding:3px 8px;background:${stBg};color:${stTx};white-space:nowrap;">${stLabel}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Enviada: ${fecha}</div>
+        ${p.estado === 'respondida' ? `<div style="font-size:12.5px;color:#166534;margin-top:8px;line-height:1.45;">💬 ${p.respuesta || 'Tu instructor respondió en Chat Privado.'}</div>` : ''}
+      </div>`
+    }).join('')
+  }
 
   document.getElementById('enviar').addEventListener('click', async () => {
-    const texto = document.querySelector('textarea').value.trim()
-    if (!texto) return
-    import('https://esm.sh/@supabase/supabase-js@2').then(async ({ createClient }) => {
-      const supabase = createClient(
-        'https://gdajgennlsuvndanpxiz.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
-      )
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data, error } = await supabase.from('mensajes').insert({ de_user_id: user?.id, texto, para_admin: true }).select()
-      if (error) { alert('ERROR al guardar: ' + error.message + '\n\nCódigo: ' + error.code); return }
-      alert('? Guardado OK. ID: ' + data?.[0]?.id)
-      document.getElementById('qform').style.display = 'none'
-      document.getElementById('qok').style.display = 'block'
-      lucide.createIcons()
+    const texto = document.getElementById('pregunta-input').value.trim()
+    if (!texto || !user) return
+
+    const qid = (crypto.randomUUID ? crypto.randomUUID() : ('q_' + Date.now() + '_' + Math.floor(Math.random() * 10000)))
+    const token = '[[FAQ_Q]] ' + [
+      'id=' + e(qid),
+      'padre_id=' + e(padre?.id || ''),
+      'padre_user_id=' + e(padre?.user_id || user.id),
+      'alumno_id=' + e(alumno?.id || padre?.alumno_id || ''),
+      'alumno=' + e(alumno?.nombre || 'Alumno'),
+      'padre=' + e(padre?.nombre || 'Padre'),
+      'pregunta=' + e(texto),
+      'accion=' + e('pendiente'),
+      'ts=' + e(new Date().toISOString())
+    ].join(';')
+
+    const { error } = await insertMensaje({
+      de_user_id: user.id,
+      texto: token,
+      para_admin: true,
+      leido: false,
+      es_automatico: true
     })
+
+    if (error) {
+      const msg = 'No se pudo enviar la pregunta. Intenta de nuevo.'
+      const cont = document.getElementById('mis-preguntas')
+      cont.innerHTML = `<div class="card" style="font-size:12.5px;color:#b91c1c;border:1px solid #fecaca;background:#fff1f2;">${msg}</div>` + cont.innerHTML
+      return
+    }
+
+    document.getElementById('pregunta-input').value = ''
+    document.getElementById('qform').style.display = 'none'
+    document.getElementById('qok').style.display = 'block'
+    await cargarMisPreguntas()
+    lucide.createIcons()
   })
-  render()
+
+  async function init() {
+    const { data: auth } = await supabase.auth.getUser()
+    user = auth?.user || null
+    if (!user) { window.location.href = 'index.html'; return }
+
+    const { data: pr1 } = await supabase.from('padres').select('id, user_id, alumno_id, nombre, correo').eq('user_id', user.id).limit(1)
+    padre = pr1?.[0] || null
+    if (!padre) {
+      const { data: pr2 } = await supabase.from('padres').select('id, user_id, alumno_id, nombre, correo').eq('correo', user.email).limit(1)
+      padre = pr2?.[0] || null
+      if (padre?.id && !padre.user_id) {
+        try { await supabase.from('padres').update({ user_id: user.id }).eq('id', padre.id) } catch(e) {}
+      }
+    }
+    if (padre?.alumno_id) {
+      const { data: al } = await supabase.from('alumnos').select('id, nombre').eq('id', padre.alumno_id).limit(1)
+      alumno = al?.[0] || null
+    }
+
+    await cargarMisPreguntas()
+    await cargarMensajesAdmin()
+    render()
+  }
+
+  init()
 </script>
 <script>
   if ('serviceWorker' in navigator) {
