@@ -40,7 +40,7 @@
 
   <div class="tab-bar">
     <button class="tab active" data-tab="registro" onclick="tab('registro')">Registro</button>
-    <button class="tab" data-tab="habitos" onclick="tab('habitos')">Hábitos</button>
+    <button class="tab" data-tab="rutinas" onclick="tab('rutinas')">Rutinas</button>
     <button class="tab" data-tab="nutricion" onclick="tab('nutricion')">Nutrición</button>
     <button class="tab" data-tab="meditacion" onclick="tab('meditacion')">Meditación</button>
   </div>
@@ -80,19 +80,53 @@ window.tab = function(t) {
 async function cargar() {
   const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]
 
-  const [regRes, habRes, nutRes, medRes, alumRes] = await Promise.all([
+  const [regRes, msgRes, alumRes] = await Promise.all([
     sb.from('activity_log').select('*, alumnos(nombre)').gte('created_at', hace30 + 'T00:00:00Z').order('created_at', { ascending: false }).limit(200),
-    sb.from('habitos_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
-    sb.from('nutricion_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
-    sb.from('meditacion_log').select('*, alumnos(nombre)').gte('fecha', hace30).order('fecha', { ascending: false }).limit(100),
+    sb.from('mensajes').select('de_user_id, texto, creado_en').eq('para_admin', true).gte('creado_en', hace30 + 'T00:00:00Z').order('creado_en', { ascending: false }).limit(3000),
     sb.from('alumnos').select('id, nombre').eq('activo', true).order('nombre'),
   ])
 
+  const alumnosMap = Object.fromEntries((alumRes.data || []).map(a => [a.id, a.nombre]))
+  const acts = []
+  ;(msgRes.data || []).forEach(m => {
+    const txt = String(m.texto || '')
+    if (!txt.startsWith('[[ACT]]')) return
+    const cat = (txt.match(/cat=([^;]+)/) || [])[1] || ''
+    const alumnoId = (txt.match(/alumno=([^;]+)/) || [])[1] || ''
+    const item = (txt.match(/item=([^;]+)/) || [])[1] || ''
+    const fecha = (txt.match(/fecha=([^;]+)/) || [])[1] || String(m.creado_en || '').slice(0, 10)
+    const estado = (txt.match(/estado=([01])/) || [])[1] || '0'
+    if (!cat || !alumnoId || !item) return
+    acts.push({
+      alumno_id: alumnoId,
+      fecha,
+      tipo: item,
+      categoria: cat,
+      estado,
+      creado_en: m.creado_en,
+      alumnos: { nombre: alumnosMap[alumnoId] || 'Alumno' }
+    })
+  })
+
+  const uniq = (rows) => {
+    const m = new Map()
+    ;(rows || []).forEach(r => {
+      const f = String(r.fecha || r.created_at || r.creado_en || '').slice(0, 10)
+      const k = [r.alumno_id || '', f, r.tipo || '', r.ejercicio || ''].join('|')
+      m.set(k, r)
+    })
+    return [...m.values()].filter(r => String(r.estado || '1') !== '0')
+  }
+
+  const rutinasActs = acts.filter(a => String(a.categoria || '').toLowerCase() === 'rutina')
+  const nutricionActs = acts.filter(a => String(a.categoria || '').toLowerCase() === 'nutricion')
+  const meditacionActs = acts.filter(a => String(a.categoria || '').toLowerCase() === 'meditacion')
+
   datos = {
     registro:   regRes.data  || [],
-    habitos:    habRes.data  || [],
-    nutricion:  nutRes.data  || [],
-    meditacion: medRes.data  || [],
+    rutinas:    uniq(rutinasActs),
+    nutricion:  uniq(nutricionActs),
+    meditacion: uniq(meditacionActs),
     alumnos:    alumRes.data || []
   }
   render()
@@ -162,8 +196,8 @@ function render() {
   const totalHoy = lista.filter(r => r.fecha === new Date().toISOString().split('T')[0]).length
   const pct = alumnos.length ? Math.round(unicos / alumnos.length * 100) : 0
 
-  const iconos = { habitos: '🏋️', nutricion: '🥗', meditacion: '🧘' }
-  const labels = { habitos: 'ejercicio', nutricion: 'nutrición', meditacion: 'meditación' }
+  const iconos = { rutinas: '🏋️', nutricion: '🥗', meditacion: '🧘' }
+  const labels = { rutinas: 'rutina', nutricion: 'nutrición', meditacion: 'meditación' }
 
   if (!lista.length) {
     body.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">
@@ -200,9 +234,10 @@ function render() {
           <span class="act-chip green">✓ Activo</span>
         </div>
         <div class="act-chips">
-          ${regs.slice(0,5).map(r => `<span class="act-chip ${tabActual==='habitos'?'blue':tabActual==='nutricion'?'green':'purple'}">
+          ${regs.slice(0,5).map(r => `<span class="act-chip ${tabActual==='rutinas'?'blue':tabActual==='nutricion'?'green':'purple'}">
             ${r.tipo || r.categoria || r.ejercicio || labels[tabActual]}
           </span>`).join('')}
+          <span class="act-chip green">realizado</span>
           ${regs.length > 5 ? `<span class="act-chip amber">+${regs.length-5} más</span>` : ''}
         </div>
       </div>`

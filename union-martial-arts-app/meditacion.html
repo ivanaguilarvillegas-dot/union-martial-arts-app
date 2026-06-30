@@ -65,8 +65,14 @@
   const _sid = localStorage.getItem('uma_padre_id')
   let _pr = null
   if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
-  if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
-  if (!_pr) { const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email).limit(1); _pr = pc?.[0] }
+  if (!_pr?.alumno_id) {
+    const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id)
+    _pr = (pp || []).find(x => !!x.alumno_id) || _pr
+  }
+  if (!_pr?.alumno_id) {
+    const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email)
+    _pr = (pc || []).find(x => !!x.alumno_id) || _pr
+  }
   alumnoId = _pr?.alumno_id || null
   const hoy = new Date().toISOString().split('T')[0]
 
@@ -92,6 +98,7 @@
   let audios = []
   let links = {}
   let total = S.length
+  const mkActToken = (item, estado) => `[[ACT]] cat=meditacion;alumno=${alumnoId || ''};item=${item};fecha=${hoy};estado=${estado ? 1 : 0}`
 
   function clave(nombre) {
     return nombre.toLowerCase()
@@ -114,18 +121,24 @@
     total = S.length + audios.length
 
     try {
-      if (alumnoId) {
-        const { data: ya } = await supabase.from('meditacion_log')
-          .select('tipo')
-          .eq('alumno_id', alumnoId)
-          .eq('fecha', hoy)
-        ;(ya || []).forEach(r => {
-          const t = String(r.tipo || '')
-          if (t.startsWith('meditacion_')) {
-            done[t.replace('meditacion_', '')] = true
-          }
-        })
-      }
+      const { data: msgs } = await supabase.from('mensajes')
+        .select('texto, creado_en')
+        .eq('de_user_id', user.id)
+        .eq('para_admin', true)
+        .gte('creado_en', hoy + 'T00:00:00')
+        .lte('creado_en', hoy + 'T23:59:59')
+        .order('creado_en', { ascending: true })
+      ;(msgs || []).forEach(m => {
+        const t = String(m.texto || '')
+        if (!t.startsWith('[[ACT]]')) return
+        if (!t.includes('cat=meditacion;')) return
+        if (alumnoId && !t.includes('alumno=' + alumnoId + ';')) return
+        const item = (t.match(/item=([^;]+)/) || [])[1] || ''
+        const estado = (t.match(/estado=([01])/) || [])[1]
+        const k = item.replace('meditacion_', '')
+        if (!k) return
+        done[k] = estado === '1'
+      })
     } catch(e) {}
 
     render()
@@ -168,6 +181,7 @@
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
     const idx = b.dataset.k
+    const itemKey = 'meditacion_' + idx
     const nombre = idx.startsWith('s')
       ? (S[Number(idx.slice(1))]?.[0] || idx)
       : (audios[Number(idx.slice(1))]?.nombre || idx)
@@ -178,24 +192,33 @@
           await supabase.from('meditacion_log').insert({
             alumno_id: alumnoId,
             fecha: hoy,
-            tipo: 'meditacion_' + idx,
+            tipo: itemKey,
           })
           await supabase.from('actividades_casa').insert({
             alumno_id: alumnoId,
             fecha: hoy,
-            tipo: 'meditacion_' + idx,
+            tipo: itemKey,
           })
         } else {
           await supabase.from('meditacion_log').delete()
             .eq('alumno_id', alumnoId)
             .eq('fecha', hoy)
-            .eq('tipo', 'meditacion_' + idx)
+            .eq('tipo', itemKey)
           await supabase.from('actividades_casa').delete()
             .eq('alumno_id', alumnoId)
             .eq('fecha', hoy)
-            .eq('tipo', 'meditacion_' + idx)
+            .eq('tipo', itemKey)
         }
       }
+    } catch(e) {}
+
+    try {
+      await supabase.from('mensajes').insert({
+        de_user_id: user.id,
+        texto: `${mkActToken(itemKey, !!done[idx])} · 🧘 ${done[idx] ? 'Realizado' : 'Desmarcado'}: ${nombre}`,
+        para_admin: true,
+        es_automatico: true
+      })
     } catch(e) {}
 
     const n = Object.values(done).filter(Boolean).length

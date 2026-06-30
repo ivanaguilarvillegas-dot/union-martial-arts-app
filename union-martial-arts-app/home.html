@@ -590,7 +590,7 @@
       <div class="hub-section">
         <div class="hub-section-title">Recursos</div>
         <div class="hub-grid">
-          <a id="zona-biblioteca" class="hub-card" href="entrena.html">
+          <a id="zona-biblioteca" class="hub-card" href="biblioteca.html">
             <div class="menu-ic amber"><i class="ti ti-activity" style="font-size:32px;color:#d97706;"></i></div>
             <div class="menu-label">Biblioteca UNION</div>
             <div class="menu-sub">Videos, guías y apoyo para practicar.</div>
@@ -1044,6 +1044,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     const { data: { session } } = await supabase.auth.getSession()
     const user = session?.user
     if (!user) { window.location.href = 'index.html'; return }
+    window.__uma_user_id = user.id
 
     cargarEvento()
     cargarAlerta()
@@ -1231,17 +1232,78 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
       const mes = hoy.toLocaleDateString('es-MX', { month:'long', year:'numeric' })
       document.getElementById('prog-mes-label').textContent = mes.charAt(0).toUpperCase() + mes.slice(1)
 
-      const { data: acts } = await supabase.from('actividades_casa')
-        .select('tipo').eq('alumno_id', alumnoId).gte('fecha', primerDia)
+      const [actsRes, nutRes, medRes, rutRes] = await Promise.allSettled([
+        supabase.from('actividades_casa').select('tipo, fecha').eq('alumno_id', alumnoId).gte('fecha', primerDia),
+        supabase.from('nutricion_log').select('tipo, fecha').eq('alumno_id', alumnoId).gte('fecha', primerDia),
+        supabase.from('meditacion_log').select('tipo, fecha').eq('alumno_id', alumnoId).gte('fecha', primerDia),
+        supabase.from('habitos_log').select('tipo, fecha').eq('alumno_id', alumnoId).gte('fecha', primerDia),
+      ])
 
       const META = 12 // sesiones esperadas al mes (~3/semana)
       const cnts = { nutricion: 0, meditacion: 0, entrena: 0 }
-      ;(acts || []).forEach(a => {
-        const t = (a.tipo || '').toLowerCase()
-        if (t.includes('nutri') || t.includes('habit')) cnts.nutricion++
-        else if (t.includes('medita')) cnts.meditacion++
-        else if (t.includes('entr') || t.includes('rutina')) cnts.entrena++
-      })
+      const seen = { nutricion: new Set(), meditacion: new Set(), entrena: new Set() }
+
+      const pushUnico = (bucket, rows, test) => {
+        ;(rows || []).forEach(r => {
+          const t = String(r.tipo || '').toLowerCase()
+          if (!test(t)) return
+          const f = String(r.fecha || '').slice(0, 10)
+          seen[bucket].add(f + '|' + t)
+        })
+      }
+
+      pushUnico('nutricion', actsRes.value?.data, t => t.includes('nutri'))
+      pushUnico('meditacion', actsRes.value?.data, t => t.includes('medita'))
+      pushUnico('entrena', actsRes.value?.data, t => t.includes('entr') || t.includes('rutina'))
+      pushUnico('nutricion', nutRes.value?.data, t => t.includes('nutricion_'))
+      pushUnico('meditacion', medRes.value?.data, t => t.includes('meditacion_'))
+      pushUnico('entrena', rutRes.value?.data, t => t.includes('rutina_'))
+
+      cnts.nutricion = seen.nutricion.size
+      cnts.meditacion = seen.meditacion.size
+      cnts.entrena = seen.entrena.size
+
+      // Fallback robusto: en este esquema las marcas viven en mensajes con token [[ACT]]
+      try {
+        const uid = window.__uma_user_id
+        if (uid) {
+          const { data: msgs } = await supabase.from('mensajes')
+            .select('texto, creado_en')
+            .eq('de_user_id', uid)
+            .eq('para_admin', true)
+            .gte('creado_en', primerDia + 'T00:00:00')
+            .order('creado_en', { ascending: true })
+
+          const latest = new Map()
+          ;(msgs || []).forEach(m => {
+            const txt = String(m.texto || '')
+            if (!txt.startsWith('[[ACT]]')) return
+            if (!txt.includes('alumno=' + alumnoId + ';')) return
+            const cat = (txt.match(/cat=([^;]+)/) || [])[1] || ''
+            const item = (txt.match(/item=([^;]+)/) || [])[1] || ''
+            const fecha = (txt.match(/fecha=([^;]+)/) || [])[1] || String(m.creado_en || '').slice(0, 10)
+            const estado = (txt.match(/estado=([01])/) || [])[1] || '0'
+            if (!cat || !item || !fecha) return
+            latest.set(cat + '|' + fecha + '|' + item, estado === '1')
+          })
+
+          const cntTok = { nutricion: 0, meditacion: 0, entrena: 0 }
+          latest.forEach((on, k) => {
+            if (!on) return
+            const cat = k.split('|')[0]
+            if (cat === 'nutricion') cntTok.nutricion++
+            else if (cat === 'meditacion') cntTok.meditacion++
+            else if (cat === 'rutina') cntTok.entrena++
+          })
+
+          const totalTok = cntTok.nutricion + cntTok.meditacion + cntTok.entrena
+          if (totalTok > 0) {
+            cnts.nutricion = cntTok.nutricion
+            cnts.meditacion = cntTok.meditacion
+            cnts.entrena = cntTok.entrena
+          }
+        }
+      } catch (e) {}
 
       const set = (id, bar, cnt) => {
         document.getElementById(id).textContent = cnt + ' sesiones'

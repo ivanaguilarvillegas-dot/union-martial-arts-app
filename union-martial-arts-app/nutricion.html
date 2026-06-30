@@ -430,6 +430,9 @@
       <div class="meta-days" id="meta-days-row"></div>
     </div>
 
+    <div class="sec-head"><div class="sec-icon">🎬</div><div class="sec-head-r"><div class="sec-title">10. Recursos del instructor</div><div class="sec-sub">Videos y material de nutrición publicados</div></div></div>
+    <div class="card soft mb18" id="nutri-recursos" style="font-size:13px;color:var(--muted);">Sin recursos publicados por ahora.</div>
+
   </div><!-- /body -->
 
   <nav class="bottomnav">
@@ -454,8 +457,14 @@
   const _sid = localStorage.getItem('uma_padre_id')
   let _pr = null
   if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
-  if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
-  if (!_pr) { const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email).limit(1); _pr = pc?.[0] }
+  if (!_pr?.alumno_id) {
+    const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id)
+    _pr = (pp || []).find(x => !!x.alumno_id) || _pr
+  }
+  if (!_pr?.alumno_id) {
+    const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email)
+    _pr = (pc || []).find(x => !!x.alumno_id) || _pr
+  }
   alumnoId = _pr?.alumno_id || null
 
   // Verificar acceso por plan
@@ -558,26 +567,37 @@
   const state = {}
   let notifEnviada = false
   const hoy = new Date().toISOString().split('T')[0]
+  const mkActToken = (item, estado) => `[[ACT]] cat=nutricion;alumno=${alumnoId || ''};item=${item};fecha=${hoy};estado=${estado ? 1 : 0}`
 
   try {
-    if (alumnoId) {
-      const { data: ya } = await supabase.from('nutricion_log')
-        .select('tipo')
-        .eq('alumno_id', alumnoId)
-        .eq('fecha', hoy)
-      ;(ya || []).forEach(r => {
-        const m = String(r.tipo || '').match(/^nutricion_habito_(\d+)$/)
-        if (m) state[String(Number(m[1]) - 1)] = true
-      })
-      Object.keys(state).forEach(k => {
-        const el = habitosEl.querySelector(`[data-h="${k}"]`)
-        if (el) el.classList.add('done')
-      })
-      const n0 = Object.values(state).filter(Boolean).length
-      const badge0 = document.getElementById('cnt-badge')
-      badge0.textContent = n0 + '/' + habitos.length
-      badge0.style.background = n0 === habitos.length ? '#16a34a' : 'rgba(255,255,255,.2)'
-    }
+    const { data: msgs } = await supabase.from('mensajes')
+      .select('texto, creado_en')
+      .eq('de_user_id', user.id)
+      .eq('para_admin', true)
+      .gte('creado_en', hoy + 'T00:00:00')
+      .lte('creado_en', hoy + 'T23:59:59')
+      .order('creado_en', { ascending: true })
+
+    ;(msgs || []).forEach(m => {
+      const t = String(m.texto || '')
+      if (!t.startsWith('[[ACT]]')) return
+      if (!t.includes('cat=nutricion;')) return
+      if (alumnoId && !t.includes('alumno=' + alumnoId + ';')) return
+      const item = (t.match(/item=([^;]+)/) || [])[1] || ''
+      const estado = (t.match(/estado=([01])/) || [])[1]
+      const mm = item.match(/^nutricion_habito_(\d+)$/)
+      if (!mm) return
+      state[String(Number(mm[1]) - 1)] = estado === '1'
+    })
+
+    Object.keys(state).forEach(k => {
+      const el = habitosEl.querySelector(`[data-h="${k}"]`)
+      if (el) el.classList.toggle('done', !!state[k])
+    })
+    const n0 = Object.values(state).filter(Boolean).length
+    const badge0 = document.getElementById('cnt-badge')
+    badge0.textContent = n0 + '/' + habitos.length
+    badge0.style.background = n0 === habitos.length ? '#16a34a' : 'rgba(255,255,255,.2)'
   } catch(e) {}
 
   const toasts = [
@@ -598,6 +618,7 @@
     badge.textContent = n + '/' + habitos.length
     badge.style.background = n === habitos.length ? '#16a34a' : 'rgba(255,255,255,.2)'
 
+    const itemKey = `nutricion_habito_${Number(idx)+1}`
     if (state[idx]) {
       showToast(toasts[n] || '✅ Hábito registrado')
       // Guardar cada hábito individual
@@ -606,17 +627,17 @@
           await supabase.from('nutricion_log').insert({
             alumno_id: alumnoId,
             fecha: hoy,
-            tipo: `nutricion_habito_${Number(idx)+1}`,
+            tipo: itemKey,
           })
           await supabase.from('actividades_casa').insert({
             alumno_id: alumnoId,
             fecha: hoy,
-            tipo: `nutricion_habito_${Number(idx)+1}`,
+            tipo: itemKey,
           })
         }
         await supabase.from('mensajes').insert({
           de_user_id: user.id,
-          texto: `🥗 Hábito ${n}/${habitos.length}: ${habitos[idx].txt} · ${new Date().toLocaleDateString('es-MX')}`,
+          texto: `${mkActToken(itemKey, true)} · 🥗 Hábito ${n}/${habitos.length}: ${habitos[idx].txt}`,
           para_admin: true,
           es_automatico: true
         })
@@ -627,12 +648,18 @@
           await supabase.from('nutricion_log').delete()
             .eq('alumno_id', alumnoId)
             .eq('fecha', hoy)
-            .eq('tipo', `nutricion_habito_${Number(idx)+1}`)
+            .eq('tipo', itemKey)
           await supabase.from('actividades_casa').delete()
             .eq('alumno_id', alumnoId)
             .eq('fecha', hoy)
-            .eq('tipo', `nutricion_habito_${Number(idx)+1}`)
+            .eq('tipo', itemKey)
         }
+        await supabase.from('mensajes').insert({
+          de_user_id: user.id,
+          texto: `${mkActToken(itemKey, false)} · 🥗 Hábito desmarcado: ${habitos[idx].txt}`,
+          para_admin: true,
+          es_automatico: true
+        })
       } catch(e) {}
     }
 
@@ -696,6 +723,44 @@
       document.getElementById('modal-overlay').classList.add('show')
     })
   })
+
+  // Recursos publicados para nutricion (si corresponde)
+  try {
+    const [bibRes, linksRes] = await Promise.allSettled([
+      supabase.from('configuracion').select('valor').eq('clave', 'biblioteca_recursos').maybeSingle(),
+      supabase.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle(),
+    ])
+    let bib = []
+    let links = {}
+    try { bib = JSON.parse(bibRes.value?.data?.valor || '[]') } catch {}
+    try { links = JSON.parse(linksRes.value?.data?.valor || '{}') } catch {}
+
+    const txt = s => String(s || '').toLowerCase()
+    const esNutri = (r) => {
+      const base = txt(r.titulo) + ' ' + txt(r.descripcion) + ' ' + txt(r.categoria)
+      return base.includes('nutri') || base.includes('aliment') || base.includes('comida') || base.includes('receta')
+    }
+
+    const fromBib = (bib || []).filter(r => r && r.visible !== false && r.url && esNutri(r))
+    const fromLinks = Object.entries(links || {}).filter(([k]) => txt(k).includes('nutri')).map(([k, v]) => ({
+      titulo: typeof v === 'object' && v?.titulo ? v.titulo : k.replace(/_/g, ' '),
+      url: typeof v === 'string' ? v : (v?.url || ''),
+      descripcion: typeof v === 'object' ? (v?.descripcion || 'Recurso publicado por el instructor') : 'Recurso publicado por el instructor',
+    })).filter(r => r.url)
+
+    const list = [...fromBib, ...fromLinks]
+    const seen = new Set()
+    const uniq = list.filter(r => {
+      if (seen.has(r.url)) return false
+      seen.add(r.url)
+      return true
+    })
+
+    const wrap = document.getElementById('nutri-recursos')
+    if (uniq.length) {
+      wrap.innerHTML = uniq.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #e5e7eb;"><i data-lucide="play-circle" style="width:16px;height:16px;color:#16a34a;"></i><div style="flex:1;"><div style="font-weight:700;color:#111827;">${r.titulo || 'Recurso'}</div><div style="font-size:12px;color:#6b7280;">${r.descripcion || ''}</div></div><a href="${r.url}" target="_blank" class="btn secondary sm">Ver</a></div>`).join('')
+    }
+  } catch(e) {}
 
   lucide.createIcons()
 </script>

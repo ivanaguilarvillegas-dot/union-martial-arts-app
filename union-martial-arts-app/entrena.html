@@ -29,14 +29,14 @@
       <span style="font-size:13px;color:var(--text);line-height:1.5;">Practica rutinas organizadas por nivel. Marca lo completado para que tu instructor vea tu avance.</span>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:14px;" id="tabs">
-      <button class="chip on" data-lvl="videos">Videos</button>
-      <button class="chip" data-lvl="tecnicas">Técnicas</button>
-      <button class="chip" data-lvl="estrategias">Estrategias</button>
+      <button class="chip on" data-lvl="principiante">Principiante</button>
+      <button class="chip" data-lvl="intermedio">Intermedio</button>
+      <button class="chip" data-lvl="avanzado">Avanzado</button>
     </div>
-    <div class="label row"><span>Recursos disponibles</span><span class="badge blue" id="cnt">0/5 vistos</span></div>
+    <div class="label row"><span>Rutinas disponibles</span><span class="badge blue" id="cnt">0/5 hechas</span></div>
     <div class="notice green" id="notif" style="display:none;"><i data-lucide="bell-ring"></i> Se notificó a tu instructor</div>
     <div class="stack-10 mb14" id="list"></div>
-    <div class="card soft center"><span style="font-size:13px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;"><i data-lucide="lightbulb" class="lucide" style="width:15px;height:15px"></i> Solo contenido educativo del instructor: videos, técnicas y manuales.</span></div>
+    <div class="card soft center"><span style="font-size:13px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;"><i data-lucide="lightbulb" class="lucide" style="width:15px;height:15px"></i> Entrena en casa siguiendo estas rutinas y marca cada bloque completado.</span></div>
   </div>
   <nav class="bottomnav">
     <a href="home.html"><i data-lucide="home"></i>Inicio</a>
@@ -59,8 +59,14 @@
   const _sid = localStorage.getItem('uma_padre_id')
   let _pr = null
   if (_sid) { const { data: sp } = await supabase.from('padres').select('alumno_id').eq('id', _sid).limit(1); _pr = sp?.[0] }
-  if (!_pr) { const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id).limit(1); _pr = pp?.[0] }
-  if (!_pr) { const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email).limit(1); _pr = pc?.[0] }
+  if (!_pr?.alumno_id) {
+    const { data: pp } = await supabase.from('padres').select('alumno_id').eq('user_id', user.id)
+    _pr = (pp || []).find(x => !!x.alumno_id) || _pr
+  }
+  if (!_pr?.alumno_id) {
+    const { data: pc } = await supabase.from('padres').select('alumno_id').eq('correo', user.email)
+    _pr = (pc || []).find(x => !!x.alumno_id) || _pr
+  }
   alumnoId = _pr?.alumno_id || null
   const hoy = new Date().toISOString().split('T')[0]
 
@@ -82,16 +88,33 @@
   const { data: meAdmin } = await supabase.from('padres').select('es_admin').eq('user_id', user.id).maybeSingle()
   const esAdmin = !!meAdmin?.es_admin
 
-  // Contenido educativo y recursos del instructor
+  // Rutinas por nivel alineadas con el catálogo de admin-media
   const LEVELS = {
-    videos:[['flame','Calentamiento básico','Video instruccional para activar tu cuerpo'],['dumbbell','Patadas y fuerza','Video de técnica y postura'],['target','Combinación de golpes','Video de combos y desplazamientos'],['footprints','Estrategia de movimiento','Video de juego de pies'],['leaf','Enfriamiento y recuperación','Video de estiramientos y control']],
-    tecnicas:[['activity','Técnica de golpeo','Guía de puños y agarres'],['zap','Técnica de patadas','Instrucciones paso a paso'],['target','Combinaciones básicas','Secuencias para practicar'],['dumbbell','Defensa y bloqueo','Métodos para reaccionar']],
-    estrategias:[['trophy','Clases y tácticas','Material de estrategia de combate'],['leaf','Combinaciones avanzadas','Cómo enlazar golpes y patadas'],['flame','Rutina mental','Técnicas de concentración'],['zap','Plan de entrenamiento','Manuales para entrenar en casa']],
+    principiante:[
+      ['flame','Calentamiento básico','10 min · Sin equipo'],
+      ['dumbbell','Sentadillas y planchas','15 min · 3 series de 10'],
+      ['target','Combinación de golpes','10 min · Frente al espejo'],
+      ['footprints','Cardio saltar cuerda','5 min · Ritmo moderado'],
+      ['leaf','Enfriamiento estiramiento','5 min · Siempre al final'],
+    ],
+    intermedio:[
+      ['flame','Calentamiento dinámico','10 min · Movilidad articular'],
+      ['activity','Patadas al aire series','20 min · 4 series'],
+      ['zap','Circuito de fuerza','20 min · Burpees y lagartijas'],
+      ['target','Combos avanzados','15 min · Golpe más patada'],
+    ],
+    avanzado:[
+      ['flame','HIIT kickboxing','30 min · Alta intensidad'],
+      ['trophy','Simulación de combate','15 min · Shadowboxing'],
+      ['zap','Fuerza explosiva','20 min · Pliométricos'],
+      ['leaf','Recuperación activa','10 min · Foam roller'],
+    ],
   }
-  let lvl = 'videos'
+  let lvl = 'principiante'
   const done = {}
   let videos = []
   let links = {}
+  const mkActToken = (item, estado) => `[[ACT]] cat=rutina;alumno=${alumnoId || ''};item=${item};fecha=${hoy};estado=${estado ? 1 : 0}`
 
   function clave(nombre) {
     return nombre.toLowerCase()
@@ -113,18 +136,24 @@
     try { links = JSON.parse(linkRes.value?.data?.valor || '{}') } catch { links = {} }
 
     try {
-      if (alumnoId) {
-        const { data: ya } = await supabase.from('habitos_log')
-          .select('tipo')
-          .eq('alumno_id', alumnoId)
-          .eq('fecha', hoy)
-        ;(ya || []).forEach(r => {
-          const t = String(r.tipo || '')
-          if (t.startsWith('rutina_')) {
-            done[t.replace('rutina_', '')] = true
-          }
-        })
-      }
+      const { data: msgs } = await supabase.from('mensajes')
+        .select('texto, creado_en')
+        .eq('de_user_id', user.id)
+        .eq('para_admin', true)
+        .gte('creado_en', hoy + 'T00:00:00')
+        .lte('creado_en', hoy + 'T23:59:59')
+        .order('creado_en', { ascending: true })
+      ;(msgs || []).forEach(m => {
+        const t = String(m.texto || '')
+        if (!t.startsWith('[[ACT]]')) return
+        if (!t.includes('cat=rutina;')) return
+        if (alumnoId && !t.includes('alumno=' + alumnoId + ';')) return
+        const item = (t.match(/item=([^;]+)/) || [])[1] || ''
+        const estado = (t.match(/estado=([01])/) || [])[1]
+        const k = item.replace('rutina_', '')
+        if (!k) return
+        done[k] = estado === '1'
+      })
     } catch(e) {}
 
     render()
@@ -178,6 +207,7 @@
     const b = e.target.closest('[data-k]'); if (!b) return
     done[b.dataset.k] = !done[b.dataset.k]; render()
     const idx = b.dataset.k
+    const itemKey = 'rutina_' + idx
     const items = LEVELS[lvl]
     const nombre = items[Number(idx.replace(lvl, ''))]?.[1] || idx
     try {
@@ -186,24 +216,33 @@
           await supabase.from('habitos_log').insert({
             alumno_id: alumnoId,
             fecha: hoy,
-            tipo: 'rutina_' + idx,
+            tipo: itemKey,
           })
           await supabase.from('actividades_casa').insert({
             alumno_id: alumnoId,
             fecha: hoy,
-            tipo: 'rutina_' + idx,
+            tipo: itemKey,
           })
         } else {
           await supabase.from('habitos_log').delete()
             .eq('alumno_id', alumnoId)
             .eq('fecha', hoy)
-            .eq('tipo', 'rutina_' + idx)
+            .eq('tipo', itemKey)
           await supabase.from('actividades_casa').delete()
             .eq('alumno_id', alumnoId)
             .eq('fecha', hoy)
-            .eq('tipo', 'rutina_' + idx)
+            .eq('tipo', itemKey)
         }
       }
+    } catch(e) {}
+
+    try {
+      await supabase.from('mensajes').insert({
+        de_user_id: user.id,
+        texto: `${mkActToken(itemKey, !!done[idx])} · 🏃 ${done[idx] ? 'Realizado' : 'Desmarcado'}: ${nombre}`,
+        para_admin: true,
+        es_automatico: true
+      })
     } catch(e) {}
 
     const n = items.filter((_, i) => done[lvl + i]).length

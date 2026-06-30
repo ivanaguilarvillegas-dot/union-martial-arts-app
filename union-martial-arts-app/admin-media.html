@@ -35,6 +35,7 @@
       <button class="chip on" data-tab="entrena">Ejercicios</button>
       <button class="chip" data-tab="meditacion">Meditación</button>
       <button class="chip" data-tab="extras">Extras</button>
+      <button class="chip" data-tab="biblioteca">Biblioteca</button>
     </div>
 
     <div id="tab-entrena">
@@ -60,6 +61,31 @@
         </label>
       </div>
       <div id="extras-aud" class="stack-10"></div>
+    </div>
+
+    <div id="tab-biblioteca" style="display:none;">
+      <div class="card soft mb12" style="font-size:12.5px;line-height:1.6;">Publica recursos para padres en Biblioteca Union.</div>
+      <div class="card mb12 stack">
+        <label class="field"><span class="lab">Título</span><input id="bib-titulo" placeholder="Ej. Defensa personal básica" /></label>
+        <label class="field"><span class="lab">Categoría</span>
+          <select id="bib-categoria">
+            <option value="video">video</option>
+            <option value="tecnica">técnica</option>
+            <option value="estrategia">estrategia</option>
+            <option value="archivo">archivo</option>
+            <option value="foto">foto</option>
+            <option value="vinculo">vínculo</option>
+          </select>
+        </label>
+        <label class="field"><span class="lab">URL</span><input id="bib-url" placeholder="https://..." /></label>
+        <label class="btn secondary sm" style="cursor:pointer;align-self:flex-start;"><i data-lucide="upload"></i> Subir archivo
+          <input type="file" id="bib-file" hidden />
+        </label>
+        <label class="field"><span class="lab">Descripción (opcional)</span><textarea id="bib-desc" rows="2"></textarea></label>
+        <label class="row" style="gap:8px;align-items:center;"><input type="checkbox" id="bib-visible" checked /> visible para padres</label>
+        <button class="btn primary sm" id="bib-guardar"><i data-lucide="plus"></i> Agregar recurso</button>
+      </div>
+      <div id="bib-list" class="stack-10"></div>
     </div>
 
     <div id="msg-global" style="display:none;" class="notice mb12"></div>
@@ -132,7 +158,7 @@ function getYouTubeId(url) {
   return m ? m[1] : null
 }
 
-let videos = [], audios = [], links = {}
+let videos = [], audios = [], links = {}, bibliotecaRecursos = []
 
 function mostrarMsg(txt, tipo = 'red') {
   const el = document.getElementById('msg-global')
@@ -146,6 +172,7 @@ async function cargarMedia() {
   const { data: vidData, error: vidErr } = await supabase.storage.from('media').list('videos', { limit: 100 })
   const { data: audData, error: audErr } = await supabase.storage.from('media').list('audios', { limit: 100 })
   const { data: linkRow } = await supabase.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle()
+  const { data: bibRow } = await supabase.from('configuracion').select('valor').eq('clave', 'biblioteca_recursos').maybeSingle()
 
   if (vidErr) mostrarMsg('❌ Error al leer videos: ' + vidErr.message + ' — Revisa las políticas de Storage en Supabase')
   if (audErr) mostrarMsg('❌ Error al leer audios: ' + audErr.message)
@@ -166,10 +193,42 @@ async function cargarMedia() {
     }))
 
   try { links = JSON.parse(linkRow?.valor || '{}') } catch { links = {} }
+  try { bibliotecaRecursos = JSON.parse(bibRow?.valor || '[]') } catch { bibliotecaRecursos = [] }
 
   renderEjercicios()
   renderMeditacion()
   renderExtras()
+  renderBiblioteca()
+}
+
+function renderBiblioteca() {
+  const wrap = document.getElementById('bib-list')
+  if (!wrap) return
+  if (!bibliotecaRecursos.length) {
+    wrap.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Sin recursos publicados.</div>'
+    lucide.createIcons()
+    return
+  }
+  wrap.innerHTML = bibliotecaRecursos.map(r => `
+    <div class="row">
+      <span class="media-ic ${r.visible ? 'green' : ''}"><i data-lucide="book-open"></i></span>
+      <span class="grow">
+        <span class="t">${r.titulo || 'Sin título'}</span>
+        <span class="s">${r.categoria || 'vinculo'}${r.descripcion ? ' · ' + r.descripcion : ''}</span>
+      </span>
+      ${r.url ? `<a href="${r.url}" target="_blank" class="iconbtn"><i data-lucide="external-link"></i></a>` : ''}
+      <button class="iconbtn" data-bib-del="${r.id}" style="color:var(--red-600);"><i data-lucide="trash-2"></i></button>
+    </div>
+  `).join('')
+  lucide.createIcons()
+}
+
+async function guardarBiblioteca() {
+  const { error } = await supabase.from('configuracion').upsert(
+    { clave: 'biblioteca_recursos', valor: JSON.stringify(bibliotecaRecursos) },
+    { onConflict: 'clave' }
+  )
+  if (error) mostrarMsg('❌ Error guardando biblioteca: ' + error.message)
 }
 
 function archivoParaNombre(lista, nombre) {
@@ -317,6 +376,15 @@ document.querySelector('.body').addEventListener('click', async e => {
     if (!confirm('¿Quitar este vínculo?')) return
     delete links[btnL.dataset.borrarLink]
     await guardarLinks(); await cargarMedia()
+    return
+  }
+
+  const btnBibDel = e.target.closest('[data-bib-del]')
+  if (btnBibDel) {
+    if (!confirm('¿Quitar este recurso de biblioteca?')) return
+    bibliotecaRecursos = bibliotecaRecursos.filter(r => r.id !== btnBibDel.dataset.bibDel)
+    await guardarBiblioteca()
+    await cargarMedia()
   }
 })
 
@@ -360,7 +428,47 @@ document.getElementById('tabs').addEventListener('click', e => {
   document.getElementById('tab-entrena').style.display = 'none'
   document.getElementById('tab-meditacion').style.display = 'none'
   document.getElementById('tab-extras').style.display = 'none'
+  document.getElementById('tab-biblioteca').style.display = 'none'
   document.getElementById('tab-' + b.dataset.tab).style.display = 'block'
+})
+
+document.getElementById('bib-file').addEventListener('change', async e => {
+  const file = e.target.files[0]
+  if (!file) return
+  const ext = file.name.split('.').pop().toLowerCase()
+  const path = 'biblioteca/' + Date.now() + '_' + file.name.replace(/\s+/g, '_')
+  const { error } = await supabase.storage.from('media').upload(path, file, { contentType: file.type, upsert: true })
+  if (error) { mostrarMsg('❌ ' + error.message); return }
+  const pub = supabase.storage.from('media').getPublicUrl(path).data.publicUrl
+  document.getElementById('bib-url').value = pub
+  const c = document.getElementById('bib-categoria')
+  c.value = (['pdf','doc','docx'].includes(ext) ? 'archivo' : (['jpg','jpeg','png','webp'].includes(ext) ? 'foto' : 'video'))
+  mostrarMsg('✅ Archivo cargado', 'green')
+})
+
+document.getElementById('bib-guardar').addEventListener('click', async () => {
+  const titulo = document.getElementById('bib-titulo').value.trim()
+  const categoria = document.getElementById('bib-categoria').value
+  const url = document.getElementById('bib-url').value.trim()
+  const descripcion = document.getElementById('bib-desc').value.trim()
+  const visible = document.getElementById('bib-visible').checked
+  if (!titulo || !url) { mostrarMsg('❌ Título y URL son obligatorios'); return }
+
+  bibliotecaRecursos.unshift({
+    id: String(Date.now()),
+    titulo,
+    categoria,
+    url,
+    descripcion,
+    visible,
+  })
+  await guardarBiblioteca()
+  document.getElementById('bib-titulo').value = ''
+  document.getElementById('bib-url').value = ''
+  document.getElementById('bib-desc').value = ''
+  document.getElementById('bib-visible').checked = true
+  mostrarMsg('✅ Recurso publicado', 'green')
+  await cargarMedia()
 })
 
 cargarMedia()

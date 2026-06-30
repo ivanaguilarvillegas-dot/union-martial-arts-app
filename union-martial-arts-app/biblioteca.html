@@ -61,20 +61,48 @@ function prettify(k) {
 }
 
 async function cargar() {
-  const { data: row } = await sb.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle()
-  let links = {}
-  try { links = JSON.parse(row?.valor || '{}') } catch {}
+  const [bibRes, linksRes] = await Promise.allSettled([
+    sb.from('configuracion').select('valor').eq('clave', 'biblioteca_recursos').maybeSingle(),
+    sb.from('configuracion').select('valor').eq('clave', 'media_links').maybeSingle(),
+  ])
 
-  const entries = Object.entries(links)
-  if (!entries.length) {
+  let recursos = []
+  try { recursos = JSON.parse(bibRes.value?.data?.valor || '[]') } catch {}
+  recursos = (recursos || []).filter(r => r && r.url && r.visible !== false)
+
+  let links = {}
+  try { links = JSON.parse(linksRes.value?.data?.valor || '{}') } catch {}
+  const fallback = Object.entries(links).map(([k, v]) => {
+    const url = typeof v === 'string' ? v : (v?.url || '')
+    if (!url) return null
+    return {
+      titulo: typeof v === 'object' && v?.titulo ? v.titulo : prettify(k),
+      categoria: typeof v === 'object' && v?.categoria ? v.categoria : 'video',
+      descripcion: typeof v === 'object' && v?.descripcion ? v.descripcion : 'Recurso publicado por el instructor',
+      url,
+      visible: true,
+    }
+  }).filter(Boolean)
+
+  const all = [...recursos, ...fallback]
+  const seen = new Set()
+  const items = all.filter(r => {
+    const k = String(r.url || '').trim()
+    if (!k || seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+
+  if (!items.length) {
     document.getElementById('contenido').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);"><div style="font-size:36px;margin-bottom:10px;">📚</div><div style="font-size:14px;font-weight:600;">Sin contenido publicado</div><div style="font-size:12px;margin-top:6px;">El instructor publicará recursos pronto.</div></div>'
     lucide.createIcons(); return
   }
 
-  const html = '<div class="sec">Recursos publicados</div>' + entries.map(([k, v]) => {
-    const url = typeof v === 'string' ? v : (v?.url || '')
-    const title = typeof v === 'object' && v?.titulo ? v.titulo : prettify(k)
-    const desc = typeof v === 'object' && v?.descripcion ? v.descripcion : 'Recurso publicado por el instructor'
+  const html = '<div class="sec">Recursos publicados</div>' + items.map((r) => {
+    const url = r.url || ''
+    const title = r.titulo || 'Recurso'
+    const cat = String(r.categoria || 'vinculo')
+    const desc = (r.descripcion ? r.descripcion + ' · ' : '') + cat
     const yt = getYouTubeId(url)
     const thumb = yt ? `https://img.youtube.com/vi/${yt}/mqdefault.jpg` : ''
     return `<a class="res-card" href="${url}" target="_blank" rel="noopener noreferrer">
