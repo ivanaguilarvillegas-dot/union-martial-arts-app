@@ -18,18 +18,30 @@
   .belt-option .chk { width:20px; height:20px; border-radius:50%; border:2px solid var(--border-input);
     flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; color:#fff; }
   .belt-option.selected .chk { background:var(--primary); border-color:var(--primary); }
-  .belt-option .belt-visual { width:92px; display:flex; justify-content:center; flex-shrink:0; }
+  .belt-option .belt-visual { width:122px; display:flex; justify-content:center; flex-shrink:0; }
   .belt-option .belt-visual img,
-  .belt-option .belt-visual svg { width:92px !important; height:33px !important; object-fit:contain; }
+  .belt-option .belt-visual svg {
+    width:122px !important;
+    height:44px !important;
+    object-fit:contain;
+    transform:scaleX(1.3);
+    transform-origin:center;
+  }
 
   .preview-wrap { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--soft);
     border-radius:var(--r-md); margin-bottom:14px; }
   .preview-label { font-size:12px; color:var(--muted); font-weight:500; }
   .preview-name { font-size:15px; font-weight:700; }
   .preview-compare { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; }
-  .preview-belt { width:124px; display:flex; justify-content:center; }
+  .preview-belt { width:170px; display:flex; justify-content:center; }
   .preview-belt img,
-  .preview-belt svg { width:124px !important; height:45px !important; object-fit:contain; }
+  .preview-belt svg {
+    width:170px !important;
+    height:62px !important;
+    object-fit:contain;
+    transform:scaleX(1.28);
+    transform-origin:center;
+  }
   .preview-arrow { font-size:20px; color:var(--primary); font-weight:800; }
   .preview-meta { display:flex; flex-direction:column; gap:3px; width:100%; margin-top:8px; }
   .preview-meta span { font-size:12px; color:var(--muted); }
@@ -45,7 +57,7 @@
           <select id="al-sel"><option value="">Cargando...</option></select></label>
         <div id="cinta-actual" style="display:flex;align-items:center;gap:10px;padding:10px 0;">
           <span class="preview-label" style="min-width:80px;">Cinta actual</span>
-          <div id="strip-actual" style="width:124px;"></div>
+          <div id="strip-actual" style="width:170px;"></div>
           <span id="nombre-cinta-actual" style="font-size:13px;font-weight:600;color:var(--muted);">—</span>
         </div>
       </div></div>
@@ -216,7 +228,7 @@
 
   function actualizarActual() {
     const a = alumnos.find(x => x.id === alSel.value)
-    document.getElementById('strip-actual').innerHTML = beltVisualByName(a?.cinta, 124)
+    document.getElementById('strip-actual').innerHTML = beltVisualByName(a?.cinta, 170)
     document.getElementById('nombre-cinta-actual').textContent = a?.cinta ? 'Cinta ' + a.cinta : '—'
     renderComparisonPreview(a?.cinta || null, null)
   }
@@ -225,7 +237,7 @@
 
   document.getElementById('belt-list').innerHTML = BELTS.map(b => `
     <div class="belt-option" data-nombre="${b.nombre}">
-      <span class="belt-visual">${beltVisualHtml(b, 92)}</span>
+      <span class="belt-visual">${beltVisualHtml(b, 122)}</span>
       <span class="belt-name">Cinta ${b.nombre}</span>
       <span class="chk"><i data-lucide="check" style="width:13px;height:13px"></i></span>
     </div>`).join('')
@@ -238,8 +250,8 @@
     }
 
     preview.style.display = 'flex'
-    document.getElementById('strip-actual-preview').innerHTML = beltVisualByName(currentBelt, 124)
-    document.getElementById('strip-nueva').innerHTML = beltVisualByName(selectedBelt, 124)
+    document.getElementById('strip-actual-preview').innerHTML = beltVisualByName(currentBelt, 170)
+    document.getElementById('strip-nueva').innerHTML = beltVisualByName(selectedBelt, 170)
     document.getElementById('preview-actual-label').textContent = `Cinta actual: ${currentBelt || 'Sin cinta'}`
     document.getElementById('preview-nueva-label').textContent = `Nueva cinta: ${selectedBelt}`
   }
