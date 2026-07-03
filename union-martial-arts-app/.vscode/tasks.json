@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Fix belt halos and alpha",
+			"type": "shell",
+			"command": "\"c:/Users/cinth/OneDrive/Desktop/Claudia Code/union-martial-arts-app/union-martial-arts-app/.venv/Scripts/python.exe\" \"tools/fix_belts_halo_and_alpha.py\"",
+			"problemMatcher": []
+		}
+	]
+}

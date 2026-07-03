@@ -90,6 +90,7 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  import { getBeltImagePath } from './js/belt-assets.js'
   const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
@@ -166,6 +167,25 @@
     return BELTS.find(b => b.nombre === nombre) || null
   }
 
+  function beltImageHtmlByName(nombre, ancho = 62) {
+    const path = getBeltImagePath(nombre)
+    if (!path) return null
+    const h = Math.round(ancho * 26 / 72)
+    return `<img src="${path}" alt="Cinta ${nombre || ''}" style="width:${ancho}px;height:${h}px;object-fit:contain;display:block;" onerror="this.style.display='none'">`
+  }
+
+  function beltVisualHtml(b, ancho = 62) {
+    if (!b) return beltHtml(null, ancho)
+    const imageHtml = beltImageHtmlByName(b.nombre, ancho)
+    return imageHtml || beltHtml(b, ancho)
+  }
+
+  function beltVisualByName(nombre, ancho = 62) {
+    const imageHtml = beltImageHtmlByName(nombre, ancho)
+    if (imageHtml) return imageHtml
+    return beltHtml(beltByName(nombre), ancho)
+  }
+
   let alumnos = []
   let selCinta = null
 
@@ -181,8 +201,7 @@
 
   function actualizarActual() {
     const a = alumnos.find(x => x.id === alSel.value)
-    const belt = a?.cinta ? beltByName(a.cinta) : null
-    document.getElementById('strip-actual').innerHTML = beltHtml(belt, 62)
+    document.getElementById('strip-actual').innerHTML = beltVisualByName(a?.cinta, 62)
     document.getElementById('nombre-cinta-actual').textContent = a?.cinta ? 'Cinta ' + a.cinta : '—'
   }
   alSel.addEventListener('change', actualizarActual)
@@ -190,7 +209,7 @@
 
   document.getElementById('belt-list').innerHTML = BELTS.map(b => `
     <div class="belt-option" data-nombre="${b.nombre}">
-      ${beltHtml(b, 52)}
+      ${beltVisualHtml(b, 52)}
       <span class="belt-name">Cinta ${b.nombre}</span>
       <span class="chk"><i data-lucide="check" style="width:13px;height:13px"></i></span>
     </div>`).join('')
@@ -201,10 +220,9 @@
     document.querySelectorAll('.belt-option').forEach(el => el.classList.remove('selected'))
     opt.classList.add('selected')
     selCinta = opt.dataset.nombre
-    const belt = beltByName(selCinta)
     document.getElementById('preview').style.display = 'flex'
     document.getElementById('preview-nombre').textContent = 'Cinta ' + selCinta
-    document.getElementById('strip-nueva').innerHTML = beltHtml(belt, 62)
+    document.getElementById('strip-nueva').innerHTML = beltVisualByName(selCinta, 62)
     lucide.createIcons()
   })
 

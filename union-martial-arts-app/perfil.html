@@ -53,6 +53,10 @@
         <div>
           <div style="font-size:16px;font-weight:700;" id="av-nombre">—</div>
           <div style="font-size:12px;color:var(--muted);" id="av-sub">Alumno</div>
+          <div id="perfil-cinta-wrap" style="display:none;align-items:center;gap:10px;margin-top:8px;">
+            <img id="perfil-cinta-img" alt="Cinta" style="width:126px;height:45px;object-fit:contain;" />
+            <span id="perfil-cinta-txt" style="font-size:12px;font-weight:700;color:var(--text);"></span>
+          </div>
         </div>
       </div>
       <div id="datos-alumno"></div>
@@ -106,6 +110,7 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  import { getBeltImagePath } from './js/belt-assets.js'
   const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
@@ -201,6 +206,22 @@
     }
     document.getElementById('av-nombre').textContent = alumno.nombre || '—'
     document.getElementById('av-sub').textContent = (alumno.grupo || 'Alumno') + (alumno.cinta ? ' · Cinta ' + alumno.cinta : '')
+
+    const cintaWrap = document.getElementById('perfil-cinta-wrap')
+    const cintaImg = document.getElementById('perfil-cinta-img')
+    const cintaTxt = document.getElementById('perfil-cinta-txt')
+    const beltPath = getBeltImagePath(alumno.cinta)
+    if (beltPath) {
+      cintaWrap.style.display = 'flex'
+      cintaImg.src = beltPath
+      cintaImg.alt = `Cinta ${alumno.cinta}`
+      cintaImg.onerror = () => {
+        cintaWrap.style.display = 'none'
+      }
+      cintaTxt.textContent = `Cinta ${alumno.cinta}`
+    } else {
+      cintaWrap.style.display = 'none'
+    }
 
     let horariosHtml = ''
     if (alumno.horario) {

@@ -190,6 +190,7 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  import { getBeltImagePath } from './js/belt-assets.js'
   const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkYWpnZW5ubHN1dm5kYW5weGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTkyNDQsImV4cCI6MjA5NzYzNTI0NH0.1WS-prurHgq2iiRlhqePB4a8ZkiQwXv7MK0TA7GI3iI'
@@ -280,6 +281,7 @@
     } else {
       list.innerHTML = vis.map(a => {
         const ini = a.nombre?.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?'
+        const beltPath = getBeltImagePath(a.cinta)
         const hoyStr = new Date().toISOString().split('T')[0]
         const vencido = a.fecha_proximo_pago && a.fecha_proximo_pago < hoyStr
         const sinPago = !a.fecha_proximo_pago
@@ -287,6 +289,7 @@
         return `<div class="row" style="gap:10px;">
           <a href="admin-evaluacion.html?alumno=${a.id}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit;min-width:0;">
             <span class="avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;${vencido?'background:#dc2626;':''}${inactivo?'opacity:.55;':''}">${ini}</span>
+            ${beltPath ? `<img src="${beltPath}" alt="Cinta ${a.cinta}" style="width:42px;height:16px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">` : ''}
             <span class="grow" style="min-width:0;">
               <span class="t" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre}${inactivo ? ' <span style="font-size:10px;font-weight:700;background:#f3f4f6;color:#374151;border-radius:99px;padding:1px 6px;vertical-align:middle;">Inactivo</span>' : vencido ? ' <span style="font-size:10px;font-weight:700;background:#fff1f2;color:#dc2626;border-radius:99px;padding:1px 6px;vertical-align:middle;">Vencido</span>' : sinPago ? ' <span style="font-size:10px;font-weight:700;background:#fef9c3;color:#854d0e;border-radius:99px;padding:1px 6px;vertical-align:middle;">Sin pago</span>' : ''}</span>
               <span class="s">${a.cinta ? 'Cinta ' + a.cinta : 'Sin cinta'}${a.grupo ? ' · ' + a.grupo : ''}${a.plan_pago ? ' · ' + a.plan_pago : ''}</span>
