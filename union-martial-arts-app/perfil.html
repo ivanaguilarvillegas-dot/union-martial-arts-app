@@ -29,6 +29,7 @@
     .belt-road { display:flex; flex-direction:column; gap:10px; }
     .belt-road-step { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid #e5e7eb; border-radius:14px; background:#fff; }
     .belt-road-badge { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#eff6ff; color:var(--primary); font-weight:800; }
+    .belt-road-badge img { width:54px; height:20px; object-fit:contain; display:block; }
     .belt-road-text { flex:1; min-width:0; }
     .belt-road-name { font-size:14px; font-weight:700; color:var(--text); }
     .belt-road-sub { font-size:12px; color:var(--muted); margin-top:2px; }
@@ -172,6 +173,12 @@
     return BELTS[Math.min(idx + 1, BELTS.length - 1)]
   }
 
+  function beltBadgeHtml(beltName, fallbackText) {
+    const path = getBeltImagePath(beltName)
+    if (!path) return esc(fallbackText)
+    return `<img src="${path}" alt="Cinta ${esc(beltName)}" onerror="this.replaceWith(document.createTextNode('${esc(fallbackText)}'))">`
+  }
+
   // Cargar datos reales del padre y alumno, respetando selección actual (uma_padre_id)
   const _savedPadreId = localStorage.getItem('uma_padre_id')
   let padre = null
@@ -245,16 +252,18 @@
     const road = document.getElementById('belt-road')
     const currentBelt = alumno.cinta || 'Sin cinta'
     const next = nextBelt(alumno.cinta)
+    const currentBadge = beltBadgeHtml(alumno.cinta, alumno.cinta ? 'ACT' : 'SIN')
+    const nextBadge = beltBadgeHtml(next, 'SIG')
     road.innerHTML = `
       <div class="belt-road-step">
-        <div class="belt-road-badge">${alumno.cinta ? 'ACT' : 'SIN'}</div>
+        <div class="belt-road-badge">${currentBadge}</div>
         <div class="belt-road-text">
           <div class="belt-road-name">Cinta actual: ${esc(currentBelt)}</div>
           <div class="belt-road-sub">${alumno.cinta ? 'Este es el rango visible en Home y Perfil.' : 'Aún no se ha asignado una cinta.'}</div>
         </div>
       </div>
       <div class="belt-road-step">
-        <div class="belt-road-badge">SIG</div>
+        <div class="belt-road-badge">${nextBadge}</div>
         <div class="belt-road-text">
           <div class="belt-road-name">Siguiente cinta: ${esc(next)}</div>
           <div class="belt-road-sub">Se actualizará cuando Admin registre el ascenso.</div>
