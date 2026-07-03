@@ -386,8 +386,9 @@
           </div>
         </div>
         <input type="file" id="foto-input" accept="image/*" style="display:none">
-        <div id="cinta-wrap" style="display:none;text-align:center;margin-top:10px;">
-          <svg id="cinta-svg" width="72" height="26" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
+        <div id="cinta-wrap" style="display:none;text-align:center;margin-top:12px;width:100%;">
+          <img id="cinta-img" alt="Cinta" style="display:none;width:98px;height:35px;object-fit:contain;margin:0 auto;" />
+          <svg id="cinta-svg" width="98" height="35" viewBox="0 0 72 26" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="rgba(255,255,255,.22)"/>
@@ -410,7 +411,7 @@
             <line id="d2" x1="61" y1="9" x2="61" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
             <line id="d3" x1="65" y1="9" x2="65" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round" style="display:none"/>
           </svg>
-          <div id="cinta-label" style="font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75);margin-top:4px;letter-spacing:.01em;"></div>
+          <div id="cinta-label" style="font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75);margin-top:6px;letter-spacing:.01em;text-align:center;display:block;width:100%;"></div>
         </div>
       </div>
 
@@ -639,6 +640,7 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getBeltImagePath } from './js/belt-assets.js'
 ;(async () => {
   const supabase = createClient(
     'https://gdajgennlsuvndanpxiz.supabase.co',
@@ -759,11 +761,37 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
   }
 
   function mostrarCinta(cinta, dan) {
+    const wrap = document.getElementById('cinta-wrap')
+    const img = document.getElementById('cinta-img')
+    const svg = document.getElementById('cinta-svg')
+    if (!wrap) return
+    if (!cinta) return
+    wrap.style.display = 'block'
+
+    const label = cinta ? cinta.charAt(0).toUpperCase() + cinta.slice(1) : ''
+    document.getElementById('cinta-label').textContent = 'Cinta ' + label
+
+    const beltImagePath = getBeltImagePath(cinta)
+    if (beltImagePath && img) {
+      img.style.display = 'block'
+      img.src = beltImagePath
+      img.alt = 'Cinta ' + label
+      img.onerror = () => {
+        img.style.display = 'none'
+        if (svg) svg.style.display = 'block'
+      }
+      if (svg) svg.style.display = 'none'
+      return
+    }
+
+    if (img) {
+      img.style.display = 'none'
+      img.removeAttribute('src')
+    }
+    if (svg) svg.style.display = 'block'
+
     const color = cintaColor(cinta)
     if (!color) return
-    const wrap = document.getElementById('cinta-wrap')
-    if (!wrap) return
-    wrap.style.display = 'block'
     document.getElementById('c-base').setAttribute('fill', color)
     document.getElementById('c-nudo').setAttribute('fill', color)
     const danes = (dan && dan > 0) ? dan : extractDan(cinta)
@@ -777,8 +805,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
     if (danes >= 1) document.getElementById('d1').style.display = 'block'
     if (danes >= 2) document.getElementById('d2').style.display = 'block'
     if (danes >= 3) document.getElementById('d3').style.display = 'block'
-    const label = cinta ? cinta.charAt(0).toUpperCase() + cinta.slice(1) : ''
-    document.getElementById('cinta-label').textContent = 'Cinta ' + label
   }
 
   function textoSinAcentos(s) {
