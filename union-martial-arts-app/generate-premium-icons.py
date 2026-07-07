@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 try:
@@ -15,12 +16,26 @@ SHEETS_DIR = BASE_DIR / "assets" / "icons" / "sheets"
 PREVIEWS_DIR = BASE_DIR / "assets" / "icons" / "previews"
 
 ICON_NAMES = [
-    "home",
-    "checkin",
     "notifications",
-    "payments",
+    "private-chat",
     "profile",
     "credential",
+    "schedules",
+    "daily-evaluation",
+    "monthly-report",
+    "payments",
+    "nutrition",
+    "meditation",
+    "home-routines",
+    "union-benefits",
+    "union-library",
+    "game-zone",
+    "shop",
+    "tournaments",
+    "diplomas",
+    "belts",
+    "events",
+    "help-center",
 ]
 SIZES = [1024, 512, 256, 128, 64]
 
@@ -150,6 +165,12 @@ def scale_symbol_layer(layer: Image.Image, scale: float) -> Image.Image:
     return out
 
 
+def finalize_icon(canvas: Image.Image, layer: Image.Image, box: tuple[int, int, int, int]) -> Image.Image:
+    canvas.alpha_composite(scale_symbol_layer(layer, SYMBOL_SCALE))
+    draw_gold_accent(ImageDraw.Draw(canvas), box)
+    return canvas
+
+
 def draw_gold_accent(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int]) -> None:
     w = box[2] - box[0]
     dot_d = int(w * 0.11)
@@ -241,9 +262,7 @@ def icon_notifications(size: int = 1024) -> Image.Image:
     stroke(draw, [(int(box[0] + w * 0.31), int(box[1] + w * 0.55)), (int(box[0] + w * 0.69), int(box[1] + w * 0.55))], s)
     stroke(draw, [(int(box[0] + w * 0.42), int(box[1] + w * 0.63)), (int(box[0] + w * 0.58), int(box[1] + w * 0.63))], max(4, s // 2), WHITE_SOFT)
     draw.ellipse((int(box[0] + w * 0.45), int(box[1] + w * 0.6), int(box[0] + w * 0.55), int(box[1] + w * 0.7)), fill=WHITE)
-    canvas.alpha_composite(scale_symbol_layer(layer, SYMBOL_SCALE))
-    draw_gold_accent(ImageDraw.Draw(canvas), box)
-    return canvas
+    return finalize_icon(canvas, layer, box)
 
 
 def icon_payments(size: int = 1024) -> Image.Image:
@@ -262,9 +281,7 @@ def icon_payments(size: int = 1024) -> Image.Image:
     draw.rounded_rectangle(card, radius=int(w * 0.06), outline=WHITE, width=s)
     draw.rectangle((card[0], int(card[1] + w * 0.08), card[2], int(card[1] + w * 0.16)), fill=WHITE_SOFT)
     draw.rounded_rectangle((int(box[0] + w * 0.25), int(box[1] + w * 0.5), int(box[0] + w * 0.42), int(box[1] + w * 0.58)), radius=int(w * 0.015), fill=WHITE_SOFT)
-    canvas.alpha_composite(scale_symbol_layer(layer, SYMBOL_SCALE))
-    draw_gold_accent(ImageDraw.Draw(canvas), box)
-    return canvas
+    return finalize_icon(canvas, layer, box)
 
 
 def icon_profile(size: int = 1024) -> Image.Image:
@@ -289,9 +306,7 @@ def icon_profile(size: int = 1024) -> Image.Image:
         int(box[1] + w * 0.78),
     )
     draw.rounded_rectangle(body, radius=int(w * 0.13), outline=WHITE, width=s)
-    canvas.alpha_composite(scale_symbol_layer(layer, SYMBOL_SCALE))
-    draw_gold_accent(ImageDraw.Draw(canvas), box)
-    return canvas
+    return finalize_icon(canvas, layer, box)
 
 
 def icon_credential(size: int = 1024) -> Image.Image:
@@ -313,18 +328,569 @@ def icon_credential(size: int = 1024) -> Image.Image:
     # text lines
     draw.rounded_rectangle((int(box[0] + w * 0.46), int(box[1] + w * 0.37), int(box[0] + w * 0.74), int(box[1] + w * 0.41)), radius=int(w * 0.01), fill=WHITE_SOFT)
     draw.rounded_rectangle((int(box[0] + w * 0.46), int(box[1] + w * 0.45), int(box[0] + w * 0.69), int(box[1] + w * 0.49)), radius=int(w * 0.01), fill=(187, 208, 255, 220))
-    canvas.alpha_composite(scale_symbol_layer(layer, SYMBOL_SCALE))
-    draw_gold_accent(ImageDraw.Draw(canvas), box)
-    return canvas
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_private_chat(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    bubble1 = (
+        int(box[0] + w * 0.22),
+        int(box[1] + w * 0.3),
+        int(box[0] + w * 0.7),
+        int(box[1] + w * 0.62),
+    )
+    draw.rounded_rectangle(bubble1, radius=int(w * 0.08), outline=WHITE, width=s)
+    stroke(
+        draw,
+        [
+            (int(box[0] + w * 0.38), int(box[1] + w * 0.62)),
+            (int(box[0] + w * 0.33), int(box[1] + w * 0.72)),
+            (int(box[0] + w * 0.45), int(box[1] + w * 0.66)),
+        ],
+        max(4, s // 2),
+    )
+    bubble2 = (
+        int(box[0] + w * 0.42),
+        int(box[1] + w * 0.18),
+        int(box[0] + w * 0.78),
+        int(box[1] + w * 0.43),
+    )
+    draw.rounded_rectangle(bubble2, radius=int(w * 0.06), outline=WHITE_SOFT, width=max(4, s // 2))
+    lock = (
+        int(box[0] + w * 0.5),
+        int(box[1] + w * 0.38),
+        int(box[0] + w * 0.6),
+        int(box[1] + w * 0.5),
+    )
+    draw.rounded_rectangle(lock, radius=int(w * 0.015), outline=WHITE_SOFT, width=max(4, s // 2))
+    draw.arc(
+        (
+            int(box[0] + w * 0.515),
+            int(box[1] + w * 0.34),
+            int(box[0] + w * 0.585),
+            int(box[1] + w * 0.42),
+        ),
+        start=185,
+        end=355,
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_schedules(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    cal = (
+        int(box[0] + w * 0.2),
+        int(box[1] + w * 0.24),
+        int(box[0] + w * 0.8),
+        int(box[1] + w * 0.76),
+    )
+    draw.rounded_rectangle(cal, radius=int(w * 0.06), outline=WHITE, width=s)
+    draw.line(
+        [(cal[0], int(box[1] + w * 0.38)), (cal[2], int(box[1] + w * 0.38))],
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.line(
+        [(int(box[0] + w * 0.34), int(box[1] + w * 0.2)), (int(box[0] + w * 0.34), int(box[1] + w * 0.3))],
+        fill=WHITE,
+        width=max(4, s // 2),
+    )
+    draw.line(
+        [(int(box[0] + w * 0.66), int(box[1] + w * 0.2)), (int(box[0] + w * 0.66), int(box[1] + w * 0.3))],
+        fill=WHITE,
+        width=max(4, s // 2),
+    )
+    dot_r = int(w * 0.018)
+    for gx in [0.34, 0.5, 0.66]:
+        for gy in [0.5, 0.6, 0.7]:
+            cx = int(box[0] + w * gx)
+            cy = int(box[1] + w * gy)
+            draw.ellipse((cx - dot_r, cy - dot_r, cx + dot_r, cy + dot_r), fill=WHITE_SOFT)
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_daily_evaluation(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    clip = (
+        int(box[0] + w * 0.35),
+        int(box[1] + w * 0.2),
+        int(box[0] + w * 0.65),
+        int(box[1] + w * 0.3),
+    )
+    draw.rounded_rectangle(clip, radius=int(w * 0.03), outline=WHITE_SOFT, width=max(4, s // 2))
+    board = (
+        int(box[0] + w * 0.24),
+        int(box[1] + w * 0.27),
+        int(box[0] + w * 0.76),
+        int(box[1] + w * 0.78),
+    )
+    draw.rounded_rectangle(board, radius=int(w * 0.06), outline=WHITE, width=s)
+    stroke(
+        draw,
+        [
+            (int(box[0] + w * 0.35), int(box[1] + w * 0.55)),
+            (int(box[0] + w * 0.46), int(box[1] + w * 0.66)),
+            (int(box[0] + w * 0.66), int(box[1] + w * 0.46)),
+        ],
+        s,
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_monthly_report(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.027)
+
+    doc = (
+        int(box[0] + w * 0.24),
+        int(box[1] + w * 0.2),
+        int(box[0] + w * 0.76),
+        int(box[1] + w * 0.8),
+    )
+    draw.rounded_rectangle(doc, radius=int(w * 0.05), outline=WHITE, width=s)
+    draw.line(
+        [(int(box[0] + w * 0.35), int(box[1] + w * 0.36)), (int(box[0] + w * 0.65), int(box[1] + w * 0.36))],
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    stroke(
+        draw,
+        [
+            (int(box[0] + w * 0.33), int(box[1] + w * 0.66)),
+            (int(box[0] + w * 0.45), int(box[1] + w * 0.56)),
+            (int(box[0] + w * 0.55), int(box[1] + w * 0.6)),
+            (int(box[0] + w * 0.67), int(box[1] + w * 0.44)),
+        ],
+        s,
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_nutrition(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    apple = (
+        int(box[0] + w * 0.3),
+        int(box[1] + w * 0.3),
+        int(box[0] + w * 0.7),
+        int(box[1] + w * 0.78),
+    )
+    draw.ellipse(apple, outline=WHITE, width=s)
+    draw.line(
+        [(int(box[0] + w * 0.5), int(box[1] + w * 0.28)), (int(box[0] + w * 0.53), int(box[1] + w * 0.2))],
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    leaf = (
+        int(box[0] + w * 0.53),
+        int(box[1] + w * 0.19),
+        int(box[0] + w * 0.67),
+        int(box[1] + w * 0.3),
+    )
+    draw.ellipse(leaf, outline=WHITE_SOFT, width=max(4, s // 2))
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_meditation(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+    cx = (box[0] + box[2]) // 2
+
+    draw.ellipse(
+        (int(cx - w * 0.09), int(box[1] + w * 0.24), int(cx + w * 0.09), int(box[1] + w * 0.42)),
+        outline=WHITE,
+        width=s,
+    )
+    stroke(
+        draw,
+        [
+            (int(box[0] + w * 0.34), int(box[1] + w * 0.58)),
+            (cx, int(box[1] + w * 0.48)),
+            (int(box[0] + w * 0.66), int(box[1] + w * 0.58)),
+        ],
+        s,
+    )
+    stroke(
+        draw,
+        [
+            (int(box[0] + w * 0.3), int(box[1] + w * 0.7)),
+            (int(box[0] + w * 0.5), int(box[1] + w * 0.62)),
+            (int(box[0] + w * 0.7), int(box[1] + w * 0.7)),
+        ],
+        s,
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_home_routines(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+    cx = (box[0] + box[2]) // 2
+    top = int(box[1] + w * 0.23)
+
+    stroke(
+        draw,
+        [(cx, top), (int(cx - w * 0.22), int(top + w * 0.2)), (int(cx + w * 0.22), int(top + w * 0.2)), (cx, top)],
+        s,
+    )
+    body = (
+        int(cx - w * 0.15),
+        int(top + w * 0.2),
+        int(cx + w * 0.15),
+        int(box[1] + w * 0.68),
+    )
+    draw.rounded_rectangle(body, radius=int(w * 0.03), outline=WHITE, width=s)
+    stroke(
+        draw,
+        [(int(cx - w * 0.2), int(box[1] + w * 0.66)), (int(cx + w * 0.2), int(box[1] + w * 0.66))],
+        max(4, s // 2),
+        WHITE_SOFT,
+    )
+    draw.ellipse(
+        (int(cx - w * 0.24), int(box[1] + w * 0.62), int(cx - w * 0.18), int(box[1] + w * 0.7)),
+        outline=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.ellipse(
+        (int(cx + w * 0.18), int(box[1] + w * 0.62), int(cx + w * 0.24), int(box[1] + w * 0.7)),
+        outline=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_union_benefits(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+    cx = (box[0] + box[2]) // 2
+    cy = int(box[1] + w * 0.5)
+    r1 = w * 0.22
+    r2 = w * 0.1
+    points = []
+    for i in range(10):
+        a = -90 + i * 36
+        r = r1 if i % 2 == 0 else r2
+        x = cx + int(r * math.cos(math.radians(a)))
+        y = cy + int(r * math.sin(math.radians(a)))
+        points.append((x, y))
+    draw.polygon(points, outline=WHITE, width=s)
+    draw.ellipse(
+        (int(cx - w * 0.05), int(cy - w * 0.05), int(cx + w * 0.05), int(cy + w * 0.05)),
+        fill=WHITE_SOFT,
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_union_library(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+    cx = (box[0] + box[2]) // 2
+
+    left = (
+        int(box[0] + w * 0.22),
+        int(box[1] + w * 0.26),
+        int(cx + w * 0.02),
+        int(box[1] + w * 0.76),
+    )
+    right = (
+        int(cx - w * 0.02),
+        int(box[1] + w * 0.26),
+        int(box[0] + w * 0.78),
+        int(box[1] + w * 0.76),
+    )
+    draw.rounded_rectangle(left, radius=int(w * 0.03), outline=WHITE, width=s)
+    draw.rounded_rectangle(right, radius=int(w * 0.03), outline=WHITE, width=s)
+    draw.line(
+        [(cx, int(box[1] + w * 0.28)), (cx, int(box[1] + w * 0.74))],
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_game_zone(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    pad_shape = (
+        int(box[0] + w * 0.2),
+        int(box[1] + w * 0.38),
+        int(box[0] + w * 0.8),
+        int(box[1] + w * 0.72),
+    )
+    draw.rounded_rectangle(pad_shape, radius=int(w * 0.12), outline=WHITE, width=s)
+    stroke(
+        draw,
+        [(int(box[0] + w * 0.32), int(box[1] + w * 0.55)), (int(box[0] + w * 0.44), int(box[1] + w * 0.55))],
+        max(4, s // 2),
+        WHITE_SOFT,
+    )
+    stroke(
+        draw,
+        [(int(box[0] + w * 0.38), int(box[1] + w * 0.49)), (int(box[0] + w * 0.38), int(box[1] + w * 0.61))],
+        max(4, s // 2),
+        WHITE_SOFT,
+    )
+    draw.ellipse((int(box[0] + w * 0.58), int(box[1] + w * 0.5), int(box[0] + w * 0.64), int(box[1] + w * 0.56)), fill=WHITE_SOFT)
+    draw.ellipse((int(box[0] + w * 0.66), int(box[1] + w * 0.54), int(box[0] + w * 0.72), int(box[1] + w * 0.6)), fill=WHITE_SOFT)
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_shop(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    bag = (
+        int(box[0] + w * 0.26),
+        int(box[1] + w * 0.32),
+        int(box[0] + w * 0.74),
+        int(box[1] + w * 0.78),
+    )
+    draw.rounded_rectangle(bag, radius=int(w * 0.05), outline=WHITE, width=s)
+    draw.arc(
+        (int(box[0] + w * 0.36), int(box[1] + w * 0.2), int(box[0] + w * 0.64), int(box[1] + w * 0.42)),
+        start=200,
+        end=-20,
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_tournaments(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    cup = (
+        int(box[0] + w * 0.33),
+        int(box[1] + w * 0.24),
+        int(box[0] + w * 0.67),
+        int(box[1] + w * 0.56),
+    )
+    draw.rounded_rectangle(cup, radius=int(w * 0.06), outline=WHITE, width=s)
+    draw.arc(
+        (int(box[0] + w * 0.22), int(box[1] + w * 0.28), int(box[0] + w * 0.4), int(box[1] + w * 0.5)),
+        start=260,
+        end=80,
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.arc(
+        (int(box[0] + w * 0.6), int(box[1] + w * 0.28), int(box[0] + w * 0.78), int(box[1] + w * 0.5)),
+        start=100,
+        end=280,
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.rounded_rectangle(
+        (int(box[0] + w * 0.46), int(box[1] + w * 0.56), int(box[0] + w * 0.54), int(box[1] + w * 0.68)),
+        radius=int(w * 0.02),
+        fill=WHITE_SOFT,
+    )
+    draw.rounded_rectangle(
+        (int(box[0] + w * 0.38), int(box[1] + w * 0.68), int(box[0] + w * 0.62), int(box[1] + w * 0.74)),
+        radius=int(w * 0.02),
+        fill=WHITE_SOFT,
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_diplomas(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.027)
+
+    scroll = (
+        int(box[0] + w * 0.24),
+        int(box[1] + w * 0.36),
+        int(box[0] + w * 0.76),
+        int(box[1] + w * 0.66),
+    )
+    draw.rounded_rectangle(scroll, radius=int(w * 0.04), outline=WHITE, width=s)
+    draw.ellipse(
+        (int(box[0] + w * 0.2), int(box[1] + w * 0.4), int(box[0] + w * 0.3), int(box[1] + w * 0.62)),
+        outline=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.ellipse(
+        (int(box[0] + w * 0.7), int(box[1] + w * 0.4), int(box[0] + w * 0.8), int(box[1] + w * 0.62)),
+        outline=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.ellipse((int(box[0] + w * 0.46), int(box[1] + w * 0.48), int(box[0] + w * 0.56), int(box[1] + w * 0.58)), fill=WHITE_SOFT)
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_belts(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+    y = int(box[1] + w * 0.52)
+
+    draw.rounded_rectangle(
+        (int(box[0] + w * 0.2), int(y - w * 0.08), int(box[0] + w * 0.8), int(y + w * 0.08)),
+        radius=int(w * 0.03),
+        outline=WHITE,
+        width=s,
+    )
+    draw.rounded_rectangle(
+        (int(box[0] + w * 0.43), int(y - w * 0.1), int(box[0] + w * 0.57), int(y + w * 0.1)),
+        radius=int(w * 0.04),
+        outline=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    stroke(
+        draw,
+        [(int(box[0] + w * 0.5), int(y + w * 0.1)), (int(box[0] + w * 0.46), int(y + w * 0.24))],
+        max(4, s // 2),
+        WHITE_SOFT,
+    )
+    stroke(
+        draw,
+        [(int(box[0] + w * 0.54), int(y + w * 0.1)), (int(box[0] + w * 0.58), int(y + w * 0.24))],
+        max(4, s // 2),
+        WHITE_SOFT,
+    )
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_events(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+
+    cal = (
+        int(box[0] + w * 0.2),
+        int(box[1] + w * 0.24),
+        int(box[0] + w * 0.8),
+        int(box[1] + w * 0.76),
+    )
+    draw.rounded_rectangle(cal, radius=int(w * 0.06), outline=WHITE, width=s)
+    draw.line(
+        [(cal[0], int(box[1] + w * 0.38)), (cal[2], int(box[1] + w * 0.38))],
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    cx = int(box[0] + w * 0.5)
+    cy = int(box[1] + w * 0.58)
+    r1 = w * 0.1
+    r2 = w * 0.045
+    points = []
+    for i in range(10):
+        a = -90 + i * 36
+        r = r1 if i % 2 == 0 else r2
+        x = cx + int(r * math.cos(math.radians(a)))
+        y = cy + int(r * math.sin(math.radians(a)))
+        points.append((x, y))
+    draw.polygon(points, outline=WHITE_SOFT, width=max(4, s // 2))
+    return finalize_icon(canvas, layer, box)
+
+
+def icon_help_center(size: int = 1024) -> Image.Image:
+    canvas, _, box, _ = draw_base(size)
+    layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    w = box[2] - box[0]
+    s = scaled_stroke(size, 0.028)
+    cx = (box[0] + box[2]) // 2
+
+    shield = [
+        (cx, int(box[1] + w * 0.2)),
+        (int(box[0] + w * 0.3), int(box[1] + w * 0.3)),
+        (int(box[0] + w * 0.34), int(box[1] + w * 0.64)),
+        (cx, int(box[1] + w * 0.78)),
+        (int(box[0] + w * 0.66), int(box[1] + w * 0.64)),
+        (int(box[0] + w * 0.7), int(box[1] + w * 0.3)),
+    ]
+    draw.polygon(shield, outline=WHITE, width=s)
+    draw.arc(
+        (int(cx - w * 0.08), int(box[1] + w * 0.36), int(cx + w * 0.08), int(box[1] + w * 0.52)),
+        start=190,
+        end=20,
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.line(
+        [(cx, int(box[1] + w * 0.51)), (cx, int(box[1] + w * 0.6))],
+        fill=WHITE_SOFT,
+        width=max(4, s // 2),
+    )
+    draw.ellipse((int(cx - w * 0.015), int(box[1] + w * 0.63), int(cx + w * 0.015), int(box[1] + w * 0.66)), fill=WHITE_SOFT)
+    return finalize_icon(canvas, layer, box)
 
 
 BUILDERS = {
-    "home": icon_home,
-    "checkin": icon_checkin,
     "notifications": icon_notifications,
-    "payments": icon_payments,
+    "private-chat": icon_private_chat,
     "profile": icon_profile,
     "credential": icon_credential,
+    "schedules": icon_schedules,
+    "daily-evaluation": icon_daily_evaluation,
+    "monthly-report": icon_monthly_report,
+    "payments": icon_payments,
+    "nutrition": icon_nutrition,
+    "meditation": icon_meditation,
+    "home-routines": icon_home_routines,
+    "union-benefits": icon_union_benefits,
+    "union-library": icon_union_library,
+    "game-zone": icon_game_zone,
+    "shop": icon_shop,
+    "tournaments": icon_tournaments,
+    "diplomas": icon_diplomas,
+    "belts": icon_belts,
+    "events": icon_events,
+    "help-center": icon_help_center,
 }
 
 
@@ -339,8 +905,8 @@ def save_icon_set(name: str, master: Image.Image) -> None:
 
 def build_contact_sheet() -> None:
     tile = 256
-    cols = 3
-    rows = 2
+    cols = 5
+    rows = 4
     gap = 24
     pad = 26
     width = cols * tile + (cols - 1) * gap + pad * 2
@@ -369,7 +935,7 @@ def build_contact_sheet() -> None:
         tw = draw.textlength(name, font=font)
         draw.text((x + (tile - tw) / 2, y + tile + 14), name, fill=(225, 236, 255, 255), font=font)
 
-    sheet.save(PREVIEWS_DIR / "core-contact-sheet.png")
+    sheet.save(PREVIEWS_DIR / "core-pack-preview.png")
 
 
 def main() -> None:
@@ -384,7 +950,7 @@ def main() -> None:
     print("Generated premium core icons:")
     for name in ICON_NAMES:
         print(f"- {name}: {CORE_DIR / (name + '.png')}")
-    print(f"- contact sheet: {PREVIEWS_DIR / 'core-contact-sheet.png'}")
+    print(f"- contact sheet: {PREVIEWS_DIR / 'core-pack-preview.png'}")
 
 
 if __name__ == "__main__":
