@@ -1,0 +1,101 @@
+{
+  "system": "UNION GUARDIANS",
+  "version": "1.0.0",
+  "storageKey": "unionGuardiansState",
+  "starterGuardians": [
+    {
+      "id": "ignis",
+      "nombre": "Ignis",
+      "elemento": "Fuego",
+      "valor": "Coraje",
+      "rareza": "Común",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Ignis"
+    },
+    {
+      "id": "aqua",
+      "nombre": "Aqua",
+      "elemento": "Agua",
+      "valor": "Calma",
+      "rareza": "Común",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Aqua"
+    },
+    {
+      "id": "zephyr",
+      "nombre": "Zephyr",
+      "elemento": "Viento",
+      "valor": "Libertad",
+      "rareza": "Común",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Zephyr"
+    },
+    {
+      "id": "terra",
+      "nombre": "Terra",
+      "elemento": "Tierra",
+      "valor": "Resistencia",
+      "rareza": "Común",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Terra"
+    },
+    {
+      "id": "volt",
+      "nombre": "Volt",
+      "elemento": "Rayo",
+      "valor": "Impulso",
+      "rareza": "Raro",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Volt"
+    },
+    {
+      "id": "umbra",
+      "nombre": "Umbra",
+      "elemento": "Sombra",
+      "valor": "Disciplina",
+      "rareza": "Raro",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Umbra"
+    },
+    {
+      "id": "solis",
+      "nombre": "Solis",
+      "elemento": "Luz",
+      "valor": "Esperanza",
+      "rareza": "Raro",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Solis"
+    },
+    {
+      "id": "astra",
+      "nombre": "Astra",
+      "elemento": "Estrella",
+      "valor": "Guía",
+      "rareza": "Legendaria",
+      "nivel": 1,
+      "experiencia": 0,
+      "evolucion": "Astra"
+    }
+  ],
+  "evolutionStages": [
+    {
+      "nivel": 1,
+      "nombre": "Forma Inicial"
+    },
+    {
+      "nivel": 5,
+      "nombre": "Forma Despierta"
+    },
+    {
+      "nivel": 10,
+      "nombre": "Forma Guardiana"
+    }
+  ]
+}
